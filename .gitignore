@@ -1,0 +1,3 @@
+trenv/
+.env
+*.env
