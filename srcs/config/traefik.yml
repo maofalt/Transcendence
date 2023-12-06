@@ -21,8 +21,8 @@ entryPoints:
           scheme: https
   websecure:
     address: :443
-  custom:
-     address: :8080
+#  custom:
+#     address: :8080
 #      tls:
 #        certResolver: myresolver
 
