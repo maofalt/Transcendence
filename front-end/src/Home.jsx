@@ -1,5 +1,6 @@
 // import { useEffect, useState } from 'react';
 import useFetch from './useFetch';
+import useAxios from './useAxios';
 import PageCards from './PageCards';
 
 const Home = ({ jsonUrl }) => {
@@ -27,9 +28,9 @@ const Home = ({ jsonUrl }) => {
 	// }
 
 	
-	const { data, error, isLoading } = useFetch(jsonUrl);
+	const { data, error, isLoading } = useAxios(jsonUrl);
 	
-	// console.log("in Home:", "pages: " + data + ", error: " + error + ", loading: " + isLoading);
+	console.log("in Home:", "pages: " + data + ", error: " + error + ", loading: " + isLoading);
 	// console.log(data);
 
 	return (
@@ -38,7 +39,8 @@ const Home = ({ jsonUrl }) => {
 			<h2 className='subtitle'>{ subtitle }</h2>
 			{ error && <h1 className="errorMsg">Error: { error.message }</h1> }
 			{ isLoading && <div>Loading...</div> }
-			{ data && <PageCards jsonUrl={jsonUrl} cards={data}/> }
+			{ data && <p>{ data }</p>}
+			{/* { data && <PageCards jsonUrl={jsonUrl} cards={data}/> } */}
 		</div>
 	);
 }

@@ -18,10 +18,10 @@ const useFetch = (serverUrl) => {
 			.then(res => {
 				if (!res.ok)
 					throw Error('smelly man: ' + res.status + ' ' + res.statusText);
-				return res.json();
+				return res.arrayBuffer();
 			})
 			.then(json => {
-				// console.log("json stuff: ", json);
+				console.log("json stuff: ", json);
 				setData(json);
 				setIsLoading(false);
 			})

@@ -1,4 +1,4 @@
-import express from 'express'
+ import express from 'express'
 import fetch from 'node-fetch'
 
 const app = express();
@@ -7,12 +7,28 @@ const PORT = 3001; // Can be any port different from your React app
 // Proxy endpoint
 app.use('/api/proxy', async (req, res) => {
   try {
-    // Replace with the actual API URL you want to proxy
-    const apiResponse = await fetch('https://api.intra.42.fr/v2/offers?sort=-salary,-invalid_at&page=41&per_page=100&access_token=a00edc84b8e54aa6da3ce44b5ec764c48d926db2c6bad5a27e41f65c2fb1fb84');
+    const getToken = await fetch(url, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			// Add other headers as needed
+		},
+		body: JSON.stringify("grant_type=client_credentials&client_id=u-s4t2ud-92a820ed289cca7b0885c581d6c3ad3116d92ba4714e4bf4b2de1040f9755df8&client_secret=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")
+	});
+
+	if (!getToken.ok) {
+		throw new Error(`HTTP error: ${getToken.status}`);
+	}
+	
+	const currentToken = await getToken.json();
+	console.log(currentToken);
+
+    const apiResponse = await fetch('https://api.intra.42.fr/v2/offers?sort=-salary,-invalid_at&page=41&per_page=100&access_token=' + currentToken);
     const data = await apiResponse.json();
     res.json(data);
+	console.log("YOY: ", data);
   } catch (error) {
-    console.error('Error:', error);
+    console.error('BIG Error:', error);
     res.status(500).send('Server error');
   }
 });
