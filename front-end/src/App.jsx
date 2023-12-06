@@ -6,7 +6,7 @@ import PageDetails from './PageDetails'
 import NotFound from './NotFound'
 
 function App() {
-	const jsonUrl = "http://localhost:3001/pages/";
+	const jsonUrl = "/api/proxy";
 
 	return (
 		<Router>

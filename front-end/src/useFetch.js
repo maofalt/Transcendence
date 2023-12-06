@@ -9,7 +9,12 @@ const useFetch = (serverUrl) => {
 		const aborter = new AbortController();
 
 		setTimeout(() => {
-			fetch(serverUrl, { signal: aborter.signal })
+			fetch(serverUrl, { 
+				signal: aborter.signal,
+				// headers: {
+				// 	'Authorization': 'Bearer 6485540f8b1c7442672c6c3719e4bbf19086016fcb5f1334452aabe3061f5848'
+				// }
+			})
 			.then(res => {
 				if (!res.ok)
 					throw Error('smelly man: ' + res.status + ' ' + res.statusText);
@@ -21,7 +26,6 @@ const useFetch = (serverUrl) => {
 				setIsLoading(false);
 			})
 			.catch(err => {
-				// if (err.Error )
 				if (err.name == "AbortError")
 				{
 					let str = JSON.stringify(err, null, 4);
