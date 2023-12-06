@@ -5,9 +5,9 @@ const app = express();
 const PORT = 3001; // Can be any port different from your React app
 
 // Proxy endpoint
-app.use('/api/proxy', async (req, res) => {
+app.use('/', async (req, res) => {
   try {
-    const getToken = await fetch(url, {
+    const getToken = await fetch("https://api.intra.42.fr/oauth/token", {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',

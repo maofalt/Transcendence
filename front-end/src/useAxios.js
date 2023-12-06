@@ -8,16 +8,8 @@ const useAxios = (serverUrl) => {
 
     useEffect(() => {
 		const aborter = new AbortController();
-		let bearer_token = "banana";
-        
-		const config = {
-            headers: {
-                'Authorization': 'Bearer ' + bearer_token,
-                'Content-Type': 'application/json',
-            }
-        };
 
-        axios.get(serverUrl, config)
+        axios.get(serverUrl)
             .then(response => {
                 setData(response.data);
                 setIsLoading(false);
