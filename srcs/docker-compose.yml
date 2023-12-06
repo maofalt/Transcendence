@@ -20,6 +20,7 @@ services:
       - "traefik.http.routers.portainer.entrypoints=websecure"
       - "traefik.http.routers.portainer.rule=Host(`portainer.localhost`)"
       #- "traefik.http.routers.portainer.tls.certresolver=myresolver"
+      #- "traefik.http.routers.portainer.tls=true"
     networks:
       - transcendence
 
@@ -59,7 +60,7 @@ services:
     container_name: traefik
     ports:
       - 1080:80
-      - 1443:443
+      - 1043:443
       # -- (Optional) Enable Dashboard, don't do in production
       - 8080:8080
     volumes:
