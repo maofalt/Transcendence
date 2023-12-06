@@ -1,1 +1,2 @@
-FROM portainer/portainer:1.24.1
+FROM portainer/portainer-ce
+#USER root

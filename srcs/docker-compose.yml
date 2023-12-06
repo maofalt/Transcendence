@@ -3,16 +3,17 @@ version: '3.8'
 services:
 
   portainer:
-    image: portainer/portainer
+    image: portainer
     container_name: portainer
     build:
       context: ./requirements/portainer
       dockerfile: Dockerfile
     restart: always
     ports:
-      - "9000:9000"
+      - "8000:8000"
+      - "9443:9443"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - "${XDG_RUNTIME_DIR}/docker.sock:/var/run/docker.sock"
       - portainer-data:/data
     networks:
       - transcendence
@@ -52,8 +53,8 @@ services:
     image: traefik:v2.10.4
     container_name: traefik
     ports:
-      - 80:80
-      - 443:443
+      - 1080:80
+      - 1443:443
       # -- (Optional) Enable Dashboard, don't do in production
       - 8080:8080
     volumes:

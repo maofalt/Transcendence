@@ -20,7 +20,6 @@ clean:
 	docker image prune -a -f
 
 fclean: clean
-	sudo rm -rf ~/data
 	docker volume prune -f
 
 .PHONY: all build up down logs
