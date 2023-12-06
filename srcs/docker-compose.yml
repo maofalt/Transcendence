@@ -60,7 +60,7 @@ services:
     volumes:
       - ./config:/etc/traefik
       - traefik-ssl-certs:/ssl-certs
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - "${XDG_RUNTIME_DIR}/docker.sock:/var/run/docker.sock"
     # -- (Optional) When using Cloudflare as Cert Resolver
     # environment:
     #   - CF_DNS_API_TOKEN=your-cloudflare-api-token
