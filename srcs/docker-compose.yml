@@ -8,13 +8,18 @@ services:
     build:
       context: ./requirements/portainer
       dockerfile: Dockerfile
-    restart: always
+    restart: unless-stopped
     ports:
       - "8000:8000"
       - "9443:9443"
     volumes:
       - "${XDG_RUNTIME_DIR}/docker.sock:/var/run/docker.sock"
       - portainer-data:/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.portainer.entrypoints=websecure"
+      - "traefik.http.routers.portainer.rule=Host(`portainer.localhost`)"
+      #- "traefik.http.routers.portainer.tls.certresolver=myresolver"
     networks:
       - transcendence
 
@@ -61,13 +66,17 @@ services:
       - ./config:/etc/traefik
       - traefik-ssl-certs:/ssl-certs
       - "${XDG_RUNTIME_DIR}/docker.sock:/var/run/docker.sock"
+    networks:
+      - transcendence
     # -- (Optional) When using Cloudflare as Cert Resolver
     # environment:
     #   - CF_DNS_API_TOKEN=your-cloudflare-api-token
     # -- (Optional) When using a custom network
     # networks:
     #   - your-traefik-network
-    restart: unless-stopped  
+    restart: unless-stopped
+    depends_on:
+      - portainer
 
 volumes:
   traefik-ssl-certs:
