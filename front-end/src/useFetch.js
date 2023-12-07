@@ -18,7 +18,7 @@ const useFetch = (serverUrl) => {
 			.then(res => {
 				if (!res.ok)
 					throw Error('smelly man: ' + res.status + ' ' + res.statusText);
-				return res.arrayBuffer();
+				return res.json();
 			})
 			.then(json => {
 				console.log("json stuff: ", json);

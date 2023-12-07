@@ -13,6 +13,7 @@ const useAxios = (serverUrl) => {
             .then(response => {
                 setData(response.data);
                 setIsLoading(false);
+				console.log("BANANA: ", response);
             })
             .catch(err => {
                 setError(err.message);
