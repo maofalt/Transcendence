@@ -9,7 +9,7 @@ const useAxios = (serverUrl) => {
     useEffect(() => {
 		const aborter = new AbortController();
 
-        axios.get(serverUrl)
+        axios.get('/api-proxy')
             .then(response => {
                 setData(response.data);
                 setIsLoading(false);
