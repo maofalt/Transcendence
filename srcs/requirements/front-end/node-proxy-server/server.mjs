@@ -16,7 +16,7 @@ const PORT = 3001;
 app.use(cors());
 
 // Proxy endpoint
-app.use('/api-proxy', async (req, res) => {
+app.use('/', async (req, res) => {
   try {
     const getToken = await fetch(url, { method, headers, body });
     // console.log("AUTH POST RESPONSE: ", getToken);
