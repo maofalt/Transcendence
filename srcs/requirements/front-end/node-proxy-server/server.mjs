@@ -2,13 +2,16 @@
 import cors from 'cors'
 import express from 'express'
 import fetch from 'node-fetch'
+import dotenv from 'dotenv'
+
+dotenv.config();
 
 const url = "https://api.intra.42.fr/oauth/token";
 const method = 'POST';
 const headers = {
 	'Content-Type': 'application/x-www-form-urlencoded',
 };
-const body = 'grant_type=client_credentials&client_id=u-s4t2ud-92a820ed289cca7b0885c581d6c3ad3116d92ba4714e4bf4b2de1040f9755df8&client_secret=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';
+const body = `grant_type=client_credentials&client_id=${process.env.CLIENT_UID}&client_secret=${process.env.CLIENT_SECRET}`;
 
 const app = express();
 const PORT = 3001;
