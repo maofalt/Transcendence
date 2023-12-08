@@ -1,0 +1,14 @@
+# docker-compose.override.yml
+version: '3.8'
+services:
+  front-end:
+    container_name: front-end
+    build:
+      context: ./requirements/front-end
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./requirements/front-end/react-srcs/:/app/src
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development

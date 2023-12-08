@@ -1,6 +1,14 @@
 # docker-compose.yml
 version: '3.8'
 services:
+  front-end:
+    container_name: front-end
+    build:
+      context: ./requirements/front-end
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8033:8033"
 
   portainer:
     image: portainer
