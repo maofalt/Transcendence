@@ -1,17 +1,21 @@
 
 # Stage 1: Build the React application
-FROM node:latest as builder
+FROM node:19-bullseye-slim as builder
 
-WORKDIR /app
-COPY package.json package-lock.json ./
+COPY ./react-app/package.json ./react-app/package-lock.json /app/src/
+COPY ./react-app /app/src
+WORKDIR /app/src
 RUN npm install
-COPY ./react-srcs ./src
 RUN npm run build
-
+# RUN mkdir build
 # Stage 2: Serve the application with NGINX
 FROM nginx:alpine
-COPY --from=builder /app/build /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/nginx.conf
+
+# install tini
+RUN apk update && apk add tini
+
+COPY --from=builder /app/src/dist /usr/share/nginx/html
+# COPY ./config/nginx.conf /etc/nginx/nginx.conf
 EXPOSE 8033
 ENTRYPOINT [ "tini", "--"]
 CMD ["nginx", "-g", "daemon off;"]

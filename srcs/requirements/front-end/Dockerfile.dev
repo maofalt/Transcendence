@@ -7,15 +7,6 @@ RUN apt-get update && apt-get install -y tini
 # Set the working directory in the container
 COPY ./config/startup-front-end.sh ./
 
-
-# Copy package.json and package-lock.json
-# COPY ./react-app/package.json ./react-app/package-lock.json* /app/src
-
-# Install dependencies
-# RUN npm install
-
-# RUN npm install --only=dev
-
 # Expose the port the app runs on
 EXPOSE 8033
 

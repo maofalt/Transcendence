@@ -1,17 +1,17 @@
-# BASE_FILE = -f srcs/docker-compose.yml
-# OVERRIDE_FILE= -f srcs/docker-compose.override.yml
+BASE_FILE = -f srcs/docker-compose.yml
+OVERRIDE_FILE= -f srcs/docker-compose.override.yml
 
-# ENV ?= dev
+ENV ?= dev
 
-# ifeq ($(ENV), dev)
-# COMPOSE_FILE = $(BASE_FILE) $(OVERRIDE_FILE)
-# endif
+ifeq ($(ENV), dev)
+COMPOSE_FILE = $(BASE_FILE) $(OVERRIDE_FILE)
+endif
 
-# ifeq ($(ENV), prod)
-# COMPOSE_FILE = $(BASE_FILE)
-# endif
+ifeq ($(ENV), prod)
+COMPOSE_FILE = $(BASE_FILE)
+endif
 
-COMPOSE_FILE = -f srcs/docker-compose.yml
+# COMPOSE_FILE = -f srcs/docker-compose.yml
 
 all: build up
 
