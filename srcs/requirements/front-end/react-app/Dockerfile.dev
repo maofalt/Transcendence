@@ -1,0 +1,17 @@
+# Base image
+FROM node:latest
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Copy package.json and package-lock.json (or yarn.lock)
+COPY package.json package-lock.json* ./
+
+# Install dependencies
+RUN npm install
+
+# Expose the port the app runs on
+EXPOSE 8033
+
+# Command to run the application
+CMD ["npm", "run", "dev"]

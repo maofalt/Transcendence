@@ -1,3 +1,4 @@
+
 # Stage 1: Build the React application
 FROM node:latest as builder
 
