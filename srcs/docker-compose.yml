@@ -10,74 +10,51 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     ports:
-      - "8000:8000"
+   #   - "8000:8000"
       - "9443:9443"
     volumes:
-      - "${XDG_RUNTIME_DIR}/docker.sock:/var/run/docker.sock"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      #- "${XDG_RUNTIME_DIR}/docker.sock:/var/run/docker.sock"
       - portainer-data:/data
     labels:
+    #FRONTEND
       - "traefik.enable=true"
-      - "traefik.http.routers.portainer.entrypoints=websecure"
-      - "traefik.http.routers.portainer.rule=Host(`portainer.localhost`)"
-      #- "traefik.http.routers.portainer.tls.certresolver=myresolver"
-      #- "traefik.http.routers.portainer.tls=true"
+      - "traefik.http.routers.frontend.rule=Host(`portainer.localhost`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.services.frontend.loadbalancer.server.port=9443"
+      - "traefik.http.routers.frontend.service=frontend"
+      
+    #Edge  
+      - "traefik.http.routers.edge.rule=Host(`portainer_edge.localhost`)"
+      - "traefik.http.routers.edge.entrypoints=web"
+      - "traefik.http.services.edge.loadbalancer.server.port=8000"
+      - "traefik.http.routers.edge.service=edge"
     networks:
       - transcendence
-
-  #traefik:
-  #  image: traefik
-  #  container_name: traefik
-  #  build:
-  #    context: ./requirements/traefik
-  #    dockerfile: Dockerfile
-  #  restart: always
-  #  ports:
-  #    - "80:80"
-  #    - "443:443"
-  #    - "8080:8080"
-  #  volumes:
-  #    - ./config:/etc/traefik
-  #    - traefik-ssl-certs:/ssl-certs
-  #    - /var/run/docker.sock:/var/run/docker.sock:ro
-  #  labels:
-  #    - "traefik.enable=true"
-  #  #  - "traefik.http.routers.api.rule=Host(`traefik.your-domain.com`)"
-  #  #  - --entrypoints.web.address=:80
-  #  # - --entrypoints.websecure.address=:443
-  #    - "traefik.http.routers.api.service=api@internal"
-  #   # - "traefik.http.routers.api.middlewares=auth"
-  #    - "traefik.http.routers.traefik.entrypoints=websecure"
-  #    - "traefik.http.routers.traefik.tls.certresolver=myresolver"
-  #   # - "traefik.http.middlewares.auth.basicauth.users=user:$$apr1$$H6uskkkW$$IgXLP6ewTrSuBkTrqE8wj/"
-  #    - --certificatesresolvers.myresolver.acme.tlschallenge=true
-  #    - --certificatesresolvers.myresolver.acme.email=motero@student.42.fr
-  #    - --certificatesresolvers.myresolver.acme.storage=/acme.json
-  #  networks:
-  #    - transcendence
 
   traefik:
     image: traefik:v2.10.4
     container_name: traefik
     ports:
-      - 1080:80
-      - 1043:443
+      - 80:80
+      - 443:443
       # -- (Optional) Enable Dashboard, don't do in production
       - 8080:8080
     volumes:
       - ./config:/etc/traefik
       - traefik-ssl-certs:/ssl-certs
-      - "${XDG_RUNTIME_DIR}/docker.sock:/var/run/docker.sock"
+      #- "${XDG_RUNTIME_DIR}/docker.sock:/var/run/docker.sock"
+      - "/var/run/docker.sock:/var/run/docker.sock"
     networks:
       - transcendence
-    # -- (Optional) When using Cloudflare as Cert Resolver
-    # environment:
-    #   - CF_DNS_API_TOKEN=your-cloudflare-api-token
-    # -- (Optional) When using a custom network
-    # networks:
-    #   - your-traefik-network
     restart: unless-stopped
     depends_on:
       - portainer
+    #labels:
+      #- "traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)"
+      #- "traefik.http.routers.http-catchall.entrypoints=web"
+      #- "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
+      #- "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
 
 volumes:
   traefik-ssl-certs:
