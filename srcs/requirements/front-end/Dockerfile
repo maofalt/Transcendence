@@ -5,7 +5,7 @@ FROM node:latest as builder
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm install
-COPY . ./
+COPY ./react-srcs ./
 RUN npm run build
 
 # Stage 2: Serve the application with NGINX

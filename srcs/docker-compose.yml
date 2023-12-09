@@ -4,7 +4,7 @@ services:
   front-end:
     container_name: front-end
     build:
-      context: ./requirements/front-end
+      context: ./requirements/front-end/react-app/
       dockerfile: Dockerfile
     restart: unless-stopped
     ports:
