@@ -5,7 +5,7 @@ const app = express();
 app.use(express.json());
 
 //users.json file
-const users = require('../users.json')
+const users = require('./users.json')
 
 app.get('/users', (req,res) => { 
     //here i need to integrate the database to takeauser list
