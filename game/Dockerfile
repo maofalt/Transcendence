@@ -13,4 +13,4 @@ RUN npm install
 EXPOSE 3001
 
 ENTRYPOINT ["tini", "--"]
-CMD ["npm", "run", "dev"]
+CMD ["npm", "start"]
