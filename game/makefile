@@ -1,6 +1,6 @@
 COMPOSE_FILE := ./docker-compose.yml
 
-all: ssl-gen build up
+all: build up
 
 build:
 	docker-compose -f $(COMPOSE_FILE) build
