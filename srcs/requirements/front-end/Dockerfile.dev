@@ -1,17 +1,24 @@
 # Base image
-FROM node:latest
+FROM node:19-bullseye-slim
+
+# install tini
+RUN apt-get update && apt-get install -y tini
 
 # Set the working directory in the container
-WORKDIR /app
+COPY ./config/startup-front-end.sh ./
 
-# Copy package.json and package-lock.json (or yarn.lock)
-# COPY ./react-app/package.json ./react-app/package-lock.json* ./app/src/
+
+# Copy package.json and package-lock.json
+# COPY ./react-app/package.json ./react-app/package-lock.json* /app/src
 
 # Install dependencies
-RUN npm install
+# RUN npm install
+
+# RUN npm install --only=dev
 
 # Expose the port the app runs on
 EXPOSE 8033
 
 # Command to run the application
-CMD ["npm", "run", "dev"]
+ENTRYPOINT [ "tini", "--"]
+CMD ["bash", "startup-front-end.sh"]

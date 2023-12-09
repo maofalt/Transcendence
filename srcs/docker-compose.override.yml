@@ -4,12 +4,12 @@ services:
   front-end:
     container_name: front-end
     build:
-      context: ./requirements/front-end/react-app/
+      context: ./requirements/front-end/
       dockerfile: Dockerfile.dev
     volumes:
       - ./requirements/front-end/react-app/:/app/src # Mount the source code
-      - /app/node_modules  # Mount node_modules separately to avoid overwriting
+      # - /app/node_modules  # Mount node_modules separately to avoid overwriting
     ports:
       - "8033:8033"
-    environment:
-      - NODE_ENV=development
+    # environment:
+      # - NODE_ENV=development
