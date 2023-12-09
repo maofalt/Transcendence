@@ -1,50 +1,28 @@
-# traefik/traefik.yml
+## STATIC CONFIGURATION
+log:
+  level: ERROR
 
-global:
-  checkNewVersion: false
-  sendAnonymousUsage: false
-
-
-# -- (Optional) Enable API and Dashboard here, don't do in production
-api:
-  dashboard: true
-  insecure: true
-
-# -- Change EntryPoints here...
 entryPoints:
   web:
-    address: :80
-    http:
-      redirections:
-        entryPoint:
-          to: websecure
-          scheme: https
+    address: ":80"
   websecure:
-    address: :443
-  custom:
-     address: :8080
-#      tls:
-#        certResolver: myresolver
+    address: ":443"
+
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: true
+
+api:
+  insecure: true
+  dashboard: true
 
 certificatesResolvers:
-  staging:
+  myresolver:
     acme:
       email: motero@student.42.fr
       storage: /ssl-certs/acme.json
       caServer: "https://acme-staging-v02.api.letsencrypt.org/directory"
       httpChallenge:
         entryPoint: web
-  production:
-    acme:
-      email: motero@student.42.fr
-      storage: /ssl-certs/acme.json
-      caServer: "https://acme-v02.api.letsencrypt.org/directory"
-      httpChallenge:
-        entryPoint: web
 
-providers:
-  docker:
-    # -- (Optional) Enable this, if you want to expose all containers automatically
-    exposedByDefault: true
-    network: transcendence
-  #  watch: true

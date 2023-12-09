@@ -10,8 +10,8 @@ services:
       # -- (Optional) Enable Dashboard, don't do in production
       - 8080:8080
     volumes:
-      - ./config:/etc/traefik
-      - "./acme.json:/acme.json"
+      - ./requirements/traefik/config:/etc/traefik
+      - ./requirements/traefik/config/acme.json:/acme.json
       - traefik-ssl-certs:/ssl-certs
       - "${XDG_RUNTIME_DIR}/docker.sock:/var/run/docker.sock"
       #actvate this if you are in Windows and comment the line above
@@ -48,7 +48,7 @@ services:
       - "traefik.http.routers.frontend.tls.certresolver=myresolver"
       
     #Edge  
-      - "traefik.http.routers.edge.rule=Host(`portainer_edge.localhost`)"
+      - "traefik.http.routers.edge.rule=Host(`portaineredge.localhost`)"
       - "traefik.http.routers.edge.entrypoints=websecure"
       - "traefik.http.services.edge.loadbalancer.server.port=8000"
       - "traefik.http.routers.edge.service=edge"
