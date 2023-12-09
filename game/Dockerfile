@@ -11,4 +11,4 @@ RUN npm install
 EXPOSE 3001
 
 ENTRYPOINT ["/sbin/tini", "--"]
-CMD ["node", "server.js"]
+CMD ["npm", "run", "dev"]
