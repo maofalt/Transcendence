@@ -59,6 +59,6 @@ app.delete('/users/:id', (req,res) => {
 });
 
 // The server can listen the choosed port
-const PORT = 8000;
+const PORT = 3001;
 app.listen(PORT, () => { 
     console.log('Server is listen') });
