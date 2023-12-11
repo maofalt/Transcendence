@@ -20,7 +20,7 @@ CREATE TABLE game_sessions (
     -- Additional details about the game can be added here
 );
 
--- Table for tournaments (if applicable)
+-- Table for tournaments 
 CREATE TABLE tournaments (
     id SERIAL PRIMARY KEY,             -- Unique identifier for each tournament
     tournament_name VARCHAR(100),      -- Name of the tournament
@@ -29,14 +29,14 @@ CREATE TABLE tournaments (
     -- Additional details about the tournament can be added here
 );
 
--- Table for tournament participants (if applicable)
+-- Table for tournament participants 
 CREATE TABLE tournament_participants (
     tournament_id INT REFERENCES tournaments(id),  -- Link to the tournaments table
     user_id INT REFERENCES users(id),              -- Link to the user table
     -- Additional details about participant's performance in the tournament can be added here
 );
 
--- Table for tournament matches (if applicable)
+-- Table for tournament matches 
 CREATE TABLE tournament_matches (
     id SERIAL PRIMARY KEY,                          -- Unique identifier for each match in the tournament
     tournament_id INT REFERENCES tournaments(id),   -- Link to the tournaments table
