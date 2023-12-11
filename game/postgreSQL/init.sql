@@ -1,9 +1,16 @@
+-- Table for users
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(100)
+    -- Include other user fields as necessary
+);
+
 -- Table for player statistics
 CREATE TABLE player_stats (
     user_id INT REFERENCES users(id),  -- Link to the user table
     wins INT DEFAULT 0,                -- Number of games won by the player
     losses INT DEFAULT 0,              -- Number of games lost by the player
-    games_played INT DEFAULT 0,        -- Total number of games played
+    games_played INT DEFAULT 0         -- Total number of games played
     -- Add any other relevant statistics here
 );
 
