@@ -1,0 +1,105 @@
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap');
+
+/* base styles */
+* {
+  margin: 0;
+  font-family: "Quicksand";
+  color: #333;
+}
+.navbar {
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  max-width: 600px;
+  margin: 0 auto;
+  border-bottom: 1px solid #f2f2f2;
+}
+.navbar h1 {
+  color: #f1356d;
+}
+.navbar .links {
+  margin-left: auto;
+}
+.navbar a {
+  margin-left: 16px;
+  text-decoration: none;
+  padding: 6px;
+}
+.navbar a:hover {
+  color: #f1356d;
+}
+.content {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 20px;
+}
+
+.title {
+  text-align: center;
+  margin-bottom: 40px;
+  margin-top: 40px;
+}
+
+.subtitle {
+  text-align: center;
+  margin-bottom: 40px;
+  margin-top: 40px;
+}
+
+.page-card {
+	padding: 5px 5px;
+	margin: 20px 20px;
+	border: 2px solid black;
+	border-radius: 7px;
+}
+
+.page-card:hover {
+	box-shadow: 10px 10px 10px 0 rgba(0,0,0,0.2);
+	position: relative; right: 10px; bottom: 10px;
+}
+
+.page-card h2 {
+	margin: 5px 5px;
+}
+
+.create-form {
+	max-width: 400px;
+	margin: 0 auto;
+	text-align: center;
+}
+
+.create-form label {
+	text-align: left;
+	display: block;
+}
+
+.create-form h2 {
+	font-size: 20px;
+	margin-bottom: 30px;
+}
+
+.create-form input,
+.create-form textarea,
+.create-form select {
+	width: 100%;
+	padding: 6px 10px;
+	margin: 10px 0;
+	box-sizing: border-box;
+	display: block;
+}
+
+.create-form button {
+	border: 0;
+	border-radius: 8px;
+	padding: 8px;
+	background: #adda0c;
+	text-emphasis: bold;
+	width: 100%;
+	font-weight: bold;
+	font-size: 1em;
+}
+
+.create-form button:hover {
+	background: #b6e50d;
+	/* box-shadow: 0 0 10px 0 rgba(0,0,0,0.2); */
+}

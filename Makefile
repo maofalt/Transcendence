@@ -1,23 +1,37 @@
-COMPOSE_FILE := srcs/docker-compose.yml
+BASE_FILE = -f srcs/docker-compose.yml
+OVERRIDE_FILE= -f srcs/docker-compose.override.yml
+
+ENV ?= dev
+
+ifeq ($(ENV), dev)
+COMPOSE_FILE = $(BASE_FILE) $(OVERRIDE_FILE)
+endif
+
+ifeq ($(ENV), prod)
+COMPOSE_FILE = $(BASE_FILE)
+endif
+
+# COMPOSE_FILE = -f srcs/docker-compose.yml
 
 all: build up
 
 build:
-	docker compose -f $(COMPOSE_FILE) build
+	docker compose $(COMPOSE_FILE) build
 
 up:
-	docker compose -f $(COMPOSE_FILE) up -d
+	docker compose $(COMPOSE_FILE) up -d
 
 down:
-	docker compose -f $(COMPOSE_FILE) down
+	docker compose $(COMPOSE_FILE) down
 
 logs:
-	docker compose -f $(COMPOSE_FILE) logs -f
+	docker compose $(COMPOSE_FILE) logs -f
 
 #erase all images and volumes USE WITH CAUTION!!!
 clean:
-	docker compose -f $(COMPOSE_FILE) down --rmi all --volumes
+	docker compose $(COMPOSE_FILE) down --rmi all --volumes
 	docker image prune -a -f
+	rm -r ./srcs/requirements/front-end/react-app/node_modules
 
 fclean: clean
 	docker volume prune -f

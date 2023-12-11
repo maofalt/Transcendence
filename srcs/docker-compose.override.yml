@@ -1,0 +1,16 @@
+# docker-compose.override.yml
+version: '3.8'
+services:
+  front-end:
+    container_name: front-end
+    build:
+      context: ./requirements/front-end/
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./requirements/front-end/react-app/:/app/src # Mount the source code
+    networks:
+      - transcendence
+    ports:
+      - "8032:8033"
+    # environment:
+      # - NODE_ENV=development

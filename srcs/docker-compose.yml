@@ -1,6 +1,16 @@
 # docker-compose.yml
 version: '3.8'
 services:
+  front-end:
+      container_name: front-end
+      build:
+        context: ./requirements/front-end/
+        dockerfile: Dockerfile
+      networks:
+        - transcendence
+      ports:
+        - 8033:80
+
   traefik:
     image: traefik:v2.10.4
     container_name: traefik
@@ -57,6 +67,13 @@ volumes:
     driver: local
   portainer-data:
     driver: local
+
+  front-end-volume:
+    driver: local # use default Docker volume driver (Docker managed volume)
+    driver_opts: # driver options to create a volume in a specified directory
+      type: none # specify that the volume is not formatted with a filesystem
+      device: ./requirements/front-end/react-app # location on the host to be mounted
+      o: bind # specify that it is a bind mount
 
 networks:
   transcendence:
