@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y tini
 RUN which tini
 
 WORKDIR /app/src
-COPY . .
+COPY ../. .
 
 RUN npm install
 
