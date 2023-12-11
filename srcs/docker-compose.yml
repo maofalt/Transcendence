@@ -1,0 +1,64 @@
+# docker-compose.yml
+version: '3.8'
+services:
+  traefik:
+    image: traefik:v2.10.4
+    container_name: traefik
+    ports:
+      - 9080:80
+      - 9443:443
+      # -- (Optional) Enable Dashboard, don't do in production
+      - 8080:8080
+    volumes:
+      - ./requirements/traefik/config:/etc/traefik
+      - ./requirements/traefik/config/acme.json:/acme.json
+      - traefik-ssl-certs:/ssl-certs
+      - "${XDG_RUNTIME_DIR}/docker.sock:/var/run/docker.sock"
+      #actvate this if you are in Windows and comment the line above
+      #- "/var/run/docker.sock:/var/run/docker.sock"
+    networks:
+      - transcendence
+    restart: unless-stopped
+    depends_on:
+      - portainer
+
+  portainer:
+    image: portainer
+    container_name: portainer
+    build:
+      context: ./requirements/portainer
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    volumes:
+      #- "/var/run/docker.sock:/var/run/docker.sock"
+      - "${XDG_RUNTIME_DIR}/docker.sock:/var/run/docker.sock"
+      - portainer-data:/data
+    labels:
+    #FRONTEND
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`portainer.localhost`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.services.frontend.loadbalancer.server.port=9000"
+      - "traefik.http.routers.frontend.service=frontend"
+      - "traefik.http.routers.frontend.tls.certresolver=myresolver"
+      
+    #Edge  
+      - "traefik.http.routers.edge.rule=Host(`portaineredge.localhost`)"
+      - "traefik.http.routers.edge.entrypoints=websecure"
+      - "traefik.http.services.edge.loadbalancer.server.port=8000"
+      - "traefik.http.routers.edge.service=edge"
+      - "traefik.http.routers.edge.tls.certresolver=myresolver"
+    networks:
+      - transcendence
+
+
+volumes:
+  traefik-ssl-certs:
+    driver: local
+  portainer-data:
+    driver: local
+
+networks:
+  transcendence:
+    name: transcendence
+    driver: bridge
