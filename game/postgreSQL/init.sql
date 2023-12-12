@@ -23,7 +23,7 @@ CREATE TABLE game_sessions (
     player1_score INT,                 -- Score of the first player
     player2_score INT,                 -- Score of the second player
     game_duration INTERVAL,            -- Duration of the game
-    game_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- When the game was played
+    game_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- When the game was played
     -- Additional details about the game can be added here
 );
 
@@ -32,14 +32,14 @@ CREATE TABLE tournaments (
     id SERIAL PRIMARY KEY,             -- Unique identifier for each tournament
     tournament_name VARCHAR(100),      -- Name of the tournament
     start_date TIMESTAMP,              -- Starting date and time of the tournament
-    end_date TIMESTAMP,                -- Ending date and time of the tournament
+    end_date TIMESTAMP                 -- Ending date and time of the tournament
     -- Additional details about the tournament can be added here
 );
 
 -- Table for tournament participants 
 CREATE TABLE tournament_participants (
     tournament_id INT REFERENCES tournaments(id),  -- Link to the tournaments table
-    user_id INT REFERENCES users(id),              -- Link to the user table
+    user_id INT REFERENCES users(id)               -- Link to the user table
     -- Additional details about participant's performance in the tournament can be added here
 );
 
@@ -50,6 +50,6 @@ CREATE TABLE tournament_matches (
     player1_id INT REFERENCES users(id),            -- First player ID in the match
     player2_id INT REFERENCES users(id),            -- Second player ID in the match
     winner_id INT REFERENCES users(id),             -- ID of the winner (NULL if draw)
-    match_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- When the match was played
+    match_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- When the match was played
     -- Additional details about the match can be added here
 );
