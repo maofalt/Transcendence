@@ -6,9 +6,13 @@ RUN apt-get update && apt-get install -y tini
 RUN which tini
 
 WORKDIR /app/src
-COPY ../. .
 
+# Installer les dépendances du projet
+COPY package*.json ./
 RUN npm install
+
+# Copier les fichiers du projet dans le répertoire de travail du conteneur
+COPY . .
 
 EXPOSE 3001
 
