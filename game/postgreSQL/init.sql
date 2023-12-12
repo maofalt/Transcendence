@@ -5,6 +5,9 @@ CREATE TABLE users (
     -- Include other user fields as necessary
 );
 
+-- INSERT INTO users (username)
+-- VALUES ('abravo');
+
 -- Table for player statistics
 CREATE TABLE player_stats (
     user_id INT REFERENCES users(id),  -- Link to the user table
@@ -13,6 +16,9 @@ CREATE TABLE player_stats (
     games_played INT DEFAULT 0         -- Total number of games played
     -- Add any other relevant statistics here
 );
+
+-- INSERT INTO player_stats (user_id, wins, losses, games_played)
+-- VALUES (1, 0, 0, 0);
 
 -- Table for individual game sessions
 CREATE TABLE game_sessions (
