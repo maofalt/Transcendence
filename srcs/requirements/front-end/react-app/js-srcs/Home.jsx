@@ -8,7 +8,7 @@ const Home = ({ jsonUrl }) => {
 	const subtitle = 'A simple experiment with Three.js'
 	// const [clicks, setClicks] = useState(0);
 
-	// const handleClick = (name, e) => {
+	// const handleClick = (name, e) => {s
 	// 	setClicks(clicks + 1);
 	// 	console.log('clicked ' + clicks + ' times');
 	// 	console.log('name: ' + name);

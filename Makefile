@@ -31,9 +31,9 @@ logs:
 clean:
 	docker compose $(COMPOSE_FILE) down --rmi all --volumes
 	docker image prune -a -f
-	rm -r ./srcs/requirements/front-end/react-app/node_modules
 
 fclean: clean
 	docker volume prune -f
+	rm -rf ./srcs/requirements/front-end/react-app/node_modules
 
 .PHONY: all build up down logs
