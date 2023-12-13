@@ -3,104 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The best PONG ever!</title>
-    <style>
-        body{
-            margin: 0px;
-            background-color: rgb(103, 122, 115);
-        }
-        #dvPanel{
-            display: flex;
-            height: 50px;
-            align-items: center;
-        }
-        .itemPanel{
-            margin: 5px;
-        }
-        #dvGame{
-            width: 960;
-            height: 500;
-            border: 1px solid #6df0ff;
-            background-color: #000;
-        }
-        #dvBal{
-            position: absolute;
-            top: 240;
-            left: 475px;
-            width: 20px;
-            height: 20px;
-        }
-        .paddle{
-            position: absolute;
-            width: 20px;
-            height: 140px;
-            background-color: #888;
-            top: 180px;
-        }
-        .left{
-            left: 10px;
-        }
-        .right{
-            left: 930px;
-        }
-    </style>
-    <script>
-        // Elems
-        var vStart;
-        var vBal;
-        var vPlayer1;
-        var vPlayer2;
-        var vPaneltxtScore;
-
-        // Animation control
-        var game, frames;
-
-        // Positions
-        var posBalX, psBaly;
-        var posPlayer1X, posPlayer1Y;
-        var posPlayer2X, posPlayer2Y;
-
-        // Direction for keypress
-        var dirPlayer1y;
-
-        // Initial postios
-        var posInitPlayer1Y = 180;
-        var posInitPlayer2Y = 180;
-        var posInitBalX = 475, posInitBalY = 240;
-
-        // Sizes
-        var playfieldX = 0, playfieldY = 0;
-        var playfieldW = 960, playfieldH = 500;
-        var paddleW = 20, paddleH = 140;
-        var balW = 20, balH = 20;
-
-        // Direction
-        var balX, balY;
-        var Player1Y = 0, Player2Y = 0;
-
-        // Speed
-        var balSpeed, player1Speed, player2Speed;
-
-        // Game control
-        var score = 0;
-        var key;
-
-    </script>
+    <title>Pong testing</title>
 </head>
+<style>
+    canvas {
+        /* background: rgb(0, 11, 73); */
+        background: black;
+        /* border-radius: 10px; */
+    }
+    </style>
 <body>
-    <div id = "dvGame">
-        <div id = "dvBal"></div>
-        <div id = "dvPlayer1" class = "paddle left"></div>
-        <div id = "dvPlayer2" class = "paddle right"></div>
-    </div>
-    <div id = "dvPanel">
-        <div class = "itemPanel">
-            <label>Score</label>
-            <input type = "text" id = "txtScore" value="0" size = "10">
-        </div>
-        <div class = "itemPanel">
-            <button id = "btStart">Start</button>
-        </div>
-    </div>
+    <canvas id="canvas" width="480" height="320"></canvas>
+    <script type="text/javascript" src="localGame.js"></script>
 </body>
 </html>
