@@ -1,6 +1,31 @@
 @import url('https://fonts.googleapis.com/css2?family=KoHo:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;1,200;1,300;1,400;1,500;1,600;1,700&display=swap');
 /* base styles */
 
+.homepage {
+	margin-left: 20vw;
+	height: 100vh; /* This makes the body take the full viewport height */
+	display: flex;
+	/* justify-content: left; Horizontally centers the child */
+	align-items: center; /* Vertically centers the child */
+	/* background-image: url('blackholebg.jpeg');
+	background-size: cover;
+	background-position: center center;
+	background-repeat: no-repeat; */
+}
+
+.homepage::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	background-image: url('blackholebg.jpeg');
+	background-size: cover;
+	background-position: center center;
+	z-index: -1;
+}
+
 .menu a {
 	text-decoration: none;
 }
@@ -13,26 +38,26 @@
 .play:hover::before {
 	content: 'PLAY';
 	position: absolute;
-	filter: blur(3px);
+	filter: blur(10px);
 }
 
 .options:hover::before {
 	content: 'OPTIONE';
 	position: absolute;
-	filter: blur(3px);
+	filter: blur(10px);
 }
 
 .profile:hover::before {
 	content: 'PROFILE';
 	position: absolute;
-	filter: blur(3px);
+	filter: blur(10px);
 }
 
 .menuItem {
 	font-family: "KoHo";
 	color: transparent;
 	font-size: 10vh;
-	-webkit-text-stroke: 1px #0085FF;
+	-webkit-text-stroke: 5px #0085FF;
 	/* filter: brightness(140%); */
 	/* text-shadow: */
 		/* 0 0 3px #FF0000; */
