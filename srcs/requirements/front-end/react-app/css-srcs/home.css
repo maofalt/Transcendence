@@ -17,8 +17,13 @@
 	left: 0;
 	background-image: url('blackholebg.jpeg');
 	background-size: cover;
+	/* background-image: url('/public/BlackHoleGravitational_waves.gif'); */
+	/* background-size: 3000px; */
 	background-position: center center;
+	background-repeat: no-repeat;
 	z-index: -1;
+	background-color: black;
+	box-shadow: inset 0 0 100px black;
 }
 
 .menu a {
