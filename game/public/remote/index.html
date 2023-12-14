@@ -1,27 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Document</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pong testing</title>
 </head>
 <body>
-	Client1
-	<button onclick="sendMessage()">Send msg</button>
+    <style>
+        canvas {
+            /* background: rgb(0, 11, 73); */
+            background: black;
+            /* border-radius: 10px; */
+        }
+    </style>
+    <canvas id="canvas" width="480" height="320"></canvas>
+    <script type="text/javascript" src="remoteGame.js"></script>
 </body>
-<script>
-	const socket = new WebSocket("ws://localhost:3001");
-
-	socket.addEventListener("open", function (event) {
-		console.log("Connected to ws Server");
-	});
-
-	socket.addEventListener("message", function (event) {
-		console.log("Message from server :", event.data);
-	});
-
-	const sendMessage = () => {
-		socket.send("Hello from Client!");
-	}
-</script>
 </html>
