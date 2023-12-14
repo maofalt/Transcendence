@@ -1,0 +1,41 @@
+@import url('https://fonts.googleapis.com/css2?family=KoHo:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;1,200;1,300;1,400;1,500;1,600;1,700&display=swap');
+/* base styles */
+
+.menu a {
+	text-decoration: none;
+}
+
+/* .menuItem:hover {
+	text-decoration: none;
+	color:aqua
+} */
+
+.play:hover::before {
+	content: 'PLAY';
+	position: absolute;
+	filter: blur(3px);
+}
+
+.options:hover::before {
+	content: 'OPTIONE';
+	position: absolute;
+	filter: blur(3px);
+}
+
+.profile:hover::before {
+	content: 'PROFILE';
+	position: absolute;
+	filter: blur(3px);
+}
+
+.menuItem {
+	font-family: "KoHo";
+	color: transparent;
+	font-size: 10vh;
+	-webkit-text-stroke: 1px #0085FF;
+	/* filter: brightness(140%); */
+	/* text-shadow: */
+		/* 0 0 3px #FF0000; */
+		/* 0 0 5px #FF0000, */
+		/* 0 0 8px #FF0000; */
+}
