@@ -18,17 +18,18 @@
             margin: 5px;
         }
         #dvGame{
-            width: 960;
-            height: 500;
+            width: 960px;
+            height: 500px;
             border: 1px solid #6df0ff;
             background-color: #000;
         }
         #dvBal{
             position: absolute;
-            top: 240;
+            top: 240px;
             left: 475px;
             width: 20px;
             height: 20px;
+            background-color: #888;
         }
         .paddle{
             position: absolute;
@@ -44,48 +45,7 @@
             left: 930px;
         }
     </style>
-    <script>
-        // Elems
-        var vStart;
-        var vBal;
-        var vPlayer1;
-        var vPlayer2;
-        var vPaneltxtScore;
-
-        // Animation control
-        var game, frames;
-
-        // Positions
-        var posBalX, psBaly;
-        var posPlayer1X, posPlayer1Y;
-        var posPlayer2X, posPlayer2Y;
-
-        // Direction for keypress
-        var dirPlayer1y;
-
-        // Initial postios
-        var posInitPlayer1Y = 180;
-        var posInitPlayer2Y = 180;
-        var posInitBalX = 475, posInitBalY = 240;
-
-        // Sizes
-        var playfieldX = 0, playfieldY = 0;
-        var playfieldW = 960, playfieldH = 500;
-        var paddleW = 20, paddleH = 140;
-        var balW = 20, balH = 20;
-
-        // Direction
-        var balX, balY;
-        var Player1Y = 0, Player2Y = 0;
-
-        // Speed
-        var balSpeed, player1Speed, player2Speed;
-
-        // Game control
-        var score = 0;
-        var key;
-
-    </script>
+    
 </head>
 <body>
     <div id = "dvGame">
@@ -102,5 +62,6 @@
             <button id = "btStart">Start</button>
         </div>
     </div>
+    <script src = "localGame.js"></script>
 </body>
 </html>
