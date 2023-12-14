@@ -39,14 +39,12 @@
 	content: 'PLAY';
 	position: absolute;
 	filter: blur(7px);
-	-webkit-text-stroke: 5px #0085FF;
 }
 
 .options:hover::before {
 	content: 'OPTIONS';
 	position: absolute;
 	filter: blur(7px);
-	-webkit-text-stroke: 5px #0085FF;
 }
 
 .profile:hover::before {
@@ -55,14 +53,14 @@
 	filter: blur(7px);
 }
 .menuItem:hover {
-	-webkit-text-stroke: 5px #0085FF;
+	-webkit-text-stroke: 3px #0085FF;
 }
 
 .menuItem {
 	font-family: "KoHo";
 	color: transparent;
 	font-size: 10vh;
-	-webkit-text-stroke: 5px #586068;
+	-webkit-text-stroke: 3px #586068;
 	/* filter: brightness(140%); */
 	/* text-shadow: */
 		/* 0 0 3px #FF0000; */
