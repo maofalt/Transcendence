@@ -2,15 +2,10 @@
 /* base styles */
 
 .homepage {
-	margin-left: 20vw;
+	margin-left: 10vw;
 	height: 100vh; /* This makes the body take the full viewport height */
 	display: flex;
-	/* justify-content: left; Horizontally centers the child */
 	align-items: center; /* Vertically centers the child */
-	/* background-image: url('blackholebg.jpeg');
-	background-size: cover;
-	background-position: center center;
-	background-repeat: no-repeat; */
 }
 
 .homepage::before {
@@ -38,26 +33,31 @@
 .play:hover::before {
 	content: 'PLAY';
 	position: absolute;
-	filter: blur(10px);
+	filter: blur(7px);
+	-webkit-text-stroke: 5px #0085FF;
 }
 
 .options:hover::before {
-	content: 'OPTIONE';
+	content: 'OPTIONS';
 	position: absolute;
-	filter: blur(10px);
+	filter: blur(7px);
+	-webkit-text-stroke: 5px #0085FF;
 }
 
 .profile:hover::before {
 	content: 'PROFILE';
 	position: absolute;
-	filter: blur(10px);
+	filter: blur(7px);
+}
+.menuItem:hover {
+	-webkit-text-stroke: 5px #0085FF;
 }
 
 .menuItem {
 	font-family: "KoHo";
 	color: transparent;
 	font-size: 10vh;
-	-webkit-text-stroke: 5px #0085FF;
+	-webkit-text-stroke: 5px #586068;
 	/* filter: brightness(140%); */
 	/* text-shadow: */
 		/* 0 0 3px #FF0000; */
