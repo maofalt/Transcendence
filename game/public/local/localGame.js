@@ -1,102 +1,76 @@
-var StartBt;
-var Bal;
-var Player1;
-var Player2;
-var PaneltxtScore;
+// console.log("c parti");
 
-// Animation control
-var game, frames;
+var canvas = document.getElementById("canvas");
+var ctx = canvas.getContext("2d");
 
-// Positions
-var posBalX, posBalY;
-var posPlayer1X, posPlayer1Y;
-var posPlayer2X, posPlayer2Y;
+console.log("testtest");
 
-// Direction for keypress
-var dirPlayer1y;
+// objects : paddle and ball
+const ball = {
+	x: canvas.width / 2,
+	y: 50,
+	spX: 2,
+	spY: 2,
+	r: 5,
+	color: "#FFFFFF"
+};
 
-// Initial postios
-var posInitPlayer1Y = 180;
-var posInitPlayer2Y = 180;
-var posInitBalX = 475, posInitBalY = 240;
+const paddle = {
+	x: 10,
+	y: 0,
+	spX: 0,
+	spY: 0,
+	width: 10,
+	height: 50,
+	color: "#FFFFFF"
+}
+paddle.y = (canvas.height - paddle.height) / 2;
 
-// Sizes
-var playfieldX = 0, playfieldY = 0;
-var playfieldW = 960, playfieldH = 500;
-var paddleW = 20, paddleH = 140;
-var balW = 20, balH = 20;
-
-// Direction
-var balX, balY;
-var Player1Y = 0, Player2Y = 0;
-
-// Speed
-var balSpeed, player1Speed, player2Speed;
-
-// Game control
-var score = 0;
-var key;
-var runing = false;
-
-// Game control fucntions
-
-function playerControl(){
-    if (runing){
-        posPlayer1Y += player1Speed*dirPlayer1y;
-        Player1.style.top = posPlayer1Y + "px";
-    }
+// drawing objects
+function drawBall() {
+	ctx.beginPath();
+	ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+	ctx.fillStyle = ball.color;
+	ctx.fill();
+	ctx.closePath();
 }
 
-function keyDown(){
-    key = event.keyCode;
-    if (key == 38){ // arrow down
-        dirPlayer1y = -1;
-    }else if (key == 40){
-        dirPlayer1y = 1;
-    }
+function drawPaddle() {
+	ctx.beginPath();
+	ctx.rect(paddle.x, paddle.y, paddle.width, paddle.height);
+	ctx.fillStyle = paddle.color;
+	ctx.fill();
+	ctx.closePath();
 }
 
-function keyUp(){
-    key = event.keyCode;
-    if (key == 38){ // arrow down
-        dirPlayer1y = 0;
-    }else if (key == 40){
-        dirPlayer1y = 0;
-    }
-}
-// Basics controls functions for the game
-
-function game(){
-    if (runing){
-         playerControl();       
-    }
-    frames = requestAnimationFrame(game);
+// collisions
+function ballHitsWall() {
+	if (ball.x + ball.r >= canvas.width || ball.x - ball.r <= 0)
+		ball.spX *= -1;
+	if (ball.y + ball.r >= canvas.height || ball.y - ball.r <= 0)
+		ball.spY *= -1;
 }
 
-function initGame(){
-    if(!runing){
-        cancelAnimationFrame(frames);
-        runing = true;
-        dirPlayer1y = 0;
-        posBalX = posInitBalX;
-        posBalY = posInitBalY;
-        posPlayer1Y = posInitPlayer1Y;
-        posPlayer2Y = posInitPlayer2Y;
-        game();
-    }
+function ballHitsPaddle() {
+	if (ball.y >= paddle.y && ball.y <= paddle.y + paddle.height && 
+		(ball.x - ball.r <= paddle.x + paddle.width))
+		ball.spX *= -1;
 }
 
-function initVars(){
-
-    balSpeed = player1Speed = player2Speed = 8;
-    StartBt = document.getElementById("btStart");
-    StartBt.addEventListener("click", initGame);
-    Player1 = document.getElementById("dvPlayer1");
-    Player2 = document.getElementById("dvPlayer2");
-    Bal = document.getElementById("dvBal");
-    PaneltxtScore = document.getElementById("txtScore");
-    document.addEventListener("keydown", keyDown);
-    document.addEventListener("keyup", keyUp);
+// updating objects
+function updateBall() {
+	ballHitsWall();
+	ballHitsPaddle();
+	ball.x += ball.spX;
+	ball.y += ball.spY;
 }
 
-window.addEventListener("load", initVars);
+//rendering frame
+function renderFrame() {
+	updateBall();
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	drawPaddle();
+	drawBall();
+}
+
+setInterval(renderFrame, 10);
