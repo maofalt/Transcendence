@@ -6,13 +6,20 @@ var ctx = canvas.getContext("2d");
 console.log("testtest");
 
 // objects : paddles and ball
+const score = {
+	color: "#FFFFFF",
+	fontsize: 50,
+	font: "",
+}
+score.font = `${score.fontsize}px \'Lilita One\', sans-serif`;
+
 const ball = {
 	x: canvas.width / 2,
 	y: 50,
 	vX: 1,
 	vY: 1,
 	r: 8,
-	sp: 4,
+	sp: 6,
 	color: "#FFFFFF"
 };
 
@@ -23,7 +30,7 @@ const paddle1 = {
 	vY: 0,
 	width: 15,
 	height: 70,
-	sp: 6,
+	sp: 4,
 	color: "#0000FF"
 }
 
@@ -34,7 +41,7 @@ const paddle2 = {
 	vY: 0,
 	width: 15,
 	height: 70,
-	sp: 6,
+	sp: 4,
 	color: "#FF0000"
 }
 
@@ -90,6 +97,25 @@ function initBoard() {
 }
 
 // drawing objects
+function drawLine() {
+	ctx.strokeStyle = score.color;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(canvas.width / 2, 0);
+    ctx.lineTo(canvas.width / 2, canvas.height);
+    ctx.stroke();
+}
+
+function drawScore() {
+	const fontsize = 50;
+	ctx.font = score.font;
+	ctx.fillStyle = score.color;
+	ctx.textAlign = "center";
+	ctx.fillText(`${player1.score}`, canvas.width / 2 - fontsize, fontsize);
+	ctx.fillText(`${player2.score}`, canvas.width / 2 + fontsize, fontsize);
+	drawLine();
+}
+
 function drawBall() {
 	ctx.beginPath();
 	ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
@@ -162,18 +188,20 @@ function updateBall() {
 		if (player1.score >= 10 || player2.score >= 10)
 			return true;
 		initBoard();
-		// startRound();
 	}
 	ballHitsWall();
 	ballHitsPaddle1();
 	ballHitsPaddle2();
 	ball.x += ball.vX;
 	ball.y += ball.vY;
-	// console.log("update ball over");
 	return false;
 }
 
 function updatePaddle(paddle) {
+	if (paddle.y < 0 && paddle.vY < 0)
+		paddle.vY = 0;
+	if (paddle.y + paddle.height > canvas.height && paddle.vY > 0)
+		paddle.vY = 0;
 	paddle.x += paddle.vX;
 	paddle.y += paddle.vY;
 }
@@ -182,20 +210,20 @@ function updatePaddle(paddle) {
 function handleKeyPress(event) {
 	switch (event.key) {
 		case "ArrowUp":
-			console.log("up");
-			paddle2.vY = -2;
+				console.log("up");
+				paddle2.vY = -paddle2.sp;
 			break;
 		case "ArrowDown":
-			console.log("down");
-			paddle2.vY = 2;
+				console.log("down");
+				paddle2.vY = paddle2.sp;
 			break;
 		case "w":
-			console.log("w");
-			paddle1.vY = -2;
+				console.log("up");
+				paddle1.vY = -paddle1.sp;
 			break;
 		case "s":
-			console.log("s");
-			paddle1.vY = 2;
+				console.log("down");
+				paddle1.vY = paddle1.sp;
 			break;
 	}
 }
@@ -213,12 +241,6 @@ function handleKeyRelease(event) {
 	}
 }
 
-// starting round
-// function startRound() {
-// 	ball.vX *= ball.sp;
-// 	ball.vY *= ball.sp;
-// }
-
 //rendering frame
 function renderFrame() {
 	if (updateBall())
@@ -229,6 +251,7 @@ function renderFrame() {
 	drawBall();
 	drawPaddle(player1.paddle);
 	drawPaddle(player2.paddle);
+	drawScore();
 }
 
 function endGame() {
@@ -249,9 +272,9 @@ document.addEventListener("keyup", handleKeyRelease);
 
 /*
 TO DO :
-	- add score board;
+	- add score board; [DONE]
 	- add proper collisions i guess;
-	- add proper touches with paddle;
+	- add proper touches with paddle; [DONE]
 	- add retry option ? infinite loop;
 */
 
