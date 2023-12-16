@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
-import useFetch from "../Utils/useFetch";
-import deletePage from "../Utils/deletePage";
+import useFetch from "../utils/useFetch";
+import deletePage from "../utils/deletePage";
 
 const PageDetails = ({ jsonUrl }) => {
 	const { id } = useParams();

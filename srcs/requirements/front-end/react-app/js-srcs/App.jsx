@@ -1,9 +1,9 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import Navbar from './Elements/Navbar'
-import Home from './Pages/Home'
-import Create from './Pages/Create'
-import PageDetails from './Elements/PageDetails'
-import NotFound from './Pages/NotFound'
+import Navbar from './elements/Navbar'
+import Home from './pages/Home'
+import Create from './pages/Create'
+import PageDetails from './elements/PageDetails'
+import NotFound from './pages/NotFound'
 
 function App() {
 	const jsonUrl = '/api-proxy';

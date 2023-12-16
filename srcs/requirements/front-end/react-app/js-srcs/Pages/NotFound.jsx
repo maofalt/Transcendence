@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import BackButton from "../Elements/BackButton";
+import BackButton from "../elements/BackButton";
 
 const NotFound = () => {
 	return (
