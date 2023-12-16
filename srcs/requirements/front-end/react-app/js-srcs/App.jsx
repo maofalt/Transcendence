@@ -4,6 +4,9 @@ import Home from './pages/Home'
 import Create from './pages/Create'
 import PageDetails from './elements/PageDetails'
 import NotFound from './pages/NotFound'
+import Game from './pages/Game'
+import Options from './pages/Options'
+import Profile from './pages/Profile'
 
 function App() {
 	const jsonUrl = '/api-proxy';
@@ -15,10 +18,10 @@ function App() {
 				<div className="content">
 					<Routes>
 						<Route path='/' element={<Home jsonUrl={jsonUrl}/>} />
-						{/* <Route path='/game' element={<Game/>} /> */}
-						{/* <Route path='/play' element={<Game/>} /> */}
-						{/* <Route path='/profile' element={<Profile/>} /> */}
-						{/* <Route path='/options' element={<Options/>} /> */}
+						<Route path='/game' element={<Game/>} />
+						<Route path='/play' element={<Game/>} />
+						<Route path='/profile' element={<Profile/>} />
+						<Route path='/options' element={<Options/>} />
 						{/* <Route path='/create' element={<Create jsonUrl={jsonUrl}/>} /> */}
 						{/* <Route path='/blog/:id' element={<PageDetails jsonUrl={jsonUrl}/>} /> */}
 						<Route path='*' element={<NotFound />} />

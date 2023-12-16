@@ -38,7 +38,7 @@
 	align-items: left;
 }
 
-.play h1:hover::before {
+/* .play h1:hover::before {
 	content: 'PLAY';
 	position: absolute;
 	filter: blur(7px);
@@ -54,31 +54,31 @@
 	content: 'PROFILE';
 	position: absolute;
 	filter: blur(7px);
-}
+} */
 
-.menu-item {
+/* .menu-item {
 	display: flex;
 	align-items: center;
 	position: relative;
-}
+} */
 
-.menu-item h1:hover{
+/* .menu-item h1:hover{
 	-webkit-text-stroke: 0.03em #0085FF;
-}
+} */
 
-.menu-item:hover .rhombus{
+/* .menu-item:hover .rhombus{
 	visibility: visible;
-}
+} */
 
-.menu-item h1 {
+/* .menu-item h1 {
 	font-family: "KoHo";
 	color: transparent;
 	font-size: 10vh;
 	-webkit-text-stroke: 0.02em #89aed0af;
 	line-height: 0.8;
-}
+} */
 
-.rhombus {
+/* .rhombus {
 	width: 8%;
 	height: auto;
 	visibility: hidden;
@@ -90,4 +90,4 @@
 
 .rhombus.right {
 	margin-left: 5px;
-}
+} */

@@ -1,0 +1,48 @@
+.glowOff:hover h1,
+.glowOn h1 {
+	-webkit-text-stroke: 0.03em #0085FF;
+}
+
+.glowOff:hover h1::before {
+	content: attr(data-text);
+	position: absolute;
+	filter: blur(2px);
+}
+
+.glowOn h1::before {
+	content: attr(data-text);
+	position: absolute;
+	filter: blur(2px);
+}
+
+h1 {
+	font-family: "KoHo";
+	color: transparent;
+	font-size: 10vh;
+	-webkit-text-stroke: 0.02em #89aed0af;
+	line-height: 0.8;
+}
+
+.glow-text {
+	display: flex;
+	align-items: center;
+	position: relative;
+}
+
+.rhombus {
+	width: 8%;
+	height: auto;
+	visibility: hidden;
+}
+
+.rhombus.left {
+	margin-right: 5px;
+}
+
+.rhombus.right {
+	margin-left: 5px;
+}
+
+.menu-item:hover .rhombus{
+	visibility: visible;
+}
