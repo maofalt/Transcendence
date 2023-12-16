@@ -13,9 +13,21 @@ const Home = ({ jsonUrl }) => {
 	return (
 		<div className="homepage">
 			<div className="menu">
-				<Link to="/game"><h1 className='menuItem play'>{ play }</h1></Link>
-				<Link to="/profile"><h1 className='menuItem profile'>{ profile }</h1></Link>
-				<Link to="/options"><h1 className='menuItem options'>{ options }</h1></Link>
+				<div className="menu-item play">
+					<object className="rhombus left" type="image/svg+xml" data="assets/RhombusLeft.svg">Your browser does not support SVG</object>
+					<Link to="/game"><h1>{ play }</h1></Link>
+					<object className="rhombus right" type="image/svg+xml" data="assets/RhombusRight.svg">Your browser does not support SVG</object>
+				</div>
+				<div className="menu-item profile">
+					<object className="rhombus left" type="image/svg+xml" data="assets/RhombusLeft.svg">Your browser does not support SVG</object>
+					<Link to="/profile"><h1>{ profile }</h1></Link>
+					<object className="rhombus right" type="image/svg+xml" data="assets/RhombusRight.svg">Your browser does not support SVG</object>
+				</div>
+				<div className="menu-item options">
+					<object className="rhombus left" type="image/svg+xml" data="assets/RhombusLeft.svg">Your browser does not support SVG</object>
+					<Link to="/options"><h1>{ options }</h1></Link>
+					<object className="rhombus right" type="image/svg+xml" data="assets/RhombusRight.svg">Your browser does not support SVG</object>
+				</div>
 			</div>
 		</div>
 	);

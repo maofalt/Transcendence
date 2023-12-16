@@ -38,32 +38,56 @@
 	align-items: left;
 }
 
-.play:hover::before {
+.play h1:hover::before {
 	content: 'PLAY';
 	position: absolute;
 	filter: blur(7px);
 }
 
-.options:hover::before {
+.options h1:hover::before {
 	content: 'OPTIONS';
 	position: absolute;
 	filter: blur(7px);
 }
 
-.profile:hover::before {
+.profile h1:hover::before{
 	content: 'PROFILE';
 	position: absolute;
 	filter: blur(7px);
 }
 
-.menuItem:hover {
-	-webkit-text-stroke: 2px #0085FF;
+.menu-item {
+	display: flex;
+	align-items: center;
+	position: relative;
 }
 
-.menuItem {
+.menu-item h1:hover{
+	-webkit-text-stroke: 0.03em #0085FF;
+}
+
+.menu-item:hover .rhombus{
+	visibility: visible;
+}
+
+.menu-item h1 {
 	font-family: "KoHo";
 	color: transparent;
 	font-size: 10vh;
-	-webkit-text-stroke: 2px #89aed0af;
-	line-height: 1;
+	-webkit-text-stroke: 0.02em #89aed0af;
+	line-height: 0.8;
+}
+
+.rhombus {
+	width: 8%;
+	height: auto;
+	visibility: hidden;
+}
+
+.rhombus.left {
+	margin-right: 5px;
+}
+
+.rhombus.right {
+	margin-left: 5px;
 }
