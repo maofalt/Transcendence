@@ -270,7 +270,7 @@ function renderFrame() {
 }
 
 function displayEndScreen() {
-	drawText(`Player ${player1.score == 10 ? 1 : 2} `,
+	drawText(`Player ${player1.score == 10 ? "1" : "2"} `,
 		(player1.score == 10 ? player1.paddle.color : player2.paddle.color),
 		canvas.height / 4);
 	drawText("Wins!", score.color, canvas.height / 4 + score.fontsize * 1.2);
@@ -279,15 +279,15 @@ function displayEndScreen() {
 
 // ending the game + restart screen
 function endGame() {
-	player1.score = 0;
-	player2.score = 0;
 	console.log("Game Over!");
 	console.log(`Player 1 Score: ${player1.score}`);
 	console.log(`Player 2 Score: ${player2.score}`);
-	initBoard();
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	gameState = false;
 	displayEndScreen();
+	initBoard();
+	player1.score = 0;
+	player2.score = 0;
+	gameState = false;
 }
 
 // ending the round, resetting board
