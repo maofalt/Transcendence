@@ -1,23 +1,17 @@
-// console.log("c parti");
-
 var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 
-console.log("testtest");
+// global vars
+let gameInterval = 0;
+let roundState = false;
+let gameState = false;
 
 // objects : paddles and ball
-const score = {
-	color: "#FFFFFF",
-	fontsize: 50,
-	font: "",
-}
-score.font = `${score.fontsize}px \'Lilita One\', sans-serif`;
-
 const ball = {
-	x: canvas.width / 2,
-	y: 50,
-	vX: 1,
-	vY: 1,
+	x: 0,
+	y: 0,
+	vX: 0,
+	vY: 0,
 	r: 8,
 	sp: 6,
 	color: "#FFFFFF"
@@ -51,7 +45,14 @@ paddle1.y = (canvas.height - paddle1.height) / 2;
 paddle2.x = canvas.width - (paddle2.width * 2);
 paddle2.y = (canvas.height - paddle2.height) / 2;
 
-// players
+// players + score
+const score = {
+	color: "#FFFFFF",
+	fontsize: 50,
+	font: "",
+}
+score.font = `${score.fontsize}px \'Lilita One\', sans-serif`;
+
 const player1 = {
 	login: "Player 1",
 	paddle: paddle1,
@@ -66,7 +67,7 @@ const player2 = {
 
 // vector calculations for ball dir
 function normalizeBallDir() {
-	l = Math.sqrt(ball.vX * ball.vX + ball.vY * ball.vY);
+	let l = Math.sqrt(ball.vX * ball.vX + ball.vY * ball.vY);
 	ball.vX /= l;
 	ball.vY /= l;
 	ball.vX *= ball.sp;
@@ -76,16 +77,17 @@ function normalizeBallDir() {
 function getRandomDir() {
 	let signX = Math.random();
 	let signY = Math.random();
-	ball.vX = (Math.random() + 1) * ((signX >= 0.5) ? 1 : -1);
-	ball.vY = (Math.random() + 1) * ((signY >= 0.5) ? 1 : -1);
+	ball.vX = (Math.random()) * ((signX >= 0.5) ? 1 : -1);
+	ball.vY = (Math.random()) * ((signY >= 0.5) ? 1 : -1);
 	normalizeBallDir();
 }
 
 // init board
 function initBoard() {
 	ball.x = canvas.width / 2;
-	ball.y = 50;
-	getRandomDir();
+	ball.y = canvas.height / 2;
+	ball.vX = 0;
+	ball.vY = 0;
 	paddle1.x = paddle1.width;
 	paddle1.y = (canvas.height - paddle1.height) / 2;
 	paddle1.vX = 0;
@@ -104,6 +106,13 @@ function drawLine() {
     ctx.moveTo(canvas.width / 2, 0);
     ctx.lineTo(canvas.width / 2, canvas.height);
     ctx.stroke();
+}
+
+function drawText(text, color, y) {
+	ctx.font = score.font;
+	ctx.fillStyle = color;
+	ctx.textAlign = "center";
+	ctx.fillText(text, canvas.width / 2, y);
 }
 
 function drawScore() {
@@ -132,6 +141,7 @@ function drawPaddle(paddle) {
 	ctx.closePath();
 }
 
+// collisions calculations
 function calculateBallDir(paddleNbr) {
 	let contactX = paddle1.x + paddle1.width;
 	let contactY = ball.y;
@@ -144,8 +154,6 @@ function calculateBallDir(paddleNbr) {
 		paddleCenterX = paddle2.x + paddle2.width;
 		paddleCenterY = paddle2.y + paddle2.height / 2;
 	}
-
-	let l = 0;
 
 	ball.vX = contactX - paddleCenterX;
 	ball.vY = contactY - paddleCenterY;
@@ -174,6 +182,7 @@ function ballHitsPaddle2() {
 	}
 }
 
+// ball out of bounds
 function ballIsOut() {
 	if (ball.x >= canvas.width)
 		return (player1.score++, true);
@@ -184,11 +193,8 @@ function ballIsOut() {
 
 // updating objects
 function updateBall() {
-	if (ballIsOut()) {
-		if (player1.score >= 10 || player2.score >= 10)
-			return true;
-		initBoard();
-	}
+	if (ballIsOut())
+		return true;
 	ballHitsWall();
 	ballHitsPaddle1();
 	ballHitsPaddle2();
@@ -206,24 +212,24 @@ function updatePaddle(paddle) {
 	paddle.y += paddle.vY;
 }
 
-// controlling paddles
+// input events : controlling paddles
 function handleKeyPress(event) {
+	if (!roundState && gameState) {
+		roundState = true;
+		startRound();
+	}
 	switch (event.key) {
 		case "ArrowUp":
-				console.log("up");
-				paddle2.vY = -paddle2.sp;
+			paddle2.vY = -paddle2.sp;
 			break;
 		case "ArrowDown":
-				console.log("down");
-				paddle2.vY = paddle2.sp;
+			paddle2.vY = paddle2.sp;
 			break;
 		case "w":
-				console.log("up");
-				paddle1.vY = -paddle1.sp;
+			paddle1.vY = -paddle1.sp;
 			break;
 		case "s":
-				console.log("down");
-				paddle1.vY = paddle1.sp;
+			paddle1.vY = paddle1.sp;
 			break;
 	}
 }
@@ -241,10 +247,19 @@ function handleKeyRelease(event) {
 	}
 }
 
+// input events : clicking canvas
+function clickCanvas() {
+	if (gameState)
+		return;
+	gameState = true;
+	initBoard();
+	renderFrame();
+}
+
 //rendering frame
 function renderFrame() {
 	if (updateBall())
-		return (initBoard(), clearInterval(gameInterval), endGame(), 1);
+		return (endRound());
 	updatePaddle(paddle1);
 	updatePaddle(paddle2);
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -254,21 +269,55 @@ function renderFrame() {
 	drawScore();
 }
 
+function displayEndScreen() {
+	drawText(`Player ${player1.score == 10 ? 1 : 2} `,
+		(player1.score == 10 ? player1.paddle.color : player2.paddle.color),
+		canvas.height / 4);
+	drawText("Wins!", score.color, canvas.height / 4 + score.fontsize * 1.2);
+	drawText("Click to Restart", score.color, (canvas.height / 4) * 3);
+}
+
+// ending the game + restart screen
 function endGame() {
+	player1.score = 0;
+	player2.score = 0;
 	console.log("Game Over!");
 	console.log(`Player 1 Score: ${player1.score}`);
 	console.log(`Player 2 Score: ${player2.score}`);
+	initBoard();
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	gameState = false;
+	displayEndScreen();
+}
+
+// ending the round, resetting board
+function endRound() {
+	roundState = false;
+	clearInterval(gameInterval);
+	if (player1.score == 10 || player2.score == 10)
+		return (endGame());
+	initBoard();
+	renderFrame();
+}
+
+// starting the round
+function startRound() {
+	initBoard;
+	getRandomDir();
+	gameInterval = setInterval(renderFrame, 10);
 }
 
 document.addEventListener("keydown", handleKeyPress);
 document.addEventListener("keyup", handleKeyRelease);
+canvas.addEventListener("click", clickCanvas);
 
-// function run() {
-	initBoard();
-	let gameInterval = setInterval(renderFrame, 10);
+drawText("Click to Start", score.color, canvas.height / 2);
+
+// function mainLoop() {
+// 	runGame();
 // }
 
-// run();
+// mainLoop();
 
 /*
 TO DO :
