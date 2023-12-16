@@ -43,6 +43,6 @@ h1 {
 	margin-left: 5px;
 }
 
-.menu-item:hover .rhombus{
+.glow-text:hover .rhombus{
 	visibility: visible;
 }
