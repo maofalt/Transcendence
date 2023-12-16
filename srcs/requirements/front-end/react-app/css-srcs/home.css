@@ -3,9 +3,10 @@
 
 .homepage {
 	margin-left: 10vw;
-	height: 100vh; /* This makes the body take the full viewport height */
+	height: 100vh;
 	display: flex;
-	align-items: center; /* Vertically centers the child */
+	align-items: center;
+	/* align-items: right; */
 }
 
 .homepage::before {
@@ -30,10 +31,12 @@
 	text-decoration: none;
 }
 
-/* .menuItem:hover {
-	text-decoration: none;
-	color:aqua
-} */
+.menu {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: left;
+}
 
 .play:hover::before {
 	content: 'PLAY';
@@ -52,18 +55,15 @@
 	position: absolute;
 	filter: blur(7px);
 }
+
 .menuItem:hover {
-	-webkit-text-stroke: 3px #0085FF;
+	-webkit-text-stroke: 2px #0085FF;
 }
 
 .menuItem {
 	font-family: "KoHo";
 	color: transparent;
 	font-size: 10vh;
-	-webkit-text-stroke: 3px #586068;
-	/* filter: brightness(140%); */
-	/* text-shadow: */
-		/* 0 0 3px #FF0000; */
-		/* 0 0 5px #FF0000, */
-		/* 0 0 8px #FF0000; */
+	-webkit-text-stroke: 2px #89aed0af;
+	line-height: 1;
 }

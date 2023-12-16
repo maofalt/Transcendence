@@ -28,16 +28,17 @@
 .navbar a:hover {
   color: #f1356d;
 }
-.content {
-  /* max-width: 600px; */
-  /* margin: 40px auto; */
-  /* padding: 20px; */
-  /* margin-left: 20vw; */
-  /* height: 100vh; This makes the body take the full viewport height */
-  /* display: flex; */
-  /* justify-content: left; Horizontally centers the child */
-  /* align-items: center; Vertically centers the child */
-}
+
+/* .content {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 20px;
+  margin-left: 20vw;
+  height: 100vh; 
+  display: flex;
+  justify-content: left;
+  align-items: center;
+} */
 
 .title {
   text-align: center;

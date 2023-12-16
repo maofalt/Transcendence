@@ -10,11 +10,6 @@ const Home = ({ jsonUrl }) => {
 	const profile = 'PROFILE'
 	const options = 'OPTIONS'
 
-	// const { data, error, isLoading } = useAxios(jsonUrl);
-	
-	// console.log("in Home:", "pages: " + data + ", error: " + error + ", loading: " + isLoading);
-	// console.log(data);
-
 	return (
 		<div className="homepage">
 			<div className="menu">
