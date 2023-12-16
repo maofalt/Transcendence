@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import deletePage from "./deletePage";
+import deletePage from "./Utils/deletePage";
 
 const PageCards = ({ jsonUrl, cards }) => {
 	return (

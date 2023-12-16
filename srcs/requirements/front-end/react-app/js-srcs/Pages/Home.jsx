@@ -1,9 +1,9 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from 'react';
-import useFetch from './useFetch';
-import useAxios from './useAxios';
-import PageCards from './PageCards';
-import '../css-srcs/home.css'
+import useFetch from '../useFetch';
+import useAxios from '../useAxios';
+import PageCards from '../PageCards';
+import styles from './Home.css'
 
 const Home = ({ jsonUrl }) => {
 	const play = 'PLAY'
