@@ -1,46 +1,65 @@
-(async function() {
+var canvas = document.getElementById("canvas");
+var ctx = canvas.getContext("2d");
 
-    const ws = await connectToServer();
+// connect to socket server
+const socket = io(`http://10.24.1.2:3000`);
 
-    // ws.onmessage = (webSocketMessage) => {
-    //     const messageBody = JSON.parse(webSocketMessage.data);
-    //     const cursor = getOrCreateCursorFor(messageBody);
-    //     cursor.style.transform = `translate(${messageBody.x}px, ${messageBody.y}px)`;
-    // };
+// Listen for the 'connect' event, which is triggered when the connection is established
+socket.on('connect', () => {
+	console.log('Connected to Socket.IO server');
+});
 
-    // document.body.onmousemove = (evt) => {
-    //     const messageBody = { x: evt.clientX, y: evt.clientY };
-    //     ws.send(JSON.stringify(messageBody));
-    // };
+// Listen for the 'disconnect' event, triggered when the connection is lost
+socket.on('disconnect', () => {
+	console.log('Disconnected from Socket.IO server');
+});
 
-    async function connectToServer() {
-        const ws = new WebSocket('ws://localhost:3001/ws');
-        return new Promise((resolve, reject) => {
-            const timer = setInterval(() => {
-                if(ws.readyState === 1) {
-                    clearInterval(timer);
-                    resolve(ws);
-                }
-            }, 10);
-        });
-    }
+// socket.on('clientId', (clientId, clientNum) => {
+// 	console.log(`Client unique ID: ${clientId}, client nbr: ${clientNum}`);
+// 	if (player1.id == 0)
+// 		player1.id = clientId;
+// 	else if (player2.id == 0)
+// 		player2.id = clientId;
+// });
 
-    // function getOrCreateCursorFor(messageBody) {
-    //     const sender = messageBody.sender;
-    //     const existing = document.querySelector(`[data-sender='${sender}']`);
-    //     if (existing) {
-    //         return existing;
-    //     }
-        
-    //     const template = document.getElementById('cursor');
-    //     const cursor = template.content.firstElementChild.cloneNode(true);
-    //     const svgPath = cursor.getElementsByTagName('path')[0];    
-            
-    //     cursor.setAttribute("data-sender", sender);
-    //     svgPath.setAttribute('fill', `hsl(${messageBody.color}, 50%, 50%)`);    
-    //     document.body.appendChild(cursor);
+socket.on('pong', () => {
+	console.log("pong received !, emitting ping...");
+	socket.emit('ping');
+});
 
-    //     return cursor;
-    // }
+// input events : controlling paddles
+function handleKeyPress(event) {
+	if (event.key == "w")
+			socket.emit('moveUp');
+	if (event.key == "s")
+			socket.emit('moveDown');
+}
 
-})();
+function handleKeyRelease(event) {
+	if (event.key == "w" || event.key == "s")
+		socket.emit('stop');
+}
+
+function clickCanvas() {
+    socket.emit('clickedCanvas');
+}
+
+document.addEventListener("keydown", handleKeyPress);
+document.addEventListener("keyup", handleKeyRelease);
+canvas.addEventListener("click", clickCanvas);
+
+// function mainLoop() {
+// 	runGame();
+// }
+
+// mainLoop();
+
+/*
+TO DO :
+	- add proper collisions i guess;
+
+	- add score board; [DONE]
+	- add proper touches with paddle; [DONE]
+	- add retry option ? infinite loop; [DONE]
+*/
+

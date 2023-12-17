@@ -13,7 +13,7 @@ const ball = {
 	vX: 0,
 	vY: 0,
 	r: 8,
-	sp: 6,
+	sp: 4,
 	color: "#FFFFFF"
 };
 
@@ -54,12 +54,14 @@ const score = {
 score.font = `${score.fontsize}px \'Lilita One\', sans-serif`;
 
 const player1 = {
+	id: 0,
 	login: "Player 1",
 	paddle: paddle1,
 	score: 0,
 }
 
 const player2 = {
+	id: 0,
 	login: "Player 2",
 	paddle: paddle2,
 	score: 0
@@ -145,13 +147,13 @@ function drawPaddle(paddle) {
 function calculateBallDir(paddleNbr) {
 	let contactX = paddle1.x + paddle1.width;
 	let contactY = ball.y;
-	let paddleCenterX = paddle1.x;
+	let paddleCenterX = paddle1.x - paddle1.width;
 	let paddleCenterY = paddle1.y + paddle1.height / 2;
 
 	if (paddleNbr == 2) {
 		contactX = paddle2.x;
 		contactY = ball.y;
-		paddleCenterX = paddle2.x + paddle2.width;
+		paddleCenterX = paddle2.x + paddle2.width * 2;
 		paddleCenterY = paddle2.y + paddle2.height / 2;
 	}
 
@@ -161,13 +163,15 @@ function calculateBallDir(paddleNbr) {
 }
 
 function ballHitsWall() {
-	if (ball.y + ball.r >= canvas.height || ball.y - ball.r <= 0)
+	if ((ball.y + ball.r >= canvas.height && ball.y < canvas.height) || (ball.y - ball.r <= 0 && ball.y > 0))
 		ball.vY *= -1;
 }
 
 function ballHitsPaddle1() {
 	if (ball.y >= paddle1.y && ball.y <= paddle1.y + paddle1.height) {
 		if (ball.x > paddle1.x + paddle1.width && ball.x - ball.r <= paddle1.x + paddle1.width) {
+			ball.sp *= 1.1;
+			paddle1.sp *= 1.1;
 			calculateBallDir(1);
 		}
 	}
@@ -176,7 +180,9 @@ function ballHitsPaddle1() {
 function ballHitsPaddle2() {
 	if (ball.y >= paddle2.y && ball.y <= paddle2.y + paddle2.height) {
 		if (ball.x < paddle2.x && ball.x + ball.r >= paddle2.x) {
-			ball.vX *= -1;
+			// ball.vX *= -1;
+			ball.sp *= 1.1;
+			paddle2.sp *= 1.1;
 			calculateBallDir(2);
 		}
 	}
@@ -303,6 +309,9 @@ function endRound() {
 // starting the round
 function startRound() {
 	initBoard;
+	ball.sp = 4;
+	paddle1.sp = 4;
+	paddle2.sp = 4;
 	getRandomDir();
 	gameInterval = setInterval(renderFrame, 10);
 }
@@ -321,9 +330,10 @@ drawText("Click to Start", score.color, canvas.height / 2);
 
 /*
 TO DO :
-	- add score board; [DONE]
 	- add proper collisions i guess;
+
+	- add score board; [DONE]
 	- add proper touches with paddle; [DONE]
-	- add retry option ? infinite loop;
+	- add retry option ? infinite loop; [DONE]
 */
 

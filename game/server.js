@@ -1,46 +1,59 @@
 const express = require('express');
+const http = require('http');
+const socketIo = require('socket.io');
+
 const app = express();
+const server = http.createServer(app);
 
-const port = process.env.PORT || 3000;
+const expressPort = process.env.PORT || 3000;
+// const socketIoPort = 3001;
 
-const WebSocket = require('ws');
-const wss = new WebSocket.Server({ port: 3001 });
+const io = socketIo(server);
 
-// app.use(express.static('public/remote/'));
-app.use(express.static('./public/local/'));
+let numClients = 0;
 
-app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+// Set up Socket.IO event handlers
+io.on('connection', (client) => {
+    numClients = io.engine.clientsCount;
+
+    client.emit('clientId', client.id, numClients);
+    // client.emit('pong');
+    console.log(`Client connected with ID: ${client.id}`);
+    console.log(`Number of connected clients: ${numClients}`);
+
+    // Handle other events or messages from the client
+    client.on('ping', () => {
+        console.log("ping received ! emitting pong...");
+        client.emit('pong');
+    });
+
+    // player controls
+    client.on('clickedCanvas', () => {
+        console.log(`clicked canvas ! (from client ${client.id})`);
+    });
+
+    client.on('moveUp', () => {
+        console.log(`move up ! (from client ${client.id})`);
+    });
+
+    client.on('moveDown', () => {
+        console.log(`move down ! (from client ${client.id})`);
+    });
+
+    client.on('stop', () => {
+        console.log(`stop ! (from client ${client.id})`);
+    });
+
+    // disconnect event
+    client.on('disconnect', () => {
+        numClients = io.engine.clientsCount;
+        console.log(`Client disconnected with ID: ${client.id} (num clients: ${numClients})`);
+    });
 });
 
-var playersNbr = 0;
-const clients = new Map();
+app.use(express.static('./public/remote/'));
 
-wss.on('connection', (ws) => {
-    // playersNbr++;
-    // const id = playersNbr;
-    // const color = Math.floor(Math.random() * 360);
-    // const metadata = { id, color };
-
-    // clients.set(ws, metadata);
-
-    console.log("New client connected ! ID : " + playersNbr);
-    // ws.on('message', (messageAsString) => {
-    //     const message = JSON.parse(messageAsString);
-    //     const metadata = clients.get(ws);
-
-    //     message.sender = metadata.id;
-    //     message.color = metadata.color;
-    //     const outbound = JSON.stringify(message);
-
-    //     [...clients.keys()].forEach((client) => {
-    //         client.send(outbound);
-    //     });
-    // });
-
-    ws.on("close", () => {
-        // clients.delete(ws);
-        // playersNbr--;
-        console.log("Connection closed");
-    });
+// Start the server
+server.listen(expressPort, () => {
+    console.log(`Express server running on port ${expressPort}`);
 });
