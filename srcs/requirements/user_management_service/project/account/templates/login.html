@@ -1,0 +1,24 @@
+login page
+
+<br>
+
+{% if user.is_authenticated %}
+
+    login success
+    Welcome {{ user.username }}
+    <a href="{% url 'account:logout' %}">log out</a>
+    <a href="{% url 'account:friend' %}">friends</a>
+    <a href="{% url 'account:detail' %}">detail</a>
+
+{% else %}
+
+<form action="" method="POST">
+    {% csrf_token %}
+    <input name="username" type="text">
+    <input name="password" type="password">
+    <input type="submit" value="login">
+</form>
+<a href="{% url 'account:signup' %}">sign up</a>
+
+
+{% endif %}
