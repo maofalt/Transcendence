@@ -1,7 +1,8 @@
 .Login-login {
+	width: 100vw;
+	height: 100vh;
 	background-image: url('BlackHoleGravitational_waves.gif');
 	background-color: black;
-	background-size: cover;
 }
 
 .Login-login-form form {
@@ -12,6 +13,7 @@
 	display: flex;
 	flex-direction: column;
 	align-items: center;
+	justify-content: center;
 	gap: 30px;
 	min-width: 300px;
 }
