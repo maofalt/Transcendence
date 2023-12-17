@@ -137,3 +137,43 @@ def password_update_view(request):
         form = PasswordUpdateForm(request.user)
     
     return render(request, 'password_update.html', {'form': form})
+
+
+# microservice connection
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import User, TournamentHistory, GameStats
+from .serializers import UserSerializer, TournamentHistorySerializer, GameStatsSerializer
+
+class UserAPIView(APIView):
+    def get(self, request, *args, **kwargs):
+        queryset = User.objects.all()
+        serializer = UserSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class TournamentHistoryAPIView(APIView):
+    def get(self, request, *args, **kwargs):
+        queryset = TournamentHistory.objects.all()
+        serializer = TournamentHistorySerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, *args, **kwargs):
+        serializer = TournamentHistorySerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class GameStatsAPIView(APIView):
+    def get(self, request, *args, **kwargs):
+        queryset = GameStats.objects.all()
+        serializer = GameStatsSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, *args, **kwargs):
+        serializer = GameStatsSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
