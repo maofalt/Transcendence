@@ -1,6 +1,74 @@
 var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 
+// global vars
+let gameInterval = 0;
+let roundState = false;
+let gameState = false;
+
+// objects : paddles and ball
+const ball = {
+	x: 0,
+	y: 0,
+	vX: 0,
+	vY: 0,
+	r: 8,
+	sp: 4,
+	color: "#FFFFFF"
+};
+
+const paddle1 = {
+	x: 0,
+	y: 0,
+	vX: 0,
+	vY: 0,
+	width: 15,
+	height: 70,
+	sp: 4,
+	color: "#0000FF"
+}
+
+const paddle2 = {
+	x: 0,
+	y: 0,
+	vX: 0,
+	vY: 0,
+	width: 15,
+	height: 70,
+	sp: 4,
+	color: "#FF0000"
+}
+
+paddle1.x = paddle1.width;
+paddle1.y = (canvas.height - paddle1.height) / 2;
+
+paddle2.x = canvas.width - (paddle2.width * 2);
+paddle2.y = (canvas.height - paddle2.height) / 2;
+
+// players + score
+const score = {
+	color: "#FFFFFF",
+	fontsize: 50,
+	font: "",
+}
+score.font = `${score.fontsize}px \'Lilita One\', sans-serif`;
+
+const player1 = {
+	id: 0,
+    clientId: 0,
+	login: "Player 1",
+	paddle: paddle1,
+	score: 0,
+}
+
+const player2 = {
+	id: 0,
+    clientId: 0,
+	login: "Player 2",
+	paddle: paddle2,
+	score: 0
+}
+
 // connect to socket server
 const socket = io(`http://10.24.1.2:3000`);
 
@@ -30,9 +98,9 @@ socket.on('pong', () => {
 // input events : controlling paddles
 function handleKeyPress(event) {
 	if (event.key == "w")
-			socket.emit('moveUp');
+		socket.emit('moveUp');
 	if (event.key == "s")
-			socket.emit('moveDown');
+		socket.emit('moveDown');
 }
 
 function handleKeyRelease(event) {
@@ -48,18 +116,8 @@ document.addEventListener("keydown", handleKeyPress);
 document.addEventListener("keyup", handleKeyRelease);
 canvas.addEventListener("click", clickCanvas);
 
-// function mainLoop() {
-// 	runGame();
-// }
-
-// mainLoop();
-
 /*
 TO DO :
-	- add proper collisions i guess;
 
-	- add score board; [DONE]
-	- add proper touches with paddle; [DONE]
-	- add retry option ? infinite loop; [DONE]
 */
 
