@@ -8,6 +8,8 @@ const Game = () => {
 	const keysPressedRef = useRef(keysPressed);
 	const paddleBounds = { minZ: -1.2, maxZ: 1.2 };
 
+	let camera, renderer;
+
 	// Update the ref whenever keysPressed changes
 	useEffect(() => {
 		keysPressedRef.current = keysPressed;
@@ -25,7 +27,7 @@ const Game = () => {
 
 		const handleKeyDown = (event) => {
             setKeysPressed((keys) => ({ ...keys, [event.code]: true }));
-			console.log("CODE: ", event.code);
+			// console.log("CODE: ", event.code);
         };
 
         const handleKeyUp = (event) => {
@@ -45,7 +47,7 @@ const Game = () => {
 
     useEffect(() => {
 		// Game variables
-        let ball, paddle1, paddle2, scene, camera, renderer, controls;
+        let ball, paddle1, paddle2, scene, controls;
 		let paddleSpeed = 0.05;
 		let distWall1 = 1.5;
 		let distWall2 = -1.5;
