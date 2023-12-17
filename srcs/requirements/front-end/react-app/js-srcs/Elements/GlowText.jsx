@@ -2,7 +2,7 @@ import './GlowText.css';
 
 const GlowText = ({text, hoverGlow}) => {
 	const className = hoverGlow ? 'glowOff' : 'glowOn';
-	console.log('classname: ', className);
+
 	return (
 		<div className={className + " glow-text"}>
 			<object className="rhombus left" type="image/svg+xml" data="assets/RhombusLeft.svg">Your browser does not support SVG</object>

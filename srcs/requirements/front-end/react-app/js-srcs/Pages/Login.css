@@ -1,0 +1,46 @@
+.Login-login {
+	background-image: url('BlackHoleGravitational_waves.gif');
+	background-color: black;
+	background-size: cover;
+}
+
+.Login-login-form form {
+	position: absolute;
+	top: 50vh;
+	left: 50%;
+	transform: translate(-50%, 0);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 30px;
+	min-width: 300px;
+}
+
+.Login-login-form input {
+	display: flex;
+	width: 100%;
+	padding: 10px 21px;
+	border-radius: 2700px;
+	border: 2px solid #5c768f;
+	background: rgba(58, 157, 171, 0.43);
+}
+
+.Login-login-form input:focus {
+	border: 2px solid #1E7BD1;
+	box-shadow: 0px 0px 12.8px 0px #1C80DC;
+	outline: none;
+}
+
+.Login-login-form button {
+	border: 2px solid #5c768f;
+	padding: 10px 50px;
+	border-radius: 12px;
+	background: #AAD5DB;
+	font-size: 20px;
+	
+}
+
+.Login-login-form button:hover {
+	box-shadow: 0px 0px 6.6px 0px #1E7BD1;
+	border: 2px solid #1E7BD1;
+}
