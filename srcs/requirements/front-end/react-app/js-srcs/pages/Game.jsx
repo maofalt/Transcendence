@@ -6,7 +6,7 @@ const Game = () => {
     const containerRef = useRef();
 	const [keysPressed, setKeysPressed] = useState({ArrowUp: false, ArrowDown: false, KeyW: false, KeyS: false});
 	const keysPressedRef = useRef(keysPressed);
-
+	const paddleBounds = { minZ: -1.2, maxZ: 1.2 };
 
 	// Update the ref whenever keysPressed changes
 	useEffect(() => {
@@ -34,6 +34,7 @@ const Game = () => {
 
         window.addEventListener('keydown', handleKeyDown);
         window.addEventListener('keyup', handleKeyUp);
+		window.addEventListener('resize', handleResize);
 
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
