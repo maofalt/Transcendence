@@ -4,6 +4,8 @@ from django.contrib import messages
 from .models import User
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.decorators import login_required
+from .forms import ProfileUpdateForm, PasswordUpdateForm
+
 
 
 print(make_password("1234")) 
@@ -39,6 +41,7 @@ def login_view(request):
 
         else:
             print("Authentication failed")
+            messages.error(request, 'Authentication failed: Wrong user data')
     return render(request, "login.html")
 
 @login_required
@@ -105,3 +108,32 @@ def remove_friend(request, pk):
     friend = get_object_or_404(User, pk=pk)
     request.user.friends.remove(friend)
     return redirect('account:friend')
+
+@login_required
+def profile_update_view(request):
+    if request.method == 'POST':
+        user_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user)
+        
+        if user_form.is_valid():
+            user = user_form.save(commit=False)
+            user.save()
+            messages.success(request, 'Your profile has update.')
+            return redirect('account:detail')
+    else:
+        user_form = ProfileUpdateForm(instance=request.user)
+
+    return render(request, 'profile_update.html', {'user_form': user_form})
+
+@login_required
+def password_update_view(request):
+    if request.method == 'POST':
+        form = PasswordUpdateForm(request.user, request.POST)
+        if form.is_valid():
+            form.save()
+            request.user.save()
+            messages.success(request, 'Your password has changed successfully. Please login again.')
+            return redirect('account:login')
+    else:
+        form = PasswordUpdateForm(request.user)
+    
+    return render(request, 'password_update.html', {'form': form})

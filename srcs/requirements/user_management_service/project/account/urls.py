@@ -13,6 +13,8 @@ urlpatterns = [
     path("add_friend/<int:pk>", views.add_friend, name="add_friend"),
     path("remove_friend/<int:pk>", views.remove_friend, name="remove_friend"),
     path("detail", views.detail_view, name="detail"),
+    path("profile_update", views.profile_update_view, name="profile_update"),
+    path("password_update", views.password_update_view, name="password_update"),
 ]
 
 if settings.DEBUG:
