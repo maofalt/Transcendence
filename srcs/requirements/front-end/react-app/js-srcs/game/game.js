@@ -31,7 +31,7 @@ function initGameElements() {
     // Create and add paddles
     const paddleGeometry = new THREE.BoxGeometry(paddleWidth, paddleHeight, paddleThickness);
     // const paddleMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff,  });
-    const paddleMaterial1 = new THREE.MeshBasicMaterial({ color: 0xfff, transparent: false, opacity: 1 });
+    const paddleMaterial1 = new THREE.MeshBasicMaterial({ color: 0xfffff, transparent: false, opacity: 1 });
     const paddleMaterial2 = new THREE.MeshBasicMaterial({ color: 0xffff0f, transparent: false, opacity: 1 });
     paddle1 = new THREE.Mesh(paddleGeometry, paddleMaterial1);
     paddle2 = new THREE.Mesh(paddleGeometry, paddleMaterial2);
