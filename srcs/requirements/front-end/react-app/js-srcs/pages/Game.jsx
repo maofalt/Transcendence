@@ -331,25 +331,12 @@ const Game = () => {
 			}
 		}
 		
-		function updateScoreDisplay() {
-			// Update the score display here
-			const player1ScoreElement = document.getElementById('player1Score');
-			const player2ScoreElement = document.getElementById('player2Score');
-		
-			// player1ScoreElement.textContent = 'Bleu Score: ' + score.player1;
-			// player2ScoreElement.textContent = 'Yellow Score: ' + score.player2;    
-			if (score.player1 === gameSettings.maxPoints || score.player2 === gameSettings.maxPoints) {
-			// scene.add( sprite );
-			}
-		}
-		
 		function updateGame(timestamp) {
 			const deltaTime = (timestamp - lastRenderTime) / 1000;
 			handleBallMovement(deltaTime);
 			handlePaddleMovement(deltaTime);
 			controls.update();
 			handleScore();
-			updateScoreDisplay();
 			lastRenderTime = timestamp;
 		}
 		
