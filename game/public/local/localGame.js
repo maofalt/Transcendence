@@ -67,6 +67,14 @@ const player2 = {
 	score: 0
 }
 
+const data = {
+    ball: ball,
+    player1: player1,
+    player2: player2,
+    paddle1: paddle1,
+    paddle2: paddle2,
+}
+
 // vector calculations for ball dir
 function normalizeBallDir() {
 	let l = Math.sqrt(ball.vX * ball.vX + ball.vY * ball.vY);

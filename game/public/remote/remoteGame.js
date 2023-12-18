@@ -39,11 +39,11 @@ const paddle2 = {
 	color: "#FF0000"
 }
 
-paddle1.x = paddle1.width;
-paddle1.y = (canvas.height - paddle1.height) / 2;
+// paddle1.x = paddle1.width;
+// paddle1.y = (canvas.height - paddle1.height) / 2;
 
-paddle2.x = canvas.width - (paddle2.width * 2);
-paddle2.y = (canvas.height - paddle2.height) / 2;
+// paddle2.x = canvas.width - (paddle2.width * 2);
+// paddle2.y = (canvas.height - paddle2.height) / 2;
 
 // players + score
 const score = {
@@ -69,31 +69,60 @@ const player2 = {
 	score: 0
 }
 
-// connect to socket server
-const socket = io(`http://10.24.1.2:3000`);
+// update data
+function updateData(data) {
+	ball = data.ball;
+	paddle1 = data.paddle1;
+	paddle2 = data.paddle2;
+	player1.score = data.player1.score;
+	player2.score = data.player2.score;
+}
 
-// Listen for the 'connect' event, which is triggered when the connection is established
-socket.on('connect', () => {
-	console.log('Connected to Socket.IO server');
-});
+// draw objects
+function drawBall() {
+	ctx.beginPath();
+	ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+	ctx.fillStyle = ball.color;
+	ctx.fill();
+	ctx.closePath();
+}
 
-// Listen for the 'disconnect' event, triggered when the connection is lost
-socket.on('disconnect', () => {
-	console.log('Disconnected from Socket.IO server');
-});
+function drawPaddle(paddle) {
+	ctx.beginPath();
+	ctx.rect(paddle.x, paddle.y, paddle.width, paddle.height);
+	ctx.fillStyle = paddle.color;
+	ctx.fill();
+	ctx.closePath();
+}
 
-// socket.on('clientId', (clientId, clientNum) => {
-// 	console.log(`Client unique ID: ${clientId}, client nbr: ${clientNum}`);
-// 	if (player1.id == 0)
-// 		player1.id = clientId;
-// 	else if (player2.id == 0)
-// 		player2.id = clientId;
-// });
+function drawLine() {
+	ctx.strokeStyle = score.color;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(canvas.width / 2, 0);
+    ctx.lineTo(canvas.width / 2, canvas.height);
+    ctx.stroke();
+}
 
-socket.on('pong', () => {
-	console.log("pong received !, emitting ping...");
-	socket.emit('ping');
-});
+function drawScore() {
+	const fontsize = 50;
+	ctx.font = score.font;
+	ctx.fillStyle = score.color;
+	ctx.textAlign = "center";
+	ctx.fillText(`${player1.score}`, canvas.width / 2 - fontsize, fontsize);
+	ctx.fillText(`${player2.score}`, canvas.width / 2 + fontsize, fontsize);
+	drawLine();
+}
+
+// render
+function renderFrame(data) {
+	updateData(data);
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	drawBall();
+	drawPaddle(data.paddle1);
+	drawPaddle(data.paddle2);
+	drawScore();
+}
 
 // input events : controlling paddles
 function handleKeyPress(event) {
@@ -115,6 +144,36 @@ function clickCanvas() {
 document.addEventListener("keydown", handleKeyPress);
 document.addEventListener("keyup", handleKeyRelease);
 canvas.addEventListener("click", clickCanvas);
+
+// connect to socket server
+const socket = io(`http://localhost:3000`);
+
+// Listen for the 'connect' event, which is triggered when the connection is established
+socket.on('connect', () => {
+	console.log('Connected to Socket.IO server');
+});
+
+// Listen for the 'disconnect' event, triggered when the connection is lost
+socket.on('disconnect', () => {
+	console.log('Disconnected from Socket.IO server');
+});
+
+// socket.on('clientId', (clientId, clientNum) => {
+// 	console.log(`Client unique ID: ${clientId}, client nbr: ${clientNum}`);
+// 	if (player1.id == 0)
+// 		player1.id = clientId;
+// 	else if (player2.id == 0)
+// 		player2.id = clientId;
+// });
+
+socket.on('render', (data) => {
+	renderFrame(data);
+});
+
+socket.on('pong', () => {
+	console.log("pong received !, emitting ping...");
+	socket.emit('ping');
+});
 
 /*
 TO DO :
