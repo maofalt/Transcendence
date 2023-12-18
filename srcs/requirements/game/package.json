@@ -1,0 +1,18 @@
+{
+  "name": "game",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@seregpie/three.text-sprite": "^3.2.0",
+    "@seregpie/three.text-texture": "^3.2.1",
+    "express": "^4.18.2",
+    "pg": "^8.11.3",
+    "ws": "^8.15.0"
+  }
+}

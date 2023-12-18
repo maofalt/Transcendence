@@ -69,7 +69,7 @@ const Game = () => {
 		};
 		
 		const ballSettings = {
-			speed: { x: 0.02, y: 0.02, z: 0.02 },
+			speed: { x: 0.02, y: 0, z: 0.02 },
 			initialPosition: { x: 0, y: 0.1, z: 0 }
 		};
 
@@ -220,7 +220,8 @@ const Game = () => {
 		
 		function resetBall(lastPointLostByPlayer1) {
 			// Constant speed for the ball
-			const speed = 0.02;
+			const speed = ballSettings.speed.x;
+			// console.log("urmom: ", speed);
 		
 			// Launch the ball in the direction of the player who lost the last point
 			ballSettings.speed.x = lastPointLostByPlayer1 ? -speed : speed;
