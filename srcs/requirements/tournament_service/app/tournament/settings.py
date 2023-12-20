@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'manage_tournament',
 ]
 
 MIDDLEWARE = [
@@ -75,10 +76,15 @@ WSGI_APPLICATION = 'tournament.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'tournament_db',
+        'USER': 'tournament_master',
+        'PASSWORD': 'i love miguel',
+        'HOST': 'tournament_db',  # This should match the service name in docker-compose.yml for the database
+        'PORT': '5433',
     }
 }
+
 
 
 # Password validation
