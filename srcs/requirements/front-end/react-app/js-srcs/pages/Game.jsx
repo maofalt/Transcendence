@@ -360,7 +360,9 @@ const Game = () => {
 		initPong3D();
         // Cleanup function
         return () => {
-            containerRef.current.removeChild(renderer.domElement);
+			if (containerRef.current)
+				containerRef.current.removeChild(renderer.domElement);
+
         };
     }, []);
 	  
