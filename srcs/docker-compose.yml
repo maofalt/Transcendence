@@ -14,8 +14,8 @@ services:
       - ./requirements/traefik/config:/etc/traefik
       - ./requirements/traefik/config/acme.json:/acme.json
       - traefik-ssl-certs:/ssl-certs
-      # - "${XDG_RUNTIME_DIR}/docker.sock:/var/run/docker.sock"
-      - "/var/run/docker.sock:/var/run/docker.sock" # <-- actvate this if you are in Windows and comment the line above
+      - "${XDG_RUNTIME_DIR}/docker.sock:/var/run/docker.sock"
+      # - "/var/run/docker.sock:/var/run/docker.sock" # <-- actvate this if you are in Windows and comment the line above
     networks:
       - transcendence
     restart: unless-stopped
@@ -31,8 +31,8 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
-      # - "${XDG_RUNTIME_DIR}/docker.sock:/var/run/docker.sock"
+      # - "/var/run/docker.sock:/var/run/docker.sock"
+      - "${XDG_RUNTIME_DIR}/docker.sock:/var/run/docker.sock"
       - portainer-data:/data
     labels:
     #FRONTEND
