@@ -95,6 +95,7 @@ def friend_view(request):
     # return redirect('account:detail', pk)
 
 def detail_view(request):
+    game_stats = request.user.game_stats
     return render(request, 'detail.html')
 
 @login_required
@@ -143,37 +144,17 @@ def password_update_view(request):
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import User, TournamentHistory, GameStats
-from .serializers import UserSerializer, TournamentHistorySerializer, GameStatsSerializer
+from .models import User
+from .serializers import UserSerializer
 
 class UserAPIView(APIView):
     def get(self, request, *args, **kwargs):
-        queryset = User.objects.all()
-        serializer = UserSerializer(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-class TournamentHistoryAPIView(APIView):
-    def get(self, request, *args, **kwargs):
-        queryset = TournamentHistory.objects.all()
-        serializer = TournamentHistorySerializer(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def post(self, request, *args, **kwargs):
-        serializer = TournamentHistorySerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class GameStatsAPIView(APIView):
-    def get(self, request, *args, **kwargs):
-        queryset = GameStats.objects.all()
-        serializer = GameStatsSerializer(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def post(self, request, *args, **kwargs):
-        serializer = GameStatsSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # queryset = User.objects.all()
+        # serializer = UserSerializer(queryset, many=True)
+        # return Response(serializer.data, status=status.HTTP_200_OK)
+        try:
+            user = User.objects.get(id=user_id)
+            serializer = UserSerializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({"detail": "User not found"}, status=status.HTTP_404_NOT_FOUND)

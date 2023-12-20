@@ -13,9 +13,16 @@
 <p>Intra ID: {{ user.intra_id }}</p>
 <p>Playername: {{ user.playername }}</p>
 
-<p>    friends : 
-<a href="{% url 'account:friend' %}" style="text-decoration: underline; color: blue; font-size: 14px;">
-    {{user.friends.count}}
-</a>
-</p>
+<p>Friends: <a href="{% url 'account:friend' %}" style="text-decoration: underline; color: blue; font-size: 14px;">{{ user.friends.count }}</a></p>
+
+
+<p>사용자 ID: {{ user_id }}</p>
+
+<h2>GameStats</h2>
+<p>Game Player: {{ game_stats.user }}</p>
+<p>Total Games Played: {{ game_stats.total_games_played }}</p>
+<p>Games Won: {{ game_stats.games_won }}</p>
+<p>Games Lost: {{ game_stats.games_lost }}</p>
+
+
 <a href="{% url 'account:profile_update' %}" style="text-decoration: underline; color: blue; font-size: 14px;">Update Profile</a>
