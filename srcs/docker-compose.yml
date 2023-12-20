@@ -1,5 +1,6 @@
 # docker-compose.yml
 version: '3.8'
+
 services:
   traefik:
     image: traefik:v2.10.4
@@ -14,8 +15,7 @@ services:
       - ./requirements/traefik/config/acme.json:/acme.json
       - traefik-ssl-certs:/ssl-certs
       # - "${XDG_RUNTIME_DIR}/docker.sock:/var/run/docker.sock"
-      #actvate this if you are in Windows and comment the line above
-      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "/var/run/docker.sock:/var/run/docker.sock" # <-- actvate this if you are in Windows and comment the line above
     networks:
       - transcendence
     restart: unless-stopped
@@ -31,8 +31,8 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     volumes:
-      #- "/var/run/docker.sock:/var/run/docker.sock"
-      - "${XDG_RUNTIME_DIR}/docker.sock:/var/run/docker.sock"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      # - "${XDG_RUNTIME_DIR}/docker.sock:/var/run/docker.sock"
       - portainer-data:/data
     labels:
     #FRONTEND
@@ -52,7 +52,8 @@ services:
     networks:
       - transcendence
 
-##SERVICES
+#FRONT END SERVICES
+  # production ready front-end served by nginx built with vite
   front-end:
       container_name: front-end
       build:
@@ -62,14 +63,35 @@ services:
         - transcendence
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.frontend.rule=Host(`frontend.localhost`)"
-        - "traefik.http.routers.frontend.entrypoints=websecure"
-        - "traefik.http.services.frontend.loadbalancer.server.port=80"
-        - "traefik.http.routers.frontend.service=frontend"
-        - "traefik.http.routers.frontend.tls.certresolver=myresolver"
+        - "traefik.http.routers.front-end.rule=Host(`front-end.localhost`)"
+        - "traefik.http.routers.front-end.entrypoints=websecure"
+        - "traefik.http.services.front-end.loadbalancer.server.port=80"
+        - "traefik.http.routers.front-end.service=front-end"
+        - "traefik.http.routers.front-end.tls.certresolver=myresolver"
 #      ports:
 #        - 8033:80
 
+  # react with vite and HMR for development
+  react-dev:
+    container_name: react-dev
+    build:
+      context: ./requirements/front-end/
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./requirements/front-end/react-app/:/app/src # Mount the source code
+    networks:
+      - transcendence
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.react-dev.rule=Host(`react-dev.localhost`)"
+      - "traefik.http.routers.react-dev.entrypoints=websecure"
+      - "traefik.http.services.react-dev.loadbalancer.server.port=8033"
+      - "traefik.http.routers.react-dev.service=react-dev"
+      - "traefik.http.routers.react-dev.tls.certresolver=myresolver"
+    #ports:
+    #  - "8032:8033"
+
+#BACKEND GAME SERVICES
   game:
     container_name: game
     build: 
@@ -114,6 +136,7 @@ services:
     # ports:
     #   - "5050:80"
 
+#VOLUMES
 volumes:
   traefik-ssl-certs:
     driver: local
@@ -129,6 +152,7 @@ volumes:
       device: ./requirements/front-end/react-app # location on the host to be mounted
       o: bind # specify that it is a bind mount
 
+#NETWORKS
 networks:
   transcendence:
     name: transcendence
