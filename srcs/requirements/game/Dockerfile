@@ -8,11 +8,11 @@ RUN which tini
 WORKDIR /app/src
 
 # Installer les dépendances du projet
-COPY package*.json ./
+COPY package*.json .
 RUN npm install
 
 # Copier les fichiers du projet dans le répertoire de travail du conteneur
-COPY . .
+COPY src/* .
 
 EXPOSE 3001
 

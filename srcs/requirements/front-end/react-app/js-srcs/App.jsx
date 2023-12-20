@@ -20,7 +20,7 @@ function App() {
 					<Routes>
 						<Route path='/' element={<Home jsonUrl={jsonUrl}/>} />
 						<Route path='/game' element={<Game/>} />
-						<Route path='/play' element={<Game/>} />
+						<Route path='/play' element={<PlayRemote/>} />
 						<Route path='/profile' element={<Profile/>} />
 						<Route path='/options' element={<Options/>} />
 						<Route path='/login' element={<Login/>} />
