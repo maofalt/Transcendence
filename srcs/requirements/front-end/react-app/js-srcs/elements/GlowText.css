@@ -1,0 +1,50 @@
+@import url('https://fonts.googleapis.com/css2?family=KoHo:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;1,200;1,300;1,400;1,500;1,600;1,700&display=swap');
+
+.glowOff:hover h1,
+.glowOn h1 {
+	-webkit-text-stroke: 0.03em #0085FF;
+}
+
+.glowOff:hover h1::before {
+	content: attr(data-text);
+	position: absolute;
+	filter: blur(2px);
+}
+
+.glowOn h1::before {
+	content: attr(data-text);
+	position: absolute;
+	filter: blur(2px);
+}
+
+.glow-text {
+	display: flex;
+	align-items: center;
+	position: relative;
+}
+
+.glow-text h1 {
+	font-family: "KoHo";
+	color: transparent;
+	font-size: 10vh;
+	-webkit-text-stroke: 0.02em #89aed0af;
+	line-height: 0.8;
+}
+
+.rhombus {
+	width: 8%;
+	height: auto;
+	visibility: hidden;
+}
+
+.rhombus.left {
+	margin-right: 5px;
+}
+
+.rhombus.right {
+	margin-left: 5px;
+}
+
+.glow-text:hover .rhombus{
+	visibility: visible;
+}

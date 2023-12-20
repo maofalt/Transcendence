@@ -1,0 +1,47 @@
+## STATIC CONFIGURATION
+log:
+  level: ERROR
+
+entryPoints:
+  web:
+    address: ":80"
+  websecure:
+    address: ":443"
+
+api:
+  insecure: true
+  dashboard: true
+
+certificatesResolvers:
+  myresolver:
+    acme:
+      email: motero@student.42.fr
+      storage: /ssl-certs/acme.json
+      caServer: "https://acme-staging-v02.api.letsencrypt.org/directory"
+      httpChallenge:
+        entryPoint: web
+
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: true
+  #path to this same file to act as the dynamic config
+  file:
+    filename: traefik.yml
+    watch: true
+
+## DYNAMIC CONFIGURATION
+#if dynamic configuration doesnt work probably the filepath in providers is wrong
+http:
+  routers:
+    http-catchall:
+      rule: "HostRegexp(`{host:.+}`)"
+      entrypoints:
+        - "web"
+      middlewares:
+        - "redirect-to-https"
+  middlewares:
+    redirect-to-https:
+      redirectScheme:
+        scheme: "https"
+

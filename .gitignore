@@ -1,2 +1,5 @@
-trancendence-front-end/*
-game/node_modules/*
+trenv/
+.env
+*.env
+.vscode/
+node_modules/

@@ -1,0 +1,15 @@
+# Base image
+FROM node:20-bullseye-slim
+
+# install tini
+RUN apt-get update && apt-get install -y tini && npm install -g npm@10.2.5
+
+# Set the working directory in the container
+COPY ./config/startup-front-end.sh ./
+
+# Expose the port the app runs on
+EXPOSE 8033
+
+# Command to run the application
+ENTRYPOINT [ "tini", "--"]
+CMD ["bash", "startup-front-end.sh"]

@@ -1,0 +1,24 @@
+# docker-compose.override.yml
+version: '3.8'
+services:
+  front-end:
+    container_name: front-end
+    build:
+      context: ./requirements/front-end/
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./requirements/front-end/react-app/:/app/src # Mount the source code
+    networks:
+      - transcendence
+    #ports:
+    #  - "8032:8033"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.front-end.rule=Host(`front-end.localhost`)"
+      - "traefik.http.routers.front-end.entrypoints=websecure"
+      - "traefik.http.services.front-end.loadbalancer.server.port=8033"
+      - "traefik.http.routers.front-end.service=front-end"
+      - "traefik.http.routers.front-end.tls.certresolver=myresolver"
+
+    # environment:
+      # - NODE_ENV=development

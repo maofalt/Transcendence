@@ -1,0 +1,135 @@
+# docker-compose.yml
+version: '3.8'
+services:
+  traefik:
+    image: traefik:v2.10.4
+    container_name: traefik
+    ports:
+      - 9080:80
+      - 9443:443
+      # -- (Optional) Enable Dashboard, don't do in production
+      - 8080:8080
+    volumes:
+      - ./requirements/traefik/config:/etc/traefik
+      - ./requirements/traefik/config/acme.json:/acme.json
+      - traefik-ssl-certs:/ssl-certs
+      # - "${XDG_RUNTIME_DIR}/docker.sock:/var/run/docker.sock"
+      #actvate this if you are in Windows and comment the line above
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    networks:
+      - transcendence
+    restart: unless-stopped
+    depends_on:
+      - portainer
+
+##CONTAINER MANAGER
+  portainer:
+    image: portainer
+    container_name: portainer
+    build:
+      context: ./requirements/portainer
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    volumes:
+      #- "/var/run/docker.sock:/var/run/docker.sock"
+      - "${XDG_RUNTIME_DIR}/docker.sock:/var/run/docker.sock"
+      - portainer-data:/data
+    labels:
+    #FRONTEND
+      - "traefik.enable=true"
+      - "traefik.http.routers.portainer.rule=Host(`portainer.localhost`)"
+      - "traefik.http.routers.portainer.entrypoints=websecure"
+      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+      - "traefik.http.routers.portainer.service=portainer"
+      - "traefik.http.routers.portainer.tls.certresolver=myresolver"
+      
+    #Edge  
+      - "traefik.http.routers.edge.rule=Host(`portaineredge.localhost`)"
+      - "traefik.http.routers.edge.entrypoints=websecure"
+      - "traefik.http.services.edge.loadbalancer.server.port=8000"
+      - "traefik.http.routers.edge.service=edge"
+      - "traefik.http.routers.edge.tls.certresolver=myresolver"
+    networks:
+      - transcendence
+
+##SERVICES
+  front-end:
+      container_name: front-end
+      build:
+        context: ./requirements/front-end/
+        dockerfile: Dockerfile
+      networks:
+        - transcendence
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.frontend.rule=Host(`frontend.localhost`)"
+        - "traefik.http.routers.frontend.entrypoints=websecure"
+        - "traefik.http.services.frontend.loadbalancer.server.port=80"
+        - "traefik.http.routers.frontend.service=frontend"
+        - "traefik.http.routers.frontend.tls.certresolver=myresolver"
+#      ports:
+#        - 8033:80
+
+  game:
+    container_name: game
+    build: 
+      context: ./requirements/game/
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=postgresql://user42:password@db:5432/mydatabase
+    depends_on:
+      - game-db
+    networks:
+      - transcendence
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.game.rule=Host(`game.localhost`)"
+      - "traefik.http.routers.game.entrypoints=websecure"
+      - "traefik.http.services.game.loadbalancer.server.port=3001"
+      - "traefik.http.routers.game.service=game"
+      - "traefik.http.routers.game.tls.certresolver=myresolver"
+    # ports:
+    #   - "3001:3001"
+
+  game-db:
+    container_name: game-db
+    build:
+      context: ./requirements/game/postgreSQL/
+      dockerfile: Dockerfile
+    environment:
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: user42
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - transcendence
+  # pgadmin:
+  #   image: dpage/pgadmin4
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: "admin@admin.com"
+  #     PGADMIN_DEFAULT_PASSWORD: "admin"
+  #   depends_on:
+  #     - db
+    # ports:
+    #   - "5050:80"
+
+volumes:
+  traefik-ssl-certs:
+    driver: local
+  portainer-data:
+    driver: local
+  postgres-data:
+    driver: local
+
+  front-end-volume:
+    driver: local # use default Docker volume driver (Docker managed volume)
+    driver_opts: # driver options to create a volume in a specified directory
+      type: none # specify that the volume is not formatted with a filesystem
+      device: ./requirements/front-end/react-app # location on the host to be mounted
+      o: bind # specify that it is a bind mount
+
+networks:
+  transcendence:
+    name: transcendence
+    driver: bridge
