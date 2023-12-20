@@ -11,7 +11,7 @@ ifeq ($(ENV), prod)
 COMPOSE_FILE = $(BASE_FILE)
 endif
 
-# COMPOSE_FILE = -f srcs/docker-compose.yml
+COMPOSE_FILE = -f srcs/docker-compose.yml
 
 all: build up
 
