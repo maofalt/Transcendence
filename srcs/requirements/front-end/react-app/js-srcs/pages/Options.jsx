@@ -6,7 +6,7 @@ const Options = () => {
 			<div className="flex justify-between items-center mb-6">
 			<h1 className="text-3xl font-bold">SETTINGS</h1>
 			<div className="space-x-2">
-				<Button className="bg-white text-black" variant="secondary">
+				{/* <Button className="bg-white text-black" variant="secondary">
 				CONTROLLER
 				</Button>
 				<Button className="bg-white text-black" variant="secondary">
@@ -23,7 +23,7 @@ const Options = () => {
 				</Button>
 				<Button className="bg-white text-black" variant="secondary">
 				ACCESSIBILITY
-				</Button>
+				</Button> */}
 			</div>
 			</div>
 			<div className="space-y-4">
@@ -99,12 +99,12 @@ const Options = () => {
 			</div>
 			</div>
 			<div className="flex justify-between items-center mt-6">
-			<Button className="bg-transparent border border-white" variant="outline">
+			{/* <Button className="bg-transparent border border-white" variant="outline">
 				Back
 			</Button>
 			<Button className="bg-transparent border border-white" variant="outline">
 				Restore Defaults
-			</Button>
+			</Button> */}
 			</div>
 		</div>
 		</div>

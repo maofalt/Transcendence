@@ -19,6 +19,8 @@ FROM nginx:alpine
 RUN apk update && apk add tini
 
 COPY --from=builder /app/src/dist /usr/share/nginx/html
+COPY --from=builder /app/src/assets /usr/share/nginx/html/assets
+COPY --from=builder /app/src/public /usr/share/nginx/html/public
 
 EXPOSE 8033
 
