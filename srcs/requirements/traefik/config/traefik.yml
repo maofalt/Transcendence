@@ -40,6 +40,21 @@ http:
         - "web"
       middlewares:
         - "redirect-to-https"
+    # WebSocket router
+      websocket-router:
+        rule: "Host(`game.localhost`) && Path(`/wss`)"  # Adjust the rule as needed
+        entryPoints:
+          - "websecure"
+        service: websocket-service
+        tls:
+          certResolver: myresolver
+
+  services:
+    # Define your WebSocket service
+    websocket-service:
+      loadBalancer:
+        servers:
+          - url: "https://game.localhost:9443"  # Replace with your WebSocket service details
   middlewares:
     redirect-to-https:
       redirectScheme:

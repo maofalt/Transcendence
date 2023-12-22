@@ -1,12 +1,13 @@
 // Import express libin the code and "app" will init the obj express
 const express = require('express');
-const http = require('http');
+const https = require('https');
 const socketIo = require('socket.io');
 const { Pool } = require('pg');
 
 const app = express();
-const server = http.createServer(app);
+const server = https.createServer(app);
 const io = socketIo(server);
+// console.log("server io: ", io);
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL

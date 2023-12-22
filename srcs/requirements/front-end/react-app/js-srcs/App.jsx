@@ -8,6 +8,7 @@ import Game from './pages/Game'
 import Options from './pages/Options'
 import Profile from './pages/Profile'
 import Login from './pages/Login'
+import PlayRemote from './pages/PlayRemote'
 
 function App() {
 	const jsonUrl = '/api-proxy';

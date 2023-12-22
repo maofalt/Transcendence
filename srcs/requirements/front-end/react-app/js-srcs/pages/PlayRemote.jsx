@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import io from 'socket.io-client';
 
-const Game = () => {
+const PlayRemote = () => {
     const containerRef = useRef();
 	const [keysPressed, setKeysPressed] = useState({ArrowUp: false, ArrowDown: false, KeyW: false, KeyS: false});
 	const keysPressedRef = useRef(keysPressed);
@@ -46,7 +47,8 @@ const Game = () => {
 
 	useEffect(() => {
 		// connect to socket server
-		const socket = io(`http://localhost:3000`);
+		const socket = io(`wss://game.localhost:9443/wss`);
+		console.log("IO: ", io);
 
 		socket.on('render', (data) => {
 			updateGame(data);
@@ -374,4 +376,4 @@ const Game = () => {
 	return <div ref={containerRef} />;
 };
 
-export default Game;
+export default PlayRemote;
