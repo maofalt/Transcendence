@@ -53,18 +53,58 @@ def logout_view(request):
         logout(request)
     return redirect("account:login")
 
+# def signup_view(request):
+#     if request.method == "POST":
+#         print(request.POST)
+#         username = request.POST["username"]
+#         password = request.POST["password"]
+#         playername = request.POST["playername"]
+#         intra_id = request.POST["intra_id"]
+
+#         user = User.objects.create_user(username, "", password)
+#         user.playername = playername
+#         user.intra_id = intra_id
+#         user.save()
+#         return redirect("account:login")
+
+#     return render(request, "signup.html")
+
+from gameHistory_microservice.models import GameStats
+from django.db.utils import IntegrityError
+
 def signup_view(request):
     if request.method == "POST":
-        print(request.POST)
         username = request.POST["username"]
         password = request.POST["password"]
         playername = request.POST["playername"]
         intra_id = request.POST["intra_id"]
 
-        user = User.objects.create_user(username, "", password)
-        user.playername = playername
-        user.intra_id = intra_id
-        user.save()
+        user = User(
+            username=username,
+            password=make_password(password),
+            playername=playername,
+            intra_id=intra_id
+        )
+
+        try:
+            user.save()
+        except IntegrityError as e:
+            # IntegrityError가 발생하는 경우 처리 (예: 사용자가 이미 존재하는 경우)
+            # 다른 페이지로 리디렉션하거나 오류 메시지를 표시할 수 있습니다
+            return render(request, "signup.html", {"error_message": "User creation failed."})
+
+        if user.game_stats is None:
+            print("\n\nCREATING GAMES STATS!!!!!\n\n")
+            game_stats = GameStats.objects.create(
+                user=user,
+                total_games_played=0,
+                games_won=0,
+                games_lost=0
+            )
+            user.game_stats = game_stats
+            print("\n\nGAMES STATS : user", user.game_stats.user)
+            user.save()
+
         return redirect("account:login")
 
     return render(request, "signup.html")

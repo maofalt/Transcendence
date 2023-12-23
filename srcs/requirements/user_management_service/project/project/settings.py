@@ -42,9 +42,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'account',
-    'account.api',
     'rest_framework',
-    'gameHistory_microservice'
+    'gameHistory_microservice',
+    'gameHistory_microservice.api'
 ]
 
 MIDDLEWARE = [

@@ -2,6 +2,7 @@
 version: '3.9'
 services:
   backend:
+    restart: always
     build:
       context: .
       dockerfile: Dockerfile
@@ -11,6 +12,8 @@ services:
       - .:/app
     depends_on:
       - db
+    networks:
+      - backend
 
   db:
     image: postgres:latest
@@ -23,6 +26,12 @@ services:
       - postgres-data:/var/lib/postgresql/data
     ports:
       - 55432:5432
+    networks:
+      - backend
       
 volumes:
   postgres-data:
+
+networks:
+  backend:
+    driver: bridge
