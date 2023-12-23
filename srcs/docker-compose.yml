@@ -71,6 +71,23 @@ services:
         - "traefik.http.routers.frontend.service=frontend"
         - "traefik.http.routers.frontend.tls.certresolver=myresolver"
 
+
+  tournament:
+      container_name: tournament
+      build:
+        context: ./requirements/tournament-service/
+        dockerfile: Dockerfile
+      networks:
+        - transcendence
+      #ports:
+      #  - 8034:8000
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.tournament.rule=Host(`tournament.localhost`)"
+        - "traefik.http.routers.tournament.entrypoints=websecure"
+        - "traefik.http.services.tournament.loadbalancer.server.port=80"
+        - "traefik.http.routers.tournament.service=tournament"
+        - "traefik.http.routers.tournament.tls.certresolver=myresolver"
 volumes:
   traefik-ssl-certs:
     driver: local

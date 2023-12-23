@@ -1,11 +1,10 @@
-FROM python:3.8-slim
+FROM python:3.9-slim
 
-COPY config/requirements.txt ./
-
+# set environment variables to see all output from python
+ENV PYTHONUNBUFFERED 1
 WORKDIR /app
+COPY ./app/requirements.txt /app/requirements.txt
+RUN pip install -r requirements.txt
+COPY ./app /app
 
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY . .
-
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "tournament.wsgi:application"]
+CMD ["python", "manage.py", "runserver, ""0.0.0.0:8000"]
