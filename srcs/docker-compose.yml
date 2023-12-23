@@ -103,13 +103,14 @@ services:
       - game-db
     networks:
       - transcendence
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.game.rule=Host(`game.localhost`)"
-      - "traefik.http.routers.game.entrypoints=websecure"
-      - "traefik.http.services.game.loadbalancer.server.port=3001"
-      - "traefik.http.routers.game.service=game"
-      - "traefik.http.routers.game.tls.certresolver=myresolver"
+    # labels:
+    #   - "traefik.enable=true"
+    #   - "traefik.http.routers.game.rule=Host(`game.localhost`)"
+    #   - "traefik.http.routers.game.entrypoints=websecure"
+    #   - "traefik.http.services.game.loadbalancer.server.port=3000"
+    #   - "traefik.http.routers.game.service=game"
+    #   - "traefik.http.routers.game.tls.certresolver=myresolver"
+    #   - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto = https"
     # ports:
     #   - "3001:3001"
 

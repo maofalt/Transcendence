@@ -75,7 +75,7 @@ document.addEventListener("keyup", handleKeyRelease);
 canvas.addEventListener("click", clickCanvas);
 
 // connect to socket server
-const socket = io(`http://10.24.3.2:3000`);
+const socket = io(`http://10.24.107.3:3000`);
 
 // Listen for the 'connect' event, which is triggered when the connection is established
 socket.on('connect', () => {

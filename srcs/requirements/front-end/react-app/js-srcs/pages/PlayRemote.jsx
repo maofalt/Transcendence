@@ -47,11 +47,15 @@ const PlayRemote = () => {
 
 	useEffect(() => {
 		// connect to socket server
-		const socket = io(`wss://game.localhost:9443/wss`);
+		const socket = io(`ws://game.localhost:9443`, {path: '/socket.io'});
 		console.log("IO: ", io);
 
 		socket.on('render', (data) => {
 			updateGame(data);
+		});
+
+		socket.on('clientId', (id, num) => {
+			console.log("LETS GO");
 		});
 
 		return () => {
