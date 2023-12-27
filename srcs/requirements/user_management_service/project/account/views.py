@@ -97,6 +97,7 @@ def signup_view(request):
             print("\n\nCREATING GAMES STATS!!!!!\n\n")
             game_stats = GameStats.objects.create(
                 user=user,
+                username=user.username,
                 total_games_played=0,
                 games_won=0,
                 games_lost=0

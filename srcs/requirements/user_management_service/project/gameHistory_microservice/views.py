@@ -29,69 +29,56 @@ class TournamentHistoryAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# class GameStatsAPIView(APIView):
-#     def get(self, request, *args, **kwargs):
-#         queryset = GameStats.objects.all()
-#         serializer = GameStatsSerializer(queryset, many=True)
-#         return Response(serializer.data, status=status.HTTP_200_OK)
 
-#     def post(self, request, *args, **kwargs):
-#         serializer = GameStatsSerializer(data=request.data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data, status=status.HTTP_201_CREATED)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 logger = logging.getLogger(__name__)
 
-class GameStatTestView(View):
-    def get(self, request, *args, **kwargs):
-        username = request.data.get('username')
-        return render(request, 'gameStatTest.html', {'username': username})
+
+def get_current_user_info(request):
+    # Assume you have a way to get the currently logged-in user
+    # Adjust this part based on your authentication mechanism
+    user = request.user
+    print("\n\nCURRENT with USER: ", user.username)
+    # Assuming your user model has a 'username' field
+    if user.is_authenticated:
+        return JsonResponse({'username': user.username})
+    else:
+        return JsonResponse({'username': None})
 
 class GameStatsAPIView(APIView):
     def get(self, request, *args, **kwargs):
-        username = request.data.get('username')
-        print("/n/njjjj/n/n")
-        logger.info(f'GET 요청이 받아들여진 사용자 ID: {username}')
+        user = request.user
+
+        print("RECEIVED GET REQUEST with USER: ", user.username)
+        username = user.username
+        
         return render(request, 'gameStatTest.html', {'username': username})
+
     def post(self, request, *args, **kwargs):
-        # Get the username from the request data
-        # username = request.data.get('222')
-
-        print("\n\nBANANA\n\n")
-        # logger.info(f'POST 요청이 받아들여진 사용자 ID: {username}')
-
-        user_instance = get_object_or_404(User, id=6)
+        username = request.user.username
 
 
-        total_games_played = request.POST.get("total_games_played", 0)
-        games_won = request.POST.get("games_won", 0)
-        games_lost = request.POST.get("games_lost", 0)
-        # Get the user object using the username
-        try:
-            user = User.objects.get(id=6)
-        except User.DoesNotExist:
-            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        print("\n\nRECEIVED POST REQUEST with USER: ", username, "\n\n")
+        total_games_played = int(request.POST.get("total_games_played", 0))
+        games_won = int(request.POST.get("games_won", 0))
+        games_lost = int(request.POST.get("games_lost", 0))
 
-        total_games_played = int(total_games_played)
-        games_won = int(games_won)
-        games_lost = int(games_lost)
+        print("\nDATA CHECK: ", total_games_played, games_won, games_lost, "\n\n")
 
-        # Get or create the GameStats instance for the user
-        game_stats, created = GameStats.objects.update_or_create(
-            user=user_instance,
-            defaults={
-                "total_games_played": total_games_played,
-                "games_won": games_won,
-                "games_lost": games_lost,
-            }
-        )
+        # game_stats = get_object_or_404(GameStats, user__username=username)
+        game_stats = GameStats.objects.filter(user=request.user).first()
 
-        # Save the updated GameStats instance
-        game_stats.save()
+        # Update the GameStats object with the received data
+        if game_stats is not None:
+            game_stats.total_games_played = total_games_played
+            game_stats.games_won = games_won
+            game_stats.games_lost = games_lost
+            game_stats.save()
+        else:
+            return JsonResponse({'message': 'Game stats updated failed'}, status=status.HTTP_404_NOT_FOUND)
 
-        return Response({'success': 'GameStats updated successfully'}, status=status.HTTP_200_OK)
+
+        return JsonResponse({'message': 'Game stats updated successfully'}, status=status.HTTP_200_OK)
 
 # class GameStatsAPIView(APIView):
 #     def get(self, request, *args, **kwargs):

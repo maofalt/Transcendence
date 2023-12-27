@@ -8,7 +8,7 @@
 <body>
     <h1>Game Stats Test</h1>
 
-    <form id="gameStatsForm" method="post" data-user-id="{{ user_id_from_django }}">
+    <form id="gameStatsForm" method="post" data-username="{{ request.user.username }}">
         {% csrf_token %}
         <label for="total_games_played">Total Games Played:</label>
         <input type="number" name="total_games_played" id="total_games_played" required>
@@ -26,40 +26,31 @@
     </form>
 
     <script>
-         document.getElementById("gameStatsForm").addEventListener("submit", function(event) {
-        event.preventDefault();
+        document.getElementById("gameStatsForm").addEventListener("submit", function(event) {
+            event.preventDefault();
 
-        // HTML 속성에서 사용자 ID 가져오기
-        const userId = '6';
+            const username = document.getElementById("gameStatsForm").getAttribute("data-username");
 
-        // 폼에서 값 가져오기
-        const totalGamesPlayed = document.getElementById("total_games_played").value;
-        const gamesWon = document.getElementById("games_won").value;
-        const gamesLost = document.getElementById("games_lost").value;
+            const totalGamesPlayed = document.getElementById("total_games_played").value;
+            const gamesWon = document.getElementById("games_won").value;
+            const gamesLost = document.getElementById("games_lost").value;
 
-        // 게임 통계 업데이트를 위한 AJAX 요청
-        fetch(`/gameHistory_microservice/api/game-stats/${userId}/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': document.getElementsByName('csrfmiddlewaretoken')[0].value,
-            },
-            body: JSON.stringify({
-                total_games_played: totalGamesPlayed,
-                games_won: gamesWon,
-                games_lost: gamesLost,
-            }),
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('게임 통계가 성공적으로 업데이트되었습니다:', data);
-            // 필요한 경우 여기에 추가 처리 또는 UI 업데이트를 추가할 수 있습니다
-        })
-        .catch(error => {
-            console.error('게임 통계 업데이트 중 오류가 발생했습니다:', error);
-            // 여기서 오류를 처리할 수 있습니다
+            fetch(`/gameHistory_microservice/api/game-stats/${username}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': document.getElementsByName('csrfmiddlewaretoken')[0].value,
+                },
+                body: `total_games_played=${totalGamesPlayed}&games_won=${gamesWon}&games_lost=${gamesLost}`,
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('게임 통계가 성공적으로 업데이트되었습니다:', data);
+            })
+            .catch(error => {
+                console.error('게임 통계 업데이트 중 오류가 발생했습니다:', error);
+            });
         });
-    });
     </script>
 </body>
 </html>

@@ -34,6 +34,7 @@ class TournamentHistory(models.Model):
 
 class GameStats(models.Model):
     user = models.OneToOneField('account.User', on_delete=models.CASCADE)
+    username = models.CharField(max_length=15, blank=True, null=True)
     total_games_played = models.IntegerField(default=0)
     games_won = models.IntegerField(default=0)
     games_lost = models.IntegerField(default=0)
