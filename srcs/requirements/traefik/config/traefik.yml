@@ -47,31 +47,24 @@ http:
         - "web"
       middlewares:
         - "redirect-to-https"
+      service: noop-service #dummy service
     websocket-router:
       rule: "Host(`game.localhost`)"  # Adjust the rule as needed
       entryPoints:
         - "websecure"
       service: websocket-service
-      #tls: {}
-      #  certResolver: myresolver
-      # my-game-ws-router:
-      #   rule: "Host(`game.localhost`)"
-      #   entryPoints:
-      #     - "https"
-      #   service: my-game-ws-service
-      #   tls:
-      #     certResolver: myresolver # Your cert resolver here
 
   services:
     # Define your WebSocket service
     websocket-service:
       loadBalancer:
         servers:
-          - url: "wss://game:3000"  # Replace with your WebSocket service details
-    # my-game-ws-service:
-    #   loadBalancer:
-    #     servers:
-    #       - url: "https://game.localhost:3000" # Replace with your container name and port
+          - url: "http://game:3000" 
+
+    noop-service:
+      loadBalancer:
+        servers:
+          - url: "http://"
   middlewares:
     redirect-to-https:
       redirectScheme:
