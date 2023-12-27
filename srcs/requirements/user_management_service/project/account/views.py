@@ -7,6 +7,8 @@ from django.contrib.auth.decorators import login_required
 from .forms import ProfileUpdateForm, PasswordUpdateForm
 from gameHistory_microservice.models import GameStats
 from django.db.utils import IntegrityError
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 
 
 
@@ -62,6 +64,11 @@ def signup_view(request):
         playername = request.POST["playername"]
         intra_id = request.POST["intra_id"]
 
+        try:
+            validate_password(password, user=User(username=username))
+        except ValidationError as e:
+            return render(request, "signup.html", {"error_message": e.messages[0]})
+
         user = User(
             username=username,
             password=make_password(password),
@@ -72,8 +79,6 @@ def signup_view(request):
         try:
             user.save()
         except IntegrityError as e:
-            # IntegrityError가 발생하는 경우 처리 (예: 사용자가 이미 존재하는 경우)
-            # 다른 페이지로 리디렉션하거나 오류 메시지를 표시할 수 있습니다
             return render(request, "signup.html", {"error_message": "User creation failed."})
 
         if user.game_stats is None:

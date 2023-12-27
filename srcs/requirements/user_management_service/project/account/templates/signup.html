@@ -1,16 +1,22 @@
 Sign up page
 
+{% if error_message %}
+  <div style="color: red;">{{ error_message }}</div>
+{% endif %}
+
 <br>
 
 <form action="" method="POST">
     {% csrf_token %}
-    <p>id</p>
+    <p>ID</p>
     <input name="username" type="text">
-    <p>password</p>
+    <p>PASSWORD
+        <span style="color: green; font-size: smaller;">(minimum 8 characters, at least 1 digit, 1 alphabet, different from intra_id and playername)</span>
+    </p>
     <input name="password" type="password">
-    <p>playername</p>
+    <p>PLAYERNAME</p>
     <input name="playername" type="text">
-    <p>intra_id</p>
+    <p>INTRA_ID</p>
     <input name="intra_id" type="text">
     <input type="submit" value="sign up">
 </form>
