@@ -11,6 +11,17 @@ from django.contrib.auth import get_user_model
 from account.models import User
 
 
+
+def tournament_detail(request, tournament_id):
+    # Get the TournamentHistory instance for the specified tournament_id
+    tournament = TournamentHistory.objects.get(tournament_id=tournament_id)
+
+    # Get all rounds for the specified tournament
+    rounds_for_tournament = tournament.tournamentround_set.all()
+
+    # Render the template with the tournament and its rounds
+    return render(request, 'tournament_detail.html', {'tournament': tournament, 'rounds': rounds_for_tournament})
+
 # Create your views here.
 class TournamentHistoryAPIView(APIView):
     def get(self, request, *args, **kwargs):
@@ -51,7 +62,7 @@ class GameStatsAPIView(APIView):
         return render(request, 'gameStatTest.html', {'username': username})
 
     def post(self, request, *args, **kwargs):
-        
+
         username = request.user.username
 
         print("\n\nRECEIVED POST REQUEST with USER: ", username, "\n\n")
