@@ -5,6 +5,8 @@ from .models import User
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.decorators import login_required
 from .forms import ProfileUpdateForm, PasswordUpdateForm
+from gameHistory_microservice.models import GameStats
+from django.db.utils import IntegrityError
 
 
 
@@ -53,25 +55,6 @@ def logout_view(request):
         logout(request)
     return redirect("account:login")
 
-# def signup_view(request):
-#     if request.method == "POST":
-#         print(request.POST)
-#         username = request.POST["username"]
-#         password = request.POST["password"]
-#         playername = request.POST["playername"]
-#         intra_id = request.POST["intra_id"]
-
-#         user = User.objects.create_user(username, "", password)
-#         user.playername = playername
-#         user.intra_id = intra_id
-#         user.save()
-#         return redirect("account:login")
-
-#     return render(request, "signup.html")
-
-from gameHistory_microservice.models import GameStats
-from django.db.utils import IntegrityError
-
 def signup_view(request):
     if request.method == "POST":
         username = request.POST["username"]
@@ -94,7 +77,6 @@ def signup_view(request):
             return render(request, "signup.html", {"error_message": "User creation failed."})
 
         if user.game_stats is None:
-            print("\n\nCREATING GAMES STATS!!!!!\n\n")
             game_stats = GameStats.objects.create(
                 user=user,
                 username=user.username,
@@ -122,18 +104,7 @@ def friend_view(request):
         # friends = friends.filter(username__icontains=search_query)
 
     return render(request, 'friends.html', {'friends': friends, 'search_query': search_query, 'search_results': search_results})
-    # if request.user == user:
-    #     messages.warning(request, 'You cannot be a friend with yourself.')
-    #     return redirect('account:detail', pk)
-    
-    # # if push it again unset friend
-    # if request.user in user.friends.all():
-    #     user.friends.remove(request.user)
 
-    # else:
-    #     user.friends.add(request.user)
-
-    # return redirect('account:detail', pk)
 
 def detail_view(request):
     game_stats = request.user.game_stats

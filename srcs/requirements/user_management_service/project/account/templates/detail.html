@@ -26,3 +26,12 @@
 
 
 <a href="{% url 'account:profile_update' %}" style="text-decoration: underline; color: blue; font-size: 14px;">Update Profile</a>
+<p>
+<button type="button" onclick="redirectToGameStatsPage()">GAME STATS TEST</button>
+<script>
+    // JavaScript function to redirect to the specified URL
+    function redirectToGameStatsPage() {
+        const username = "{{ user.username }}";
+        window.location.href = `/gameHistory_microservice/api/game-stats/${username}/`;
+    }
+</script>
