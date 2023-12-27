@@ -52,7 +52,7 @@ http:
       entryPoints:
         - "websecure"
       service: websocket-service
-      tls: {}
+      #tls: {}
       #  certResolver: myresolver
       # my-game-ws-router:
       #   rule: "Host(`game.localhost`)"
@@ -67,7 +67,7 @@ http:
     websocket-service:
       loadBalancer:
         servers:
-          - url: "https://game.localhost:3000"  # Replace with your WebSocket service details
+          - url: "wss://game:3000"  # Replace with your WebSocket service details
     # my-game-ws-service:
     #   loadBalancer:
     #     servers:

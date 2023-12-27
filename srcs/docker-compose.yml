@@ -3,7 +3,9 @@ version: '3.8'
 
 services:
   traefik:
-    image: traefik:v2.10.4
+    build:
+      context: ./requirements/traefik
+      dockerfile: Dockerfile
     container_name: traefik
     ports:
       - 9080:80
@@ -20,7 +22,7 @@ services:
       - transcendence
     restart: unless-stopped
     depends_on:
-      - portainer
+      - game
 
 ##CONTAINER MANAGER
   portainer:
@@ -41,7 +43,8 @@ services:
       - "traefik.http.routers.portainer.entrypoints=websecure"
       - "traefik.http.services.portainer.loadbalancer.server.port=9000"
       - "traefik.http.routers.portainer.service=portainer"
-      - "traefik.http.routers.portainer.tls.certresolver=myresolver"
+      - "traefik.http.routers-p /etc/game/ssl/
+RUN		openssl req -x509 -nodes -out /e.portainer.tls.certresolver=myresolver"
       
     #Edge  
       - "traefik.http.routers.edge.rule=Host(`portaineredge.localhost`)"
@@ -103,8 +106,10 @@ services:
       - game-db
     networks:
       - transcendence
-    #volume:
-    #  - traefik-ssl-certs:/etc/game/ssl
+    ports:
+      - "3000:3000"
+    volumes:
+      - traefik-ssl-certs:/etc/game/ssl/
     # labels:
     #   - "traefik.enable=true"
     #   - "traefik.http.routers.game.rule=Host(`game.localhost`)"
@@ -143,6 +148,10 @@ services:
 volumes:
   traefik-ssl-certs:
     driver: local
+    driver_opts:
+      type: none
+      device: ./requirements/traefik/config/ssl/
+      o: bind
   portainer-data:
     driver: local
   postgres-data:
