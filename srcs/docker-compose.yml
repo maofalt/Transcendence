@@ -114,7 +114,9 @@ RUN		openssl req -x509 -nodes -out /e.portainer.tls.certresolver=myresolver"
       - "traefik.http.routers.game.entrypoints=websecure"
       - "traefik.http.services.game.loadbalancer.server.port=3000"
       - "traefik.http.routers.game.service=game"
+      #- "traefik.http.routes.game.tls=true"
       - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto = https"
+      - "traefik.http.routers.game.tls.certresolver=myresolver"
 
   game-db:
     container_name: game-db

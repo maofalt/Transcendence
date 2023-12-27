@@ -56,7 +56,8 @@ const PlayRemote = () => {
 		console.log("IO: ", io);
 
 		socket.on('render', (data) => {
-			updateGame(data);
+			// updateGame(data);
+			console.log("render frame");
 		});
 
 		socket.on('clientId', (id, num) => {
