@@ -19,14 +19,14 @@ const expressPort = process.env.PORT || 3000;
 // };
 
 // Create HTTPS server with the SSL certificates
-const server = http.createServer(credentials, app);
+const server = http.createServer(app);
 
-const io = socketIo(server)//, {
-//     cors: {
-//         origin: ["*"], // "wss://game.localhost:9443"], // You can specify the client's URL here for production
-//         methods: ["GET", "POST"]
-//     }
-// });
+const io = socketIo(server, {
+    cors: {
+        origin: ["*"], // "wss://game.localhost:9443"], // You can specify the client's URL here for production
+        methods: ["GET", "POST"]
+    }
+});
 
 // global vars
 let numClients = 0;

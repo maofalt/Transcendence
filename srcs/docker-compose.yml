@@ -103,6 +103,8 @@ services:
       - game-db
     networks:
       - transcendence
+    #volume:
+    #  - traefik-ssl-certs:/etc/game/ssl
     # labels:
     #   - "traefik.enable=true"
     #   - "traefik.http.routers.game.rule=Host(`game.localhost`)"

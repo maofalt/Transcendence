@@ -13,8 +13,8 @@ RUN npm install
 
 # creating cert and key
 RUN		mkdir -p /etc/game/ssl/
-RUN		openssl req -x509 -nodes -out /etc/game/ssl/game.crt -keyout \
-		/etc/game/ssl/game.key -subj "/C=FR/ST=IDF/L=Paris/O=42/OU=42/CN=game.localhost/UID=znogueir@student.42.fr"
+RUN		openssl req -x509 -nodes -out /etc/game/ssl/game.localhost.crt -keyout \
+		/etc/game/ssl/game.localhost.key -subj "/C=FR/ST=IDF/L=Paris/O=42/OU=42/CN=game.localhost/UID=znogueir@student.42.fr"
 
 # Copier les fichiers du projet dans le répertoire de travail du conteneur
 COPY src/ src/

@@ -1,6 +1,7 @@
-## STATIC CONFIGURATION
 log:
-  level: ERROR
+  level: DEBUG
+
+accessLog: {}
 
 entryPoints:
   web:
@@ -27,8 +28,14 @@ providers:
     exposedByDefault: true
   #path to this same file to act as the dynamic config
   file:
-    filename: traefik.yml
+    filename: /etc/traefik/traefik.yml
     watch: true
+
+#certficates we own and want to use
+tls:
+  certificates:
+    - certFile: /ssl-certs/game.localhost.crt
+      keyFile: /ssl-certs/game.localhost.key
 
 ## DYNAMIC CONFIGURATION
 #if dynamic configuration doesnt work probably the filepath in providers is wrong
@@ -40,14 +47,13 @@ http:
         - "web"
       middlewares:
         - "redirect-to-https"
-    # WebSocket router
-      websocket-router:
-        rule: "Host(`game.localhost`) && Path(`/socket.io`)"  # Adjust the rule as needed
-        entryPoints:
-          - "websecure"
-        service: websocket-service
-        tls:
-          certResolver: myresolver
+    websocket-router:
+      rule: "Host(`game.localhost`)"  # Adjust the rule as needed
+      entryPoints:
+        - "websecure"
+      service: websocket-service
+      tls: {}
+      #  certResolver: myresolver
       # my-game-ws-router:
       #   rule: "Host(`game.localhost`)"
       #   entryPoints:
