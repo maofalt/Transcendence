@@ -31,7 +31,6 @@ def login_view(request):
             request.user.is_online = True
             request.user.save()
             print(request.user.username, ": is_online status", request.user.is_online)
-            
 
             # Output information about the authenticated user
             print("User Information:")

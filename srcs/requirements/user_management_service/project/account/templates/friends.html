@@ -1,4 +1,4 @@
-<h1>friends list</h1>
+<h1>Friends List</h1>
 
 <form method="get" action="{% url 'account:friend' %}">
   <input type="text" name="search" placeholder="Search by username">
@@ -7,7 +7,7 @@
 
 <ul>
   {% for friend in friends %}
-    <li>{{ friend.username }} / {{friend.playername}}
+    <li>{{ friend.username }} / {{ friend.playername }}
       {% if friend.avatar %}
         <img src="{{ friend.avatar.url }}" alt="Avatar" width="30" height="30">
       {% else %}
@@ -18,6 +18,26 @@
       {% else %}
         <span style="color: red;">Off</span>
       {% endif %}
+      <span id="winRate{{ friend.pk }}" style="color: black;">Played: {{ friend.game_stats.total_games_played }}</span>
+      <span id="winRateDisplay{{ friend.pk }}"></span>
+
+      <script>
+        // JavaScript function to calculate and display win rate
+        function calculateWinRate(gamesWon, totalGamesPlayed, friendId) {
+          var winRateSpan = document.getElementById('winRateDisplay' + friendId);
+          var totalGamesPlayedSpan = document.getElementById('winRate' + friendId);
+
+          if (totalGamesPlayed > 0) {
+            var winRate = ((gamesWon / totalGamesPlayed) * 100).toFixed(2);
+            winRateSpan.innerHTML = '<span style="color: green;">(' + winRate + '% win rate)</span>';
+          } else {
+            totalGamesPlayedSpan.innerHTML += '<span style="color: gray;">(No games played yet)</span>';
+          }
+        }
+
+        // Call the function with friend's data
+      calculateWinRate({{ friend.game_stats.games_won }}, {{ friend.game_stats.total_games_played }}, {{ friend.pk }});
+      </script>
       <form method="post" action="{% url 'account:remove_friend' friend.pk %}">
         {% csrf_token %}
         <button type="submit">Remove Friend</button>
@@ -30,7 +50,7 @@
   <p>Search Results for "{{ search_query }}":</p>
   <ul>
     {% for result in search_results %}
-      <li>{{ result.username }} / {{result.playername}}
+      <li>{{ result.username }} / {{ result.playername }}
         {% if result.avatar %}
           <img src="{{ result.avatar.url }}" alt="Avatar" width="30" height="30">
         {% else %}

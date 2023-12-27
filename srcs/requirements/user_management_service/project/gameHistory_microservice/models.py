@@ -2,8 +2,8 @@ from django.db import models
 import logging
 
 class TournamentHistory(models.Model):
-    user = models.ForeignKey('account.User', on_delete=models.CASCADE)
-    tournament_name = models.CharField(max_length=255)
+    # user = models.ForeignKey('account.User', on_delete=models.CASCADE)
+    tournament_id = models.IntegerField()
     result = models.CharField(max_length=50)
     date_played = models.DateField()
 
