@@ -43,8 +43,7 @@ services:
       - "traefik.http.routers.portainer.entrypoints=websecure"
       - "traefik.http.services.portainer.loadbalancer.server.port=9000"
       - "traefik.http.routers.portainer.service=portainer"
-      - "traefik.http.routers-p /etc/game/ssl/
-RUN		openssl req -x509 -nodes -out /e.portainer.tls.certresolver=myresolver"
+      - "traefik.http.routers.portainer.tls.certresolver=myresolver"
       
     #Edge  
       - "traefik.http.routers.edge.rule=Host(`portaineredge.localhost`)"
@@ -156,7 +155,7 @@ volumes:
 
   front-end-volume:
     driver: local # use default Docker volume driver (Docker managed volume)
-    driver_opts: # driver options to create a volume in a specified directory
+    driver_opts:
       type: none # specify that the volume is not formatted with a filesystem
       device: ./requirements/front-end/react-app # location on the host to be mounted
       o: bind # specify that it is a bind mount
