@@ -158,7 +158,7 @@ volumes:
     driver_opts:
       type: none # specify that the volume is not formatted with a filesystem
       device: ./requirements/front-end/react-app # location on the host to be mounted
-      o: bind # specify that it is a bind mount
+      o: bind 
 
 #NETWORKS
 networks:
