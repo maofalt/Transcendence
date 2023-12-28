@@ -113,9 +113,12 @@ services:
       - "traefik.http.routers.game.entrypoints=websecure"
       - "traefik.http.services.game.loadbalancer.server.port=3000"
       - "traefik.http.routers.game.service=game"
-      #- "traefik.http.routes.game.tls=true"
       - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto = https"
       - "traefik.http.routers.game.tls.certresolver=myresolver"
+      #for redirection
+      - "traefik.http.routers.websocket.rule=PathPrefix(`/socket.io`)"
+      - "traefik.http.routers.websocket.middlewares=websocketHeaders"
+
 
   game-db:
     container_name: game-db

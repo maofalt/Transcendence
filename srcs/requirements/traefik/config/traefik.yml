@@ -48,11 +48,11 @@ http:
       middlewares:
         - "redirect-to-https"
       service: noop-service #dummy service
-    #websocket-router:
-    #  rule: "Host(`game.localhost`)"  # Adjust the rule as needed
-    #  entryPoints:
-    #    - "websecure"
-    #  service: websocket-service
+    websocket:
+      rule: "PathPrefix(`/socket.io/`)"
+      service: "game"
+      middlewares:
+        - "websocketHeaders"
 
   services:
     # Define your WebSocket service
@@ -69,4 +69,8 @@ http:
     redirect-to-https:
       redirectScheme:
         scheme: "https"
-
+    websocketHeaders:
+      headers:
+        customRequestHeaders:
+          Connection: "upgrade"
+          Upgrade: "websocket"
