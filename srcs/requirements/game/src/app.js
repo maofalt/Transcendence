@@ -186,39 +186,41 @@ function calculateBallDir(paddleNbr) {
 }
 
 function ballHitsWall() {
-    if (ball.y - ball.r < 0) {
-        ball.y = ball.r;
+    if (ball.y + ball.r >= field.height / 2) {
+        ball.y = field.height / 2 - ball.r;
         ball.vY = -ball.vY;
     }
-    else if (ball.y + ball.r > field.height) {
-        ball.y = field.height - ball.r;
+    else if (ball.y - ball.r <= -field.height / 2) {
+        ball.y = -field.height / 2 + ball.r;
         ball.vY = -ball.vY;
     }
 }
 
 function ballHitsPaddle1() {
-	if (ball.y >= paddle1.y && ball.y <= paddle1.y + paddle1.height) {
-		if (ball.x > paddle1.x + paddle1.width && ball.x - ball.r <= paddle1.x + paddle1.width) {
+	if (ball.y >= paddle1.y - paddle1.height / 2 && ball.y <= paddle1.y + paddle1.height / 2) {
+		if (ball.x > paddle1.x + paddle1.width / 2 && ball.x - ball.r <= paddle1.x + paddle1.width / 2) {
 			// ball.sp *= 1.1;
-			calculateBallDir(1);
+			// calculateBallDir(1);
+            ball.vX = -ball.vX;
 		}
 	}
 }
 
 function ballHitsPaddle2() {
-	if (ball.y >= paddle2.y && ball.y <= paddle2.y + paddle2.height) {
-		if (ball.x < paddle2.x && ball.x + ball.r >= paddle2.x) {
+	if (ball.y >= paddle2.y - paddle2.height / 2 && ball.y <= paddle2.y + paddle2.height / 2) {
+		if (ball.x < paddle2.x - paddle2.width / 2 && ball.x + ball.r >= paddle2.x - paddle2.width / 2) {
 			// ball.sp *= 1.1;
-			calculateBallDir(2);
+			// calculateBallDir(2);
+            ball.vX = -ball.vX;
 		}
 	}
 }
 
 // ball out of bounds
 function ballIsOut() {
-	if (ball.x >= field.width)
+	if (ball.x >= field.width / 2)
 		return (player1.score++, true);
-	if (ball.x <= 0)
+	if (ball.x <= -field.width / 2)
 		return (player2.score++, true);
 	return false;
 }
@@ -289,14 +291,14 @@ io.on('connection', (client) => {
             if (player1.gameState == false && player2.gameState)
                 return (player1.gameState = true, startRound());
             player1.gameState = true;
-            paddle1.vY = -paddle1.sp;
+            paddle1.vY = paddle1.sp;
         }
         else if (client.id == player2.clientId) {
             // console.log(`player 2 moving up !`);
             if (player2.gameState == false && player1.gameState)
                 return (player2.gameState = true, startRound());
             player2.gameState = true;
-            paddle2.vY = -paddle2.sp;
+            paddle2.vY = paddle2.sp;
         }
     });
 
@@ -306,14 +308,14 @@ io.on('connection', (client) => {
             if (player1.gameState == false && player2.gameState)
                 return (player1.gameState = true, startRound());
             player1.gameState = true;
-            paddle1.vY = paddle1.sp;
+            paddle1.vY = -paddle1.sp;
         }
         else if (client.id == player2.clientId) {
             // console.log(`player 2 moving down !`);
             if (player2.gameState == false && player1.gameState)
                 return (player2.gameState = true, startRound());
             player2.gameState = true;
-            paddle2.vY = paddle2.sp;
+            paddle2.vY = -paddle2.sp;
         }
     });
 
@@ -330,12 +332,12 @@ io.on('connection', (client) => {
 
     function calculateFrame() {
         // console.log(`player 1 game state : ${player1.gameState}`);
-        // if (updateData()) {
-        //     player1.gameState = false;
-        //     player2.gameState = false;
-        //     // clearInterval();
-        //     initData();
-        // }
+        if (updateData()) {
+            player1.gameState = false;
+            player2.gameState = false;
+            // clearInterval();
+            initData();
+        }
         console.log("calculating frame...");
         client.emit('render', data);
     }
@@ -344,7 +346,7 @@ io.on('connection', (client) => {
         console.log("startRound");
         initData();
         getRandomDir();
-        gameInterval = setInterval(calculateFrame, 10);
+        // gameInterval = setInterval(calculateFrame, 10);
     }
 
     function manageLobby() {

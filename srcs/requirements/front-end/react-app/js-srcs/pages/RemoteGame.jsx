@@ -31,7 +31,7 @@ const RemoteGame = () => {
 
 	function generateBall(data) {
 		const ballGeometry = new THREE.SphereGeometry(data.ball.r, 24, 12);
-		const ballMaterial = new THREE.MeshPhongMaterial({ color: data.ball.color, transparent: true, opacity: 0.7 });
+		const ballMaterial = new THREE.MeshPhongMaterial({ color: data.ball.color, transparent: false, opacity: 1 });
 		ball = new THREE.Mesh(ballGeometry, ballMaterial);
 		
 		// add to scene
@@ -42,8 +42,8 @@ const RemoteGame = () => {
 		const wallGeometry = new THREE.BoxGeometry(data.field.width, data.paddle1.width / 2, 5);
 
 		// const paddleMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff,  });
-		const wallMaterial1 = new THREE.MeshBasicMaterial({ color: data.ball.color, transparent: true, opacity: 0.6, reflectivity: 0.5 });
-		const wallMaterial2 = new THREE.MeshBasicMaterial({ color: data.ball.color, transparent: true, opacity: 0.6, reflectivity: 0.5 });
+		const wallMaterial1 = new THREE.MeshPhongMaterial({ color: data.ball.color, transparent: true, opacity: 1, reflectivity: 0.5 });
+		const wallMaterial2 = new THREE.MeshPhongMaterial({ color: data.ball.color, transparent: true, opacity: 1, reflectivity: 0.5 });
 		wall1 = new THREE.Mesh(wallGeometry, wallMaterial1);
 		wall2 = new THREE.Mesh(wallGeometry, wallMaterial2);
 
@@ -56,7 +56,7 @@ const RemoteGame = () => {
 
 	function generateField(data) {
 		const fieldGeometry = new THREE.BoxGeometry(data.field.width, data.field.height, 2);
-		const fieldMaterial = new THREE.MeshBasicMaterial({ color: data.ball.color, transparent: true, opacity: 0.1, reflectivity: 0.5 });
+		const fieldMaterial = new THREE.MeshPhongMaterial({ color: data.ball.color, transparent: true, opacity: 0.1, reflectivity: 0.5 });
 		field = new THREE.Mesh(fieldGeometry, fieldMaterial);
 
 		scene.add(field);
@@ -67,8 +67,8 @@ const RemoteGame = () => {
 		const paddleGeometry = new THREE.BoxGeometry(data.paddle1.width, data.paddle1.height, 5);
 
 		// const paddleMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff,  });
-		const paddleMaterial1 = new THREE.MeshBasicMaterial({ color: data.paddle1.color, transparent: true, opacity: 0.6, reflectivity: 0.5 });
-		const paddleMaterial2 = new THREE.MeshBasicMaterial({ color: data.paddle2.color, transparent: true, opacity: 0.6, reflectivity: 0.5 });
+		const paddleMaterial1 = new THREE.MeshPhongMaterial({ color: data.paddle1.color, transparent: true, opacity: 1, reflectivity: 0.5 });
+		const paddleMaterial2 = new THREE.MeshPhongMaterial({ color: data.paddle2.color, transparent: true, opacity: 1, reflectivity: 0.5 });
 		paddle1 = new THREE.Mesh(paddleGeometry, paddleMaterial1);
 		paddle2 = new THREE.Mesh(paddleGeometry, paddleMaterial2);
 
@@ -81,7 +81,7 @@ const RemoteGame = () => {
 		directionalLight = new THREE.DirectionalLight(0xffffff, 1);
 		directionalLight.position.set(0, 1, 1);
 
-		ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+		ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
 
 		// add to scene
 		scene.add(directionalLight);
