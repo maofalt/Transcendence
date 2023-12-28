@@ -47,8 +47,8 @@ const PlayRemote = () => {
 
 	useEffect(() => {
 		// connect to socket server
-		const socket = io(`wss://game.localhost:9443`, {
-			path: '/socket.io',
+		const socket = io(`wss://localhost:9443`, {
+			path: '/game-logic/socket.io',
 			secure: true,
 			rejectUnauthorized: false,
 			transports: ['websocket']
