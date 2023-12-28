@@ -36,8 +36,8 @@ let roundState = false;
 
 // board :
 const field = {
-    height: 420,
-    width: 560,
+    height: 30,
+    width: 50,
 }
 
 // objects : paddles and ball
@@ -46,18 +46,19 @@ const ball = {
 	y: 0,
 	vX: 0,
 	vY: 0,
-	r: 8,
-	sp: 4,
+	r: 2,
+	sp: 0.2,
+    originalSp: 0.2,
 	color: "#FFFFFF"
 };
 
 const paddle1 = {
-	x: 0,
+	x: 10,
 	y: 0,
 	vX: 0,
 	vY: 0,
-	width: 15,
-	height: 70,
+	width: 2,
+	height: 10,
 	sp: 0,
 	color: "#0000FF"
 }
@@ -67,8 +68,8 @@ const paddle2 = {
 	y: 0,
 	vX: 0,
 	vY: 0,
-	width: 15,
-	height: 70,
+	width: 2,
+	height: 10,
 	sp: 0,
 	color: "#FF0000"
 }
@@ -116,30 +117,30 @@ const data = {
 }
 
 function initBall() {
-    ball.x = field.width / 2;
-    ball.y = field.height / 2;
+    ball.x = 0;
+    ball.y = 0;
+    ball.z = 0;
     ball.vX = 0;
     ball.vY = 0;
-    ball.sp = 2;
-    ball.originalSp = 2;
-    ball.r = 8;
+    ball.sp = ball.originalSp;
+    ball.r = 2;
     // getRandomDir(ball);
 }
 
 function initPaddle1(paddle) {
-    paddle.x = paddle.width;
-    paddle.y = (field.height - paddle.height) / 2;
+    paddle.x = -field.width / 2;
+    paddle.y = 0;
     paddle.vX = 0;
     paddle.vY = 0;
-    paddle.sp = 2;
+    paddle.sp = 0.1;
 }
 
 function initPaddle2(paddle) {
-    paddle.x = field.width - paddle.width * 2;
-    paddle.y = (field.height - paddle.height) / 2;
+    paddle.x = field.width / 2;
+    paddle.y = 0;
     paddle.vX = 0;
     paddle.vY = 0;
-    paddle.sp = 2;
+    paddle.sp = 0.1;
 }
 
 function initData() {
@@ -234,10 +235,11 @@ function updateBall() {
 }
 
 function updatePaddle(paddle) {
+    console.log("updating paddles");
     paddle.y += paddle.vY;
     // check for collisions;
-    paddle.y = ((paddle.y < 0) ? 0 : paddle.y);
-    paddle.y = ((paddle.y + paddle.height > field.height) ? field.height - paddle.height : paddle.y);
+    paddle.y = ((paddle.y - paddle.height / 2 < -field.height / 2) ? -field.height / 2 + paddle.height / 2 : paddle.y);
+    paddle.y = ((paddle.y + paddle.height / 2 > field.height / 2) ? field.height / 2 - paddle.height / 2 : paddle.y);
 }
 
 function updateData() {
@@ -328,28 +330,26 @@ io.on('connection', (client) => {
 
     function calculateFrame() {
         // console.log(`player 1 game state : ${player1.gameState}`);
-        if (updateData()) {
-            player1.gameState = false;
-            player2.gameState = false;
-            // clearInterval();
-            initData();
-        }
-        // console.log("calculating frame...");
+        // if (updateData()) {
+        //     player1.gameState = false;
+        //     player2.gameState = false;
+        //     // clearInterval();
+        //     initData();
+        // }
+        console.log("calculating frame...");
         client.emit('render', data);
     }
 
     function startRound() {
         console.log("startRound");
-        // initData();
-        // getRandomDir();
-        ball.vX = ((player1.score > player2.score) ? 1 : -1) * ball.sp;
-        console.log(`ball stats : ${ball.vX} ${ball.vY} ${ball.sp} ${ball.originalSp}`);
-        console.log(`paddles stats : ${paddle1.sp} ${paddle2.sp} ${paddle1.vY} ${paddle2.vY}`);
-        // gameInterval = setInterval(calculateFrame, 10);
+        initData();
+        getRandomDir();
+        gameInterval = setInterval(calculateFrame, 10);
     }
 
     function manageLobby() {
         initData();
+        client.emit('generate', data);
         gameInterval = setInterval(calculateFrame, 10);
     }
 
@@ -358,7 +358,7 @@ io.on('connection', (client) => {
     // disconnect event
     client.on('disconnect', () => {
         numClients = io.engine.clientsCount;
-        // initData();
+        initData();
         console.log(`Client disconnected with ID: ${client.id} (num clients: ${numClients})`);
     });
 });
