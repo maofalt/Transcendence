@@ -1,0 +1,13 @@
+[1mdiff --git a/srcs/docker-compose.yml b/srcs/docker-compose.yml[m
+[1mindex 50a3ec9..332658b 100644[m
+[1m--- a/srcs/docker-compose.yml[m
+[1m+++ b/srcs/docker-compose.yml[m
+[36m@@ -158,7 +158,7 @@[m [mvolumes:[m
+     driver_opts:[m
+       type: none # specify that the volume is not formatted with a filesystem[m
+       device: ./requirements/front-end/react-app # location on the host to be mounted[m
+[31m-      o: bind # specify that it is a bind mount[m
+[32m+[m[32m      o: bind[m[41m [m
+ [m
+ #NETWORKS[m
+ networks:[m
