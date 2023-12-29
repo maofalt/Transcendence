@@ -35,21 +35,6 @@ services:
       # - "/var/run/docker.sock:/var/run/docker.sock"
       - "${XDG_RUNTIME_DIR}/docker.sock:/var/run/docker.sock"
       - portainer-data:/data
-    labels:
-    #FRONTEND
-      - "traefik.enable=true"
-      - "traefik.http.routers.portainer.rule=Host(`portainer.localhost`)"
-      - "traefik.http.routers.portainer.entrypoints=websecure"
-      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
-      - "traefik.http.routers.portainer.service=portainer"
-      - "traefik.http.routers.portainer.tls.certresolver=myresolver"
-      
-    #Edge  
-      - "traefik.http.routers.edge.rule=Host(`portaineredge.localhost`)"
-      - "traefik.http.routers.edge.entrypoints=websecure"
-      - "traefik.http.services.edge.loadbalancer.server.port=8000"
-      - "traefik.http.routers.edge.service=edge"
-      - "traefik.http.routers.edge.tls.certresolver=myresolver"
     networks:
       - transcendence
 

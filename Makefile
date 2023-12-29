@@ -13,7 +13,7 @@ endif
 
 COMPOSE_FILE = -f srcs/docker-compose.yml
 
-all: build up
+all: build up logs
 
 build: set-ip set-permissions
 	docker-compose $(COMPOSE_FILE) build

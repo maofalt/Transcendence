@@ -41,13 +41,29 @@ tls:
 #if dynamic configuration doesnt work probably the filepath in providers is wrong
 http:
   routers:
+
+    portainer:
+      rule: "Host(`portainer.localhost`)"
+      entryPoints: ["websecure"]
+      service: portainer-service
+      tls:
+        certResolver: myresolver
+    
+    edge:
+      rule: "Host(`portaineredge.localhost`)"
+      entryPoints: ["websecure"]
+      service: edge-service
+      tls:
+        certResolver: myresolver
+  
     http-catchall:
       rule: "HostRegexp(`{host:.+}`)"
       entrypoints:
         - "web"
       middlewares:
         - "redirect-to-https"
-      service: noop-service #dummy service
+      service: noop-service
+    
     websocket:
       rule: "PathPrefix(`/socket.io/`)"
       service: "game"
@@ -56,15 +72,27 @@ http:
 
   services:
     noop-service:
+        loadBalancer:
+          servers:
+            - url: "http://"
+  
+    portainer-service:
       loadBalancer:
         servers:
-          - url: "http://"
+          - url: "http://portainer:9000"
+
+    edge-service:
+      loadBalancer:
+        servers:
+          - url: "http://edge:8000"
+
   middlewares:
     redirect-to-https:
       redirectScheme:
         scheme: "https"
+  
     websocketHeaders:
       headers:
-        customRequestHeaders:
-          Connection: "upgrade"
-          Upgrade: "websocket"
+          customRequestHeaders:
+            Connection: "upgrade"
+            Upgrade: "websocket"
