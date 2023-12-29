@@ -6,8 +6,8 @@ let roundState = false;
 
 // board :
 const field = {
-    height: 30,
-    width: 50,
+	height: 50,
+	width: 85,
 }
 
 const game = {
@@ -21,29 +21,35 @@ const ball = {
 	vX: 0,
 	vY: 0,
 	r: 2,
-	sp: 0.2,
+	sp: 0.1,
 	color: "#FFFFFF"
 };
 
 const paddles = {
 	width: 2,
-	height: 10,
-	sp: 0
+	height: 18,
+	sp: 0.1
 }
 
 const paddle1 = {
-	x: 10,
+	x: -field.width / 2,
 	y: 0,
 	vX: 0,
 	vY: 0,
+	width: paddles.width,
+	height: paddles.height,
+	sp: paddles.sp,
 	color: "#0000FF"
 }
 
 const paddle2 = {
-	x: 0,
+	x: field.width / 2,
 	y: 0,
 	vX: 0,
 	vY: 0,
+	width: paddles.width,
+	height: paddles.height,
+	sp: paddles.sp,
 	color: "#FF0000"
 }
 
@@ -58,23 +64,25 @@ score.font = `${score.fontsize}px \'Lilita One\', sans-serif`;
 const player1 = {
 	login: "Player 1",
 	id: 0,
-    clientId: 0,
-    color: "",
+	clientId: 0,
+	color: "",
 	paddle: paddle1,
 	score: 0,
-    connected: false,
-    gameState: false,
-    roundState: false,
+	connected: false,
+	gameState: false,
+	roundState: false,
 }
 
 const player2 = {
 	login: "Player 2",
 	id: 0,
-    clientId: 0,
-    color: "",
+	clientId: 0,
+	color: "",
 	paddle: paddle2,
 	score: 0,
-    connected: false,
-    gameState: false,
-    roundState: false,
+	connected: false,
+	gameState: false,
+	roundState: false,
 }
+
+module.exports = { field, game, ball, paddles, paddle1, paddle2, score, player1, player2 };

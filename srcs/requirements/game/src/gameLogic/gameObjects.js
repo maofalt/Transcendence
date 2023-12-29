@@ -1,3 +1,5 @@
+const	settings = require('./gameSettings');
+
 // global vars
 let numClients = 0;
 let gameInterval = 0;
@@ -6,71 +8,82 @@ let roundState = false;
 
 // board :
 const field = {
-    height: 0,
-    width: 0,
+	height: settings.field.height,
+	width: settings.field.width,
 }
 
 // objects : paddles and ball
 const ball = {
-	x: 0,
-	y: 0,
-	vX: 0,
-	vY: 0,
-	r: 0,
-	sp: 0,
-	originalSp: 0,
-	color: ""
+	x: settings.ball.x,
+	y: settings.ball.y,
+	vX: settings.ball.vX,
+	vY: settings.ball.vY,
+	r: settings.ball.r,
+	sp: settings.ball.sp,
+	color: settings.ball.color,
 };
 
 const paddle1 = {
-	x: 0,
-	y: 0,
-	vX: 0,
-	vY: 0,
-	width: 0,
-	height: 0,
-	sp: 0,
-	color: ""
+	x: settings.paddle1.x,
+	y: settings.paddle1.y,
+	vX: settings.paddle1.vX,
+	vY: settings.paddle1.vY,
+	width: settings.paddles.width,
+	height: settings.paddles.height,
+	sp: settings.paddles.sp,
+	color: settings.paddle1.color
 }
 
 const paddle2 = {
-	x: 0,
-	y: 0,
-	vX: 0,
-	vY: 0,
-	width: 0,
-	height: 0,
-	sp: 0,
-	color: ""
+	x: settings.paddle2.x,
+	y: settings.paddle2.y,
+	vX: settings.paddle2.vX,
+	vY: settings.paddle2.vY,
+	width: settings.paddles.width,
+	height: settings.paddles.height,
+	sp: settings.paddles.sp,
+	color: settings.paddle2.color
 }
 
 // players + score
 const score = {
-	color: "",
-	fontsize: 0,
-	font: "",
+	color: settings.score.color,
+	fontsize: settings.score.fontsize,
+	font: settings.score.font,
 }
 
 const player1 = {
-	login: "",
-	id: 0,
-    clientId: 0,
-    color: "",
-	paddle: paddle1,
-	score: 0,
-    connected: false,
-    gameState: false,
-    roundState: false,
+	login: settings.player1.login,
+	id: settings.player1.id,
+	clientId: settings.player1.clientId,
+	color: settings.player1.color,
+	paddle: settings.player1.paddle,
+	score: settings.player1.score,
+	connected: settings.player1.connected,
+	gameState: settings.player1.gameState,
+	roundState: settings.player1.roundState,
 }
 
 const player2 = {
-	login: "",
-	id: 0,
-    clientId: 0,
-    color: "",
-	paddle: paddle2,
-	score: 0,
-    connected: false,
-    gameState: false,
-    roundState: false,
+	login: settings.player2.login,
+	id: settings.player2.id,
+	clientId: settings.player2.clientId,
+	color: settings.player2.color,
+	paddle: settings.player2.paddle,
+	score: settings.player2.score,
+	connected: settings.player2.connected,
+	gameState: settings.player2.gameState,
+	roundState: settings.player2.roundState,
 }
+
+const data = {
+	field: field,
+	ball: ball,
+	paddle1: paddle1,
+	paddle2: paddle2,
+	player1: player1,
+	player2: player2,
+	score: score,
+}
+
+module.exports = { field, ball, paddle1, paddle2, score, player1, player2, data };

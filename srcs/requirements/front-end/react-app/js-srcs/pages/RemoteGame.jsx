@@ -95,7 +95,7 @@ const RemoteGame = () => {
 		camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 		renderer = new THREE.WebGLRenderer();
 
-		camera.position.set(0, 0, 40); // Position camera slightly above the center of the court
+		camera.position.set(0, 0, 80); // Position camera slightly above the center of the court
 		camera.lookAt(new THREE.Vector3(0, 0, 0)); // Camera should look towards the center of the court
 		
 		renderer.setSize(window.innerWidth, window.innerHeight);
