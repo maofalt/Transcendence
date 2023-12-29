@@ -55,10 +55,18 @@ http:
       service: edge-service
       tls:
         certResolver: myresolver
-
+#GAME FRONT END with nGINX
     frontEnd:
       rule: "Host(`front-end.localhost`)"
       service: "frontEnd"
+      entryPoints:
+        - "websecure"
+      tls:
+        certResolver: "myresolver"
+#GAMR FRONT END FOR DEVELOPMENT USING NODE.JS
+    reactDev:
+      rule: "Host(`localhost`)"
+      service: "reactDevService"
       entryPoints:
         - "websecure"
       tls:
@@ -98,6 +106,12 @@ http:
       loadBalancer:
         servers:
           - url: "http://front-end:80"
+
+    reactDevService:
+      loadBalancer:
+        servers:
+          - url: "http://react-dev:8033"
+  
   middlewares:
     redirect-to-https:
       redirectScheme:
