@@ -47,15 +47,6 @@ services:
         dockerfile: Dockerfile
       networks:
         - transcendence
-      labels:
-        - "traefik.enable=true"
-        - "traefik.http.routers.front-end.rule=Host(`front-end.localhost`)"
-        - "traefik.http.routers.front-end.entrypoints=websecure"
-        - "traefik.http.services.front-end.loadbalancer.server.port=80"
-        - "traefik.http.routers.front-end.service=front-end"
-        - "traefik.http.routers.front-end.tls.certresolver=myresolver"
-#      ports:
-#        - 8033:80
 
   # react with vite and HMR for development
   react-dev:

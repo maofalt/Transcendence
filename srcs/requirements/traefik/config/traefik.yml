@@ -41,21 +41,29 @@ tls:
 #if dynamic configuration doesnt work probably the filepath in providers is wrong
 http:
   routers:
-
+#PORTAINER FRONT END
     portainer:
       rule: "Host(`portainer.localhost`)"
       entryPoints: ["websecure"]
       service: portainer-service
       tls:
         certResolver: myresolver
-    
+#PORTAINER API    
     edge:
       rule: "Host(`portaineredge.localhost`)"
       entryPoints: ["websecure"]
       service: edge-service
       tls:
         certResolver: myresolver
-  
+
+    frontEnd:
+      rule: "Host(`front-end.localhost`)"
+      service: "frontEnd"
+      entryPoints:
+        - "websecure"
+      tls:
+        certResolver: "myresolver"
+
     http-catchall:
       rule: "HostRegexp(`{host:.+}`)"
       entrypoints:
@@ -86,6 +94,10 @@ http:
         servers:
           - url: "http://edge:8000"
 
+    frontEnd:
+      loadBalancer:
+        servers:
+          - url: "http://front-end:80"
   middlewares:
     redirect-to-https:
       redirectScheme:
