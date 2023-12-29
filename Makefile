@@ -15,7 +15,7 @@ COMPOSE_FILE = -f srcs/docker-compose.yml
 
 all: build up
 
-build:
+build:	set-ip
 	docker-compose $(COMPOSE_FILE) build
 
 up:
@@ -36,4 +36,8 @@ clean:
 fclean: clean
 	docker volume prune -f
 
+
 .PHONY: all build up down logs
+
+set-ip:
+	echo "LOCAL_IP=$(shell hostname -i)" > srcs/.env
