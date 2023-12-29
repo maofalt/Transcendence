@@ -168,8 +168,8 @@ const RemoteGame = () => {
 		socket.on('generate', (data) => {
 			// console.log(`Generating Scene...${data.ball.r}`);
 			generateScene(data);
-			// updateScene(data);
-			// renderer.render(scene,camera);
+			updateScene(data);
+			renderer.render(scene,camera);
 		});
 
 		socket.on('render', (data) => {
