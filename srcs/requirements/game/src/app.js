@@ -140,14 +140,14 @@ let roundState = false;
 // }
 
 function initBall() {
-    // data.ball.x = settings.ball.x;
-    // data.ball.y = settings.ball.y;
-    // data.ball.z = 0;
-    // data.ball.vX = settings.ball.vX;
-    // data.ball.vY = settings.ball.vY;
-    // data.ball.sp = settings.ball.sp;
-    // data.ball.r = settings.ball.r;
-    data.ball = settings.ball;
+    data.ball.x = settings.ball.x;
+    data.ball.y = settings.ball.y;
+    data.ball.z = 0;
+    data.ball.vX = settings.ball.vX;
+    data.ball.vY = settings.ball.vY;
+    data.ball.sp = settings.ball.sp;
+    data.ball.r = settings.ball.r;
+    // data.ball = settings.ball;
     // getRandomDir(ball);
 }
 
