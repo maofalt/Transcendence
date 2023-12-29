@@ -38,7 +38,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="/home/jischoi/project/env"
+VIRTUAL_ENV="/home/jischoi/Transcendence/srcs/requirements/user_management_service/env"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

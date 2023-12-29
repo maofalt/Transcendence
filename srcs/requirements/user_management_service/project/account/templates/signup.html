@@ -1,22 +1,115 @@
-Sign up page
 
-{% if error_message %}
-  <div style="color: red;">{{ error_message }}</div>
-{% endif %}
+<!-- Signup Popup -->
 
-<br>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 
-<form action="" method="POST">
-    {% csrf_token %}
-    <p>ID</p>
-    <input name="username" type="text">
-    <p>PASSWORD
-        <span style="color: green; font-size: smaller;">(minimum 8 characters, at least 1 digit, 1 alphabet, different from intra_id and playername)</span>
-    </p>
-    <input name="password" type="password">
-    <p>PLAYERNAME</p>
-    <input name="playername" type="text">
-    <p>INTRA_ID</p>
-    <input name="intra_id" type="text">
-    <input type="submit" value="sign up">
-</form>
+
+<style>
+  #signupPopup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+      z-index: 9999;
+      max-width: 400px; /* Adjust the maximum width as needed */
+      width: 100%;
+      border-radius: 8px; /* Add border-radius for rounded corners */
+  }
+
+  #signupPopup h2 {
+      color: #333; /* Change the heading text color */
+  }
+
+  #signupPopup input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+  }
+
+  #signupPopup input[type="submit"] {
+      background-color: #4CAF50;
+      color: #fff; 
+      cursor: pointer;
+  }
+
+  #signupPopup input[type="submit"]:hover {
+      background-color: #45a049;
+  }
+
+  #darkLayer {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.3);
+        z-index: 9998;
+    }
+</style>
+<div id="darkLayer"></div>
+
+<div id="signupPopup" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); z-index: 9999;">
+    <span style="float: right; cursor: pointer;" onclick="closeSignupPopup()">&times;</span>
+    <h2>Sign Up</h2>
+    {% if error_message %}
+        <div style="color: red;">{{ error_message }}</div>
+    {% endif %}
+    <br>
+    <form action="" method="POST">
+        {% csrf_token %}
+        <p>ID</p>
+        <input name="username" type="text">
+        <p>PASSWORD
+            <span style="color: green; font-size: smaller;">(minimum 8 characters, at least 1 digit, 1 alphabet, different from intra_id and playername)</span>
+        </p>
+        <input name="password" type="password">
+        <p>PLAYERNAME</p>
+        <input name="playername" type="text">
+        <p>INTRA_ID</p>
+        <input name="intra_id" type="text">
+        <input type="submit" value="sign up">
+    </form>
+</div>
+
+<script>
+  $(document).ready(function () {
+      $("#signupLink").click(function () {
+          $("#darkLayer").fadeIn();
+          $("#signupPopup").fadeIn();
+      });
+  });
+
+  function closeSignupPopup() {
+      $("#darkLayer").fadeOut();
+      $("#signupPopup").fadeOut();
+  }
+
+  function submitSignupForm() {
+        $.ajax({
+            url: '{% url "account:signup" %}', // Replace with your signup URL
+            type: 'POST',
+            data: $('#signupForm').serialize(),
+            success: function (data) {
+                // Check if the signup was successful
+                if (data.success) {
+                    // Close the popup if successful
+                    closeSignupPopup();
+                } else {
+                    // Display the error message
+                    $('#signupError').text(data.error_message);
+                }
+            },
+            error: function () {
+                // Handle error
+                $('#signupError').text('An error occurred while processing your request.');
+            }
+        });
+    }
+</script>

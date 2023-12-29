@@ -27,6 +27,8 @@ login page
     <input name="password" type="password">
     <input type="submit" value="Login">
   </form>
-  <a href="{% url 'account:signup' %}">Sign up</a>
-  
+  <a href="#" id="signupLink">Sign up</a>
+
 {% endif %}
+
+{% include 'signup.html' %}

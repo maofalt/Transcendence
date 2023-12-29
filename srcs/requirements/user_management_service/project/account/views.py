@@ -9,6 +9,7 @@ from gameHistory_microservice.models import GameStats
 from django.db.utils import IntegrityError
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
+from django.http import JsonResponse
 
 
 
@@ -66,7 +67,7 @@ def signup_view(request):
         try:
             validate_password(password, user=User(username=username))
         except ValidationError as e:
-            return render(request, "signup.html", {"error_message": e.messages[0]})
+            return JsonResponse({'success': False, 'error_message': e.messages[0]})
 
         user = User(
             username=username,
@@ -78,7 +79,7 @@ def signup_view(request):
         try:
             user.save()
         except IntegrityError as e:
-            return render(request, "signup.html", {"error_message": "User creation failed."})
+            return JsonResponse({'success': False, 'error_message': 'User creation failed.'})
 
         if user.game_stats is None:
             game_stats = GameStats.objects.create(
@@ -92,7 +93,7 @@ def signup_view(request):
             print("\n\nGAMES STATS : user", user.game_stats.user)
             user.save()
 
-        return redirect("account:login")
+        return JsonResponse({'success': True})
 
     return render(request, "signup.html")
 
