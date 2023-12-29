@@ -15,7 +15,7 @@ COMPOSE_FILE = -f srcs/docker-compose.yml
 
 all: build up
 
-build:	set-ip
+build: set-ip set-permissions
 	docker-compose $(COMPOSE_FILE) build
 
 up:
@@ -41,3 +41,6 @@ fclean: clean
 
 set-ip:
 	echo "LOCAL_IP=$(shell hostname -i)" > srcs/.env
+
+set-permissions:
+	chmod 600 srcs/requirements/traefik/config/ssl/acme.json

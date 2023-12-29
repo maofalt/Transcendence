@@ -14,7 +14,6 @@ services:
       - 8080:8080
     volumes:
       - ./requirements/traefik/config:/etc/traefik
-      - ./requirements/traefik/config/acme.json:/acme.json
       - traefik-ssl-certs:/ssl-certs
       - "${XDG_RUNTIME_DIR}/docker.sock:/var/run/docker.sock"
       # - "/var/run/docker.sock:/var/run/docker.sock" # <-- actvate this if you are in Windows and comment the line above
@@ -109,7 +108,7 @@ services:
       - traefik-ssl-certs:/etc/game/ssl/
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.game.rule=Host(`localhost`) || Host(`10.24.104.6`) && PathPrefix(`/game-logic`)"
+      - "traefik.http.routers.game.rule=Host(`localhost`) || Host(`LOCAL_IP`) && PathPrefix(`/game-logic`)"
       - "traefik.http.routers.game.entrypoints=websecure"
       - "traefik.http.routers.game.middlewares=strip-game-logic@docker"
       - "traefik.http.middlewares.strip-game-logic.stripprefix.prefixes=/game-logic"
@@ -117,7 +116,6 @@ services:
       - "traefik.http.routers.game.service=game"
       - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto = https"
       - "traefik.http.routers.game.tls.certresolver=myresolver"
-
 
   game-db:
     container_name: game-db

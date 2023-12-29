@@ -55,12 +55,6 @@ http:
         - "websocketHeaders"
 
   services:
-    # Define your WebSocket service
-    #websocket-service:
-    #  loadBalancer:
-    #    servers:
-    #      - url: "game:3000" 
-
     noop-service:
       loadBalancer:
         servers:
