@@ -3,7 +3,9 @@ version: '3.8'
 
 services:
   traefik:
-    image: traefik:v2.10.4
+    build:
+      context: ./requirements/traefik
+      dockerfile: Dockerfile
     container_name: traefik
     ports:
       - 9080:80
@@ -20,7 +22,7 @@ services:
       - transcendence
     restart: unless-stopped
     depends_on:
-      - portainer
+      - game
 
 ##CONTAINER MANAGER
   portainer:
@@ -103,15 +105,17 @@ services:
       - game-db
     networks:
       - transcendence
+    volumes:
+      - traefik-ssl-certs:/etc/game/ssl/
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.game.rule=Host(`game.localhost`)"
       - "traefik.http.routers.game.entrypoints=websecure"
-      - "traefik.http.services.game.loadbalancer.server.port=3001"
+      - "traefik.http.services.game.loadbalancer.server.port=3000"
       - "traefik.http.routers.game.service=game"
+      #- "traefik.http.routes.game.tls=true"
+      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto = https"
       - "traefik.http.routers.game.tls.certresolver=myresolver"
-    # ports:
-    #   - "3001:3001"
 
   game-db:
     container_name: game-db
@@ -140,6 +144,10 @@ services:
 volumes:
   traefik-ssl-certs:
     driver: local
+    driver_opts:
+      type: none
+      device: ./requirements/traefik/config/ssl/
+      o: bind
   portainer-data:
     driver: local
   postgres-data:
@@ -147,10 +155,10 @@ volumes:
 
   front-end-volume:
     driver: local # use default Docker volume driver (Docker managed volume)
-    driver_opts: # driver options to create a volume in a specified directory
+    driver_opts:
       type: none # specify that the volume is not formatted with a filesystem
       device: ./requirements/front-end/react-app # location on the host to be mounted
-      o: bind # specify that it is a bind mount
+      o: bind 
 
 #NETWORKS
 networks:

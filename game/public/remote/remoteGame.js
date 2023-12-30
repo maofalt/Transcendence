@@ -1,85 +1,8 @@
 var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 
-// global vars
-let gameInterval = 0;
-let roundState = false;
-let gameState = false;
-
-// objects : paddles and ball
-const ball = {
-	x: 0,
-	y: 0,
-	vX: 0,
-	vY: 0,
-	r: 8,
-	sp: 4,
-	color: "#FFFFFF"
-};
-
-const paddle1 = {
-	x: 0,
-	y: 0,
-	vX: 0,
-	vY: 0,
-	width: 15,
-	height: 70,
-	sp: 4,
-	color: "#0000FF"
-}
-
-const paddle2 = {
-	x: 0,
-	y: 0,
-	vX: 0,
-	vY: 0,
-	width: 15,
-	height: 70,
-	sp: 4,
-	color: "#FF0000"
-}
-
-// paddle1.x = paddle1.width;
-// paddle1.y = (canvas.height - paddle1.height) / 2;
-
-// paddle2.x = canvas.width - (paddle2.width * 2);
-// paddle2.y = (canvas.height - paddle2.height) / 2;
-
-// players + score
-const score = {
-	color: "#FFFFFF",
-	fontsize: 50,
-	font: "",
-}
-score.font = `${score.fontsize}px \'Lilita One\', sans-serif`;
-
-const player1 = {
-	id: 0,
-    clientId: 0,
-	login: "Player 1",
-	paddle: paddle1,
-	score: 0,
-}
-
-const player2 = {
-	id: 0,
-    clientId: 0,
-	login: "Player 2",
-	paddle: paddle2,
-	score: 0
-}
-
-// update data
-function updateData(data) {
-	ball = data.ball;
-	paddle1 = data.paddle1;
-	paddle2 = data.paddle2;
-	player1.score = data.player1.score;
-	player2.score = data.player2.score;
-}
-
 // draw objects
-function drawBall() {
+function drawBall(ball) {
 	ctx.beginPath();
 	ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
 	ctx.fillStyle = ball.color;
@@ -95,8 +18,15 @@ function drawPaddle(paddle) {
 	ctx.closePath();
 }
 
-function drawLine() {
-	ctx.strokeStyle = score.color;
+// function drawText(text, color, y) {
+// 	ctx.font = score.font;
+// 	ctx.fillStyle = color;
+// 	ctx.textAlign = "center";
+// 	ctx.fillText(text, canvas.width / 2, y);
+// }
+
+function drawLine(data) {
+	ctx.strokeStyle = data.score.color;
     ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.moveTo(canvas.width / 2, 0);
@@ -104,24 +34,23 @@ function drawLine() {
     ctx.stroke();
 }
 
-function drawScore() {
+function drawScore(data) {
 	const fontsize = 50;
-	ctx.font = score.font;
-	ctx.fillStyle = score.color;
+	ctx.font = data.score.font;
+	ctx.fillStyle = data.score.color;
 	ctx.textAlign = "center";
-	ctx.fillText(`${player1.score}`, canvas.width / 2 - fontsize, fontsize);
-	ctx.fillText(`${player2.score}`, canvas.width / 2 + fontsize, fontsize);
-	drawLine();
+	ctx.fillText(`${data.player1.score}`, canvas.width / 2 - fontsize, fontsize);
+	ctx.fillText(`${data.player2.score}`, canvas.width / 2 + fontsize, fontsize);
+	drawLine(data);
 }
 
 // render
 function renderFrame(data) {
-	updateData(data);
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	drawBall();
+	drawBall(data.ball);
 	drawPaddle(data.paddle1);
 	drawPaddle(data.paddle2);
-	drawScore();
+	drawScore(data);
 }
 
 // input events : controlling paddles
@@ -146,7 +75,7 @@ document.addEventListener("keyup", handleKeyRelease);
 canvas.addEventListener("click", clickCanvas);
 
 // connect to socket server
-const socket = io(`http://localhost:3000`);
+const socket = io(`http://10.24.107.3:3000`);
 
 // Listen for the 'connect' event, which is triggered when the connection is established
 socket.on('connect', () => {
