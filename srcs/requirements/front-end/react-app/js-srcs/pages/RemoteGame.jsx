@@ -158,12 +158,14 @@ const RemoteGame = () => {
 		// window.addEventListener('keyup', handleKeyUp);
 
 		// connect to socket server
-		const socket = io(`wss://game.localhost:9443`, {
-			path: '/socket.io',
-			secure: true,
-			rejectUnauthorized: false,
-			transports: ['websocket'],
-		});
+		const hostname = window.location.hostname;
+        const protocol = 'wss';
+        const socket = io(`${protocol}://${hostname}:9443`, {
+            path: '/game-logic/socket.io',
+            secure: hostname !== 'localhost',
+            rejectUnauthorized: false,
+            transports: ['websocket']
+        });
 
 		socket.on('generate', (data) => {
 			// console.log(`Generating Scene...${data.ball.r}`);
