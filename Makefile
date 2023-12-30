@@ -15,7 +15,7 @@ COMPOSE_FILE = -f srcs/docker-compose.yml
 
 all: build up logs
 
-build: set-ip set-permissions
+build: set-ip set-codeespace-url set-permissions
 	docker-compose $(COMPOSE_FILE) build
 
 up:
@@ -40,7 +40,10 @@ fclean: clean
 .PHONY: all build up down logs
 
 set-ip:
-	echo "LOCAL_IP=$(shell hostname -i)" > srcs/.env
+	echo "LOCAL_IP=$(shell hostname -i)" >> srcs/.env
+
+set-codeespace-url:
+	echo "CODESPACE_URL=${CODESPACE_NAME}" >> srcs/.env
 
 set-permissions:
 	chmod 600 srcs/requirements/traefik/config/ssl/acme.json
