@@ -59,10 +59,12 @@ services:
     networks:
       - transcendence
     labels:
+      - "traefik.enable=true"
       - "traefik.http.routers.react-dev.rule= Host(`${LOCAL_IP}`)"
       - "traefik.http.routers.react-dev.entrypoints=websecure"
       - "traefik.http.routers.react-dev.service=reactDevService"
       - "traefik.http.routers.react-dev.tls.certresolver=myresolver"
+      - "traefik.http.services.reactDevService.loadbalancer.server.port=8033"
 
 #BACKEND GAME SERVICES
   game:
@@ -78,16 +80,16 @@ services:
       - transcendence
     volumes:
       - traefik-ssl-certs:/etc/game/ssl/
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.game.rule=Host(`localhost`) || Host(`LOCAL_IP`) && PathPrefix(`/game-logic`)"
-      - "traefik.http.routers.game.entrypoints=websecure"
-      - "traefik.http.routers.game.middlewares=strip-game-logic@docker"
-      - "traefik.http.middlewares.strip-game-logic.stripprefix.prefixes=/game-logic"
-      - "traefik.http.services.game.loadbalancer.server.port=3000"
-      - "traefik.http.routers.game.service=game"
-      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto = https"
-      - "traefik.http.routers.game.tls.certresolver=myresolver"
+    #labels:
+    #  - "traefik.enable=true"
+    #  - "traefik.http.routers.game.rule=Host(`localhost`) || Host(`LOCAL_IP`) && PathPrefix(`/game-logic`)"
+    #  - "traefik.http.routers.game.entrypoints=websecure"
+    #  - "traefik.http.routers.game.middlewares=strip-game-logic@docker"
+    #  - "traefik.http.middlewares.strip-game-logic.stripprefix.prefixes=/game-logic"
+    #  - "traefik.http.services.game.loadbalancer.server.port=3000"
+    #  - "traefik.http.routers.game.service=game"
+    #  - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto = https"
+    #  - "traefik.http.routers.game.tls.certresolver=myresolver"
 
   game-db:
     container_name: game-db
