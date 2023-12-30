@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import io from 'socket.io-client';
+import { Texture } from 'three';
 
 const RemoteGame = () => {
 	// meta
@@ -90,16 +91,16 @@ const RemoteGame = () => {
 
 	function generateSkyBox(data){
 		// Charger la texture de ciel étoilé
-		const loader = new THREE.TextureLoader();
-		const starTexture = loader.load('skybox3.jpeg'); // Remplacez par le chemin de votre texture
-
+		const starTexture = new THREE.TextureLoader().load('../../assets/banana.jpg'); // Remplacez par le chemin de votre texture
 		// Créer la géométrie de la sphère
-		const starGeometry = new THREE.SphereGeometry(100, 64, 64); // Rayon, segmentsWidth, segmentsHeight
+		starTexture.colorSpace = THREE.SRGBColorSpace;
+		const starGeometry = new THREE.SphereGeometry(300, 64, 64); // Rayon, segmentsWidth, segmentsHeight
+		// starTexture.offset.set(0.5, 0); // Shifts the texture halfway across its width
 
 		// Créer le matériau avec la texture
 		const starMaterial = new THREE.MeshBasicMaterial({
     		map: starTexture,
-    	side: THREE.BackSide
+    		side: THREE.BackSide
 		});
 
 		// Créer le mesh de la sphère
