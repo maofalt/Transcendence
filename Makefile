@@ -13,9 +13,9 @@ endif
 
 COMPOSE_FILE = -f srcs/docker-compose.yml
 
-all: build up
+all: build up logs
 
-build:
+build: set-ip set-permissions
 	docker-compose $(COMPOSE_FILE) build
 
 up:
@@ -36,4 +36,11 @@ clean:
 fclean: clean
 	docker volume prune -f
 
+
 .PHONY: all build up down logs
+
+set-ip:
+	echo "LOCAL_IP=$(shell hostname -i)" > srcs/.env
+
+set-permissions:
+	chmod 600 srcs/requirements/traefik/config/ssl/acme.json
