@@ -88,6 +88,27 @@ const RemoteGame = () => {
 		scene.add(ambientLight);
 	}
 
+	function generateSkyBox(data){
+		// Charger la texture de ciel étoilé
+		const loader = new THREE.TextureLoader();
+		const starTexture = loader.load('skybox3.jpeg'); // Remplacez par le chemin de votre texture
+
+		// Créer la géométrie de la sphère
+		const starGeometry = new THREE.SphereGeometry(100, 64, 64); // Rayon, segmentsWidth, segmentsHeight
+
+		// Créer le matériau avec la texture
+		const starMaterial = new THREE.MeshBasicMaterial({
+    		map: starTexture,
+    	side: THREE.BackSide
+		});
+
+		// Créer le mesh de la sphère
+		const starSphere = new THREE.Mesh(starGeometry, starMaterial);
+
+		// Ajouter la sphère étoilée à la scène
+		scene.add(starSphere);
+	}
+
 	function generateScene(data) {
 		console.log("Generating Scene...");
 
@@ -110,6 +131,7 @@ const RemoteGame = () => {
 		generateWalls(data);
 		generateField(data);
 		generateLights(data);
+		generateSkyBox(data);
 		drawAxes();
 
 		// render scene
