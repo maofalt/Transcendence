@@ -36,7 +36,6 @@ def login_view(request):
             # Output information about the authenticated user
             print("User Information:")
             print(f"Username: {request.user.username}")
-            print(f"Email: {user.email}")
             print(f"Intra ID: {request.user.intra_id}")
             print(f"Playername: {request.user.playername}")
             print(f"Is Online: {user.is_online}")
@@ -46,7 +45,7 @@ def login_view(request):
         else:
             print("Authentication failed")
             messages.error(request, 'Authentication failed: Wrong user data')
-    return render(request, "login.html")
+    return render(request, "home.html")
 
 @login_required
 def logout_view(request):
@@ -55,7 +54,7 @@ def logout_view(request):
         request.user.save()
         print(request.user.username, ": is_online status", request.user.is_online)
         logout(request)
-    return redirect("account:login")
+    return redirect('home')
 
 def signup_view(request):
     if request.method == "POST":

@@ -1,34 +1,48 @@
-login page
 
-<br>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 
-{% if messages %}
-<ul class="messages">
-  {% for message in messages %}
-    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-  {% endfor %}
-</ul>
-{% endif %}
 
-<br>
+<div id="loginPopup" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); z-index: 9999;">
+  <span style="float: right; cursor: pointer;" onclick="closeLoginPopup()">&times;</span>
+  <h2>LOG IN</h2>
 
-{% if user.is_authenticated %}
-
-  <p>Welcome {{ user.username }}</p>
-  <a href="{% url 'account:logout' %}">Log out</a>
-  <a href="{% url 'account:friend' %}">Friends</a>
-  <a href="{% url 'account:detail' %}">Detail</a>
-  
-
-{% else %}
-  <form action="" method="POST">
+  <form id="loginForm" action="" method="POST" onsubmit="submitLoginForm(); return false;">
     {% csrf_token %}
     <input name="username" type="text">
     <input name="password" type="password">
     <input type="submit" value="Login">
   </form>
+  
   <a href="#" id="signupLink">Sign up</a>
 
-{% endif %}
 
-{% include 'signup.html' %}
+<script>
+  $(document).ready(function () {
+    $("#loginLink").click(function () {
+        $("#darkLayer").fadeIn();
+        $("#loginPopup").fadeIn();
+    });
+    $("#signupLink").click(function () {
+        closeLoginPopup();
+    });
+  });
+
+
+  function submitLoginForm() {
+    $.ajax({
+        url: '{% url "account:login" %}',
+        type: 'POST',
+        data: $('#loginForm').serialize(),
+        headers: { "X-CSRFToken": "{{ csrf_token }}" },
+        success: function (data) {
+          console.log('Login successful:', data);
+          closeLoginPopup();
+          window.location.href = '{% url "home" %}';
+
+        },
+        error: function () {
+            console.log('An error occurred while processing your request.');
+        }  
+    });
+  }
+</script>
