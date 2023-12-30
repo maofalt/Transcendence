@@ -124,38 +124,38 @@ const RemoteGame = () => {
 		paddle2.position.set(data.paddle2.x, data.paddle2.y, 0);
 	}
 
-	const [keysPressed, setKeysPressed] = useState({KeyW: false, KeyS: false});
-	const keysPressedRef = useRef(keysPressed);
+	// const [keysPressed, setKeysPressed] = useState({KeyW: false, KeyS: false});
+	// const keysPressedRef = useRef(keysPressed);
 
-	useEffect(() => {
-		keysPressedRef.current = keysPressed;
-	}, [keysPressed]);
+	// useEffect(() => {
+	// 	keysPressedRef.current = keysPressed;
+	// }, [keysPressed]);
 
 	useEffect(() => {
 		// input events : controlling paddles
-		const handleKeyDown = (event) => {
-			setKeysPressed((keys) => ({ ...keys, [event.code]: true }));
-			// console.log("CODE: ", event.code);
-		};
+		// const handleKeyDown = (event) => {
+		// 	setKeysPressed((keys) => ({ ...keys, [event.code]: true }));
+		// 	// console.log("CODE: ", event.code);
+		// };
 
-		const handleKeyUp = (event) => {
-			setKeysPressed((keys) => ({ ...keys, [event.code]: false }));
-		};
+		// const handleKeyUp = (event) => {
+		// 	setKeysPressed((keys) => ({ ...keys, [event.code]: false }));
+		// };
 
-		function handlePaddleMovement() {
-			const currentKeysPressed = keysPressedRef.current;
-			if (currentKeysPressed['KeyS']) {
-				console.log("S pressed !");
-				socket.emit("moveDown");
-			}
-			if (currentKeysPressed['KeyW']) {
-				console.log("W pressed !");
-				socket.emit("moveUp");
-			}
-		};
+		// function handlePaddleMovement() {
+		// 	const currentKeysPressed = keysPressedRef.current;
+		// 	if (currentKeysPressed['KeyS']) {
+		// 		console.log("S pressed !");
+		// 		socket.emit("moveDown");
+		// 	}
+		// 	if (currentKeysPressed['KeyW']) {
+		// 		console.log("W pressed !");
+		// 		socket.emit("moveUp");
+		// 	}
+		// };
 
-		window.addEventListener('keydown', handleKeyDown);
-		window.addEventListener('keyup', handleKeyUp);
+		// window.addEventListener('keydown', handleKeyDown);
+		// window.addEventListener('keyup', handleKeyUp);
 
 		// connect to socket server
 		const socket = io(`wss://game.localhost:9443`, {
@@ -181,7 +181,7 @@ const RemoteGame = () => {
 			console.log("Rendering Frame...");
 			updateScene(data);
 			renderer.render(scene, camera);
-			handlePaddleMovement();
+			// handlePaddleMovement();
 		});
 
 		socket.on('clientId', (id, num) => {
@@ -205,10 +205,13 @@ const RemoteGame = () => {
 		window.addEventListener("keyup", handleKeyRelease);
 
 		return () => {
-			// containerRef.current.removeChild(renderer.domElement);
 			window.removeEventListener('keydown', handleKeyPress);
 			window.removeEventListener('keyup', handleKeyRelease);
 			socket.disconnect();
+			if (renderer) {
+				console.log("renderer exists");
+				containerRef.current.removeChild(renderer.domElement);
+			}
 		}
 	}, []);
 

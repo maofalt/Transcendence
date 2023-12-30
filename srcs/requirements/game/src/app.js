@@ -57,88 +57,6 @@ let gameInterval = 0;
 let roundState = false;
 // let gameState = false;
 
-// // board :
-// const field = {
-//     height: 30,
-//     width: 50,
-// }
-
-// // objects : paddles and ball
-// const ball = {
-// 	x: 0,
-// 	y: 0,
-// 	vX: 0,
-// 	vY: 0,
-// 	r: 2,
-// 	sp: 0.2,
-//     originalSp: 0.2,
-// 	color: "#FFFFFF"
-// };
-
-// const paddle1 = {
-// 	x: 10,
-// 	y: 0,
-// 	vX: 0,
-// 	vY: 0,
-// 	width: 2,
-// 	height: 10,
-// 	sp: 0,
-// 	color: "#0000FF"
-// }
-
-// const paddle2 = {
-// 	x: 0,
-// 	y: 0,
-// 	vX: 0,
-// 	vY: 0,
-// 	width: 2,
-// 	height: 10,
-// 	sp: 0,
-// 	color: "#FF0000"
-// }
-
-// // players + score
-// const score = {
-// 	color: "#FFFFFF",
-// 	fontsize: 50,
-// 	font: "",
-// }
-// score.font = `${score.fontsize}px \'Lilita One\', sans-serif`;
-
-// const player1 = {
-// 	login: "Player 1",
-// 	id: 0,
-//     clientId: 0,
-//     color: "",
-// 	paddle: paddle1,
-// 	score: 0,
-//     connected: false,
-//     gameState: false,
-//     roundState: false,
-// }
-
-// const player2 = {
-// 	login: "Player 2",
-// 	id: 0,
-//     clientId: 0,
-//     color: "",
-// 	paddle: paddle2,
-// 	score: 0,
-//     connected: false,
-//     gameState: false,
-//     roundState: false,
-// }
-
-// const data = {
-//     field: field,
-//     ball: ball,
-//     paddle1: paddle1,
-//     paddle2: paddle2,
-//     player1: player1,
-//     player2: player2,
-//     score: score,
-// }
-
 function initBall() {
     data.ball.x = settings.ball.x;
     data.ball.y = settings.ball.y;
@@ -159,22 +77,6 @@ function initPaddle(paddle, settingsPaddle) {
     paddle.sp = settingsPaddle.sp;
     // paddle = settingsPaddle;
 }
-
-// function initPaddle1(paddle, settingsPaddle) {
-//     paddle.x = settings.x;
-//     paddle.y = settings.x;
-//     paddle.vX = settings.x;
-//     paddle.vY = settings.x;
-//     paddle.sp = settings.paddles.sp;
-// }
-
-// function initPaddle2(paddle, settingsPaddle) {
-//     paddle.x = settings.x;
-//     paddle.y = settings.x;
-//     paddle.vX = settings.x;
-//     paddle.vY = settings.x;
-//     paddle.sp = settings.paddles.sp;
-// }
 
 function initData() {
     initBall();
@@ -329,7 +231,6 @@ io.on('connection', (client) => {
         if (updateData()) {
             data.player1.gameState = false;
             data.player2.gameState = false;
-            // clearInterval();
             initData();
         }
         // console.log("calculating frame...");
@@ -338,13 +239,16 @@ io.on('connection', (client) => {
 
     function startRound() {
         console.log("startRound");
+        clearInterval(gameInterval);
         initData();
+        gameInterval = setInterval(calculateFrame, 10);
         getRandomDir();
-        // gameInterval = setInterval(calculateFrame, 10);
     }
 
     function manageLobby() {
         initData();
+        // if (gameInterval)
+        //     clearInterval(gameInterval);
         client.emit('generate', data);
         gameInterval = setInterval(calculateFrame, 10);
     }
@@ -354,7 +258,8 @@ io.on('connection', (client) => {
     // disconnect event
     client.on('disconnect', () => {
         numClients = io.engine.clientsCount;
-        initData();
+        // initData();
+        // clearInterval(gameInterval);
         console.log(`Client disconnected with ID: ${client.id} (num clients: ${numClients})`);
     });
 });
