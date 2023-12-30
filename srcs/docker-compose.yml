@@ -61,7 +61,7 @@ services:
     #Necessary labels if we want dynamic routing based on the local ip of the machine
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.react-dev.rule= Host(`${LOCAL_IP}`)"
+      - "traefik.http.routers.react-dev.rule=Host(`${LOCAL_IP}`) || HostRegexp(`b09e-62-210-33-173.ngrok-free.app`)"
       - "traefik.http.routers.react-dev.entrypoints=websecure"
       - "traefik.http.routers.react-dev.service=reactDevService"
       - "traefik.http.routers.react-dev.tls.certresolver=myresolver"
