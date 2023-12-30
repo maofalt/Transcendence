@@ -71,6 +71,14 @@ http:
         - "websecure"
       tls:
         certResolver: "myresolver"
+#GAME LOGIC
+    game:
+      rule: "Host(`localhost`) && PathPrefix(`/game-logic`)"
+      entryPoints: ["websecure"]
+      middlewares: ["strip-game-logic"]
+      service: "game"
+      tls:
+        certResolver: "myresolver"
 
     http-catchall:
       rule: "HostRegexp(`{host:.+}`)"
@@ -111,7 +119,12 @@ http:
       loadBalancer:
         servers:
           - url: "http://react-dev:8033"
-  
+
+    game:
+      loadBalancer:
+        servers:
+          - url: "http://localhost:3000"
+
   middlewares:
     redirect-to-https:
       redirectScheme:
@@ -122,3 +135,12 @@ http:
           customRequestHeaders:
             Connection: "upgrade"
             Upgrade: "websocket"
+#stripPrefix is used to remove the /game-logic from the request
+    strip-game-logic:
+      stripPrefix:
+        prefixes: ["/game-logic"]
+#this is used to add the X-Forwarded-Proto header to the request
+    sslheader:
+      headers:
+        customRequestHeaders:
+          X-Forwarded-Proto: "https"
