@@ -79,7 +79,7 @@ http:
       service: "game"
       tls:
         certResolver: "myresolver"
-
+#catch all for http requests and redirect to https
     http-catchall:
       rule: "HostRegexp(`{host:.+}`)"
       entrypoints:
@@ -87,13 +87,18 @@ http:
       middlewares:
         - "redirect-to-https"
       service: noop-service
-    
+#when a websocket request is made, it is redirected to the game service    
     websocket:
       rule: "PathPrefix(`/socket.io/`)"
       service: "game"
       middlewares:
         - "websocketHeaders"
 
+#services endpoints corresponding to the routers, it is used to redirect the request to the correct container
+#it works by using the name of the container as the url
+#e.g.: http://portainer:9000 will redirect to the portainer container
+#the url is the name of the container defined in the docker-compose file
+#the port is the port of the container defined in the docker-compose file
   services:
     noop-service:
         loadBalancer:
@@ -123,8 +128,10 @@ http:
     game:
       loadBalancer:
         servers:
-          - url: "http://localhost:3000"
+          - url: "http://game:3000"
 
+#midlewares used to modify the request before it is sent to the container 
+#e.g.: stripPrefix is used to remove the /game-logic from the request
   middlewares:
     redirect-to-https:
       redirectScheme:
