@@ -21,14 +21,14 @@ const ball = {
 	vX: 0,
 	vY: 0,
 	r: 2,
-	sp: 0.1,
+	sp: 0.4,
 	color: "#FFFFFF"
 };
 
 const paddles = {
 	width: 2,
 	height: 18,
-	sp: 0.1
+	sp: 0.2,
 }
 
 const paddle1 = {
@@ -64,6 +64,7 @@ score.font = `${score.fontsize}px \'Lilita One\', sans-serif`;
 const player1 = {
 	login: "Player 1",
 	id: 0,
+	socket: 0,
 	clientId: 0,
 	color: "",
 	paddle: paddle1,
@@ -76,6 +77,7 @@ const player1 = {
 const player2 = {
 	login: "Player 2",
 	id: 0,
+	socket: 0,
 	clientId: 0,
 	color: "",
 	paddle: paddle2,
