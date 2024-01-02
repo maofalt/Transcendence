@@ -1,3 +1,16 @@
+function ballHitsObject(ball, object) {
+	// calculate future ball pos
+	let futureBallPos = ball.pos.add(ball.dir.scale(ball.sp));
+
+	// add the radius of the ball in the direction of the object surface
+	let potentialColPoint = futureBallPos.add(object.dir.scale(-ball.r));
+
+	// check if potential collisions point is on the other side of surface;
+
+	// if yes :
+	// ball.pos = 
+}
+
 function ballHitsWall(ball, field) {
 	if (ball.y + ball.r >= field.height / 2) {
 		ball.y = field.height / 2 - ball.r;

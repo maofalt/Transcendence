@@ -40,7 +40,7 @@ const RemoteGame = () => {
 	}
 
 	function generateWalls(data) {
-		const wallGeometry = new THREE.BoxGeometry(data.field.width, data.paddle1.width / 2, 5);
+		const wallGeometry = new THREE.BoxGeometry(data.field.width, data.paddle1.width, 2);
 		const wallMaterial1 = new THREE.MeshPhongMaterial({ color: data.ball.color, transparent: true, opacity: 1, reflectivity: 0.5 });
 		const wallMaterial2 = new THREE.MeshPhongMaterial({ color: data.ball.color, transparent: true, opacity: 1, reflectivity: 0.5 });
 
@@ -55,18 +55,18 @@ const RemoteGame = () => {
 	}
 
 	function generateField(data) {
-		const fieldGeometry = new THREE.BoxGeometry(data.field.width, data.field.height, 2);
+		const fieldGeometry = new THREE.BoxGeometry(data.field.width, data.field.height, 1);
 		const fieldMaterial = new THREE.MeshPhongMaterial({ color: data.ball.color, transparent: true, opacity: 0.1, reflectivity: 0.5 });
 
 		field = new THREE.Mesh(fieldGeometry, fieldMaterial);
 
 		scene.add(field);
-		field.position.set(0, 0, -4);
+		field.position.set(0, 0, -1.5);
 	}
 
 	function generatePaddles(data) {
 		// const paddleMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff,  });
-		const paddleGeometry = new THREE.BoxGeometry(data.paddle1.width, data.paddle1.height, 5);
+		const paddleGeometry = new THREE.BoxGeometry(data.paddle1.width, data.paddle1.height, 2);
 		const paddleMaterial1 = new THREE.MeshPhongMaterial({ color: data.paddle1.color, transparent: true, opacity: 1, reflectivity: 0.5 });
 		const paddleMaterial2 = new THREE.MeshPhongMaterial({ color: data.paddle2.color, transparent: true, opacity: 1, reflectivity: 0.5 });
 
@@ -96,7 +96,7 @@ const RemoteGame = () => {
 		camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 		renderer = new THREE.WebGLRenderer();
 
-		camera.position.set(0, 0, 80);
+		camera.position.set(0, 0, 40);
 		camera.lookAt(new THREE.Vector3(0, 0, 0));
 		
 		renderer.setSize(window.innerWidth, window.innerHeight);

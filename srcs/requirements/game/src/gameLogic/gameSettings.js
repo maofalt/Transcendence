@@ -4,11 +4,18 @@ let gameInterval = 0;
 let roundState = false;
 // let gameState = false;
 
+const paddles = {
+	width: 1,
+	height: 5,
+	sp: 0.1,
+}
+
 // board :
 const field = {
-	height: 50,
-	width: 85,
+	height: paddles.height * 5,
+	width: 0,
 }
+field.width = field.height * 2;
 
 const game = {
 	nbrOfWinningPoints: 10,
@@ -20,16 +27,10 @@ const ball = {
 	y: 0,
 	vX: 0,
 	vY: 0,
-	r: 2,
-	sp: 0.4,
+	r: paddles.width,
+	sp: 0.2,
 	color: "#FFFFFF"
 };
-
-const paddles = {
-	width: 2,
-	height: 18,
-	sp: 0.2,
-}
 
 const paddle1 = {
 	x: -field.width / 2,
