@@ -77,9 +77,7 @@ function updateBall() {
 }
 
 function updatePaddle(paddle) {
-    // console.log("updating paddles");
     paddle.y += paddle.vY;
-    // check for collisions;
     paddle.y = ((paddle.y - paddle.height / 2 < -data.field.height / 2) ? -data.field.height / 2 + paddle.height / 2 : paddle.y);
     paddle.y = ((paddle.y + paddle.height / 2 > data.field.height / 2) ? data.field.height / 2 - paddle.height / 2 : paddle.y);
 }

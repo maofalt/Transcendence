@@ -56,12 +56,7 @@ let gameInterval = 0;
 let lobbyInterval = 0;
 let roundState = false;
 
-function handleConnection(client) {
-
-    console.log("CLIENT CONNECTED");
-    numClients = io.engine.clientsCount;
-    client.join("gameRoom");
-
+function setPlayersStatus(client) {
     if (numClients < 2) {
         // data.player1.socket = client;
         data.player1.clientId = client.id;
@@ -72,6 +67,15 @@ function handleConnection(client) {
         data.player2.clientId = client.id;
         data.player2.connected = true;
     }
+}
+
+function handleConnection(client) {
+
+    console.log("CLIENT CONNECTED");
+    numClients = io.engine.clientsCount;
+    client.join("gameRoom");
+
+    setPlayersStatus(client);
 
     client.emit("generate", data);
     client.emit("render", data);
@@ -91,16 +95,12 @@ function calculateFrame() {
         game.initData();
     }
     // console.log("calculating frame...");
-    // data.player1.socket.emit('render', data);
-    // data.player2.socket.emit('render', data);
     io.to("gameRoom").emit('render', data);
 }
 
 function startRound() {
     console.log("startRound");
-    // clearInterval(gameInterval);
     game.initData();
-    // gameInterval = setInterval(calculateFrame, 10);
     game.getRandomDir();
 }
 
@@ -109,9 +109,6 @@ function manageLobby() {
     if (!data.player1.connected || !data.player2.connected)
         return;
     clearInterval(lobbyInterval);
-    // data.player1.socket.emit('generate', data);
-    // data.player2.socket.emit('generate', data);
-    // io.to("gameRoom").emit('generate', data);
     gameInterval = setInterval(calculateFrame, 10);
 }
 
@@ -177,7 +174,8 @@ io.on('connection', (client) => {
         numClients = io.engine.clientsCount;
         client.leave("gameRoom");
         // game.initData();
-        // clearInterval(gameInterval);
+        if (gameInterval)
+            clearInterval(gameInterval);
         console.log(`Client disconnected with ID: ${client.id} (num clients: ${numClients})`);
     });
 });
