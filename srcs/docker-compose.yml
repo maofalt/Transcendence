@@ -61,13 +61,22 @@ services:
     env_file:
       - .env
     #Necessary labels if we want dynamic routing based on the local ip of the machine
+    #labels:
+    #  - "traefik.enable=true"
+    #  - "traefik.http.routers.react-dev.rule=Host(`${LOCAL_IP}`) || Host(`${CODESPACE_URL}-9443.app.github.dev`)" # || HostRegexp(`{subdomain:[a-z]+}.example.com`)"
+    #  - "traefik.http.routers.react-dev.entrypoints=websecure"
+    #  - "traefik.http.routers.react-dev.service=reactDevService"
+    #  - "traefik.http.routers.react-dev.tls.certresolver=myresolver"
+    #  - "traefik.http.services.reactDevService.loadbalancer.server.port=9443"
+    #new labels to fuse and see hwo to have  both depending, to be tested before to
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.react-dev.rule=Host(`${LOCAL_IP}`) || Host(`${CODESPACE_URL}-9443.app.github.dev`)" # || HostRegexp(`{subdomain:[a-z]+}.example.com`)"
-      - "traefik.http.routers.react-dev.entrypoints=websecure"
-      - "traefik.http.routers.react-dev.service=reactDevService"
-      - "traefik.http.routers.react-dev.tls.certresolver=myresolver"
-      - "traefik.http.services.reactDevService.loadbalancer.server.port=9443"
+    - "traefik.enable=true"
+    - "traefik.http.routers.react-dev.rule=Host(`${LOCAL_IP}`)"
+    - "traefik.http.routers.react-dev.entrypoints=websecure"
+    - "traefik.http.routers.react-dev.service=reactDevService"
+    - "traefik.http.routers.react-dev.tls.certresolver=myresolver"
+    - "traefik.http.services.reactDevService.loadbalancer.server.port=8033"
+
 
 #BACKEND GAME SERVICES
   game:
