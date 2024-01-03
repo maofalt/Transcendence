@@ -1,6 +1,7 @@
-## STATIC CONFIGURATION
 log:
-  level: ERROR
+  level: DEBUG
+
+accessLog: {}
 
 entryPoints:
   web:
@@ -27,21 +28,126 @@ providers:
     exposedByDefault: false
   #path to this same file to act as the dynamic config
   file:
-    filename: traefik.yml
+    filename: /etc/traefik/traefik.yml
     watch: true
+
+#certficates we own and want to use
+tls:
+  certificates:
+    - certFile: /ssl-certs/game.localhost.crt
+      keyFile: /ssl-certs/game.localhost.key
 
 ## DYNAMIC CONFIGURATION
 #if dynamic configuration doesnt work probably the filepath in providers is wrong
 http:
   routers:
+#PORTAINER FRONT END
+    portainer:
+      rule: "Host(`portainer.localhost`)"
+      entryPoints: ["websecure"]
+      service: portainer-service
+      tls:
+        certResolver: myresolver
+#PORTAINER API    
+    edge:
+      rule: "Host(`portaineredge.localhost`)"
+      entryPoints: ["websecure"]
+      service: edge-service
+      tls:
+        certResolver: myresolver
+#GAME FRONT END with nGINX
+    frontEnd:
+      rule: "Host(`front-end.localhost`)"
+      service: "frontEnd"
+      entryPoints:
+        - "websecure"
+      tls:
+        certResolver: "myresolver"
+#GAMR FRONT END FOR DEVELOPMENT USING NODE.JS
+    reactDev:
+      rule: "Host(`localhost`)"
+      service: "reactDevService"
+      entryPoints:
+        - "websecure"
+      tls:
+        certResolver: "myresolver"
+#GAME LOGIC
+    game:
+      rule: "Host(`localhost`) && PathPrefix(`/game-logic`)"
+      entryPoints: ["websecure"]
+      middlewares: ["strip-game-logic"]
+      service: "game"
+      tls:
+        certResolver: "myresolver"
+#catch all for http requests and redirect to https
     http-catchall:
       rule: "HostRegexp(`{host:.+}`)"
       entrypoints:
         - "web"
       middlewares:
         - "redirect-to-https"
+      service: noop-service
+#when a websocket request is made, it is redirected to the game service    
+    websocket:
+      rule: "PathPrefix(`/socket.io/`)"
+      service: "game"
+      middlewares:
+        - "websocketHeaders"
+
+#services endpoints corresponding to the routers, it is used to redirect the request to the correct container
+#it works by using the name of the container as the url
+#e.g.: http://portainer:9000 will redirect to the portainer container
+#the url is the name of the container defined in the docker-compose file
+#the port is the port of the container defined in the docker-compose file
+  services:
+    noop-service:
+        loadBalancer:
+          servers:
+            - url: "http://"
+  
+    portainer-service:
+      loadBalancer:
+        servers:
+          - url: "http://portainer:9000"
+
+    edge-service:
+      loadBalancer:
+        servers:
+          - url: "http://edge:8000"
+
+    frontEnd:
+      loadBalancer:
+        servers:
+          - url: "http://front-end:80"
+
+    reactDevService:
+      loadBalancer:
+        servers:
+          - url: "http://react-dev:8033"
+
+    game:
+      loadBalancer:
+        servers:
+          - url: "http://game:3000"
+
+#midlewares used to modify the request before it is sent to the container 
+#e.g.: stripPrefix is used to remove the /game-logic from the request
   middlewares:
     redirect-to-https:
       redirectScheme:
         scheme: "https"
-
+  
+    websocketHeaders:
+      headers:
+          customRequestHeaders:
+            Connection: "upgrade"
+            Upgrade: "websocket"
+#stripPrefix is used to remove the /game-logic from the request
+    strip-game-logic:
+      stripPrefix:
+        prefixes: ["/game-logic"]
+#this is used to add the X-Forwarded-Proto header to the request
+    sslheader:
+      headers:
+        customRequestHeaders:
+          X-Forwarded-Proto: "https"

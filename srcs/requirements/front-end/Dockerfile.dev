@@ -1,8 +1,8 @@
 # Base image
-FROM node:19-bullseye-slim
+FROM node:20-bullseye-slim
 
 # install tini
-RUN apt-get update && apt-get install -y tini
+RUN apt-get update && apt-get install -y tini && npm install -g npm@10.2.5
 
 # Set the working directory in the container
 COPY ./config/startup-front-end.sh ./
