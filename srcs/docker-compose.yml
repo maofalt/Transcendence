@@ -61,21 +61,21 @@ services:
     env_file:
       - .env
     #Necessary labels if we want dynamic routing based on the local ip of the machine
-    #labels:
-    #  - "traefik.enable=true"
-    #  - "traefik.http.routers.react-dev.rule=Host(`${LOCAL_IP}`) || Host(`${CODESPACE_URL}-9443.app.github.dev`)" # || HostRegexp(`{subdomain:[a-z]+}.example.com`)"
-    #  - "traefik.http.routers.react-dev.entrypoints=websecure"
-    #  - "traefik.http.routers.react-dev.service=reactDevService"
-    #  - "traefik.http.routers.react-dev.tls.certresolver=myresolver"
-    #  - "traefik.http.services.reactDevService.loadbalancer.server.port=9443"
-    #new labels to fuse and see hwo to have  both depending, to be tested before to
     labels:
-    - "traefik.enable=true"
-    - "traefik.http.routers.react-dev.rule=Host(`${LOCAL_IP}`)"
-    - "traefik.http.routers.react-dev.entrypoints=websecure"
-    - "traefik.http.routers.react-dev.service=reactDevService"
-    - "traefik.http.routers.react-dev.tls.certresolver=myresolver"
-    - "traefik.http.services.reactDevService.loadbalancer.server.port=8033"
+      - "traefik.enable=true"
+      - "traefik.http.routers.react-dev.rule=Host(`${LOCAL_IP}`)"
+      # Router for local IP
+      - "traefik.http.routers.react-dev-local.rule=Host(`${LOCAL_IP}`)"
+      - "traefik.http.routers.react-dev-local.entrypoints=websecure"
+      - "traefik.http.routers.react-dev-local.service=reactDevServiceLocal"
+      - "traefik.http.routers.react-dev-local.tls.certresolver=myresolver"
+      - "traefik.http.services.reactDevServiceLocal.loadbalancer.server.port=8033"
+      # Router for codespace URL
+      - "traefik.http.routers.react-dev-codespace.rule=Host(`${CODESPACE_URL}-9443.app.github.dev`)"
+      - "traefik.http.routers.react-dev-codespace.entrypoints=websecure"
+      - "traefik.http.routers.react-dev-codespace.service=reactDevServiceCodespace"
+      - "traefik.http.routers.react-dev-codespace.tls.certresolver=myresolver"
+      - "traefik.http.services.reactDevServiceCodespace.loadbalancer.server.port=9443"
 
 
 #BACKEND GAME SERVICES
