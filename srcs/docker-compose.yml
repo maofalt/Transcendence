@@ -126,27 +126,44 @@ services:
     # ports:
     #   - "5050:80"
 
+  tournament:
+      container_name: tournament
+      build:
+        context: ./requirements/tournament-service/
+        dockerfile: Dockerfile
+      networks:
+        - transcendence
+      #ports:
+      #  - 8034:8000
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.tournament.rule=Host(`tournament.localhost`)"
+        - "traefik.http.routers.tournament.entrypoints=websecure"
+        - "traefik.http.services.tournament.loadbalancer.server.port=80"
+        - "traefik.http.routers.tournament.service=tournament"
+        - "traefik.http.routers.tournament.tls.certresolver=myresolver"
+
 #VOLUMES
 volumes:
 #to verify if this works without the data bindin in rootless at school @ionorb
-  # traefik-ssl-certs:
-  #   driver: local
-  #   driver_opts:
-  #     type: none
-  #     device: ./requirements/traefik/config/ssl/
-  #     o: bind
+  traefik-ssl-certs:
+    driver: local
+    driver_opts:
+      type: none
+      device: ./requirements/traefik/config/ssl/
+      o: bind
   portainer-data:
     driver: local
   postgres-data:
     driver: local
 
 #to verify if this works without the data bindin in rootless at school @ionorb
-  # front-end-volume:
-  #   driver: local
-  #   driver_opts:
-  #     type: none
-  #     device: ./requirements/front-end/react-app
-  #     o: bind 
+  front-end-volume:
+    driver: local
+    driver_opts:
+      type: none
+      device: ./requirements/front-end/react-app
+      o: bind 
 
 #NETWORKS
 networks:
