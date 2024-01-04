@@ -15,8 +15,20 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+from manage_tournament import views
+from django.http import HttpResponseRedirect
+from django.http import HttpResponse
+
+def home(request):
+    return HttpResponse("Bienvenue sur la page d'accueil des tournois")
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', home),
+    # path('', lambda r: HttpResponseRedirect('tournaments/')),  # Redirection vers 'tournaments/'
+    # path('tournaments/', views.TournamentListCreate.as_view(), name='tournament-list-create'),
+    path('tournaments/', include("manage_tournament.urls")),
+    # path('tournaments/<int:pk>/', include("manage_tournament.urls")),
 ]

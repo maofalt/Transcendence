@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-*mh_(r-ur@x_tju&*1b&s=oa&(livyhdomhf%5psvu5)oxp4+k
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [*]
+#ALLOWED_HOSTS = [*]
 
 
 # Application definition
@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'manage_tournament',
+    'rest_framework',
     'corsheaders',
 ]
 
@@ -77,16 +78,16 @@ WSGI_APPLICATION = 'tournament.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'tournament_db',
-        'USER': 'tournament_master',
-        'PASSWORD': 'i love miguel',
-        'HOST': 'tournament_db',  # This should match the service name in docker-compose.yml for the database
-        'PORT': '5433',
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'tournament_db',
+#         'USER': 'tournament_master',
+#         'PASSWORD': 'i love miguel',
+#         'HOST': 'localhost',  # This should match the service name in docker-compose.yml for the database
+#         'PORT': '5432',
+#     }
+# }
 
 
 
@@ -133,6 +134,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 #CORS Settings to erae or modify later
 CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOWED_ORIGINS = [
-    "https://localhost:9443",
-]
+#CORS_ALLOWED_ORIGINS = [
+#    "*",
+#]
+
+
