@@ -113,7 +113,7 @@ services:
       POSTGRES_USER: user42
       POSTGRES_PASSWORD: password
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - game_db:/var/lib/postgresql/data
     networks:
       - transcendence
   # pgadmin:
@@ -127,27 +127,72 @@ services:
     #   - "5050:80"
 
   tournament:
-      container_name: tournament
-      build:
-        context: ./requirements/tournament_service/
-        dockerfile: Dockerfile
-      networks:
-        - transcendence
-      #ports:
-      #  - 8034:8000
-      labels:
-        - "traefik.enable=true"
-        - "traefik.http.routers.tournament.rule=Host(`tournament.localhost`)"
-        - "traefik.http.routers.tournament.entrypoints=websecure"
-        - "traefik.http.services.tournament.loadbalancer.server.port=80"
-        - "traefik.http.routers.tournament.service=tournament"
-        - "traefik.http.routers.tournament.tls.certresolver=myresolver"
+    container_name: tournament
+    build:
+      context: ./requirements/tournament_service/
+      dockerfile: Dockerfile
+    networks:
+      - transcendence
+    #ports:
+    #  - 8034:8000
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.tournament.rule=Host(`tournament.localhost`)"
+      - "traefik.http.routers.tournament.entrypoints=websecure"
+      - "traefik.http.services.tournament.loadbalancer.server.port=80"
+      - "traefik.http.routers.tournament.service=tournament"
+      - "traefik.http.routers.tournament.tls.certresolver=myresolver"
+
+  user_management:
+    container_name: user_management
+    restart: always
+    build:
+      context: ./requirements/user_management/
+      dockerfile: Dockerfile
+    #ports:
+    #  - 8000:8000
+    volumes:
+      - ./requirements/user_management/project:/app
+    depends_on:
+      - user_management_db
+    networks:
+      - transcendence
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.user_management.rule=Host(`localhost`) && PathPrefix(`/user_management`)"
+      - "traefik.http.routers.user_management.entrypoints=websecure"
+      - "traefik.http.services.user_management.loadbalancer.server.port=8000"
+      - "traefik.http.routers.user_management.service=user_management"
+      - "traefik.http.routers.user_management.tls.certresolver=myresolver"
+      - "traefik.http.routers.user_management.middlewares=strip-user_management@docker"
+      - "traefik.http.middlewares.strip-user_management.stripprefix.prefixes=/user_management"
+      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto = https"
+
+
+  user_management_db:
+    container_name: user_management_db
+    build:
+      context: ./requirements/user_management_db/
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      POSTGRES_DB: userdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+    volumes:
+      - user-management-db:/var/lib/postgresql/data
+    ports:
+      - 55432:5432
+    networks:
+      - transcendence
 
 #VOLUMES
 volumes:
   portainer-data:
     driver: local
-  postgres-data:
+  game_db:
+    driver: local
+  user-management-db:
     driver: local
 
 #to verify if this works without the data bindin in rootless at school @ionorb
