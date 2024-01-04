@@ -129,7 +129,7 @@ services:
   tournament:
       container_name: tournament
       build:
-        context: ./requirements/tournament-service/
+        context: ./requirements/tournament_service/
         dockerfile: Dockerfile
       networks:
         - transcendence
@@ -145,13 +145,6 @@ services:
 
 #VOLUMES
 volumes:
-#to verify if this works without the data bindin in rootless at school @ionorb
-  traefik-ssl-certs:
-    driver: local
-    driver_opts:
-      type: none
-      device: ./requirements/traefik/config/ssl/
-      o: bind
   portainer-data:
     driver: local
   postgres-data:
