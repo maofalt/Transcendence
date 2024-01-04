@@ -71,22 +71,28 @@ const GameOptions = () => {
 		scene.add(goalMesh);
 		scene.add(wallMesh);
 		scene.add(ballMesh);
+		
+		paddleMesh.position.set(-45, 0, 0);
+		goalMesh.position.set(-15, 0, 0);
+		wallMesh.position.set(15, 0, 0);
+		ballMesh.position.set(45, 0, 0);
 
 		renderer.render(scene, camera);
 	};
 
-	const animate = () => {
-		renderer.setSize(window.innerWidth / 2, window.innerHeight / 2);
-		camera.aspect = window.innerWidth / window.innerHeight;
-		camera.updateProjectionMatrix();
-		paddleMesh.scale.set(paddleSize, paddleSize, paddleSize);
-		goalMesh.scale.set(goalSize, goalSize, goalSize);
-		wallMesh.scale.set(wallSize, wallSize, wallSize);
-		ballMesh.scale.set(ballSize, ballSize, ballSize);
-		renderer.render(scene, camera);
-	};
-
+	
 	useEffect(() => {
+		const animate = () => {
+			renderer.setSize(window.innerWidth / 2, window.innerHeight / 2);
+			camera.aspect = window.innerWidth / window.innerHeight;
+			camera.updateProjectionMatrix();
+			paddleMesh.scale.set(paddleSize, paddleSize, paddleSize);
+			goalMesh.scale.set(goalSize, goalSize, goalSize);
+			wallMesh.scale.set(wallSize, wallSize, wallSize);
+			ballMesh.scale.set(ballSize, ballSize, ballSize);
+			renderer.render(scene, camera);
+		};
+
 		generateScene();
 		requestAnimationFrame(animate);
 
