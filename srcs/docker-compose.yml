@@ -159,13 +159,13 @@ services:
       - transcendence
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.user_management.rule=Host(`localhost`) && PathPrefix(`/user_management`)"
+      - "traefik.http.routers.user_management.rule=Host(`localhost`) && PathPrefix(`/api/user_management`)"
       - "traefik.http.routers.user_management.entrypoints=websecure"
       - "traefik.http.services.user_management.loadbalancer.server.port=8000"
       - "traefik.http.routers.user_management.service=user_management"
       - "traefik.http.routers.user_management.tls.certresolver=myresolver"
       - "traefik.http.routers.user_management.middlewares=strip-user_management@docker"
-      - "traefik.http.middlewares.strip-user_management.stripprefix.prefixes=/user_management"
+      - "traefik.http.middlewares.strip-user_management.stripprefix.prefixes=/api/user_management"
       - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto = https"
 
 
@@ -181,8 +181,8 @@ services:
       POSTGRES_PASSWORD: 1234
     volumes:
       - user-management-db:/var/lib/postgresql/data
-    ports:
-      - 55432:5432
+    # ports:
+    #   - 55432:5432
     networks:
       - transcendence
 
@@ -194,14 +194,6 @@ volumes:
     driver: local
   user-management-db:
     driver: local
-
-#to verify if this works without the data bindin in rootless at school @ionorb
-  front-end-volume:
-    driver: local
-    driver_opts:
-      type: none
-      device: ./requirements/front-end/react-app
-      o: bind 
 
 #NETWORKS
 networks:

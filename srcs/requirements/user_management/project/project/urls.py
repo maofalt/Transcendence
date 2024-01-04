@@ -25,7 +25,7 @@ import account.views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', account.views.home, name='home'),
-    path('auth/', include("account.urls")),
+    path('/api/user_management/auth/', include("account.urls")),
     path('gameHistory_microservice/', include('gameHistory_microservice.urls')),
 
 ]
