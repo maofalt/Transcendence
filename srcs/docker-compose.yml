@@ -129,7 +129,7 @@ services:
   tournament:
       container_name: tournament
       build:
-        context: ./requirements/tournament-service/
+        context: ./requirements/tournament_service/
         dockerfile: Dockerfile
       networks:
         - transcendence
