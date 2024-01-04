@@ -133,20 +133,41 @@ services:
         dockerfile: Dockerfile
       networks:
         - transcendence
+      volumes:
+        - ./requirements/tournament_service/app/:/app
+      depends_on:
+        - tournament_db
+      restart: always
       #ports:
       #  - 8034:8000
       labels:
 #tournament local ip
       - "traefik.enable=true"
-      - "traefik.http.routers.tournament.rule=Host(`${LOCAL_IP}`) && PathPrefix(`/tournament`)"
+      - "traefik.http.routers.tournament.rule=Host(`${LOCAL_IP}`) && PathPrefix(`/api/tournament`)"
       - "traefik.http.routers.tournament.entrypoints=websecure"
       - "traefik.http.routers.tournament.middlewares=strip-tournament@docker"
-      - "traefik.http.middlewares.strip-tournament.stripprefix.prefixes=/tournament"
-      - "traefik.http.services.tournament.loadbalancer.server.port=80"
+      - "traefik.http.middlewares.strip-tournament.stripprefix.prefixes=/api/tournament"
+      - "traefik.http.services.tournament.loadbalancer.server.port=8001"
       - "traefik.http.routers.tournament.service=tournament"
       - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto = https"
       - "traefik.http.routers.tournament.tls.certresolver=myresolver"
       
+  tournament_db:
+    container_name: tournament_db
+    build:
+      context: ./requirements/tournament_db/
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      POSTGRES_DB: tournament_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+    volumes:
+      - tournament-db:/var/lib/postgresql/data
+    # ports:
+    #   - 55432:5432
+    networks:
+      - transcendence
 
 
 #VOLUMES
@@ -159,6 +180,8 @@ volumes:
       device: ./requirements/traefik/config/ssl/
       o: bind
   portainer-data:
+    driver: local
+  tournament-db:
     driver: local
   postgres-data:
     driver: local
