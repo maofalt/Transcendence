@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import io from 'socket.io-client';
 
-const	clientNbr = 0;
+let	clientNbr = 0;
 
 const RemoteGame = () => {
 	// meta
