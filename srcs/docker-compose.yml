@@ -1,8 +1,11 @@
 # docker-compose.yml
 version: '3.8'
+
 services:
   traefik:
-    image: traefik:v2.10.4
+    build:
+      context: ./requirements/traefik
+      dockerfile: Dockerfile
     container_name: traefik
     ports:
       - 9080:80
@@ -11,17 +14,14 @@ services:
       - 8080:8080
     volumes:
       - ./requirements/traefik/config:/etc/traefik
-      - ./requirements/traefik/config/acme.json:/acme.json
-      - traefik-ssl-certs:/ssl-certs
+      - ./requirements/traefik/config/ssl/:/ssl-certs
       - "${XDG_RUNTIME_DIR}/docker.sock:/var/run/docker.sock"
-      #actvate this if you are in Windows and comment the line above
-      #- "/var/run/docker.sock:/var/run/docker.sock"
+      # - "/var/run/docker.sock:/var/run/docker.sock" # <-- actvate this if you are in Windows and comment the line above
     networks:
       - transcendence
     restart: unless-stopped
     depends_on:
-      - portainer
-
+      - game
 
 ##CONTAINER MANAGER
   portainer:
@@ -32,28 +32,14 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     volumes:
-      #- "/var/run/docker.sock:/var/run/docker.sock"
+      # - "/var/run/docker.sock:/var/run/docker.sock"
       - "${XDG_RUNTIME_DIR}/docker.sock:/var/run/docker.sock"
       - portainer-data:/data
-    labels:
-    #FRONTEND
-      - "traefik.enable=true"
-      - "traefik.http.routers.portainer.rule=Host(`portainer.localhost`)"
-      - "traefik.http.routers.portainer.entrypoints=websecure"
-      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
-      - "traefik.http.routers.portainer.service=portainer"
-      - "traefik.http.routers.portainer.tls.certresolver=myresolver"
-      
-    #Edge  
-      - "traefik.http.routers.edge.rule=Host(`portaineredge.localhost`)"
-      - "traefik.http.routers.edge.entrypoints=websecure"
-      - "traefik.http.services.edge.loadbalancer.server.port=8000"
-      - "traefik.http.routers.edge.service=edge"
-      - "traefik.http.routers.edge.tls.certresolver=myresolver"
     networks:
       - transcendence
 
-##SERVICES
+#FRONT END SERVICES
+  # production ready front-end served by nginx built with vite
   front-end:
       container_name: front-end
       build:
@@ -61,46 +47,131 @@ services:
         dockerfile: Dockerfile
       networks:
         - transcendence
-#      ports:
-#        - 8033:80
-      labels:
-        - "traefik.enable=true"
-        - "traefik.http.routers.frontend.rule=Host(`frontend.localhost`)"
-        - "traefik.http.routers.frontend.entrypoints=websecure"
-        - "traefik.http.services.frontend.loadbalancer.server.port=80"
-        - "traefik.http.routers.frontend.service=frontend"
-        - "traefik.http.routers.frontend.tls.certresolver=myresolver"
 
+  # react with vite and HMR for development
+  react-dev:
+    container_name: react-dev
+    build:
+      context: ./requirements/front-end/
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./requirements/front-end/react-app/:/app/src # Mount the source code
+    networks:
+      - transcendence
+    env_file:
+      - .env
+    #Necessary labels if we want dynamic routing based on the local ip of the machine
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.react-dev.rule=Host(`${LOCAL_IP}`)"
+      # Router for local IP
+      - "traefik.http.routers.react-dev-local.rule=Host(`${LOCAL_IP}`)"
+      - "traefik.http.routers.react-dev-local.entrypoints=websecure"
+      - "traefik.http.routers.react-dev-local.service=reactDevServiceLocal"
+      - "traefik.http.routers.react-dev-local.tls.certresolver=myresolver"
+      - "traefik.http.services.reactDevServiceLocal.loadbalancer.server.port=8033"
+      # Router for codespace URL
+      - "traefik.http.routers.react-dev-codespace.rule=Host(`${CODESPACE_URL}-9443.app.github.dev`)"
+      - "traefik.http.routers.react-dev-codespace.entrypoints=websecure"
+      - "traefik.http.routers.react-dev-codespace.service=reactDevServiceCodespace"
+      - "traefik.http.routers.react-dev-codespace.tls.certresolver=myresolver"
+      - "traefik.http.services.reactDevServiceCodespace.loadbalancer.server.port=9443"
+
+
+#BACKEND GAME SERVICES
+  game:
+    container_name: game
+    build: 
+      context: ./requirements/game/
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=postgresql://user42:password@db:5432/mydatabase
+    depends_on:
+      - game-db
+    networks:
+      - transcendence
+    volumes:
+      - ./requirements/traefik/config/ssl/:/etc/game/ssl/
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.game.rule=Host(`${LOCAL_IP}`) && PathPrefix(`/game-logic`)"
+      - "traefik.http.routers.game.entrypoints=websecure"
+      - "traefik.http.routers.game.middlewares=strip-game-logic@docker"
+      - "traefik.http.middlewares.strip-game-logic.stripprefix.prefixes=/game-logic"
+      - "traefik.http.services.game.loadbalancer.server.port=3000"
+      - "traefik.http.routers.game.service=game"
+      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto = https"
+      - "traefik.http.routers.game.tls.certresolver=myresolver"
+
+  game-db:
+    container_name: game-db
+    build:
+      context: ./requirements/game/postgreSQL/
+      dockerfile: Dockerfile
+    environment:
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: user42
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - transcendence
+  # pgadmin:
+  #   image: dpage/pgadmin4
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: "admin@admin.com"
+  #     PGADMIN_DEFAULT_PASSWORD: "admin"
+  #   depends_on:
+  #     - db
+    # ports:
+    #   - "5050:80"
 
   tournament:
       container_name: tournament
       build:
-        context: ./requirements/tournament-service/
+        context: ./requirements/tournament_service/
         dockerfile: Dockerfile
       networks:
         - transcendence
       #ports:
       #  - 8034:8000
       labels:
-        - "traefik.enable=true"
-        - "traefik.http.routers.tournament.rule=Host(`tournament.localhost`)"
-        - "traefik.http.routers.tournament.entrypoints=websecure"
-        - "traefik.http.services.tournament.loadbalancer.server.port=80"
-        - "traefik.http.routers.tournament.service=tournament"
-        - "traefik.http.routers.tournament.tls.certresolver=myresolver"
+#tournament local ip
+      - "traefik.enable=true"
+      - "traefik.http.routers.tournament.rule=Host(`${LOCAL_IP}`) && PathPrefix(`/tournament`)"
+      - "traefik.http.routers.tournament.entrypoints=websecure"
+      - "traefik.http.routers.tournament.middlewares=strip-tournament@docker"
+      - "traefik.http.middlewares.strip-tournament.stripprefix.prefixes=/tournament"
+      - "traefik.http.services.tournament.loadbalancer.server.port=80"
+      - "traefik.http.routers.tournament.service=tournament"
+      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto = https"
+      - "traefik.http.routers.tournament.tls.certresolver=myresolver"
+      
+
+
+#VOLUMES
 volumes:
+#to verify if this works without the data bindin in rootless at school @ionorb
   traefik-ssl-certs:
     driver: local
+    driver_opts:
+      type: none
+      device: ./requirements/traefik/config/ssl/
+      o: bind
   portainer-data:
     driver: local
+  postgres-data:
+    driver: local
 
+#to verify if this works without the data bindin in rootless at school @ionorb
   front-end-volume:
-    driver: local # use default Docker volume driver (Docker managed volume)
-    driver_opts: # driver options to create a volume in a specified directory
-      type: none # specify that the volume is not formatted with a filesystem
-      device: ./requirements/front-end/react-app # location on the host to be mounted
-      o: bind # specify that it is a bind mount
+    driver: local
+    driver_opts:
+      type: none
+      device: ./requirements/front-end/react-app
+      o: bind 
 
+#NETWORKS
 networks:
   transcendence:
     name: transcendence
