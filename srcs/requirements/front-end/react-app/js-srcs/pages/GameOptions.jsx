@@ -15,6 +15,13 @@ const GameOptions = () => {
 	const [wallSize, setWallSize] = useState(5);
 	const [ballSize, setBallSize] = useState(5);
 
+	const stateRef = useRef({
+		paddleSize,
+		goalSize,
+		wallSize,
+		ballSize,
+	});
+
 	const handleSliderChange = (setter) => (event) => {
 		const value = parseFloat(event.target.value);
 		setter(value);
@@ -80,18 +87,22 @@ const GameOptions = () => {
 		renderer.render(scene, camera);
 	};
 
-	
+	const animate = () => {
+		requestAnimationFrame(animate);
+
+		const { paddleSize, goalSize, wallSize, ballSize } = stateRef.current;
+
+		renderer.setSize(window.innerWidth / 2, window.innerHeight / 2);
+		camera.aspect = window.innerWidth / window.innerHeight;
+		camera.updateProjectionMatrix();
+		paddleMesh.scale.set(paddleSize, paddleSize, paddleSize);
+		goalMesh.scale.set(goalSize, goalSize, goalSize);
+		wallMesh.scale.set(wallSize, wallSize, wallSize);
+		ballMesh.scale.set(ballSize, ballSize, ballSize);
+		renderer.render(scene, camera);
+	};
+
 	useEffect(() => {
-		const animate = () => {
-			renderer.setSize(window.innerWidth / 2, window.innerHeight / 2);
-			camera.aspect = window.innerWidth / window.innerHeight;
-			camera.updateProjectionMatrix();
-			paddleMesh.scale.set(paddleSize, paddleSize, paddleSize);
-			goalMesh.scale.set(goalSize, goalSize, goalSize);
-			wallMesh.scale.set(wallSize, wallSize, wallSize);
-			ballMesh.scale.set(ballSize, ballSize, ballSize);
-			renderer.render(scene, camera);
-		};
 
 		generateScene();
 		requestAnimationFrame(animate);
@@ -103,6 +114,16 @@ const GameOptions = () => {
 			}
 		}
 	}, []);
+
+	useEffect(() => {
+		// Update the stateRef whenever the state changes
+		stateRef.current = {
+			paddleSize,
+			goalSize,
+			wallSize,
+			ballSize,
+		};
+	}, [paddleSize, goalSize, wallSize, ballSize]);
 
 	return (
 	<div>
