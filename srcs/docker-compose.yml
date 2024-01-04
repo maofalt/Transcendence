@@ -136,12 +136,18 @@ services:
       #ports:
       #  - 8034:8000
       labels:
-        - "traefik.enable=true"
-        - "traefik.http.routers.tournament.rule=Host(`tournament.localhost`)"
-        - "traefik.http.routers.tournament.entrypoints=websecure"
-        - "traefik.http.services.tournament.loadbalancer.server.port=80"
-        - "traefik.http.routers.tournament.service=tournament"
-        - "traefik.http.routers.tournament.tls.certresolver=myresolver"
+#tournament local ip
+      - "traefik.enable=true"
+      - "traefik.http.routers.tournament.rule=Host(`${LOCAL_IP}`) && PathPrefix(`/tournament`)"
+      - "traefik.http.routers.tournament.entrypoints=websecure"
+      - "traefik.http.routers.tournament.middlewares=strip-tournament@docker"
+      - "traefik.http.middlewares.strip-tournament.stripprefix.prefixes=/tournament"
+      - "traefik.http.services.tournament.loadbalancer.server.port=80"
+      - "traefik.http.routers.tournament.service=tournament"
+      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto = https"
+      - "traefik.http.routers.tournament.tls.certresolver=myresolver"
+      
+
 
 #VOLUMES
 volumes:
