@@ -20,7 +20,8 @@ class Player {
 class Paddle {
     constructor(paddleSettings) {
 		this.pos = new Vector(paddleSettings.x, paddleSettings.y, 0);
-		this.dir = new Vector(paddleSettings.vX, paddleSettings.vY, 0);
+		this.dirToCenter = new Vector(paddleSettings.vX, paddleSettings.vY, 0);
+        this.dirToTop = new Vector(paddleSettings.vX, paddleSettings.vY, 0);
         this.width = paddleSettings.width;
         this.height = paddleSettings.height;
         this.sp = paddleSettings.sp;
@@ -60,11 +61,11 @@ class Score {
 class Data {
     constructor(dataSettings) {
         this.field = new Field(dataSettings.field);
-        this.ball = new Ball(dataSettings.ball);
-        this.paddle1 = new Paddle(dataSettings.paddle1);
-        this.paddle2 = new Paddle(dataSettings.paddle2);
         this.player1 = new Player(dataSettings.player1);
         this.player2 = new Player(dataSettings.player2);
+        this.paddle1 = this.player1.paddle;
+        this.paddle2 = this.player2.paddle;
+        this.ball = new Ball(dataSettings.ball);
         this.score = new Score(dataSettings.score);
     }
 }
