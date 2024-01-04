@@ -6,3 +6,6 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = '__all__'
 
+class AnonymousUserSerializer(serializers.Serializer):
+    class Meta:
+        fields = []

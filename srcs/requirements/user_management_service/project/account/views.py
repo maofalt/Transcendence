@@ -10,8 +10,14 @@ from django.db.utils import IntegrityError
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt # CSRF (Cross-Site Request Forgery) protection middleware. 
 
-
+# microservice connection
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import User
+from .serializers import UserSerializer, AnonymousUserSerializer
 
 print(make_password("1234")) 
 print(check_password("1234", "pbkdf2_sha256$720000$3Ic0AO1QtmzznCEoyCml96$wcExZGGuUboFrsn7geDFMjNK9AM12wtAZCAHKdfq6D0="))
@@ -21,16 +27,15 @@ print(check_password("1234", "pbkdf2_sha256$720000$3Ic0AO1QtmzznCEoyCml96$wcExZG
 def home(request):
     return render(request, 'home.html')
 
-def login_view(request):
+def api_login_view(request):
     if request.method == "POST":
         username = request.POST["username"]
         password = request.POST["password"]
         user = authenticate(username=username, password=password)
         if user is not None:
-            print("Authentication successful")
             login(request, user)
-            request.user.is_online = True
-            request.user.save()
+            user.is_online = True
+            user.save()
             print(request.user.username, ": is_online status", request.user.is_online)
 
             # Output information about the authenticated user
@@ -40,23 +45,43 @@ def login_view(request):
             print(f"Playername: {request.user.playername}")
             print(f"Is Online: {user.is_online}")
             print(f"Date Joined: {user.date_joined}")
-
+            serializer = UserSerializer(user)
+            return JsonResponse({'message': 'Authentication successful', 'user': serializer.data})
 
         else:
             print("Authentication failed")
-            messages.error(request, 'Authentication failed: Wrong user data')
-    return render(request, "home.html")
+            return JsonResponse({'error': 'Authentication failed: Wrong user data'}, status=400)
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
 
+# This is useful in cases where you intentionally want to allow certain requests without requiring the usual CSRF token.
+# In your specific example, the @csrf_exempt decorator is applied to the api_logout_view view.
+# This means that the CSRF protection will not be enforced for the api_logout_view view,
+# allowing you to make POST requests without including the CSRF token in the request headers.
+# It's important to use csrf_exempt with caution, especially when dealing with sensitive operations like authentication and logout.
+# If CSRF protection is disabled, you need to ensure that proper security measures are in place
+# to prevent potential security vulnerabilities.
+
+def get_serializer(user):
+    if user.is_authenticated:
+        return UserSerializer(user)
+    else:
+        return AnonymousUserSerializer()
+
+@csrf_exempt
 @login_required
-def logout_view(request):
-    if request.user.is_authenticated:
+def api_logout_view(request):
+    if request.method == 'POST':
         request.user.is_online = False
         request.user.save()
         print(request.user.username, ": is_online status", request.user.is_online)
         logout(request)
-    return redirect('home')
+        serializer = get_serializer(request.user)
+        return JsonResponse({'message': 'Logout successful', 'user': serializer.data})
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=400)
 
-def signup_view(request):
+@csrf_exempt
+def api_signup_view(request):
     if request.method == "POST":
         username = request.POST["username"]
         password = request.POST["password"]
@@ -94,7 +119,7 @@ def signup_view(request):
 
         return JsonResponse({'success': True})
 
-    return render(request, "signup.html")
+    return JsonResponse({'success': False, 'error_message': 'Invalid request method'}, status=400)
 
 def friend_view(request):
     user = request.user
@@ -156,13 +181,6 @@ def password_update_view(request):
     return render(request, 'password_update.html', {'form': form})
 
 
-# microservice connection
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from .models import User
-from .serializers import UserSerializer
-
 class UserAPIView(APIView):
     def get(self, request, *args, **kwargs):
         # queryset = User.objects.all()
@@ -174,3 +192,5 @@ class UserAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response({"detail": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+

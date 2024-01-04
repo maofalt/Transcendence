@@ -55,40 +55,16 @@
 <h1>Login</h1>
 {% if user.is_authenticated %}
 <p>Welcome {{ user.username }}</p>
-<a href="{% url 'account:logout' %}">Log out</a>
+<form method="post" action="{% url 'account:logout' %}">
+  {% csrf_token %}
+  <button type="submit">Log out</button>
+</form>
 <a href="{% url 'account:friend' %}">Friends</a>
 <a href="{% url 'account:detail' %}">Detail</a>
 
 {% else %}
 
 <a href="#" id="loginLink">Log in</a>
-<a href="#" id="signupLink">Sign up</a>
 {% include 'login.html' %}
-{% include 'signup.html' %}
 {% endif %}
 
-
-<script>
-    $(document).ready(function () {
-        $("#loginLink").click(function () {
-            $("#darkLayer").fadeIn();
-            $("#loginPopup").fadeIn();
-        });
-
-        $("#signupLink").click(function () {
-            console.log('\n\nSign up link clicked\n\n');
-            $("#darkLayer").fadeIn();
-            $("#signupPopup").fadeIn();
-        });
-    });
-
-    function closeLoginPopup() {
-        $("#darkLayer").fadeOut();
-        $("#loginPopup").fadeOut();
-    }
-
-    function closeSignupPopup() {
-        $("#darkLayer").fadeOut();
-        $("#signupPopup").fadeOut();
-  }
-</script>

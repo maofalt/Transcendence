@@ -14,19 +14,33 @@
   </form>
   
   <a href="#" id="signupLink">Sign up</a>
+  {% include 'signup.html' %}
 
 
 <script>
   $(document).ready(function () {
-    $("#loginLink").click(function () {
-        $("#darkLayer").fadeIn();
-        $("#loginPopup").fadeIn();
-    });
     $("#signupLink").click(function () {
         closeLoginPopup();
+        console.log('close login popup');
+        $("#darkLayer").fadeIn();
+        console.log('opacity applied');
+        $("#signupPopup").fadeIn();
+        console.log('fade in signup popup\n\n');
+    });
+    $("#loginLink").click(function () {
+      console.log('log in link clicked');
+      $("#darkLayer").fadeIn();
+      console.log('opacity applied');
+      $("#loginPopup").fadeIn();
+      console.log('fade in login popup\n\n');
     });
   });
 
+  function closeLoginPopup() {
+      $("#darkLayer").fadeOut();
+      $("#loginPopup").fadeOut();
+      console.log('closeLoginPopup() called\n\n');
+    }
 
   function submitLoginForm() {
     $.ajax({
