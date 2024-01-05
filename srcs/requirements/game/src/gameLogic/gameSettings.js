@@ -12,9 +12,25 @@ const paddles = {
 
 // board :
 const field = {
-	height: paddles.height * 5,
+	paddleMin: 1,
+	paddleMax: 15,
+	playersMin: 2,
+	playersMax: 8,
+	goalMin: 0,
+	goalMax: 0,
+	wallMin: 0,
+	wallMax: 3,
+	ballMin: 0,
+	ballMax: 0,
+	height: 0,
 	width: 0,
 }
+field.goalMin = field.paddleMin * 3;
+field.goalMax = field.paddleMax * 10;
+field.ballMin = field.paddleMin;
+field.ballMax = field.paddleMax;
+
+field.height = paddles.height * 5,
 field.width = field.height * 2;
 
 const game = {

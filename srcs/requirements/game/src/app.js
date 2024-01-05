@@ -106,13 +106,16 @@ function startRound() {
 
 function manageLobby() {
     game.initData();
+    // game.updateData;
+    // io.to("gameRoom").emit('render', data);
     if (!data.player1.connected || !data.player2.connected)
         return;
     clearInterval(lobbyInterval);
     gameInterval = setInterval(calculateFrame, 10);
 }
 
-lobbyInterval = setInterval(manageLobby, 50);
+// game.initData();
+lobbyInterval = setInterval(manageLobby, 20);
 
 // Set up Socket.IO event handlers
 io.on('connection', (client) => {

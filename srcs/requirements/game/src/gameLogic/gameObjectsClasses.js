@@ -43,8 +43,26 @@ class Ball {
 // Field class
 class Field {
     constructor(fieldSettings) {
-        this.height = fieldSettings.height;
-        this.width = fieldSettings.width;
+        this.paddleMin = fieldSettings.paddleMin;
+        this.paddleMax = fieldSettings.paddleMax;
+        this.playersMin = fieldSettings.playersMin;
+        this.playersMax = fieldSettings.playersMax;
+        this.goalMin = fieldSettings.goalMin;
+        this.goalMax = fieldSettings.goalMax;
+        this.wallMin = fieldSettings.wallMin;
+        this.wallMax = fieldSettings.wallMax;
+        this.ballMin = fieldSettings.ballMin;
+        this.ballMax = fieldSettings.ballMax;
+        
+        // this.[paddleSize, setPaddleSize] = useState(10);
+        // this.[goalSize, setGoalSize] = useState(paddleSize * 3);
+        // this.[wallSize, setWallSize] = useState(2);
+        // this.[ballSize, setBallSize] = useState(paddleMin);
+        // this.[nbrOfPlayers, setNbrOfPlayers] = useState(2);
+
+        this.nbrOfPlayers = fieldSettings.nbrOfPlayers;
+        this.wallToGoalRatio = fieldSettings.wallToGoalRatio;
+        this.goalSize = fieldSettings.goalSize;
     }
 }
 

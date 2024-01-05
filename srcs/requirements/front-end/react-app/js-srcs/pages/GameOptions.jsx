@@ -10,7 +10,7 @@ const GameOptions = () => {
 		height: window.innerHeight * 1.0,
 	}
 
-	let renderer, scene;
+	let renderer, scene, camDist = 50, camFov = 75;
 
 	// lights & camera
 	let camera, ambientLight, directionalLight;
@@ -51,11 +51,13 @@ const GameOptions = () => {
 	};
 
 	const sphereGeometry = new THREE.SphereGeometry(1, 32, 16);
-	const paddleMesh = new THREE.Mesh(sphereGeometry, new THREE.MeshPhongMaterial({ color: 0x0000ff }));
-	const goalMesh = new THREE.Mesh(sphereGeometry, new THREE.MeshPhongMaterial({ color: 0x00ff00 }));
-	const wallMesh = new THREE.Mesh(sphereGeometry, new THREE.MeshPhongMaterial({ color: 0xff0000 }));
+	const boxGeometry = new THREE.BoxGeometry(1, 1, 1);
+	const paddleMesh = new THREE.Mesh(boxGeometry, new THREE.MeshPhongMaterial({ color: 0x0000ff }));
+	const goalMesh = new THREE.Mesh(boxGeometry, new THREE.MeshPhongMaterial({ color: 0x00ff00 }));
+	const wallMesh = new THREE.Mesh(boxGeometry, new THREE.MeshPhongMaterial({ color: 0xffffff }));
 	const ballMesh = new THREE.Mesh(sphereGeometry, new THREE.MeshPhongMaterial({ color: 0xffa500 }));
 	const playersMesh = new THREE.Mesh(sphereGeometry, new THREE.MeshPhongMaterial({ color: 0xFB00FF }));
+	// const paddleGeometry = new THREE.Mesh(boxGeometry, new THREE.MeshPhongMaterial({ color : 0x0000ff}));
 
 	function drawAxes() {
 		// axes length
@@ -87,10 +89,10 @@ const GameOptions = () => {
 		console.log("Generating Scene...");
 
 		scene = new THREE.Scene();
-		camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+		camera = new THREE.PerspectiveCamera(camFov, window.innerWidth / window.innerHeight, 0.1, 1000);
 		renderer = new THREE.WebGLRenderer();
 
-		camera.position.set(0, 0, 150);
+		camera.position.set(0, 0, camDist);
 		
 		renderer.setSize(viewPort.width, viewPort.height);
 		containerRef.current.appendChild(renderer.domElement);
@@ -104,11 +106,11 @@ const GameOptions = () => {
 		scene.add(ballMesh);
 		scene.add(playersMesh);
 		
-		paddleMesh.position.set(-100, 0, 0);
-		goalMesh.position.set(-50, 0, 0);
+		paddleMesh.position.set(-20, 0, 0);
+		goalMesh.position.set(-10, 0, 0);
 		wallMesh.position.set(0, 0, 0);
-		ballMesh.position.set(50, 0, 0);
-		playersMesh.position.set(100, 0, 0);
+		ballMesh.position.set(10, 0, 0);
+		playersMesh.position.set(20, 0, 0);
 
 		renderer.render(scene, camera);
 	};
@@ -122,11 +124,21 @@ const GameOptions = () => {
 		camera.aspect = viewPort.width / viewPort.height;
 		camera.updateProjectionMatrix();
 
-		paddleMesh.scale.set(paddleSize, paddleSize, paddleSize);
-		goalMesh.scale.set(goalSize, goalSize, goalSize);
-		wallMesh.scale.set(goalSize * wallSize, goalSize * wallSize, goalSize * wallSize);
-		ballMesh.scale.set(ballSize, ballSize, ballSize);
+		paddleMesh.scale.set(1, paddleSize, 1);
+		goalMesh.scale.set(1, goalSize, 1);
+		wallMesh.scale.set(1, goalSize * wallSize, 1);
+		ballMesh.scale.set(ballSize / 2, ballSize / 2, ballSize / 2);
 		playersMesh.scale.set(nbrOfPlayers, nbrOfPlayers, nbrOfPlayers);
+
+		camera.position.set(0, 0, camDist);
+		if (goalSize * wallSize > camDist) {
+			// camDist = goalSize * wallSize;
+			camera.position.set(0, 0, goalSize * wallSize);
+		}
+		else if (goalSize > camDist) {
+			// camDist = goalSize;
+			camera.position.set(0, 0, goalSize);
+		}
 
 		renderer.render(scene, camera);
 	};
@@ -160,7 +172,7 @@ const GameOptions = () => {
 		<div id="slidersBlock" style={{ textAlign: 'center' }}>
 			<h3 id="menuTitle">Game Settings</h3>
 			<div>
-				<div className="inputInfo">Paddle Length: {paddleSize.toFixed(1)}</div>
+				<div className="inputInfo">Paddle Length: {Math.round(100 * (paddleSize.toFixed(1) - paddleMin) / (paddleMax - paddleMin))}%</div>
 				<input
 					type="range"
 					min={paddleMin}
@@ -172,7 +184,7 @@ const GameOptions = () => {
 			</div>
 
 			<div>
-				<div className="inputInfo">Goal Size: {goalSize.toFixed(1)}</div>
+				<div className="inputInfo">Goal Size: {Math.round(100 * (goalSize.toFixed(1) - goalMin) / (goalMax - goalMin))}%</div>
 				<input
 					type="range"
 					min={goalMin}
@@ -196,7 +208,7 @@ const GameOptions = () => {
 			</div>
 
 			<div>
-				<div className="inputInfo">Ball Size: {ballSize.toFixed(1)}</div>
+				<div className="inputInfo">Ball Size: {Math.round(100 * (ballSize.toFixed(1) - ballMin) / (ballMax - ballMin))}%</div>
 				<input
 					type="range"
 					min={ballMin}
@@ -208,7 +220,7 @@ const GameOptions = () => {
 			</div>
 
 			<div>
-				<div className="inputInfo">Nbr of Players: {nbrOfPlayers.toFixed(1)}</div>
+				<div className="inputInfo">Nbr of Players: {nbrOfPlayers}</div>
 				<input
 					type="range"
 					min={playersMin}
