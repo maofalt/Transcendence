@@ -78,16 +78,16 @@ WSGI_APPLICATION = 'tournament.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'tournament_db',
-#         'USER': 'tournament_master',
-#         'PASSWORD': 'i love miguel',
-#         'HOST': 'localhost',  # This should match the service name in docker-compose.yml for the database
-#         'PORT': '5432',
-#     }
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'tournament_db',
+        'USER': 'tournament_master',
+        'PASSWORD': 'i love miguel',
+        'HOST': 'tournament_db',  # This should match the service name in docker-compose.yml for the database
+        'PORT': '5432',
+    }
+}
 
 
 

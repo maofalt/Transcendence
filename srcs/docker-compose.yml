@@ -160,8 +160,8 @@ services:
     restart: always
     environment:
       POSTGRES_DB: tournament_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 1234
+      POSTGRES_USER: tournament_master
+      POSTGRES_PASSWORD: 'i love miguel'
     volumes:
       - tournament-db:/var/lib/postgresql/data
     # ports:

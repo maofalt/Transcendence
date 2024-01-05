@@ -81,7 +81,7 @@ http:
         certResolver: "myresolver"
 #TOURNAMENT
     tournament:
-      rule: "Host(`localhost`) && PathPrefix(`/tournament`)"
+      rule: "Host(`localhost`) && PathPrefix(`/api/tournament`)"
       entryPoints: ["websecure"]
       middlewares: ["strip-game-tournament"]
       service: "tournament"
@@ -141,7 +141,7 @@ http:
     tournament:
       loadBalancer:
         servers:
-          - url: "http://tournament:80"
+          - url: "http://tournament:8001"
 #midlewares used to modify the request before it is sent to the container 
 #e.g.: stripPrefix is used to remove the /game-logic from the request
   middlewares:
@@ -161,7 +161,7 @@ http:
 #stripPrefix is used to remove the /tournament from the request
     strip-game-tournament:
       stripPrefix:
-        prefixes: ["/tournament"]
+        prefixes: ["/api/tournament"]
 #this is used to add the X-Forwarded-Proto header to the request
     sslheader:
       headers:
