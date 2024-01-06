@@ -44,10 +44,16 @@ function ballHitsPaddle2(ball, paddle2) {
 
 // ball out of bounds
 function ballIsOut(data) {
-	if (data.ball.x >= data.field.width / 2)
-		return (data.player1.score++, true);
-	if (data.ball.x <= -data.field.width / 2)
-		return (data.player2.score++, true);
+	if (data.ball.x >= data.field.width / 2) {
+		// return (data.player1.score++, true);
+		data.ball.x = 0;
+		data.ball.y = 0;
+	}
+	if (data.ball.x <= -data.field.width / 2) {
+		// return (data.player2.score++, true);
+		data.ball.x = 0;
+		data.ball.y = 0;
+	}
 	return false;
 }
 

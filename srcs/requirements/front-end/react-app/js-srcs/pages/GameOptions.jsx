@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import './GameOptions.css'
 
 const GameOptions = () => {
@@ -23,6 +24,9 @@ const GameOptions = () => {
 	const playersMin = 2;
 	const playersMax = 8;
 	
+	// const [players, setPlayers] = useState([]);
+	let players = [];
+
 	const [paddleSize, setPaddleSize] = useState(10);
 	const [goalSize, setGoalSize] = useState(paddleSize * 3);
 	const [wallSize, setWallSize] = useState(2);
@@ -85,6 +89,38 @@ const GameOptions = () => {
 		scene.add(ambientLight);
 	}
 
+	function generatePlayers() {
+		for (let i = 0; i < nbrOfPlayers; i++) {
+			const playerMesh = new THREE.Mesh(sphereGeometry, new THREE.MeshPhongMaterial({ color: 0xffa500 }));
+			players.push(playerMesh);
+			scene.add(playerMesh);
+			playerMesh.position.set(
+				-20 * Math.cos(-Math.PI/2 + (2*Math.PI/nbrOfPlayers) * i),
+				-20 * Math.sin(Math.PI/2 + (2*Math.PI/nbrOfPlayers) * i),
+				0);
+		}
+	}
+
+	function updatePlayers() {
+		for (let i = 0; i < playersMax; i++) {
+			if (i + 1 > nbrOfPlayers && players[i]) {
+				// if (players[i].geometry)
+					// players[i].geometry.dispose;
+				players[i].material.dispose;
+				players.splice(i, 1);
+			}
+			else if (i + 1 <= nbrOfPlayers && !players[i]) {
+				const playerMesh = new THREE.Mesh(sphereGeometry, new THREE.MeshPhongMaterial({ color: 0xffa500 }));
+				players.splice(i, 0, playerMesh);
+				scene.add(playerMesh);
+				playerMesh.position.set(
+					-20 * Math.cos(-Math.PI/2 + (2*Math.PI/nbrOfPlayers) * i),
+					-20 * Math.sin(Math.PI/2 + (2*Math.PI/nbrOfPlayers) * i),
+					0);
+			}
+		}
+	}
+
 	function generateScene(data) {
 		console.log("Generating Scene...");
 
@@ -97,6 +133,9 @@ const GameOptions = () => {
 		renderer.setSize(viewPort.width, viewPort.height);
 		containerRef.current.appendChild(renderer.domElement);
 
+		let controls = new OrbitControls(camera, renderer.domElement);
+		controls.target.set(0, 0, 0);
+
 		generateLights();
 		drawAxes();
 
@@ -106,45 +145,48 @@ const GameOptions = () => {
 		scene.add(ballMesh);
 		scene.add(playersMesh);
 		
-		paddleMesh.position.set(-20, 0, 0);
-		goalMesh.position.set(-10, 0, 0);
-		wallMesh.position.set(0, 0, 0);
-		ballMesh.position.set(10, 0, 0);
-		playersMesh.position.set(20, 0, 0);
-
-		renderer.render(scene, camera);
-	};
-
-	const animate = () => {
-		requestAnimationFrame(animate);
-
-		const { paddleSize, goalSize, wallSize, ballSize, nbrOfPlayers } = stateRef.current;
-
-		renderer.setSize(viewPort.width, viewPort.height);
-		camera.aspect = viewPort.width / viewPort.height;
-		camera.updateProjectionMatrix();
-
-		paddleMesh.scale.set(1, paddleSize, 1);
-		goalMesh.scale.set(1, goalSize, 1);
-		wallMesh.scale.set(1, goalSize * wallSize, 1);
-		ballMesh.scale.set(ballSize / 2, ballSize / 2, ballSize / 2);
-		playersMesh.scale.set(nbrOfPlayers, nbrOfPlayers, nbrOfPlayers);
-
-		camera.position.set(0, 0, camDist);
-		if (goalSize * wallSize > camDist) {
-			// camDist = goalSize * wallSize;
-			camera.position.set(0, 0, goalSize * wallSize);
-		}
-		else if (goalSize > camDist) {
-			// camDist = goalSize;
-			camera.position.set(0, 0, goalSize);
-		}
+		paddleMesh.position.set(-60, 0, 0);
+		goalMesh.position.set(-50, 0, 0);
+		wallMesh.position.set(-40, 0, 0);
+		ballMesh.position.set(0, 0, 0);
+		playersMesh.position.set(60, 0, 0);
+		generatePlayers();
 
 		renderer.render(scene, camera);
 	};
 
 	useEffect(() => {
+		const animate = () => {
+			requestAnimationFrame(animate);
+	
+			const { paddleSize, goalSize, wallSize, ballSize, nbrOfPlayers } = stateRef.current;
+	
+			renderer.setSize(viewPort.width, viewPort.height);
+			camera.aspect = viewPort.width / viewPort.height;
+			camera.updateProjectionMatrix();
+	
+			paddleMesh.scale.set(1, paddleSize, 1);
+			goalMesh.scale.set(1, goalSize, 1);
+			wallMesh.scale.set(1, goalSize * wallSize, 1);
+			ballMesh.scale.set(ballSize / 2, ballSize / 2, ballSize / 2);
+			playersMesh.scale.set(nbrOfPlayers, nbrOfPlayers, nbrOfPlayers);
+			updatePlayers();
+	
+			// camera.position.set(0, 0, camDist);
+			// if (goalSize * wallSize > camDist) {
+			// 	// camDist = goalSize * wallSize;
+			// 	camera.position.set(0, 0, goalSize * wallSize);
+			// }
+			// else if (goalSize > camDist) {
+			// 	// camDist = goalSize;
+			// 	camera.position.set(0, 0, goalSize);
+			// }
+	
+			renderer.render(scene, camera);
+		};
+
 		generateScene();
+		generatePlayers();
 		requestAnimationFrame(animate);
 
 		return () => {
@@ -153,7 +195,7 @@ const GameOptions = () => {
 				containerRef.current.removeChild(renderer.domElement);
 			}
 		}
-	}, []);
+	}, [nbrOfPlayers]);
 
 	useEffect(() => {
 		// Update the stateRef whenever the state changes
