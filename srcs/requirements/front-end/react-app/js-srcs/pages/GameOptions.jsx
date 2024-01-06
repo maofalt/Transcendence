@@ -139,16 +139,16 @@ const GameOptions = () => {
 					array.splice(i, 0, mesh);
 					if (type != 3) {
 						array[i].position.set(
-							(type == 1 ? 20 : 22) * Math.cos(Math.PI/2 + (2 * Math.PI/nbrOfPlayers) * i),
-							(type == 1 ? 20 : 22) * Math.sin(Math.PI/2 + (2 * Math.PI/nbrOfPlayers) * i),
+							(type == 1 ? 20 : 22) * Math.cos(-Math.PI/2 + (2 * Math.PI/nbrOfPlayers) * i),
+							(type == 1 ? 20 : 22) * Math.sin(-Math.PI/2 + (2 * Math.PI/nbrOfPlayers) * i),
 							0);
 						array[i].rotation.z = -Math.PI/2 + (2 * Math.PI/nbrOfPlayers) * i;
 					} else {
 						array[i].position.set(
-							(type == 1 ? 20 : 22) * Math.cos(Math.PI + (2 * Math.PI/nbrOfPlayers) * i),
-							(type == 1 ? 20 : 22) * Math.sin(Math.PI + (2 * Math.PI/nbrOfPlayers) * i),
+							22 * Math.cos(-Math.PI/2 + (2 * Math.PI/nbrOfPlayers) * (i + 1/2)),
+							22 * Math.sin(-Math.PI/2 + (2 * Math.PI/nbrOfPlayers) * (i + 1/2)),
 							0);
-						array[i].rotation.z = Math.PI + (2 * Math.PI/nbrOfPlayers) * i;
+						array[i].rotation.z = -Math.PI/2 + (2 * Math.PI/nbrOfPlayers) * (i + 1/2);
 					}
 					// console.log('LA CONDITION PAS SUPER TOUT LE TEMPS');
 				}
