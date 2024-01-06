@@ -11,7 +11,7 @@ const GameOptions = () => {
 		height: window.innerHeight * 1.0,
 	}
 
-	let renderer, scene, camDist = 50, camFov = 75;
+	let renderer, scene, camDist = 70, camFov = 75;
 
 	// lights & camera
 	let camera, ambientLight, directionalLight;
@@ -25,7 +25,9 @@ const GameOptions = () => {
 	const playersMax = 8;
 	
 	// const [players, setPlayers] = useState([]);
-	let players = [];
+	let	players = [];
+	let	goals = [];
+	let	walls = [];
 
 	const [paddleSize, setPaddleSize] = useState(10);
 	const [goalSize, setGoalSize] = useState(paddleSize * 3);
@@ -56,10 +58,10 @@ const GameOptions = () => {
 
 	const sphereGeometry = new THREE.SphereGeometry(1, 32, 16);
 	const boxGeometry = new THREE.BoxGeometry(1, 1, 1);
-	const paddleMesh = new THREE.Mesh(boxGeometry, new THREE.MeshPhongMaterial({ color: 0x0000ff }));
+	// const paddleMesh = new THREE.Mesh(boxGeometry, new THREE.MeshPhongMaterial({ color: 0x0000ff }));
 	const goalMesh = new THREE.Mesh(boxGeometry, new THREE.MeshPhongMaterial({ color: 0x00ff00 }));
 	const wallMesh = new THREE.Mesh(boxGeometry, new THREE.MeshPhongMaterial({ color: 0xffffff }));
-	const ballMesh = new THREE.Mesh(sphereGeometry, new THREE.MeshPhongMaterial({ color: 0xffa500 }));
+	const ballMesh = new THREE.Mesh(sphereGeometry, new THREE.MeshPhongMaterial({ color: 0xffffff }));
 	const playersMesh = new THREE.Mesh(sphereGeometry, new THREE.MeshPhongMaterial({ color: 0xFB00FF }));
 	// const paddleGeometry = new THREE.Mesh(boxGeometry, new THREE.MeshPhongMaterial({ color : 0x0000ff}));
 
@@ -89,40 +91,8 @@ const GameOptions = () => {
 		scene.add(ambientLight);
 	}
 
-	function generatePlayers() {
-		for (let i = 0; i < nbrOfPlayers; i++) {
-			const playerMesh = new THREE.Mesh(sphereGeometry, new THREE.MeshPhongMaterial({ color: 0xffa500 }));
-			players.push(playerMesh);
-			scene.add(playerMesh);
-			playerMesh.position.set(
-				-20 * Math.cos(-Math.PI/2 + (2*Math.PI/nbrOfPlayers) * i),
-				-20 * Math.sin(Math.PI/2 + (2*Math.PI/nbrOfPlayers) * i),
-				0);
-		}
-	}
-
-	function updatePlayers() {
-		for (let i = 0; i < playersMax; i++) {
-			if (i + 1 > nbrOfPlayers && players[i]) {
-				// if (players[i].geometry)
-					// players[i].geometry.dispose;
-				players[i].material.dispose;
-				players.splice(i, 1);
-			}
-			else if (i + 1 <= nbrOfPlayers && !players[i]) {
-				const playerMesh = new THREE.Mesh(sphereGeometry, new THREE.MeshPhongMaterial({ color: 0xffa500 }));
-				players.splice(i, 0, playerMesh);
-				scene.add(playerMesh);
-				playerMesh.position.set(
-					-20 * Math.cos(-Math.PI/2 + (2*Math.PI/nbrOfPlayers) * i),
-					-20 * Math.sin(Math.PI/2 + (2*Math.PI/nbrOfPlayers) * i),
-					0);
-			}
-		}
-	}
-
 	function generateScene(data) {
-		console.log("Generating Scene...");
+		// console.log("Generating Scene...");
 
 		scene = new THREE.Scene();
 		camera = new THREE.PerspectiveCamera(camFov, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -139,23 +109,56 @@ const GameOptions = () => {
 		generateLights();
 		drawAxes();
 
-		scene.add(paddleMesh);
-		scene.add(goalMesh);
-		scene.add(wallMesh);
+		// scene.add(paddleMesh);
+		// scene.add(goalMesh);
+		// scene.add(wallMesh);
 		scene.add(ballMesh);
 		scene.add(playersMesh);
 		
-		paddleMesh.position.set(-60, 0, 0);
-		goalMesh.position.set(-50, 0, 0);
-		wallMesh.position.set(-40, 0, 0);
+		// paddleMesh.position.set(-60, 0, 0);
+		// goalMesh.position.set(-50, 0, 0);
+		// wallMesh.position.set(-40, 0, 0);
 		ballMesh.position.set(0, 0, 0);
 		playersMesh.position.set(60, 0, 0);
-		generatePlayers();
 
 		renderer.render(scene, camera);
 	};
 
 	useEffect(() => {
+		function updateSides(size, array, objColor, type) {
+			for (let i = 0; i < playersMax; i++) {
+				if (i + 1 > nbrOfPlayers && array[i]) {
+					// if (array[i].geometry)
+						// array[i].geometry.dispose;
+					array[i].material.dispose;
+					array.splice(i, 1);
+				}
+				else if (i + 1 <= nbrOfPlayers && !array[i]) {
+					const mesh = new THREE.Mesh(boxGeometry, new THREE.MeshPhongMaterial({ color: objColor, transparent: true, opacity: 1}));
+					scene.add(mesh);
+					array.splice(i, 0, mesh);
+					if (type != 3) {
+						array[i].position.set(
+							(type == 1 ? 20 : 22) * Math.cos(Math.PI/2 + (2 * Math.PI/nbrOfPlayers) * i),
+							(type == 1 ? 20 : 22) * Math.sin(Math.PI/2 + (2 * Math.PI/nbrOfPlayers) * i),
+							0);
+						array[i].rotation.z = -Math.PI/2 + (2 * Math.PI/nbrOfPlayers) * i;
+					} else {
+						array[i].position.set(
+							(type == 1 ? 20 : 22) * Math.cos(Math.PI + (2 * Math.PI/nbrOfPlayers) * i),
+							(type == 1 ? 20 : 22) * Math.sin(Math.PI + (2 * Math.PI/nbrOfPlayers) * i),
+							0);
+						array[i].rotation.z = Math.PI + (2 * Math.PI/nbrOfPlayers) * i;
+					}
+					// console.log('LA CONDITION PAS SUPER TOUT LE TEMPS');
+				}
+				if (i + 1 <= nbrOfPlayers) {
+					// console.log('LA CONDITION YES SUPER');
+					array[i].scale.set(1, size, 1);
+				}
+			}
+		}
+
 		const animate = () => {
 			requestAnimationFrame(animate);
 	
@@ -165,12 +168,14 @@ const GameOptions = () => {
 			camera.aspect = viewPort.width / viewPort.height;
 			camera.updateProjectionMatrix();
 	
-			paddleMesh.scale.set(1, paddleSize, 1);
-			goalMesh.scale.set(1, goalSize, 1);
-			wallMesh.scale.set(1, goalSize * wallSize, 1);
+			// paddleMesh.scale.set(1, paddleSize, 1);
+			// goalMesh.scale.set(1, goalSize, 1);
+			// wallMesh.scale.set(1, goalSize * wallSize, 1);
 			ballMesh.scale.set(ballSize / 2, ballSize / 2, ballSize / 2);
 			playersMesh.scale.set(nbrOfPlayers, nbrOfPlayers, nbrOfPlayers);
-			updatePlayers();
+			updateSides(paddleSize, players, 0x0050ff, 1);
+			updateSides(goalSize, goals, 0x00c000, 2);
+			updateSides(goalSize * wallSize, walls, 0xffffff, 3);
 	
 			// camera.position.set(0, 0, camDist);
 			// if (goalSize * wallSize > camDist) {
@@ -186,12 +191,11 @@ const GameOptions = () => {
 		};
 
 		generateScene();
-		generatePlayers();
 		requestAnimationFrame(animate);
 
 		return () => {
 			if (renderer) {
-				console.log("renderer exists");
+				// console.log("renderer exists");
 				containerRef.current.removeChild(renderer.domElement);
 			}
 		}
