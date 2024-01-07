@@ -58,12 +58,7 @@ const GameOptions = () => {
 
 	const sphereGeometry = new THREE.SphereGeometry(1, 32, 16);
 	const boxGeometry = new THREE.BoxGeometry(1, 1, 1);
-	// const paddleMesh = new THREE.Mesh(boxGeometry, new THREE.MeshPhongMaterial({ color: 0x0000ff }));
-	const goalMesh = new THREE.Mesh(boxGeometry, new THREE.MeshPhongMaterial({ color: 0x00ff00 }));
-	const wallMesh = new THREE.Mesh(boxGeometry, new THREE.MeshPhongMaterial({ color: 0xffffff }));
 	const ballMesh = new THREE.Mesh(sphereGeometry, new THREE.MeshPhongMaterial({ color: 0xffffff }));
-	const playersMesh = new THREE.Mesh(sphereGeometry, new THREE.MeshPhongMaterial({ color: 0xFB00FF }));
-	// const paddleGeometry = new THREE.Mesh(boxGeometry, new THREE.MeshPhongMaterial({ color : 0x0000ff}));
 
 	function drawAxes() {
 		// axes length
@@ -109,23 +104,19 @@ const GameOptions = () => {
 		generateLights();
 		drawAxes();
 
-		// scene.add(paddleMesh);
-		// scene.add(goalMesh);
-		// scene.add(wallMesh);
 		scene.add(ballMesh);
-		scene.add(playersMesh);
-		
-		// paddleMesh.position.set(-60, 0, 0);
-		// goalMesh.position.set(-50, 0, 0);
-		// wallMesh.position.set(-40, 0, 0);
+	
 		ballMesh.position.set(0, 0, 0);
-		playersMesh.position.set(60, 0, 0);
 
 		renderer.render(scene, camera);
 	};
 
 	useEffect(() => {
-		function updateSides(size, array, objColor, type) {
+		// const { paddleSize, goalSize, wallSize, ballSize, nbrOfPlayers } = stateRef.current;
+		let startShape = -Math.PI/2;
+		// let wallDist = 0, goalDist = 0, a = 0, gs = 0, ws = 0;
+
+		function updateGoals(dist, array, angle, size) {
 			for (let i = 0; i < playersMax; i++) {
 				if (i + 1 > nbrOfPlayers && array[i]) {
 					// if (array[i].geometry)
@@ -134,59 +125,96 @@ const GameOptions = () => {
 					array.splice(i, 1);
 				}
 				else if (i + 1 <= nbrOfPlayers && !array[i]) {
-					const mesh = new THREE.Mesh(boxGeometry, new THREE.MeshPhongMaterial({ color: objColor, transparent: true, opacity: 1}));
+					const mesh = new THREE.Mesh(boxGeometry, new THREE.MeshPhongMaterial({ color: 0x00c000, transparent: true, opacity: 1}));
 					scene.add(mesh);
 					array.splice(i, 0, mesh);
-					if (type != 3) {
-						array[i].position.set(
-							(type == 1 ? 20 : 22) * Math.cos(-Math.PI/2 + (2 * Math.PI/nbrOfPlayers) * i),
-							(type == 1 ? 20 : 22) * Math.sin(-Math.PI/2 + (2 * Math.PI/nbrOfPlayers) * i),
-							0);
-						array[i].rotation.z = -Math.PI/2 + (2 * Math.PI/nbrOfPlayers) * i;
-					} else {
-						array[i].position.set(
-							22 * Math.cos(-Math.PI/2 + (2 * Math.PI/nbrOfPlayers) * (i + 1/2)),
-							22 * Math.sin(-Math.PI/2 + (2 * Math.PI/nbrOfPlayers) * (i + 1/2)),
-							0);
-						array[i].rotation.z = -Math.PI/2 + (2 * Math.PI/nbrOfPlayers) * (i + 1/2);
-					}
-					// console.log('LA CONDITION PAS SUPER TOUT LE TEMPS');
+					array[i].rotation.z = startShape + angle * i;
 				}
 				if (i + 1 <= nbrOfPlayers) {
-					// console.log('LA CONDITION YES SUPER');
+					array[i].position.set(
+						dist * Math.cos(startShape + angle * i),
+						dist * Math.sin(startShape + angle * i),
+						0);
+					array[i].scale.set(1, size, 1);
+				}
+			}
+		}
+
+		function updatePlayers(dist, array, angle, size) {
+			for (let i = 0; i < playersMax; i++) {
+				if (i + 1 > nbrOfPlayers && array[i]) {
+					// if (array[i].geometry)
+						// array[i].geometry.dispose;
+					array[i].material.dispose;
+					array.splice(i, 1);
+				}
+				else if (i + 1 <= nbrOfPlayers && !array[i]) {
+					const mesh = new THREE.Mesh(boxGeometry, new THREE.MeshPhongMaterial({ color: 0x0080ff, transparent: true, opacity: 1}));
+					scene.add(mesh);
+					array.splice(i, 0, mesh);
+					array[i].rotation.z = startShape + angle * i;
+				}
+				if (i + 1 <= nbrOfPlayers) {
+					array[i].position.set(
+						dist * Math.cos(startShape + angle * i),
+						dist * Math.sin(startShape + angle * i),
+						0);
+					array[i].scale.set(1, size, 1);
+				}
+			}
+		}
+
+		function updateWalls(dist, array, angle, size) {
+			// console.log("updating walls");
+			for (let i = 0; i < playersMax; i++) {
+				if (i + 1 > nbrOfPlayers && array[i]) {
+					// if (array[i].geometry)
+						// array[i].geometry.dispose;
+					array[i].material.dispose;
+					array.splice(i, 1);
+				}
+				else if (i + 1 <= nbrOfPlayers && !array[i]) {
+					const mesh = new THREE.Mesh(boxGeometry, new THREE.MeshPhongMaterial({ color: 0xffffff, transparent: true, opacity: 1}));
+					scene.add(mesh);
+					array.splice(i, 0, mesh);
+					array[i].rotation.z = startShape + angle / 2 + angle * i;
+				}
+				if (i + 1 <= nbrOfPlayers) {
+					// console.log("scaling walls");
+					array[i].position.set(
+						dist * Math.cos(startShape + angle / 2 + angle * i),
+						dist * Math.sin(startShape + angle / 2 + angle * i),
+						0);
 					array[i].scale.set(1, size, 1);
 				}
 			}
 		}
 
 		const animate = () => {
-			requestAnimationFrame(animate);
-	
 			const { paddleSize, goalSize, wallSize, ballSize, nbrOfPlayers } = stateRef.current;
-	
+
 			renderer.setSize(viewPort.width, viewPort.height);
 			camera.aspect = viewPort.width / viewPort.height;
 			camera.updateProjectionMatrix();
 	
-			// paddleMesh.scale.set(1, paddleSize, 1);
-			// goalMesh.scale.set(1, goalSize, 1);
-			// wallMesh.scale.set(1, goalSize * wallSize, 1);
 			ballMesh.scale.set(ballSize / 2, ballSize / 2, ballSize / 2);
-			playersMesh.scale.set(nbrOfPlayers, nbrOfPlayers, nbrOfPlayers);
-			updateSides(paddleSize, players, 0x0050ff, 1);
-			updateSides(goalSize, goals, 0x00c000, 2);
-			updateSides(goalSize * wallSize, walls, 0xffffff, 3);
+
+			let angle = 2 * Math.PI/nbrOfPlayers;
+			let a = angle / 2;
+			let gs = goalSize / 2;
+			let ws = (goalSize * wallSize) / 2;
+
+			let wallDist = gs / Math.sin(a) + ws / Math.tan(a);
+			let goalDist = gs / Math.tan(a) + ws / Math.sin(a);
+
+			updateGoals(goalDist, goals, angle, goalSize);
+			updateWalls(wallDist, walls, angle, goalSize * wallSize);
+			updatePlayers(goalDist - 2, players, angle, paddleSize);
 	
-			// camera.position.set(0, 0, camDist);
-			// if (goalSize * wallSize > camDist) {
-			// 	// camDist = goalSize * wallSize;
-			// 	camera.position.set(0, 0, goalSize * wallSize);
-			// }
-			// else if (goalSize > camDist) {
-			// 	// camDist = goalSize;
-			// 	camera.position.set(0, 0, goalSize);
-			// }
+			let camDist = (wallDist > goalDist ? wallDist : goalDist);
+			camera.position.set(0, 0, camDist * 2);
 	
+			// camera.position.set(0, 0, 200);
 			renderer.render(scene, camera);
 		};
 
@@ -199,7 +227,7 @@ const GameOptions = () => {
 				containerRef.current.removeChild(renderer.domElement);
 			}
 		}
-	}, [nbrOfPlayers]);
+	}, [nbrOfPlayers, paddleSize, goalSize, ballSize, wallSize]);
 
 	useEffect(() => {
 		// Update the stateRef whenever the state changes
