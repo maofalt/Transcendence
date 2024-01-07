@@ -41,7 +41,6 @@ fclean: clean
 
 set-ip:
 	export "LOCAL_IP=$(shell hostname -i)"
-# echo "LOCAL_IP=$(shell hostname -i)" >> srcs/.env
 
 set-codeespace-url:
 	export "CODESPACE_URL=${CODESPACE_NAME}"
