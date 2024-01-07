@@ -83,7 +83,7 @@ http:
     tournament:
       rule: "Host(`localhost`) && PathPrefix(`/api/tournament`)"
       entryPoints: ["websecure"]
-      middlewares: ["strip-game-tournament"]
+      middlewares: ["tournament-headers"]
       service: "tournament"
       tls:
         certResolver: "myresolver"
@@ -101,6 +101,7 @@ http:
       service: "game"
       middlewares:
         - "websocketHeaders"
+# "traefik.http.routers.tournament.middlewares=tournament-headers"
 
 #services endpoints corresponding to the routers, it is used to redirect the request to the correct container
 #it works by using the name of the container as the url
@@ -158,10 +159,11 @@ http:
     strip-game-logic:
       stripPrefix:
         prefixes: ["/game-logic"]
-#stripPrefix is used to remove the /tournament from the request
-    strip-game-tournament:
-      stripPrefix:
-        prefixes: ["/api/tournament"]
+
+    tournament-headers:
+      headers:
+        customResponseHeaders:
+          X-Forwarded-Prefix: "/api/tournament"
 #this is used to add the X-Forwarded-Proto header to the request
     sslheader:
       headers:

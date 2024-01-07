@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
-from .models import Tournament
+from .models import Tournament, TournamentMatch, MatchSetting, GameType, TournamentType, RegistrationType, TournamentPlayer, Player, MatchParticipants
 from .serializers import TournamentSerializer
 
 class TournamentListCreate(generics.ListCreateAPIView):
@@ -25,7 +25,7 @@ class IsTournamentOrganizer(permissions.BasePermission):
 class TournamentRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     queryset = Tournament.objects.all()
     serializer_class = TournamentSerializer
-    permission_classes = [IsTournamentOrganizer] #add more permissions if is necessary
+    #permission_classes = [IsTournamentOrganizer] #add more permissions if is necessary
 
 # -------------------------- Participants -------------------------------
 
