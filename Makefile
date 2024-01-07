@@ -40,10 +40,11 @@ fclean: clean
 .PHONY: all build up down logs
 
 set-ip:
-	echo "LOCAL_IP=$(shell hostname -i)" >> srcs/.env
+	export "LOCAL_IP=$(shell hostname -i)"
+# echo "LOCAL_IP=$(shell hostname -i)" >> srcs/.env
 
 set-codeespace-url:
-	echo "CODESPACE_URL=${CODESPACE_NAME}" >> srcs/.env
+	export "CODESPACE_URL=${CODESPACE_NAME}"
 
 set-permissions:
 	chmod 600 srcs/requirements/traefik/config/ssl/acme.json
