@@ -25,6 +25,6 @@ def home(request):
 
 
 urlpatterns = [
-    path('', home),
-    path('tournaments/', include("manage_tournament.urls")),
+    # path('', home),
+    path('', include("manage_tournament.urls")),
 ]

@@ -8,7 +8,7 @@ from .serializers import TournamentSerializer
 class TournamentListCreate(generics.ListCreateAPIView):
     queryset = Tournament.objects.all()
     serializer_class = TournamentSerializer
-    permission_classes = [permissions.IsAuthenticated] #add more permissions if is necessary
+    # permission_classes = [permissions.IsAuthenticated] #add more permissions if is necessary
     
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
