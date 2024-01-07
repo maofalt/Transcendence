@@ -19,15 +19,14 @@ from rest_framework import status
 from .models import User
 from .serializers import UserSerializer, AnonymousUserSerializer
 
-print(make_password("1234")) 
-print(check_password("1234", "pbkdf2_sha256$720000$3Ic0AO1QtmzznCEoyCml96$wcExZGGuUboFrsn7geDFMjNK9AM12wtAZCAHKdfq6D0="))
-
 # Create your views here.
 
 def home(request):
     return render(request, 'home.html')
 
 def api_login_view(request):
+    print("\n\n       URL:", request.build_absolute_uri())
+
     if request.method == "POST":
         username = request.POST["username"]
         password = request.POST["password"]
@@ -46,7 +45,8 @@ def api_login_view(request):
             print(f"Is Online: {user.is_online}")
             print(f"Date Joined: {user.date_joined}")
             serializer = UserSerializer(user)
-            return JsonResponse({'message': 'Authentication successful', 'user': serializer.data})
+            redirect_url = '/api/user_management/'
+            return JsonResponse({'message': 'Authentication successful', 'user': serializer.data, 'redirect_url': redirect_url})
 
         else:
             print("Authentication failed")
@@ -76,7 +76,7 @@ def api_logout_view(request):
         print(request.user.username, ": is_online status", request.user.is_online)
         logout(request)
         serializer = get_serializer(request.user)
-        return JsonResponse({'message': 'Logout successful', 'user': serializer.data})
+        return redirect('/api/user_management/')
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=400)
 
