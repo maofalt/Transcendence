@@ -46,7 +46,7 @@ CREATE TABLE "tournaments_list" (
 #   "nbr_of_player" integer NOT NULL DEFAULT 2,
 #   "tournament_type_id" integer,
 #   "registration" integer,
-  "setting_id" integer,
+#   "setting_id" integer,
   "registration_period_min" integer NOT NULL DEFAULT 15,
   "host_id" integer NOT NULL
 );
