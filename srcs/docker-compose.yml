@@ -134,10 +134,7 @@ services:
       networks:
         - transcendence
       volumes:
-        - ./requirements/tournament_service/app/:/app
-      depends_on:
-        - tournament_db
-      restart: always
+        - ./requirements/tsrcs/requirements/tournament_service/scripts/entrypoint.sh
       #ports:
       #  - 8034:8000
       labels:

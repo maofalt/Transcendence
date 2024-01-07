@@ -17,10 +17,11 @@ RUN pip install Django djangorestframework psycopg2-binary
 COPY ./app /app
 
 # Copy the entrypoint script and give execute permissions
-COPY ./scripts/entrypoint.sh entrypoint.sh
+COPY /scripts /app
 RUN chmod +x /app/entrypoint.sh
 
 EXPOSE 8001
 
 # Set the entrypoint script
-ENTRYPOINT ["/app/entrypoint.sh"]
+#CMD ["bash", "entrypoint.sh"]
+ENTRYPOINT ["tail", "-f", "/dev/null"]
