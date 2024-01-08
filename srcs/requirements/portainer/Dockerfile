@@ -1,10 +1,14 @@
+# Stage 1
+FROM httpd:2.4-alpine as base
+
+# Create a file with the hashed password
+RUN echo "PORTAINER_HASH_PASSWORD=$(htpasswd -nb -B admin $PORTAINER_ADMIN_PASSWORD | cut -d ":" -f 2)" > /tmp/password.txt
+
+# Stage 2
 FROM portainer/portainer-ce
 
-# RUN apk update && apk upgrade && apk add --no-cache bash
-# Run command to create admin user
-# RUN /usr/local/bin/docker-entrypoint.sh -c /dev/null --admin-password $PORTAINER_ADMIN_PASSWORD --admin-username $PORTAINER_ADMIN_USERNAME
+# Copy the hashed password file from stage 1
+COPY --from=base /tmp/password.txt /tmp/password.txt
 
-COPY . /
-
-CMD ["--admin-password", "${PORTAINER_ADMIN_PASSWORD}"] 
-# , "--admin-username", "${PORTAINER_ADMIN_USERNAME}"]
+# Use the hashed password from the file to set admin password in portainer
+CMD ["--admin-password", "$(cat /tmp/password.txt)"]
