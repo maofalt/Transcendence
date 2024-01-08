@@ -14,9 +14,6 @@ if [ "$ENV_PASSPHRASE" != "$CONFIRM_PASSPHRASE" ]; then
     exit 1
 fi
 
-# Set the passphrase in environment variable
-export ENV_PASSPHRASE
-
 # Directory where scripts will be placed
 HOOKS_DIR=".git/hooks"
 
@@ -27,13 +24,14 @@ ENV_LOCATION="srcs/"
 ENV_FILE="\$ENV_LOCATION.env"
 ENV_EXAMPLE_FILE="\$ENV_LOCATION.env.example"
 ENV_GPG_FILE="\$ENV_LOCATION.env.gpg"
+ENV_PASSPHRASE="$ENV_PASSPHRASE"
 
 # Encrypt .env using GPG with passphrase option
 rm -f \$ENV_GPG_FILE
-gpg --batch --passphrase "\$ENV_PASSPHRASE" -c \$ENV_LOCATION.env
+gpg --batch --passphrase "\$ENV_PASSPHRASE" -c \$ENV_FILE
 
 # Add the encrypted file to the staging area
-git add \$ENV_LOCATION.env.gpg
+git add \$ENV_GPG_FILE
 
 ## Generate example .env file ##
 if [ -f "\$ENV_FILE" ]; then
@@ -77,6 +75,7 @@ ENV_LOCATION="srcs/"
 ENV_FILE="\$ENV_LOCATION.env"
 ENV_EXAMPLE_FILE="\$ENV_LOCATION.env.example"
 ENV_GPG_FILE="\$ENV_LOCATION.env.gpg"
+ENV_PASSPHRASE="$ENV_PASSPHRASE"
 
 # Decrypt .env.gpg using GPG with passphrase option
 gpg --batch --passphrase "\$ENV_PASSPHRASE" -d \$ENV_GPG_FILE > \$ENV_FILE
