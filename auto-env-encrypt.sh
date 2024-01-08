@@ -4,6 +4,16 @@
 read -s -p "Enter passphrase for encryption/decryption: " ENV_PASSPHRASE
 echo
 
+# Prompt user for passphrase confirmation
+read -s -p "Confirm passphrase: " CONFIRM_PASSPHRASE
+echo
+
+# Check if the passphrases match
+if [ "$ENV_PASSPHRASE" != "$CONFIRM_PASSPHRASE" ]; then
+    echo "Passphrases do not match. Exiting."
+    exit 1
+fi
+
 # Set the passphrase in environment variable
 export ENV_PASSPHRASE
 
@@ -33,7 +43,6 @@ if [ -f "\$ENV_FILE" ]; then
     # Read each line from the .env file
     while IFS= read -r line; do
         # Check if the line is not empty and does not start with #
-        echo "\$line"
         if [[ ! -z "\$line" && "\$line" != \#* ]]; then
             # Extract the variable name
             variable_name=\$(echo "\$line" | cut -d'=' -f1)
