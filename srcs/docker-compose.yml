@@ -14,9 +14,9 @@ services:
       - 8080:8080
     volumes:
       - ./requirements/traefik/config:/etc/traefik
-      - ./requirements/traefik/config/ssl/:/ssl-certs
-      - "${XDG_RUNTIME_DIR}/docker.sock:/var/run/docker.sock"
-      # - "/var/run/docker.sock:/var/run/docker.sock" # <-- actvate this if you are in Windows and comment the line above
+      # - ./requirements/traefik/config/ssl/:/ssl-certs
+      # - "${XDG_RUNTIME_DIR}/docker.sock:/var/run/docker.sock"
+      - "/var/run/docker.sock:/var/run/docker.sock" # <-- actvate this if you are in Windows and comment the line above
     networks:
       - transcendence
     restart: unless-stopped
@@ -32,8 +32,8 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     volumes:
-      # - "/var/run/docker.sock:/var/run/docker.sock"
-      - "${XDG_RUNTIME_DIR}/docker.sock:/var/run/docker.sock"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      # - "${XDG_RUNTIME_DIR}/docker.sock:/var/run/docker.sock"
       - portainer-data:/data
     networks:
       - transcendence
@@ -152,13 +152,13 @@ volumes:
   postgres-data:
     driver: local
 
-#to verify if this works without the data bindin in rootless at school @ionorb
-  front-end-volume:
-    driver: local
-    driver_opts:
-      type: none
-      device: ./requirements/front-end/react-app
-      o: bind 
+# #to verify if this works without the data bindin in rootless at school @ionorb
+#   front-end-volume:
+#     driver: local
+#     driver_opts:
+#       type: none
+#       device: ./requirements/front-end/react-app
+#       o: bind 
 
 #NETWORKS
 networks:
