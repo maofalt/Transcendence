@@ -14,7 +14,7 @@ services:
       - 8080:8080
     volumes:
       - ./requirements/traefik/config:/etc/traefik
-      - traefik-ssl-certs:/ssl-certs
+      - ./requirements/traefik/config/ssl/:/ssl-certs
       - "${XDG_RUNTIME_DIR}/docker.sock:/var/run/docker.sock"
       # - "/var/run/docker.sock:/var/run/docker.sock" # <-- actvate this if you are in Windows and comment the line above
     networks:
@@ -58,14 +58,25 @@ services:
       - ./requirements/front-end/react-app/:/app/src # Mount the source code
     networks:
       - transcendence
+    env_file:
+      - .env
     #Necessary labels if we want dynamic routing based on the local ip of the machine
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.react-dev.rule= Host(`${LOCAL_IP}`)"
-      - "traefik.http.routers.react-dev.entrypoints=websecure"
-      - "traefik.http.routers.react-dev.service=reactDevService"
-      - "traefik.http.routers.react-dev.tls.certresolver=myresolver"
-      - "traefik.http.services.reactDevService.loadbalancer.server.port=8033"
+      - "traefik.http.routers.react-dev.rule=Host(`${LOCAL_IP}`)"
+      # Router for local IP
+      - "traefik.http.routers.react-dev-local.rule=Host(`${LOCAL_IP}`)"
+      - "traefik.http.routers.react-dev-local.entrypoints=websecure"
+      - "traefik.http.routers.react-dev-local.service=reactDevServiceLocal"
+      - "traefik.http.routers.react-dev-local.tls.certresolver=myresolver"
+      - "traefik.http.services.reactDevServiceLocal.loadbalancer.server.port=8033"
+      # Router for codespace URL
+      - "traefik.http.routers.react-dev-codespace.rule=Host(`${CODESPACE_URL}-9443.app.github.dev`)"
+      - "traefik.http.routers.react-dev-codespace.entrypoints=websecure"
+      - "traefik.http.routers.react-dev-codespace.service=reactDevServiceCodespace"
+      - "traefik.http.routers.react-dev-codespace.tls.certresolver=myresolver"
+      - "traefik.http.services.reactDevServiceCodespace.loadbalancer.server.port=9443"
+
 
 #BACKEND GAME SERVICES
   game:
@@ -73,14 +84,15 @@ services:
     build: 
       context: ./requirements/game/
       dockerfile: Dockerfile
+    # IMPORTANT - this is insecure. Use .env file instead
     environment:
-      - DATABASE_URL=postgresql://user42:password@db:5432/mydatabase
+      - DATABASE_URL=postgresql://user42:password@db:5432/mydatabase # <-- use value from .env
     depends_on:
       - game-db
     networks:
       - transcendence
     volumes:
-      - traefik-ssl-certs:/etc/game/ssl/
+      - ./requirements/traefik/config/ssl/:/etc/game/ssl/
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.game.rule=Host(`${LOCAL_IP}`) && PathPrefix(`/game-logic`)"
@@ -97,10 +109,11 @@ services:
     build:
       context: ./requirements/game/postgreSQL/
       dockerfile: Dockerfile
+    # IMPORTANT - this is insecure. Use .env file instead
     environment:
-      POSTGRES_DB: mydatabase
-      POSTGRES_USER: user42
-      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydatabase # <-- use value from .env
+      POSTGRES_USER: user42 # <-- use value from .env
+      POSTGRES_PASSWORD: password # <-- use value from .env
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:
@@ -115,15 +128,25 @@ services:
     # ports:
     #   - "5050:80"
 
+  tournament:
+      container_name: tournament
+      build:
+        context: ./requirements/tournament_service/
+        dockerfile: Dockerfile
+      networks:
+        - transcendence
+      #ports:
+      #  - 8034:8000
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.tournament.rule=Host(`tournament.localhost`)"
+        - "traefik.http.routers.tournament.entrypoints=websecure"
+        - "traefik.http.services.tournament.loadbalancer.server.port=80"
+        - "traefik.http.routers.tournament.service=tournament"
+        - "traefik.http.routers.tournament.tls.certresolver=myresolver"
+
 #VOLUMES
 volumes:
-#to verify if this works without the data bindin in rootless at school @ionorb
-  traefik-ssl-certs:
-    driver: local
-    driver_opts:
-      type: none
-      device: ./requirements/traefik/config/ssl/
-      o: bind
   portainer-data:
     driver: local
   postgres-data:

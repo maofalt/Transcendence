@@ -21,7 +21,7 @@ function App() {
 				<div className="content">
 					<Routes>
 						<Route path='/' element={<Home jsonUrl={jsonUrl}/>} />
-						<Route path='/game' element={<Game/>} />
+						<Route path='/game' element={<RemoteGame/>} />
 						{/* <Route path='/play' element={<PlayRemote/>} /> */}
 						<Route path='/play' element={<RemoteGame/>} />
 						<Route path='/profile' element={<Profile/>} />

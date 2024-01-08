@@ -25,7 +25,7 @@ certificatesResolvers:
 providers:
   docker:
     endpoint: "unix:///var/run/docker.sock"
-    exposedByDefault: true
+    exposedByDefault: false
   #path to this same file to act as the dynamic config
   file:
     filename: /etc/traefik/traefik.yml
