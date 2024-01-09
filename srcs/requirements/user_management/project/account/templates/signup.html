@@ -1,12 +1,12 @@
 
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 
-<div id="signupPopup" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); z-index: 9999;">
+<div id="signupPopup" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); z-index: 9999; width: 300px;">
     <span style="float: right; cursor: pointer;" onclick="closeSignupPopup()">&times;</span>
     <h2>Sign Up</h2>
-    {% if error_message %}
-        <div style="color: red;">{{ error_message }}</div>
-    {% endif %}
+
+    <div id="signupPopupError" style="color: red;"></div> <!-- Add this line -->
+
     <form id="signupForm" action="" method="POST" onsubmit="submitSignupForm(); return false;">
         {% csrf_token %}
         <p>ID</p>
@@ -15,6 +15,9 @@
             <span style="color: green; font-size: smaller;">(minimum 8 characters, at least 1 digit, 1 alphabet, different from intra_id and playername)</span>
         </p>
         <input name="password" type="password">
+        <p>CONFIRM PASSWORD</p>
+        <input name="confirm_password" id="confirmPassword" type="password" oninput="checkPasswordMatch();">
+        <div id="confirmPasswordError" style="color: red;"></div>
         <p>PLAYERNAME</p>
         <input name="playername" type="text">
         <p>INTRA_ID</p>
@@ -25,9 +28,19 @@
 
 <script>
     function closeSignupPopup() {
-      $("#darkLayer").fadeOut();
+    //   $("#darkLayer").fadeOut();
       $("#signupPopup").fadeOut();
       console.log('closeSignupPopup() called\n\n');
+    }
+    function checkPasswordMatch() {
+        var password = $("#signupForm input[name='password']").val();
+        var confirmPassword = $("#confirmPassword").val();
+
+        if (password !== confirmPassword) {
+            $("#confirmPasswordError").text("Passwords do not match");
+        } else {
+            $("#confirmPasswordError").text("");
+        }
     }
     function submitSignupForm() {
         $.ajax({

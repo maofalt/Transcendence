@@ -2,6 +2,11 @@
 
 {% block content %}
   <h1>Update Profile</h1>
+  
+
+    {% if error_message %}
+      <p style="color: red;">{{ error_message }}</p>
+    {% endif %}
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ user_form.as_p }}
