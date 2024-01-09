@@ -82,9 +82,9 @@ ENV_PASSPHRASE="$ENV_PASSPHRASE"
 gpg --batch --passphrase="\$ENV_PASSPHRASE" -d \$ENV_GPG_FILE > \$ENV_FILE
 
 # Remove the encrypted file
-rm -f \$ENV_GPG_FILE
+# rm -f \$ENV_GPG_FILE
 
-git rm --cached srcs/.env.gpg
+# git rm --cached srcs/.env.gpg
 
 EOL
 
@@ -101,9 +101,9 @@ ENV_PASSPHRASE="$ENV_PASSPHRASE"
 gpg --batch --passphrase="\$ENV_PASSPHRASE" -d \$ENV_GPG_FILE > \$ENV_FILE
 
 # Remove the encrypted file
-rm -f \$ENV_GPG_FILE
+# rm -f \$ENV_GPG_FILE
 
-git rm --cached srcs/.env.gpg
+# git rm --cached srcs/.env.gpg
 
 EOL
 
