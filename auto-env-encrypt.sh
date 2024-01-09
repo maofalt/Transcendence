@@ -97,6 +97,10 @@ ENV_PASSPHRASE="$ENV_PASSPHRASE"
 
 # Decrypt .env.gpg using GPG with passphrase option
 gpg --batch --passphrase="\$ENV_PASSPHRASE" -d \$ENV_GPG_FILE > \$ENV_FILE
+
+# Remove the encrypted file
+rm -f \$ENV_GPG_FILE
+
 EOL
 
 # Make the scripts executable
