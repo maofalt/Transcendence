@@ -44,7 +44,8 @@ INSTALLED_APPS = [
     'account',
     'rest_framework',
     'gameHistory_microservice',
-    'gameHistory_microservice.api'
+    'gameHistory_microservice.api',
+    'defender'
 ]
 
 MIDDLEWARE = [
@@ -55,6 +56,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'defender.middleware.FailedLoginMiddleware',
 ]
 
 ROOT_URLCONF = 'project.urls'
@@ -87,7 +89,7 @@ DATABASES = {
         'NAME': 'userdb',
         'USER': 'postgres',
         'PASSWORD': '1234',
-        'HOST': 'user_management_db',
+        'HOST': 'localhost',
         'PORT': '5432',  
     }
 }
@@ -111,6 +113,18 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://localhost:6379/1',  # Adjust the address and port accordingly
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    }
+}
+
+# Use Redis as the default cache backend
+CACHE_TTL = 60 * 15  # 15 minutes, or adjust as needed
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
