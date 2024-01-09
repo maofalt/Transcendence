@@ -79,7 +79,9 @@ ENV_GPG_FILE="\$ENV_LOCATION.env.gpg"
 ENV_PASSPHRASE="$ENV_PASSPHRASE"
 
 # Decrypt .env.gpg using GPG with passphrase option
-gpg --batch --passphrase="\$ENV_PASSPHRASE" -d \$ENV_GPG_FILE > \$ENV_FILE
+if [ -f "\$ENV_GPG_FILE" ]; then
+	gpg --batch --passphrase="\$ENV_PASSPHRASE" -d \$ENV_GPG_FILE > \$ENV_FILE
+fi
 
 # Remove the encrypted file
 rm -f \$ENV_GPG_FILE
@@ -98,7 +100,9 @@ ENV_GPG_FILE="\$ENV_LOCATION.env.gpg"
 ENV_PASSPHRASE="$ENV_PASSPHRASE"
 
 # Decrypt .env.gpg using GPG with passphrase option
-gpg --batch --passphrase="\$ENV_PASSPHRASE" -d \$ENV_GPG_FILE > \$ENV_FILE
+if [ -f "\$ENV_GPG_FILE" ]; then
+	gpg --batch --passphrase="\$ENV_PASSPHRASE" -d \$ENV_GPG_FILE > \$ENV_FILE
+fi
 
 # Remove the encrypted file
 rm -f \$ENV_GPG_FILE
