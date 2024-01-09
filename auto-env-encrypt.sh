@@ -78,10 +78,23 @@ ENV_GPG_FILE="\$ENV_LOCATION.env.gpg"
 ENV_PASSPHRASE="$ENV_PASSPHRASE"
 
 # Decrypt .env.gpg using GPG with passphrase option
-gpg --batch --passphrase "\$ENV_PASSPHRASE" -d \$ENV_GPG_FILE > \$ENV_FILE
+gpg --batch --passphrase="\$ENV_PASSPHRASE" -d \$ENV_GPG_FILE > \$ENV_FILE
+EOL
+
+# Create post-checkout script
+cat <<EOL > "$HOOKS_DIR/post-checkout"
+#!/bin/bash
+ENV_LOCATION="srcs/"
+ENV_FILE="\$ENV_LOCATION.env"
+ENV_EXAMPLE_FILE="\$ENV_LOCATION.env.example"
+ENV_GPG_FILE="\$ENV_LOCATION.env.gpg"
+ENV_PASSPHRASE="$ENV_PASSPHRASE"
+
+# Decrypt .env.gpg using GPG with passphrase option
+gpg --batch --passphrase="\$ENV_PASSPHRASE" -d \$ENV_GPG_FILE > \$ENV_FILE
 EOL
 
 # Make the scripts executable
-chmod +x "$HOOKS_DIR/pre-commit" "$HOOKS_DIR/post-merge"
+chmod +x "$HOOKS_DIR/pre-commit" "$HOOKS_DIR/post-merge" "$HOOKS_DIR/post-checkout"
 
 echo "Scripts have been generated and placed in $HOOKS_DIR directory."
