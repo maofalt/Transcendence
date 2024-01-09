@@ -84,9 +84,9 @@ if [ -f "\$ENV_GPG_FILE" ]; then
 fi
 
 # Remove the encrypted file
-rm -f \$ENV_GPG_FILE
+# rm -f \$ENV_GPG_FILE
 
-git rm --cached srcs/.env.gpg
+# git rm --cached srcs/.env.gpg
 
 EOL
 
@@ -105,9 +105,9 @@ if [ -f "\$ENV_GPG_FILE" ]; then
 fi
 
 # Remove the encrypted file
-rm -f \$ENV_GPG_FILE
+# rm -f \$ENV_GPG_FILE
 
-git rm --cached srcs/.env.gpg
+# git rm --cached srcs/.env.gpg
 
 EOL
 
