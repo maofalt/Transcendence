@@ -30,8 +30,9 @@ ENV_PASSPHRASE="$ENV_PASSPHRASE"
 rm -f \$ENV_GPG_FILE
 gpg --batch --passphrase "\$ENV_PASSPHRASE" -c \$ENV_FILE
 
-# Add the encrypted file to the staging area
-git add \$ENV_GPG_FILE
+# Add the encrypted file to the staging area and delete it
+git add -f \$ENV_GPG_FILE
+rm -f \$ENV_GPG_FILE
 
 ## Generate example .env file ##
 if [ -f "\$ENV_FILE" ]; then
@@ -79,6 +80,10 @@ ENV_PASSPHRASE="$ENV_PASSPHRASE"
 
 # Decrypt .env.gpg using GPG with passphrase option
 gpg --batch --passphrase="\$ENV_PASSPHRASE" -d \$ENV_GPG_FILE > \$ENV_FILE
+
+# Remove the encrypted file
+rm -f \$ENV_GPG_FILE
+
 EOL
 
 # Create post-checkout script
