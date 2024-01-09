@@ -125,7 +125,7 @@ const GameOptions = () => {
 					array.splice(i, 1);
 				}
 				else if (i + 1 <= nbrOfPlayers && !array[i]) {
-					const mesh = new THREE.Mesh(boxGeometry, new THREE.MeshPhongMaterial({ color: 0x00c000, transparent: true, opacity: 1}));
+					const mesh = new THREE.Mesh(boxGeometry, new THREE.MeshPhongMaterial({ color: 0x00c000, transparent: true, opacity: 0}));
 					scene.add(mesh);
 					array.splice(i, 0, mesh);
 					array[i].rotation.z = startShape + angle * i;
@@ -207,7 +207,7 @@ const GameOptions = () => {
 			let wallDist = gs / Math.sin(a) + ws / Math.tan(a);
 			let goalDist = gs / Math.tan(a) + ws / Math.sin(a);
 
-			updateGoals(goalDist, goals, angle, goalSize);
+			// updateGoals(goalDist, goals, angle, goalSize);
 			updateWalls(wallDist, walls, angle, goalSize * wallSize);
 			updatePlayers(goalDist - 2, players, angle, paddleSize);
 	

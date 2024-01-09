@@ -4,6 +4,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import io from 'socket.io-client';
 
 let	clientNbr = 0;
+let clientId = 0;
 
 const RemoteGame = () => {
 	// meta
@@ -101,8 +102,9 @@ const RemoteGame = () => {
 		camera.position.set(0, 0, 40);
 		camera.lookAt(new THREE.Vector3(0, 0, 0));
 		// camera.rotation.set(0, 0, Math.PI / 2);
-		if (clientNbr == 2)
-			camera.rotation.set(0, 0, Math.PI / 2);
+		camera.rotation.set(0, 0, Math.PI);
+		if (clientId == 2)
+			camera.rotation.set(0, 0, Math.PI);
 		
 		renderer.setSize(window.innerWidth, window.innerHeight);
 		containerRef.current.appendChild(renderer.domElement);
@@ -162,6 +164,7 @@ const RemoteGame = () => {
 
 		socket.on('clientId', (id, num) => {
 			clientNbr = num
+			clientId = id;
 			console.log("LETS GO");
 		});
 

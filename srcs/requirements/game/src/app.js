@@ -90,9 +90,9 @@ function calculateFrame() {
     if (data.player1.score == 10 || data.player2.score == 10)
         return (console.log('GAME OVER'), clearInterval(gameInterval));
     if (game.updateData()) {
-        data.player1.gameState = false;
-        data.player2.gameState = false;
-        game.initData();
+        // data.player1.gameState = false;
+        // data.player2.gameState = false;
+        // game.initData();
     }
     // console.log("calculating frame...");
     io.to("gameRoom").emit('render', data);
@@ -176,7 +176,7 @@ io.on('connection', (client) => {
     client.on('disconnect', () => {
         numClients = io.engine.clientsCount;
         client.leave("gameRoom");
-        // game.initData();
+        game.initData();
         if (gameInterval)
             clearInterval(gameInterval);
         console.log(`Client disconnected with ID: ${client.id} (num clients: ${numClients})`);
