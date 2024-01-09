@@ -85,7 +85,6 @@ fi
 
 # Remove the encrypted file
 # rm -f \$ENV_GPG_FILE
-
 # git rm --cached srcs/.env.gpg
 
 EOL
@@ -106,7 +105,6 @@ fi
 
 # Remove the encrypted file
 # rm -f \$ENV_GPG_FILE
-
 # git rm --cached srcs/.env.gpg
 
 EOL
