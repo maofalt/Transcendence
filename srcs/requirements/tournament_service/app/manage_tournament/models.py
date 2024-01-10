@@ -58,4 +58,4 @@ class MatchParticipants(models.Model):
     match_id = models.ForeignKey('TournamentMatch', on_delete=models.CASCADE, related_name='participants')
     player_id = models.ForeignKey('Player', on_delete=models.CASCADE, related_name='playeridfrommatch')
     is_winner = models.BooleanField(default=False)
-    participant_sacore = models.IntegerField(default=0)
+    participant_score = models.IntegerField(default=0)

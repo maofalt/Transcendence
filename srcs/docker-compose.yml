@@ -145,14 +145,14 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.tournament.rule=Host(`${LOCAL_IP}`) && PathPrefix(`/api/tournament`)"
       - "traefik.http.routers.tournament.entrypoints=websecure"
-      #- "traefik.http.routers.tournament.middlewares=strip-tournament@docker"
-      #- "traefik.http.middlewares.strip-tournament.stripprefix.prefixes=/api/tournament"
+      - "traefik.http.routers.tournament.middlewares=strip-tournament@docker"
+      - "traefik.http.middlewares.strip-tournament.stripprefix.prefixes=/api/tournament"
       - "traefik.http.services.tournament.loadbalancer.server.port=8001"
       - "traefik.http.routers.tournament.service=tournament"
       - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto = https"
       - "traefik.http.routers.tournament.tls.certresolver=myresolver"
-      - "traefik.http.middlewares.tournament-headers.headers.customresponseheaders.X-Forwarded-Prefix=/api/tournament"
-      - "traefik.http.routers.tournament.middlewares=tournament-headers"
+      # - "traefik.http.middlewares.tournament-headers.headers.customresponseheaders.X-Forwarded-Prefix=/api/tournament"
+      # - "traefik.http.routers.tournament.middlewares=tournament-headers"
       
   tournament_db:
     container_name: tournament_db
@@ -175,12 +175,12 @@ services:
 #VOLUMES
 volumes:
 #to verify if this works without the data bindin in rootless at school @ionorb
-  traefik-ssl-certs:
-    driver: local
-    driver_opts:
-      type: none
-      device: ./requirements/traefik/config/ssl/
-      o: bind
+  # traefik-ssl-certs:
+  #   driver: local
+  #   driver_opts:
+  #     type: none
+  #     device: ./requirements/traefik/config/ssl/
+  #     o: bind
   portainer-data:
     driver: local
   tournament-db:
@@ -189,12 +189,12 @@ volumes:
     driver: local
 
 #to verify if this works without the data bindin in rootless at school @ionorb
-  front-end-volume:
-    driver: local
-    driver_opts:
-      type: none
-      device: ./requirements/front-end/react-app
-      o: bind 
+  # front-end-volume:
+  #   driver: local
+  #   driver_opts:
+  #     type: none
+  #     device: ./requirements/front-end/react-app
+  #     o: bind 
 
 #NETWORKS
 networks:
