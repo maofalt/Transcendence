@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-*mh_(r-ur@x_tju&*1b&s=oa&(livyhdomhf%5psvu5)oxp4+k
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-#ALLOWED_HOSTS = [*]
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -52,6 +52,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'tournament.middleware.PathPrefixMiddleware',
 ]
 
 ROOT_URLCONF = 'tournament.urls'

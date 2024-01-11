@@ -20,11 +20,7 @@ from manage_tournament import views
 from django.http import HttpResponseRedirect
 from django.http import HttpResponse
 
-def home(request):
-    return HttpResponse("Wealcome to the home page of tournament")
-
-
 urlpatterns = [
-    path('', home),
-    path('tournaments/', include("manage_tournament.urls")),
+    path('admin/', admin.site.urls),
+    path('', include("manage_tournament.urls")),
 ]
