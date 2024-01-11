@@ -3,3 +3,4 @@ trenv/
 *.env
 .vscode/
 node_modules/
+*.pyc
