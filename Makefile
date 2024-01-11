@@ -15,7 +15,7 @@ COMPOSE_FILE = -f srcs/docker-compose.yml
 
 all: build up logs
 
-build: set-ip set-codeespace-url set-permissions
+build: set-ip set-codeespace-url set-permissions decrypt-mama
 	docker-compose $(COMPOSE_FILE) build
 
 up:
@@ -47,3 +47,6 @@ set-codeespace-url:
 
 set-permissions:
 	chmod 600 srcs/requirements/traefik/config/ssl/acme.json
+
+decrypt-mama:
+	gpg srcs/.env.gpg
