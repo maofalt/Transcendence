@@ -55,6 +55,7 @@ const score = {
 const player1 = {
 	login: settings.player1.login,
 	id: settings.player1.id,
+	socket: settings.player1.socket,
 	clientId: settings.player1.clientId,
 	color: settings.player1.color,
 	paddle: settings.player1.paddle,
@@ -67,6 +68,7 @@ const player1 = {
 const player2 = {
 	login: settings.player2.login,
 	id: settings.player2.id,
+	socket: settings.player1.socket,
 	clientId: settings.player2.clientId,
 	color: settings.player2.color,
 	paddle: settings.player2.paddle,

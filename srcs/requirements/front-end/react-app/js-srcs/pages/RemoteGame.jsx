@@ -4,6 +4,9 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import io from 'socket.io-client';
 import { Texture } from 'three';
 
+let	clientNbr = 0;
+let clientId = 0;
+
 const RemoteGame = () => {
 	// meta
 	const containerRef = useRef();
@@ -33,6 +36,7 @@ const RemoteGame = () => {
 	function generateBall(data) {
 		const ballGeometry = new THREE.SphereGeometry(data.ball.r, 24, 12);
 		const ballMaterial = new THREE.MeshPhongMaterial({ color: data.ball.color, transparent: false, opacity: 1 });
+
 		ball = new THREE.Mesh(ballGeometry, ballMaterial);
 		
 		// add to scene
@@ -40,11 +44,10 @@ const RemoteGame = () => {
 	}
 
 	function generateWalls(data) {
-		const wallGeometry = new THREE.BoxGeometry(data.field.width, data.paddle1.width / 2, 5);
-
-		// const paddleMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff,  });
+		const wallGeometry = new THREE.BoxGeometry(data.field.width, data.paddle1.width, 2);
 		const wallMaterial1 = new THREE.MeshPhongMaterial({ color: data.ball.color, transparent: true, opacity: 1, reflectivity: 0.5 });
 		const wallMaterial2 = new THREE.MeshPhongMaterial({ color: data.ball.color, transparent: true, opacity: 1, reflectivity: 0.5 });
+
 		wall1 = new THREE.Mesh(wallGeometry, wallMaterial1);
 		wall2 = new THREE.Mesh(wallGeometry, wallMaterial2);
 
@@ -56,20 +59,21 @@ const RemoteGame = () => {
 	}
 
 	function generateField(data) {
-		const fieldGeometry = new THREE.BoxGeometry(data.field.width, data.field.height, 2);
+		const fieldGeometry = new THREE.BoxGeometry(data.field.width, data.field.height, 1);
 		const fieldMaterial = new THREE.MeshPhongMaterial({ color: data.ball.color, transparent: true, opacity: 0.1, reflectivity: 0.5 });
+
 		field = new THREE.Mesh(fieldGeometry, fieldMaterial);
 
 		scene.add(field);
-		field.position.set(0, 0, -4);
+		field.position.set(0, 0, -1.5);
 	}
 
 	function generatePaddles(data) {
-		const paddleGeometry = new THREE.BoxGeometry(data.paddle1.width, data.paddle1.height, 5);
-
 		// const paddleMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff,  });
+		const paddleGeometry = new THREE.BoxGeometry(data.paddle1.width, data.paddle1.height, 2);
 		const paddleMaterial1 = new THREE.MeshPhongMaterial({ color: data.paddle1.color, transparent: true, opacity: 1, reflectivity: 0.5 });
 		const paddleMaterial2 = new THREE.MeshPhongMaterial({ color: data.paddle2.color, transparent: true, opacity: 1, reflectivity: 0.5 });
+
 		paddle1 = new THREE.Mesh(paddleGeometry, paddleMaterial1);
 		paddle2 = new THREE.Mesh(paddleGeometry, paddleMaterial2);
 
@@ -117,8 +121,12 @@ const RemoteGame = () => {
 		camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 		renderer = new THREE.WebGLRenderer();
 
-		camera.position.set(0, 0, 80); // Position camera slightly above the center of the court
-		camera.lookAt(new THREE.Vector3(0, 0, 0)); // Camera should look towards the center of the court
+		camera.position.set(0, 0, 40);
+		camera.lookAt(new THREE.Vector3(0, 0, 0));
+		// camera.rotation.set(0, 0, Math.PI / 2);
+		camera.rotation.set(0, 0, Math.PI);
+		if (clientId == 2)
+			camera.rotation.set(0, 0, Math.PI);
 		
 		renderer.setSize(window.innerWidth, window.innerHeight);
 		containerRef.current.appendChild(renderer.domElement);
@@ -141,56 +149,23 @@ const RemoteGame = () => {
 
 	function updateScene(data) {
 		// console.log("Updating Scene...");
-		// ball.position.x++;
 		ball.position.set(data.ball.x, data.ball.y, 0);
 		paddle1.position.set(data.paddle1.x, data.paddle1.y, 0);
 		paddle2.position.set(data.paddle2.x, data.paddle2.y, 0);
 	}
 
-	// const [keysPressed, setKeysPressed] = useState({KeyW: false, KeyS: false});
-	// const keysPressedRef = useRef(keysPressed);
-
-	// useEffect(() => {
-	// 	keysPressedRef.current = keysPressed;
-	// }, [keysPressed]);
-
 	useEffect(() => {
-		// input events : controlling paddles
-		// const handleKeyDown = (event) => {
-		// 	setKeysPressed((keys) => ({ ...keys, [event.code]: true }));
-		// 	// console.log("CODE: ", event.code);
-		// };
-
-		// const handleKeyUp = (event) => {
-		// 	setKeysPressed((keys) => ({ ...keys, [event.code]: false }));
-		// };
-
-		// function handlePaddleMovement() {
-		// 	const currentKeysPressed = keysPressedRef.current;
-		// 	if (currentKeysPressed['KeyS']) {
-		// 		console.log("S pressed !");
-		// 		socket.emit("moveDown");
-		// 	}
-		// 	if (currentKeysPressed['KeyW']) {
-		// 		console.log("W pressed !");
-		// 		socket.emit("moveUp");
-		// 	}
-		// };
-
-		// window.addEventListener('keydown', handleKeyDown);
-		// window.addEventListener('keyup', handleKeyUp);
-
 		// connect to socket server
 		const hostname = window.location.hostname;
-        const protocol = 'wss';
+		const protocol = 'wss';
 		const io_url = hostname.includes("github.dev") ? `${protocol}://${hostname}` : `${protocol}://${hostname}:9443`;
 		// `${protocol}://${hostname}`
-        const socket = io(`${io_url}`, {
-            path: '/game-logic/socket.io',
-            secure: hostname !== 'localhost',
-            rejectUnauthorized: false,
-            transports: ['websocket']
-        });
+		const socket = io(`${io_url}`, {
+			path: '/game-logic/socket.io',
+			secure: hostname !== 'localhost',
+			rejectUnauthorized: false,
+			transports: ['websocket']
+		});
 
 		socket.on('generate', (data) => {
 			// console.log(`Generating Scene...${data.ball.r}`);
@@ -208,10 +183,11 @@ const RemoteGame = () => {
 			console.log("Rendering Frame...");
 			updateScene(data);
 			renderer.render(scene, camera);
-			// handlePaddleMovement();
 		});
 
 		socket.on('clientId', (id, num) => {
+			clientNbr = num
+			clientId = id;
 			console.log("LETS GO");
 		});
 

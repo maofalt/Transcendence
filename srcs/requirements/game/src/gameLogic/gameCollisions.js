@@ -1,3 +1,16 @@
+function ballHitsObject(ball, object) {
+	// calculate future ball pos
+	let futureBallPos = ball.pos.add(ball.dir.scale(ball.sp));
+
+	// add the radius of the ball in the direction of the object surface
+	let potentialColPoint = futureBallPos.add(object.dir.scale(-ball.r));
+
+	// check if potential collisions point is on the other side of surface;
+
+	// if yes :
+	// ball.pos = 
+}
+
 function ballHitsWall(ball, field) {
 	if (ball.y + ball.r >= field.height / 2) {
 		ball.y = field.height / 2 - ball.r;
@@ -31,10 +44,18 @@ function ballHitsPaddle2(ball, paddle2) {
 
 // ball out of bounds
 function ballIsOut(data) {
-	if (data.ball.x >= data.field.width / 2)
-		return (data.player1.score++, true);
-	if (data.ball.x <= -data.field.width / 2)
-		return (data.player2.score++, true);
+	if (data.ball.x >= data.field.width / 2) {
+		data.player1.score++;
+		data.ball.x = 0;
+		data.ball.y = 0;
+		return true;
+	}
+	if (data.ball.x <= -data.field.width / 2) {
+		data.player2.score++;
+		data.ball.x = 0;
+		data.ball.y = 0;
+		return true;
+	}
 	return false;
 }
 

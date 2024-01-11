@@ -1,10 +1,9 @@
 const express = require('express');
 const http = require('http');
-const fs = require('fs');
+// const fs = require('fs');
 const socketIo = require('socket.io');
-const settings = require('./gameLogic/gameSettings');
 const objects = require('./gameLogic/gameObjects');
-const collisions = require('./gameLogic/gameCollisions');
+const game = require('./gameLogic/gameLogic');
 
 let data = objects.data;
 
@@ -49,123 +48,74 @@ server.listen(expressPort, () => {
     console.log(`APP Express server running on port ${expressPort}`);
 });
 
-//=========================================== GAME LOGIC ===========================================//
+//====================================== SOCKET IO ======================================//
 
 // global vars
 let numClients = 0;
 let gameInterval = 0;
+let lobbyInterval = 0;
 let roundState = false;
-// let gameState = false;
 
-function initBall() {
-    data.ball.x = settings.ball.x;
-    data.ball.y = settings.ball.y;
-    data.ball.z = 0;
-    data.ball.vX = settings.ball.vX;
-    data.ball.vY = settings.ball.vY;
-    data.ball.sp = settings.ball.sp;
-    data.ball.r = settings.ball.r;
-    // data.ball = settings.ball;
-    // getRandomDir(ball);
-}
-
-function initPaddle(paddle, settingsPaddle) {
-    paddle.x = settingsPaddle.x;
-    paddle.y = settingsPaddle.y;
-    paddle.vX = settingsPaddle.vX;
-    paddle.vY = settingsPaddle.vY;
-    paddle.sp = settingsPaddle.sp;
-    // paddle = settingsPaddle;
-}
-
-function initData() {
-    initBall();
-    initPaddle(data.paddle1, settings.paddle1);
-    initPaddle(data.paddle2, settings.paddle2);
-}
-
-// vector calculations for ball dir
-function normalizeBallDir() {
-	let l = Math.sqrt(data.ball.vX * data.ball.vX + data.ball.vY * data.ball.vY);
-	data.ball.vX /= l;
-	data.ball.vY /= l;
-	data.ball.vX *= data.ball.sp;
-	data.ball.vY *= data.ball.sp;
-}
-
-function getRandomDir() {
-	let signX = Math.random();
-	let signY = Math.random();
-	data.ball.vX = (Math.random()) * ((signX >= 0.5) ? 1 : -1);
-	data.ball.vY = (Math.random()) * ((signY >= 0.5) ? 1 : -1);
-	normalizeBallDir();
-}
-
-// collisions calculations
-function calculateBallDir(paddleNbr) {
-	let contactX = paddle1.x + paddle1.width;
-	let contactY = ball.y;
-	let paddleCenterX = paddle1.x - paddle1.width;
-	let paddleCenterY = paddle1.y + paddle1.height / 2;
-
-	if (paddleNbr == 2) {
-		contactX = paddle2.x;
-		contactY = ball.y;
-		paddleCenterX = paddle2.x + paddle2.width * 2;
-		paddleCenterY = paddle2.y + paddle2.height / 2;
-	}
-
-	ball.vX = contactX - paddleCenterX;
-	ball.vY = contactY - paddleCenterY;
-	normalizeBallDir();
-}
-
-function updateBall() {
-    if (collisions.ballIsOut(data))
-        return true;
-    collisions.ballHitsWall(data.ball, data.field);
-    collisions.ballHitsPaddle1(data.ball, data.paddle1);
-    collisions.ballHitsPaddle2(data.ball, data.paddle2);
-    data.ball.x += data.ball.vX;
-    data.ball.y += data.ball.vY;
-    return false;
-}
-
-function updatePaddle(paddle) {
-    console.log("updating paddles");
-    paddle.y += paddle.vY;
-    // check for collisions;
-    paddle.y = ((paddle.y - paddle.height / 2 < -data.field.height / 2) ? -data.field.height / 2 + paddle.height / 2 : paddle.y);
-    paddle.y = ((paddle.y + paddle.height / 2 > data.field.height / 2) ? data.field.height / 2 - paddle.height / 2 : paddle.y);
-}
-
-function updateData() {
-    if (updateBall()) {
-        console.log('ball update returned true');
-        return true;
-    }
-    updatePaddle(data.paddle1);
-    updatePaddle(data.paddle2);
-    return false;
-}
-
-function handleConnection(client) {
-    console.log("CLIENT CONNECTED");
-    numClients = io.engine.clientsCount;
+function setPlayersStatus(client) {
     if (numClients < 2) {
+        // data.player1.socket = client;
         data.player1.clientId = client.id;
         data.player1.connected = true;
     }
     else if (numClients == 2) {
+        // data.player2.socket = client;
         data.player2.clientId = client.id;
         data.player2.connected = true;
     }
+}
 
+function handleConnection(client) {
+
+    console.log("CLIENT CONNECTED");
+    numClients = io.engine.clientsCount;
+    client.join("gameRoom");
+
+    setPlayersStatus(client);
+
+    client.emit("generate", data);
+    client.emit("render", data);
     client.emit('clientId', client.id, numClients);
     // client.emit('pong');
     console.log(`Client connected with ID: ${client.id}`);
     console.log(`Number of connected clients: ${numClients}`);
 }
+
+function calculateFrame() {
+    // console.log(`player 1 game state : ${player1.gameState}`);
+    if (data.player1.score == 10 || data.player2.score == 10)
+        return (console.log('GAME OVER'), clearInterval(gameInterval));
+    if (game.updateData()) {
+        // data.player1.gameState = false;
+        // data.player2.gameState = false;
+        // game.initData();
+    }
+    // console.log("calculating frame...");
+    io.to("gameRoom").emit('render', data);
+}
+
+function startRound() {
+    console.log("startRound");
+    game.initData();
+    game.getRandomDir();
+}
+
+function manageLobby() {
+    game.initData();
+    // game.updateData;
+    // io.to("gameRoom").emit('render', data);
+    if (!data.player1.connected || !data.player2.connected)
+        return;
+    clearInterval(lobbyInterval);
+    gameInterval = setInterval(calculateFrame, 10);
+}
+
+// game.initData();
+lobbyInterval = setInterval(manageLobby, 20);
 
 // Set up Socket.IO event handlers
 io.on('connection', (client) => {
@@ -177,10 +127,6 @@ io.on('connection', (client) => {
     });
 
     // player controls
-    client.on('clickedfield', () => {
-        console.log(`clicked field ! (from client ${client.id})`);
-    });
-
     client.on('moveUp', () => {
         if (client.id == data.player1.clientId) {
             // console.log(`player 1 moving up !`);
@@ -226,40 +172,13 @@ io.on('connection', (client) => {
         }
     });
 
-    function calculateFrame() {
-        // console.log(`player 1 game state : ${player1.gameState}`);
-        if (updateData()) {
-            data.player1.gameState = false;
-            data.player2.gameState = false;
-            initData();
-        }
-        // console.log("calculating frame...");
-        client.emit('render', data);
-    }
-
-    function startRound() {
-        console.log("startRound");
-        clearInterval(gameInterval);
-        initData();
-        gameInterval = setInterval(calculateFrame, 10);
-        getRandomDir();
-    }
-
-    function manageLobby() {
-        initData();
-        // if (gameInterval)
-        //     clearInterval(gameInterval);
-        client.emit('generate', data);
-        gameInterval = setInterval(calculateFrame, 10);
-    }
-
-    manageLobby();
-
     // disconnect event
     client.on('disconnect', () => {
         numClients = io.engine.clientsCount;
-        // initData();
-        // clearInterval(gameInterval);
+        client.leave("gameRoom");
+        game.initData();
+        if (gameInterval)
+            clearInterval(gameInterval);
         console.log(`Client disconnected with ID: ${client.id} (num clients: ${numClients})`);
     });
 });
