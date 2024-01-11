@@ -3,5 +3,5 @@ trenv/
 *.env
 .vscode/
 node_modules/
+*.pyc
 t\ access\ issue
-# .env.gpg

@@ -79,6 +79,14 @@ http:
       service: "game"
       tls:
         certResolver: "myresolver"
+#TOURNAMENT
+    tournament:
+      rule: "Host(`localhost`) && PathPrefix(`/api/tournament`)"
+      entryPoints: ["websecure"]
+      middlewares: ["tournament-headers"]
+      service: "tournament"
+      tls:
+        certResolver: "myresolver"
 #catch all for http requests and redirect to https
     http-catchall:
       rule: "HostRegexp(`{host:.+}`)"
@@ -93,6 +101,7 @@ http:
       service: "game"
       middlewares:
         - "websocketHeaders"
+# "traefik.http.routers.tournament.middlewares=tournament-headers"
 
 #services endpoints corresponding to the routers, it is used to redirect the request to the correct container
 #it works by using the name of the container as the url
@@ -130,6 +139,10 @@ http:
         servers:
           - url: "http://game:3000"
 
+    tournament:
+      loadBalancer:
+        servers:
+          - url: "http://tournament:8001"
 #midlewares used to modify the request before it is sent to the container 
 #e.g.: stripPrefix is used to remove the /game-logic from the request
   middlewares:
@@ -146,6 +159,11 @@ http:
     strip-game-logic:
       stripPrefix:
         prefixes: ["/game-logic"]
+
+    tournament-headers:
+      headers:
+        customResponseHeaders:
+          X-Forwarded-Prefix: "/api/tournament"
 #this is used to add the X-Forwarded-Proto header to the request
     sslheader:
       headers:

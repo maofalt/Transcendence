@@ -14,7 +14,7 @@ services:
       - 8080:8080
     volumes:
       - ./requirements/traefik/config:/etc/traefik
-      # - ./requirements/traefik/config/ssl/:/ssl-certs
+      - ./requirements/traefik/config/ssl/:/ssl-certs
       # - "${XDG_RUNTIME_DIR}/docker.sock:/var/run/docker.sock"
       - "/var/run/docker.sock:/var/run/docker.sock" # <-- actvate this if you are in Windows and comment the line above
     networks:
@@ -51,7 +51,6 @@ services:
   # react with vite and HMR for development
   react-dev:
     container_name: react-dev
-    build:
       context: ./requirements/front-end/
       dockerfile: Dockerfile.dev
     volumes:
@@ -135,30 +134,51 @@ services:
         dockerfile: Dockerfile
       networks:
         - transcendence
+      volumes:
+        - ./requirements/tournament_service/app:/app
       #ports:
       #  - 8034:8000
       labels:
-        - "traefik.enable=true"
-        - "traefik.http.routers.tournament.rule=Host(`tournament.localhost`)"
-        - "traefik.http.routers.tournament.entrypoints=websecure"
-        - "traefik.http.services.tournament.loadbalancer.server.port=80"
-        - "traefik.http.routers.tournament.service=tournament"
-        - "traefik.http.routers.tournament.tls.certresolver=myresolver"
+#tournament local ip
+      - "traefik.enable=true"
+      - "traefik.http.routers.tournament.rule=Host(`${LOCAL_IP}`) && PathPrefix(`/api/tournament`)"
+      - "traefik.http.routers.tournament.entrypoints=websecure"
+      - "traefik.http.routers.tournament.middlewares=strip-tournament@docker"
+      - "traefik.http.middlewares.strip-tournament.stripprefix.prefixes=/api/tournament"
+      - "traefik.http.services.tournament.loadbalancer.server.port=8001"
+      - "traefik.http.routers.tournament.service=tournament"
+      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto = https"
+      - "traefik.http.routers.tournament.tls.certresolver=myresolver"
+      # - "traefik.http.middlewares.tournament-headers.headers.customresponseheaders.X-Forwarded-Prefix=/api/tournament"
+      # - "traefik.http.routers.tournament.middlewares=tournament-headers"
+      
+  tournament_db:
+    container_name: tournament_db
+    build:
+      context: ./requirements/tournament_db/
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      POSTGRES_DB: tournament_db
+      POSTGRES_USER: tournament_master
+      POSTGRES_PASSWORD: 'i love miguel'
+    volumes:
+      - tournament-db:/var/lib/postgresql/data
+    # ports:
+    #   - 55432:5432
+    networks:
+      - transcendence
+
 
 #VOLUMES
 volumes:
   portainer-data:
     driver: local
+  tournament-db:
+    driver: local
   postgres-data:
     driver: local
 
-# #to verify if this works without the data bindin in rootless at school @ionorb
-#   front-end-volume:
-#     driver: local
-#     driver_opts:
-#       type: none
-#       device: ./requirements/front-end/react-app
-#       o: bind 
 
 #NETWORKS
 networks:
