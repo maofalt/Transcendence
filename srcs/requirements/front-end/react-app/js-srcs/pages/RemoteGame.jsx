@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import io from 'socket.io-client';
+import { Texture } from 'three';
 
 let	clientNbr = 0;
 let clientId = 0;
@@ -92,6 +93,27 @@ const RemoteGame = () => {
 		scene.add(ambientLight);
 	}
 
+	function generateSkyBox(data){
+		// Charger la texture de ciel étoilé
+		const starTexture = new THREE.TextureLoader().load('../../assets/banana.jpg'); // Remplacez par le chemin de votre texture
+		// Créer la géométrie de la sphère
+		starTexture.colorSpace = THREE.SRGBColorSpace;
+		const starGeometry = new THREE.SphereGeometry(300, 64, 64); // Rayon, segmentsWidth, segmentsHeight
+		// starTexture.offset.set(0.5, 0); // Shifts the texture halfway across its width
+
+		// Créer le matériau avec la texture
+		const starMaterial = new THREE.MeshBasicMaterial({
+    		map: starTexture,
+    		side: THREE.BackSide
+		});
+
+		// Créer le mesh de la sphère
+		const starSphere = new THREE.Mesh(starGeometry, starMaterial);
+
+		// Ajouter la sphère étoilée à la scène
+		scene.add(starSphere);
+	}
+
 	function generateScene(data) {
 		console.log("Generating Scene...");
 
@@ -118,6 +140,7 @@ const RemoteGame = () => {
 		generateWalls(data);
 		generateField(data);
 		generateLights(data);
+		generateSkyBox(data);
 		drawAxes();
 
 		// render scene

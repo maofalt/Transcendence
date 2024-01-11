@@ -5,3 +5,5 @@ trenv/
 node_modules/
 ws-simple/
 trancendence-front-end/
+*.pyc
+t\ access\ issue

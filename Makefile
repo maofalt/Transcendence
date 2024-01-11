@@ -15,7 +15,7 @@ COMPOSE_FILE = -f srcs/docker-compose.yml
 
 all: build up logs
 
-build: set-ip set-codeespace-url set-permissions
+build: set-ip set-codeespace-url set-permissions decrypt-mama
 	docker-compose $(COMPOSE_FILE) build
 
 up:
@@ -31,19 +31,22 @@ logs:
 clean:
 	docker-compose $(COMPOSE_FILE) down --rmi all --volumes
 	docker image prune -a -f
-	rm -r ./srcs/requirements/front-end/react-app/node_modules
 
 fclean: clean
 	docker volume prune -f
+	rm -rf ./srcs/requirements/front-end/react-app/node_modules
 
 
 .PHONY: all build up down logs
 
 set-ip:
-	echo "LOCAL_IP=$(shell hostname -i)" >> srcs/.env
+	export "LOCAL_IP=$(shell hostname -i)"
 
 set-codeespace-url:
-	echo "CODESPACE_URL=${CODESPACE_NAME}" >> srcs/.env
+	export "CODESPACE_URL=${CODESPACE_NAME}"
 
 set-permissions:
 	chmod 600 srcs/requirements/traefik/config/ssl/acme.json
+
+decrypt-mama:
+	gpg srcs/.env.gpg
