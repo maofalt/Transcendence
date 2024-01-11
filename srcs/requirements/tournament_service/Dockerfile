@@ -23,5 +23,5 @@ RUN chmod +x /app/entrypoint.sh
 EXPOSE 8001
 
 # Set the entrypoint script
-#CMD ["bash", "entrypoint.sh"]
-ENTRYPOINT ["tail", "-f", "/dev/null"]
+CMD ["bash", "entrypoint.sh"]
+#ENTRYPOINT ["tail", "-f", "/dev/null"]

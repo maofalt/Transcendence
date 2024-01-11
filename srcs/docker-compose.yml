@@ -134,7 +134,7 @@ services:
       networks:
         - transcendence
       volumes:
-        - ./requirements/tsrcs/requirements/tournament_service/scripts/entrypoint.sh
+        - ./requirements/tournament_service/app:/app
       #ports:
       #  - 8034:8000
       labels:
