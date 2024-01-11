@@ -79,6 +79,14 @@ http:
       service: "game"
       tls:
         certResolver: "myresolver"
+#USER_MANAGEMENT
+    user_management:
+      rule: "Host(`localhost`) && PathPrefix(`/api/user_management`)"
+      entryPoints: ["websecure"]
+      middlewares: ["user_management-headers"]
+      service: "user_management"
+      tls:
+        certResolver: "myresolver"
 #catch all for http requests and redirect to https
     http-catchall:
       rule: "HostRegexp(`{host:.+}`)"
@@ -130,6 +138,11 @@ http:
         servers:
           - url: "http://game:3000"
 
+    user_management:
+      loadBalancer:
+        servers:
+          - url: "http://user_management:8000"
+
 #midlewares used to modify the request before it is sent to the container 
 #e.g.: stripPrefix is used to remove the /game-logic from the request
   middlewares:
@@ -142,10 +155,11 @@ http:
           customRequestHeaders:
             Connection: "upgrade"
             Upgrade: "websocket"
-#stripPrefix is used to remove the /game-logic from the request
-    strip-game-logic:
-      stripPrefix:
-        prefixes: ["/game-logic"]
+    
+    user_management-headers:
+      headers:
+        customResponseHeaders:
+          X-Forwarded-Prefix: "/api/user_management"
 #this is used to add the X-Forwarded-Proto header to the request
     sslheader:
       headers:

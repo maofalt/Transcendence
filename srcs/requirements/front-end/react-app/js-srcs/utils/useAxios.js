@@ -9,11 +9,11 @@ const useAxios = (serverUrl) => {
     useEffect(() => {
 		const aborter = new AbortController();
 
-        axios.get('/api-proxy')
+        axios.get(serverUrl)
             .then(response => {
                 setData(response.data);
                 setIsLoading(false);
-				console.log("BANANA: ", response);
+				console.log("axios response: ", response);
             })
             .catch(err => {
                 setError(err.message);

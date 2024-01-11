@@ -50,6 +50,7 @@
             headers: { "X-CSRFToken": "{{ csrf_token }}" },
             success: function (data) {
                 if (data.success) {
+                    console.log('signed up success\n\n');
                     closeSignupPopup();
                 } else {
                     $('#signupPopupError').text(data.error_message);

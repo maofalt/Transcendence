@@ -27,7 +27,7 @@ account_base_path = "api/user_management/auth/"
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('admin/defender/', include('defender.urls')),
+    # path('admin/defender/', include('defender.urls')),
     path('', account.views.home, name='home'),
     path(account_base_path, include("account.urls")),
     path('auth/', include("account.urls")),

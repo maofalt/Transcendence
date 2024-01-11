@@ -8,7 +8,6 @@ class ProfileUpdateForm(forms.ModelForm):
         fields = ['playername', 'avatar']
 
     # def clean_password(self):
-    #     # 사용자가 비밀번호를 변경하지 않도록 설정
     #     return self.initial.get('password')
         
 class PasswordUpdateForm(PasswordChangeForm):

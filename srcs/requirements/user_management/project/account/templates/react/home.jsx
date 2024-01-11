@@ -1,21 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { useState } from 'react';
-import './Login.css';
-import $ from 'jquery'; // Make sure to install jQuery: npm install jquery
-import LoginPopup from '../elements/LoginPopup'; // Assuming you have a LoginPopup component
-import useAxios from '../utils/useAxios.js';
 
-const Login = () => {
+import $ from 'jquery'; // Make sure to install jQuery: npm install jquery
+import LoginPopup from './LoginPopup'; // Assuming you have a LoginPopup component
+
+const App = () => {
   const handleLoginLinkClick = () => {
     $("#darkLayer").fadeIn();
     $("#loginPopup").fadeIn();
   };
-  
-  const [user, setUser] = useState(null);
-
-//   { data, loading, error } = useAxios('https://localhost:9443/api/user_management/auth/home');
-
 
   return (
     <div>
@@ -78,7 +71,7 @@ const Login = () => {
       <h1>Login</h1>
 
       {/* Check if the user is authenticated */}
-      {user ? (
+      {user.is_authenticated ? (
         <div>
           <p>Welcome {user.username}</p>
           <form method="post" action="{% url 'account:logout' %}">
@@ -101,4 +94,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default App;

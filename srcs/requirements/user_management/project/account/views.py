@@ -11,9 +11,6 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt # CSRF (Cross-Site Request Forgery) protection middleware. 
-from django.urls import reverse
-from django.db.models import Q
-import json
 
 # microservice connection
 from rest_framework.views import APIView
@@ -91,12 +88,6 @@ def api_signup_view(request):
         playername = request.POST["playername"]
         intra_id = request.POST["intra_id"]
 
-        if User.objects.filter(username=username).exists():
-            return JsonResponse({'success': False, 'error_message': 'User with same ID already exists.'})
-        
-        if User.objects.filter(playername=playername).exists():
-            return JsonResponse({'success': False, 'error_message': 'User with the same playername already exists.'})
-
         try:
             validate_password(password, user=User(username=username))
         except ValidationError as e:
@@ -125,7 +116,7 @@ def api_signup_view(request):
             user.game_stats = game_stats
             print("\n\nGAMES STATS : user", user.game_stats.user)
             user.save()
-
+        print(" >>  User created successfully.")
         return JsonResponse({'success': True})
 
     return JsonResponse({'success': False, 'error_message': 'Invalid request method'}, status=400)
@@ -160,33 +151,20 @@ def remove_friend(request, pk):
     request.user.friends.remove(friend)
     return redirect('account:friend')
 
-@csrf_exempt
 @login_required
 def profile_update_view(request):
     if request.method == 'POST':
-        try:
-            data = json.loads(request.body.decode('utf-8'))
-        except json.JSONDecodeError:
-            data = {}
-        user_form = ProfileUpdateForm(data, instance=request.user)
+        user_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user)
         
         if user_form.is_valid():
-            new_playername = user_form.cleaned_data['playername']
-            if User.objects.filter(~Q(pk=request.user.pk), playername=new_playername).exists():
-                error_message = 'This playername is already taken.'
-                # return JsonResponse({'error': 'This playername is already taken.'}, status=400)
-            else:
-                user = user_form.save()
-                messages.success(request, 'Your profile has update.')
-                return JsonResponse({'success': True, 'redirect_url': reverse('account:detail')})
-        else:
-            error_message = user_form.errors.get('playername', None)
-        
-    elif request.method == 'GET':
+            user = user_form.save(commit=False)
+            user.save()
+            messages.success(request, 'Your profile has update.')
+            return redirect('account:detail')
+    else:
         user_form = ProfileUpdateForm(instance=request.user)
-        return render(request, 'profile_update.html', {'user_form': user_form})
 
-    return render(request, 'profile_update.html', {'user_form': user_form, 'error_message': error_message})
+    return render(request, 'profile_update.html', {'user_form': user_form})
 
 @login_required
 def password_update_view(request):

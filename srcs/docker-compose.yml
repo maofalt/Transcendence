@@ -159,15 +159,16 @@ services:
       - transcendence
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.user_management.rule=Host(`localhost`) && PathPrefix(`/api/user_management`)"
+      - "traefik.http.routers.user_management.rule=Host(`${LOCAL_IP}`) && PathPrefix(`/api/user_management`)"
       - "traefik.http.routers.user_management.entrypoints=websecure"
+      #- "traefik.http.routers.user_management.middlewares=strip-user_management@docker"
+      #- "traefik.http.middlewares.strip-user_management.stripprefix.prefixes=/api/user_management"
       - "traefik.http.services.user_management.loadbalancer.server.port=8000"
       - "traefik.http.routers.user_management.service=user_management"
-      - "traefik.http.routers.user_management.tls.certresolver=myresolver"
-      - "traefik.http.routers.user_management.middlewares=strip-user_management@docker"
-      - "traefik.http.middlewares.strip-user_management.stripprefix.prefixes=/api/user_management"
       - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto = https"
-
+      - "traefik.http.routers.user_management.tls.certresolver=myresolver"
+      - "traefik.http.middlewares.tournament-headers.headers.customresponseheaders.X-Forwarded-Prefix=/api/tournament"
+      - "traefik.http.routers.tournament.middlewares=tournament-headers"
 
   user_management_db:
     container_name: user_management_db
@@ -179,6 +180,7 @@ services:
       POSTGRES_DB: userdb
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 1234
+      POSTGRES_UNIX_SOCKET_DIRECTORIES: /var/run/postgresql
     volumes:
       - user-management-db:/var/lib/postgresql/data
     # ports:

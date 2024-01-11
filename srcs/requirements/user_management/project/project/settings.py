@@ -29,7 +29,7 @@ SECRET_KEY = 'django-insecure-q(kyo2-+=u8uat#&h59tddpvut0b^pyd#gihr&t8+$bza^_z%t
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -45,7 +45,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'gameHistory_microservice',
     'gameHistory_microservice.api',
-    'defender'
 ]
 
 MIDDLEWARE = [
@@ -56,7 +55,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'defender.middleware.FailedLoginMiddleware',
+    'project.middleware.PathPrefixMiddleware',
+
 ]
 
 ROOT_URLCONF = 'project.urls'
@@ -89,7 +89,7 @@ DATABASES = {
         'NAME': 'userdb',
         'USER': 'postgres',
         'PASSWORD': '1234',
-        'HOST': 'localhost',
+        'HOST': 'user_management_db',
         'PORT': '5432',  
     }
 }
@@ -113,19 +113,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-CACHES = {
-    'default': {
-        'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://localhost:6379/1',  # Adjust the address and port accordingly
-        'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-        }
-    }
-}
-
-# Use Redis as the default cache backend
-CACHE_TTL = 60 * 15  # 15 minutes, or adjust as needed
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
@@ -148,3 +135,5 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'account.User'
+
+CORS_ALLOW_ALL_ORIGINS = True
