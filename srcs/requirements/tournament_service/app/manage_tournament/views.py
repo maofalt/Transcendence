@@ -50,6 +50,30 @@ class TournamentParticipantDetail(APIView):
         return Response({"message": "Participant deregistered successfully."}, status=status.HTTP_204_NO_CONTENT)
 
 
+# -------------------------------- Tournament Visualization --------------------------------------
+class TournamentVisualization(APIView):
+    def get(self, request, id):
+        tournament = get_object_or_404(Tournament, pk=id)
+        matches = TournamentMatch.objects.filter(tournament_id=tournament)
+        # Construisez ici la structure de données pour le bracket du tournoi
+        data = {"matches": matches}
+        return Response(data)
+
+
+# -------------------------------- Tournament Lifecycle --------------------------------------
+class TournamentStart(APIView):
+    def post(self, request, id):
+        tournament = get_object_or_404(Tournament, pk=id)
+        # Update tournament state to start
+        return Response({"status": "Tournament started"})
+
+class TournamentEnd(APIView):
+    def post(self, request, id):
+        tournament = get_object_or_404(Tournament, pk=id)
+        # Update tournament state to end
+        return Response({"status": "Tournament ended"})
+
+
 # -------------------------------- Tournament Matches Progression ------------------------------------
 class TournamentMatchList(APIView):
     def get(self, request, id):
@@ -86,12 +110,26 @@ class TournamentMatchList(ListAPIView):
         tournament_id = self.kwargs['tournament_id']
         return TournamentMatch.objects.filter(tournament_id=tournament_id)
 
-class MatchSettingList(generics.ListCreateAPIView):
-    queryset = MatchSetting.objects.all()
-    serializer_class = MatchSettingSerializer
+# ---------------------------- Match Operations -------------------------------
+class MatchStart(APIView):
+    def post(self, request, match_id):
+        match = get_object_or_404(TournamentMatch, pk=match_id)
+        # Mettre à jour l'état du match pour le démarrer
+        return Response({"status": "Match started"})
 
-    def perform_create(self, serializer):
-        serializer.save()
+class MatchEnd(APIView):
+    def post(self, request, match_id):
+        match = get_object_or_404(TournamentMatch, pk=match_id)
+        # Enregistrer les résultats du match et mettre à jour son état
+        return Response({"status": "Match ended"})
+
+
+# class MatchSettingList(generics.ListCreateAPIView):
+#     queryset = MatchSetting.objects.all()
+#     serializer_class = MatchSettingSerializer
+
+#     def perform_create(self, serializer):
+#         serializer.save()
 
 class GameTypeList(ListAPIView):
     queryset = GameType.objects.all()

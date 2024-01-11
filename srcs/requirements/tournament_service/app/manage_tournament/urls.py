@@ -18,21 +18,38 @@ urlpatterns = [
     path('manage/<int:pk>/', views.TournamentRetrieveUpdateDestroy.as_view(), name='tournament-retrieve-update-destroy'),
 
 # Tournament Participation:
-    # POST /{id}/participants - Register a participant for a tournament.
+    # POST /{id}/participants/ - Register a participant for a tournament.
     path('<int:id>/participants/', views.TournamentParticipantList.as_view(), name='tournament-participants'),
-    # DELETE /{id}/participants/{participantId} - Deregister a participant from a tournament.
+    # DELETE /{id}/participants/{participantId}/ - Deregister a participant from a tournament.
+    path('<int:id>/participants/<int:participant_id>/', views.TournamentParticipantDetail.as_view(), name='tournament-participant-detail'),
 
 # Tournament Progression:
     # GET /{id}/matches - Retrieve a list of matches for a tournament.
     # POST /{id}/matches - Create a new match within a tournament.
-    path('<int:id>/matches', views.TournamentMatchList.as_view(), name='tournament-matches'),
+    path('<int:id>/matches/', views.TournamentMatchList.as_view(), name='tournament-matches'),
     # PUT /tournaments/{id}/matches/{matchId} - Update the status or result of a match.
     # DELETE /tournaments/{id}/matches/{matchId} - Cancel a scheduled match.
-    path('<int:id>/matches/<int:match_id>', views.TournamentMatchDetail.as_view(), name='tournament-match-detail'),
+    path('<int:id>/matches/<int:match_id>/', views.TournamentMatchDetail.as_view(), name='tournament-match-detail'),
+    
+# Tournament Visualization:
+    # GET /{id}/visualization/ - Get a visual representation or bracket of the tournament's progression.
+    path('<int:id>/visualization/', views.TournamentVisualization.as_view(), name='tournament-visualization'),
 
-    path('<int:id>/participants/<int:participant_id>/', views.TournamentParticipantDetail.as_view(), name='tournament-participant-detail'),
-    path('<int:tournament_id>/matches/', views.TournamentMatchList.as_view(), name='tournament-match-list'),
-    path('<int:tournament_id>/match-settings/', views.MatchSettingList.as_view(), name='match-setting-list'),
+# Tournament Lifecycle:
+    # POST /{id}/start/ - Start the tournament, transitioning its state from setup to active.
+    path('<int:id>/start/', views.TournamentStart.as_view(), name='tournament-start'),
+    # POST /tournaments/{id}/end - End the tournament, finalizing its state and possibly triggering the calculation of rankings.
+    path('<int:id>/end/', views.TournamentEnd.as_view(), name='tournament-end'),
+
+# Match Operations:
+    # POST /matchess/{id}/start/ - Start the tournament, transitioning its state from setup to active.
+    path('matches/<int:match_id>/start/', views.MatchStart.as_view(), name='match-start'),
+    # POST /tournaments/{id}/end - End the tournament, finalizing its state and possibly triggering the calculation of rankings.
+    path('matches/<int:match_id>/end/', views.MatchEnd.as_view(), name='match-end'),
+
+    
+    # path('<int:tournament_id>/matches/', views.TournamentMatchList.as_view(), name='tournament-match-list'),
+    # path('<int:tournament_id>/match-settings/', views.MatchSettingList.as_view(), name='match-setting-list'),
     path('<int:tournament_id>/game-types/', views.GameTypeList.as_view(), name='game-type-list'),
     path('<int:tournament_id>/tournament-types/', views.TournamentTypeList.as_view(), name='tournament-type-list'),
     path('<int:tournament_id>/registration-types/', views.RegistrationTypeList.as_view(), name='resgistration-type-list'),
@@ -41,10 +58,3 @@ urlpatterns = [
     path('<int:tournament_id>/matches/participants/', views.MatchParticipantsList.as_view(), name='matches-participants-list'),
 
 ]
-## Tournament Participation:
-#    #   - POST /tournaments/{id}/participants - Register a participant for a tournament.
-#    path('/<int:pk>/participants/', TournamentParticipantCreate.as_view(), name='tournament-participant-create'),
-#
-#    #   - DELETE /tournaments/{id}/participants/{participantId} - Deregister a participant from a tournament.
-#    path('/<int:pk>/participants/<int:participant_id>/', TournamentParticipantDelete.as_view(), name='tournament-participant-delete'),
-#]
