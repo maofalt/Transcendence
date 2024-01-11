@@ -51,7 +51,6 @@ services:
   # react with vite and HMR for development
   react-dev:
     container_name: react-dev
-    build:
       context: ./requirements/front-end/
       dockerfile: Dockerfile.dev
     volumes:
@@ -84,8 +83,9 @@ services:
     build: 
       context: ./requirements/game/
       dockerfile: Dockerfile
+    # IMPORTANT - this is insecure. Use .env file instead
     environment:
-      - DATABASE_URL=postgresql://user42:password@db:5432/mydatabase
+      - DATABASE_URL=postgresql://user42:password@db:5432/mydatabase # <-- use value from .env
     depends_on:
       - game-db
     networks:
@@ -108,10 +108,11 @@ services:
     build:
       context: ./requirements/game/postgreSQL/
       dockerfile: Dockerfile
+    # IMPORTANT - this is insecure. Use .env file instead
     environment:
-      POSTGRES_DB: mydatabase
-      POSTGRES_USER: user42
-      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydatabase # <-- use value from .env
+      POSTGRES_USER: user42 # <-- use value from .env
+      POSTGRES_PASSWORD: password # <-- use value from .env
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:
@@ -171,13 +172,6 @@ services:
 
 #VOLUMES
 volumes:
-#to verify if this works without the data bindin in rootless at school @ionorb
-  # traefik-ssl-certs:
-  #   driver: local
-  #   driver_opts:
-  #     type: none
-  #     device: ./requirements/traefik/config/ssl/
-  #     o: bind
   portainer-data:
     driver: local
   tournament-db:
@@ -185,13 +179,6 @@ volumes:
   postgres-data:
     driver: local
 
-#to verify if this works without the data bindin in rootless at school @ionorb
-  # front-end-volume:
-  #   driver: local
-  #   driver_opts:
-  #     type: none
-  #     device: ./requirements/front-end/react-app
-  #     o: bind 
 
 #NETWORKS
 networks:
