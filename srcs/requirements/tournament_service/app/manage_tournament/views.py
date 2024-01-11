@@ -24,7 +24,6 @@ class TournamentListCreate(generics.ListCreateAPIView):
 class TournamentRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     queryset = Tournament.objects.all()
     serializer_class = TournamentSerializer
-    #permission_classes = [IsTournamentOrganizer] #add more permissions if is necessary
 
 class TournamentMatchList(ListAPIView):
     serializer_class = TournamentMatchSerializer
@@ -63,33 +62,6 @@ class PlayerList(ListAPIView):
 class MatchParticipantsList(ListAPIView):
     queryset = MatchParticipants.objects.all()
     serializer_class = MatchParticipantsSerializer
-
-# -------------------------- Participants -------------------------------
-
-#class TournamentParticipantCreate(APIView):
-#    def post(self, request, pk):
-#        try:
-#            tournament = Tournament.objects.get(pk=pk)
-#        except Tournament.DoesNotExist:
-#            return Response(status=status.HTTP_404_NOT_FOUND)
-#
-#        serializer = ParticipantSerializer(data=request.data)
-#        if serializer.is_valid():
-#            serializer.save(tournament=tournament)
-#            return Response(serializer.data, status=status.HTTP_201_CREATED)
-#            
-#class TournamentParticipantDelete(APIView):
-#    def delete(self, request, pk, participant_id):
-#        try:
-#            participant = Participant.objects.get(pk=participant_id, tournament__pk=pk)
-#        except Participant.DoesNotExist:
-#            return Response(status=status.HTTP_404_NOT_FOUND)
-#
-#        participant.delete()
-#        return Response(status=status.HTTP_204_NO_CONTENT)
-#    
-#
-## Create your views here.
 
 def home(request):
     return render(request, 'home.html')
