@@ -22,14 +22,14 @@ from django.contrib import admin
 from django.urls import path, include
 import account.views
 
-account_base_path = "api/user_management/auth/"
+account_base_path = "api/user_management/"
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     # path('admin/defender/', include('defender.urls')),
     path('', account.views.home, name='home'),
-    path(account_base_path, include("account.urls")),
+    path(account_base_path + 'auth/', include("account.urls")),
     path('auth/', include("account.urls")),
     path('gameHistory_microservice/', include('gameHistory_microservice.urls')),
 
