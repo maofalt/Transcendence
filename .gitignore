@@ -4,3 +4,4 @@ trenv/
 .vscode/
 node_modules/
 t\ access\ issue
+# .env.gpg
