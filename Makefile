@@ -50,3 +50,16 @@ set-permissions:
 
 decrypt-mama:
 	gpg srcs/.env.gpg
+
+# set-xdg-env:
+# 	@if [ -z "$$XDG_RUNTIME_DIR" ]; then \
+# 		XDG_RUNTIME_DIR="/var/run"; \
+# 	else \
+# 		XDG_RUNTIME_DIR=$$XDG_RUNTIME_DIR; \
+# 	fi; \
+# 	if grep -q '^XDG_RUNTIME_DIR=' .env; then \
+# 		sed -i 's/^XDG_RUNTIME_DIR=.*/XDG_RUNTIME_DIR='"$$XDG_RUNTIME_DIR"'/' .env; \
+# 	else \
+# 		echo 'XDG_RUNTIME_DIR='"$$XDG_RUNTIME_DIR"'' >> .env; \
+# 	fi; \
+# 	echo "XDG_RUNTIME_DIR in .env is now set to:" $$XDG_RUNTIME_DIR;
