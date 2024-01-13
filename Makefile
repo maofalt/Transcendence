@@ -29,13 +29,11 @@ logs:
 
 #erase all images and volumes USE WITH CAUTION!!!
 clean:
-	docker-compose $(COMPOSE_FILE) down --rmi all --volumes
-	docker image prune -a -f
+	docker-compose $(COMPOSE_FILE) down --rmi all --volumes --remove-orphans
+	docker system prune -f
 
 fclean: clean
-	docker volume prune -f
 	rm -rf ./srcs/requirements/front-end/react-app/node_modules
-
 
 .PHONY: all build up down logs
 

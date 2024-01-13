@@ -24,11 +24,15 @@ services:
 
 ##CONTAINER MANAGER
   portainer:
+    env_file:
+      - .env
     image: portainer
     container_name: portainer
     build:
       context: ./requirements/portainer
       dockerfile: Dockerfile
+      args:
+      - PORTAINER_ADMIN_PASSWORD=${PORTAINER_ADMIN_PASSWORD}
     restart: unless-stopped
     volumes:
       - "${XDG_RUNTIME_DIR:-/var/run}/docker.sock:/var/run/docker.sock"
@@ -54,10 +58,10 @@ services:
       dockerfile: Dockerfile.dev
     volumes:
       - ./requirements/front-end/react-app/:/app/src # Mount the source code
-    networks:
-      - transcendence
     env_file:
       - .env
+    networks:
+      - transcendence
     #Necessary labels if we want dynamic routing based on the local ip of the machine
     labels:
       - "traefik.enable=true"
