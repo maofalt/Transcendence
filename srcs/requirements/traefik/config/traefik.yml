@@ -64,9 +64,9 @@ http:
       tls:
         certResolver: "myresolver"
 #GAMR FRONT END FOR DEVELOPMENT USING NODE.JS
-    reactDev:
+    jsDev:
       rule: "Host(`localhost`)"
-      service: "reactDevService"
+      service: "jsDevService"
       entryPoints:
         - "websecure"
       tls:
@@ -129,10 +129,10 @@ http:
         servers:
           - url: "http://front-end:80"
 
-    reactDevService:
+    jsDevService:
       loadBalancer:
         servers:
-          - url: "http://react-dev:8033"
+          - url: "http://js-dev:8033"
 
     game:
       loadBalancer:

@@ -33,7 +33,7 @@ clean:
 	docker system prune -f
 
 fclean: clean
-	rm -rf ./srcs/requirements/front-end/react-app/node_modules
+	rm -rf ./srcs/requirements/front-end/vanilla/node_modules
 
 .PHONY: all build up down logs
 
