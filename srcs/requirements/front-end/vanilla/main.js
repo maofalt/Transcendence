@@ -34,6 +34,7 @@ const router = async () => {
 			route: routes.find(route => route.path === '/404'),
 			isMatch: true
 		};
+		document.pushState(null, null, match.route.path)
 	}
 	
 	console.log("match", match.route.view());
@@ -41,14 +42,19 @@ const router = async () => {
 	document.querySelector('#counter').innerHTML = match.route.path;
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-	document.body.addEventListener('click', event => {
-		if (event.target.matches('[nav-link]')) {
-			event.preventDefault();
+window.addEventListener("popstate", router)
+
+// listen for clicks on html elements with nav-link property and navigate to them without refreshing
+document.body.addEventListener('click', event => {
+	if (event.target.matches('[nav-link]')) {
+		event.preventDefault();
+		if (event.target.href != document.URL) // only navigate if it goes to a new page
 			navigateTo(event.target.href);
-		}
-	});
-	router();
+	}
+});
+document.addEventListener('DOMContentLoaded', () => {
+
+	router(); // route to page on load
 });
 
 document.querySelector('#app').innerHTML = `
@@ -65,8 +71,13 @@ document.querySelector('#app').innerHTML = `
     </div>
     <p class="read-the-docs">
       Click on the Vite logo to learn more
-    </p>
-  </div>
-`
+	</p>
+	<a href="/" class="navigation-link" nav-link>Home</a>
+	<a href="/play" class="navigation-link" nav-link>Play</a>
+	<a href="/tournament" class="navigation-link" nav-link>Tournament</a>
+	<a href="/options" class="navigation-link" nav-link>Options</a>
+	<a href="/404" class="navigation-link" nav-link>404</a>
+	</div>
+	`
 
 setupCounter(document.querySelector('#counter'))
