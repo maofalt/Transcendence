@@ -27,7 +27,7 @@ body {
   display: flex;
   place-items: center;
   min-width: 320px;
-  min-height: 100vh;
+  /* min-height: 100vh; */
 }
 
 h1 {
@@ -63,7 +63,7 @@ h1 {
   color: #888;
 }
 
-.navigation-link {
+.nav-link {
 	/* display: none; */
 	margin: 0 0.5em;
 	padding: 0.5em 1em;
