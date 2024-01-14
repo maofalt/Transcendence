@@ -1,9 +1,9 @@
 import '@css/style.css'
 // import 'bootstrap/dist/css/bootstrap.min.css';
 // import 'bootstrap';
-import javascriptLogo from '@public/javascript.svg';
-import viteLogo from '/vite.svg';
-import { setupCounter } from '@utils/counter.js';
+// import javascriptLogo from '/javascript.svg';
+// import viteLogo from '/vite.svg';
+// import { setupCounter } from '@utils/counter.js';
 import Home from '@views/Home.js';
 import Tournament from '@views/Tournament.js';
 import Options from '@views/Options.js';
@@ -15,7 +15,7 @@ const routes = {
 	'/': {
 		path: '/',
 		view: Home,
-		title: 'Pongyverse',
+		title: 'Pongiverse',
 		link: 'Home'
 	},
 	'/play': {
@@ -61,16 +61,28 @@ const navigateTo = (url) => {
 	router();
 }
 
+let currentView = null;
+
 const router = async () => {
 	const path = window.location.pathname; // get the current path
 	const match = routes[Object.keys(routes).find(route => route == path)] || routes['/404']; // find the matching route or use the 404 route
-	const view = new match.view(); // create a new view
 	
+	// if view has a destroy function, call it
+	if (currentView && currentView.destroy)
+		currentView.destroy();
+
+	// create a new view
+	const view = new match.view();
+	currentView = view;
+
 	// set the html of the view element to the html of the view
 	document.querySelector('#view').innerHTML = await view.getHtml();
-	
 	document.title = match.title; // set the title of the page
 	
+	// if the view has an init function, call it
+	if (view.init)
+		view.init();
+
 	// document.querySelector('#counter').innerHTML = path;
 };
 
@@ -93,11 +105,6 @@ document.addEventListener('DOMContentLoaded', () => {
 const parentElement = document.querySelector('#app');
 
 const elems = [];
-
-// Create individual child elements
-// const h1Element = document.createElement('h1');
-// h1Element.textContent = 'Hello World!';
-// elems.push(h1Element);
 
 const validRoutes = ['/', '/play', '/tournament', '/options', '/login'];
 Object.entries(routes).forEach(([route, view]) => {
