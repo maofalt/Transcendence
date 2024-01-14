@@ -5,32 +5,75 @@ import javascriptLogo from '@public/javascript.svg';
 import viteLogo from '/vite.svg';
 import { setupCounter } from '@utils/counter.js';
 import Home from '@views/Home.js';
+import Tournament from '@views/Tournament.js';
+import Options from '@views/Options.js';
+import Game from '@views/Game.js';
+import Login from '@views/Login.js';
+import NotFound from '@views/NotFound.js';
 
 const navigateTo = url => {
-	history.pushState(null, null, url);
+	// history.pushState(null, null, url);
+	console.log(url);
 	router();
 }
 
 const routes = {
-	'/': () => Home,
-	'/play': () => console.log('Viewing Game', '\"' + window.location.pathname + "\""),
-	'/game': () => console.log('Viewing Game', '\"' + window.location.pathname + "\""),
-	'/tournament': () => console.log('Viewing Tournament', '\"' + window.location.pathname + "\""),
-	'/options': () => console.log('Viewing Options', '\"' + window.location.pathname + "\""),
-	'/login': () => console.log('Viewing Login', '\"' + window.location.pathname + "\""),
+	'/': {
+		path: '/',
+		view: Home,
+		title: 'Pongyverse'
+	},
+	'/play': {
+		path: '/play',
+		view: Game,
+		title: 'Game'
+	},
+	'/game': {
+		path: '/game',
+		view: Game,
+		title: 'Game'
+	},
+	'/tournament': {
+		path: '/tournament',
+		view: Tournament,
+		title: 'Tournament'
+	},
+	'/options': {
+		path: '/options',
+		view: Options,
+		title: 'Options'
+	},
+	'/login': {
+		path: '/login',
+		view: Login,	// history.pushState(null, null, url);
+
+		title: 'Login'
+	},
+	'/404': {
+		path: '/404',
+		view: NotFound,
+		title: '404 Not Found'
+	}
 };
 
-const router = async () => {
-	const path = window.location.pathname;
-	const view = routes[path] || (() => console.log('Viewing 404 Not Found'));
+
+const router = async (url) => {
+	const urlobj = new URL(url); // get the current path
+	const path = urlobj.pathname; // get the current path
+	const match = routes[Object.keys(routes).find(route => route == path)] || routes['/404']; // find the matching route or use the 404 route
+	const view = new match.view(); // create a new view
 	
-	console.log("match", view());
+	// set the html of the view element to the html of the view
+	document.querySelector('#view').innerHTML = await view.getHtml();
 	
-	document.querySelector('#counter').innerHTML = path;
+	document.title = match.title; // set the title of the page
+	history.pushState(null, null, url); // set the url and add to browser history
+	
+	// document.querySelector('#counter').innerHTML = path;
 };
 
 // listen for back and forward button clicks and route to the correct page
-window.addEventListener("popstate", router)
+window.addEventListener("popstate", router);
 
 document.addEventListener('DOMContentLoaded', () => {
 	// listen for clicks on html elements with nav-link property and navigate to them without refreshing
@@ -38,24 +81,42 @@ document.addEventListener('DOMContentLoaded', () => {
 		if (event.target.matches('[nav-link]')) {
 			event.preventDefault(); // prevent page refresh
 			if (event.target.href != document.URL) // only navigate if it goes to a new page
-				navigateTo(event.target.href);
+				router(event.target.href);
 		}
 	});
-	router(); // route to page on load
+	router(document.URL); // route to page on load
 });
 
-document.querySelector('#app').innerHTML = `
-	<div>
-		<h1>Hello World!</h1>
-		<div class="card">
-			<button class="fdf" id="counter" type="button">click me!</button>
-		</div>
-		<a href="/" class="navigation-link" nav-link>Home</a>
-		<a href="/play" class="navigation-link" nav-link>Play</a>
-		<a href="/tournament" class="navigation-link" nav-link>Tournament</a>
-		<a href="/options" class="navigation-link" nav-link>Options</a>
-		<a href="/404" class="navigation-link" nav-link>404</a>
-	</div>
-	`
+// Create a parent element
+const parentElement = document.querySelector('#app');
 
-setupCounter(document.querySelector('#counter'))
+const elems = [];
+
+
+// Create individual child elements
+const h1Element = document.createElement('h1');
+h1Element.textContent = 'Hello World!';
+elems.push(h1Element);
+
+const validRoutes = ['/', '/play', '/game', '/tournament', '/options', '/login'];
+Object.keys(routes).forEach(route => {
+	if (validRoutes.includes(route)) {
+		const link = document.createElement('a');
+		link.href = route;
+		link.classList.add('nav-link');
+		link.setAttribute('nav-link', '');
+		link.textContent = route;
+		elems.push(link);
+	}
+});
+
+const viewElement = document.createElement('div');
+viewElement.id = 'view';
+elems.push(viewElement);
+
+// elems.push(document.querySelector('#counter'));
+
+
+elems.forEach(elem => parentElement.appendChild(elem));
+
+// setupCounter(document.querySelector('#counter'))

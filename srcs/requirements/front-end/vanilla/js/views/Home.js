@@ -8,7 +8,7 @@ export default class Home extends AbstractView {
 	async getHtml() {
 		return `
 		<div class="card">
-			<button class="fdf" id="counter" type="button">click me!</button>
+			<h1>HOME</h1>
 		</div>
 		`;
 	}

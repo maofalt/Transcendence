@@ -1,6 +1,6 @@
 import AbstractView from "./AbstractView";
 
-export default class Game extends AbstractView {
+export default class NotFound extends AbstractView {
 	constructor(element) {
 		super(element);
 	}
@@ -8,7 +8,7 @@ export default class Game extends AbstractView {
 	async getHtml() {
 		return `
 		<div class="card">
-			<h1>Game</h1>
+			<h1>404 Not Found</h1>
 		</div>
 		`;
 	}
