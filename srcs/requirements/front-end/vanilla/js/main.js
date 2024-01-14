@@ -56,10 +56,13 @@ const routes = {
 	}
 };
 
+const navigateTo = (url) => {
+	history.pushState(null, null, url);
+	router();
+}
 
-const routeTo = async (url) => {
-	const urlobj = new URL(url); // get the current path
-	const path = urlobj.pathname; // get the current path
+const router = async () => {
+	const path = window.location.pathname; // get the current path
 	const match = routes[Object.keys(routes).find(route => route == path)] || routes['/404']; // find the matching route or use the 404 route
 	const view = new match.view(); // create a new view
 	
@@ -67,13 +70,12 @@ const routeTo = async (url) => {
 	document.querySelector('#view').innerHTML = await view.getHtml();
 	
 	document.title = match.title; // set the title of the page
-	history.pushState(null, null, url); // set the url and add to browser history
 	
 	// document.querySelector('#counter').innerHTML = path;
 };
 
 // listen for back and forward button clicks and route to the correct page
-window.addEventListener("popstate", () => routeTo(document.URL));
+window.addEventListener("popstate", router);
 
 document.addEventListener('DOMContentLoaded', () => {
 	// listen for clicks on html elements with nav-link property and navigate to them without refreshing
@@ -81,10 +83,10 @@ document.addEventListener('DOMContentLoaded', () => {
 		if (event.target.matches('[nav-link]')) {
 			event.preventDefault(); // prevent page refresh
 			if (event.target.href != document.URL) // only navigate if it goes to a new page
-				routeTo(event.target.href);
+				navigateTo(event.target.href);
 		}
 	});
-	routeTo(document.URL); // route to page on load
+	router(); // route to page on load
 });
 
 // Create a parent element
