@@ -68,7 +68,7 @@ const router = async () => {
 	const match = routes[Object.keys(routes).find(route => route == path)] || routes['/404']; // find the matching route or use the 404 route
 	
 	// if view has a destroy function, call it
-	if (currentView && currentView.destroy)
+	if (currentView && currentView.destroy && currentView != match.view)
 		currentView.destroy();
 
 	// create a new view

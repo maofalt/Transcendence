@@ -37,11 +37,12 @@ export default class Game extends AbstractView {
 	};
 
 	async init() {
+		console.log("init Game View...");
 		// Set up the game container
 		this.container = document.getElementById('gameContainer');
 		
 		// Your game setup logic here (init socket, create scene, etc.)
-		this.generateScene();
+		// this.generateScene();
 
 		// Initialize socket connection
 		this.initSocket();
@@ -53,21 +54,22 @@ export default class Game extends AbstractView {
 	};
 
 	onWindowResize() {
-		camera.aspect = window.innerWidth / window.innerHeight;
-		camera.updateProjectionMatrix();
-		renderer.setSize(window.innerWidth, window.innerHeight);
+		this.camera.aspect = window.innerWidth / window.innerHeight;
+		this.camera.updateProjectionMatrix();
+		this.renderer.setSize(window.innerWidth, window.innerHeight);
 	};
 
 	handleKeyPress(event) {
+		console.log(event.key);
 		if (event.key == "w")
-			socket.emit('moveUp');
+			this.socket.emit('moveUp');
 		if (event.key == "s")
-			socket.emit('moveDown');
+			this.socket.emit('moveDown');
 	};
 
 	handleKeyRelease(event) {
 		if (event.key == "w" || event.key == "s")
-			socket.emit('stop');
+			this.socket.emit('stop');
 	};
 
 	initSocket() {
@@ -87,19 +89,19 @@ export default class Game extends AbstractView {
 			// Generate scene and update it
 			this.generateScene(data);
 			this.updateScene(data);
-			renderer.render(scene, camera);
+			this.renderer.render(this.scene, this.camera);
 		});
 
 		this.socket.on('render', data => {
 			console.log("Rendering Frame...");
 			this.updateScene(data);
-			renderer.render(scene, camera);
+			this.renderer.render(this.scene, this.camera);
 		});
 
 		this.socket.on('clientId', (id, num) => {
 			this.clientNbr = num;
 			this.clientId = id;
-			console.log("Client connected with ID: " + clientId);
+			console.log("Client connected with ID: " + this.clientId);
 		});
 	};
 
@@ -108,6 +110,7 @@ export default class Game extends AbstractView {
 			this.socket.disconnect();
 		}
 		
+		console.log("Destroying Game View...");
 		// Cleanup logic here (remove event listeners, etc.)
 		window.removeEventListener('resize', this.onWindowResize.bind(this));
 		window.removeEventListener("keydown", this.handleKeyPress.bind(this));
@@ -128,7 +131,7 @@ export default class Game extends AbstractView {
 		// camera.rotation.set(0, 0, Math.PI / 2);
 		this.camera.rotation.set(0, 0, Math.PI);
 		if (this.clientId == 2)
-			camera.rotation.set(0, 0, Math.PI);
+			this.camera.rotation.set(0, 0, Math.PI);
 		
 		this.renderer.setSize(window.innerWidth, window.innerHeight);
 		this.container.appendChild(this.renderer.domElement);
@@ -146,7 +149,7 @@ export default class Game extends AbstractView {
 		this.drawAxes();
 
 		// render scene
-		renderer.render(scene, camera);
+		this.renderer.render(this.scene, this.camera);
 	};
 
 	// Other methods (generateScene, updateScene, etc.) here
@@ -167,9 +170,9 @@ export default class Game extends AbstractView {
 		const arrowY = new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), new THREE.Vector3(0, 0, 0), axisLength, 0x0000ff);
 		
 		//add to scene
-		scene.add(arrowX);
-		scene.add(arrowY);
-		scene.add(arrowZ);
+		this.scene.add(arrowX);
+		this.scene.add(arrowY);
+		this.scene.add(arrowZ);
 	};
 
 	generateBall(data) {
@@ -179,7 +182,7 @@ export default class Game extends AbstractView {
 		this.ball = new THREE.Mesh(ballGeometry, ballMaterial);
 		
 		// add to scene
-		scene.add(this.ball);
+		this.scene.add(this.ball);
 	};
 
 	generateWalls(data) {
@@ -187,24 +190,24 @@ export default class Game extends AbstractView {
 		const wallMaterial1 = new THREE.MeshPhongMaterial({ color: data.ball.color, transparent: true, opacity: 1, reflectivity: 0.5 });
 		const wallMaterial2 = new THREE.MeshPhongMaterial({ color: data.ball.color, transparent: true, opacity: 1, reflectivity: 0.5 });
 
-		wall1 = new THREE.Mesh(wallGeometry, wallMaterial1);
-		wall2 = new THREE.Mesh(wallGeometry, wallMaterial2);
+		this.wall1 = new THREE.Mesh(wallGeometry, wallMaterial1);
+		this.wall2 = new THREE.Mesh(wallGeometry, wallMaterial2);
 
 		// add to scene
-		scene.add(wall1);
-		scene.add(wall2);
-		wall1.position.set(0, data.field.height / 2 + data.paddle1.width / 2, 0);
-		wall2.position.set(0, -data.field.height / 2 - data.paddle1.width / 2, 0);
+		this.scene.add(this.wall1);
+		this.scene.add(this.wall2);
+		this.wall1.position.set(0, data.field.height / 2 + data.paddle1.width / 2, 0);
+		this.wall2.position.set(0, -data.field.height / 2 - data.paddle1.width / 2, 0);
 	};
 
 	generateField(data) {
 		const fieldGeometry = new THREE.BoxGeometry(data.field.width, data.field.height, 1);
 		const fieldMaterial = new THREE.MeshPhongMaterial({ color: data.ball.color, transparent: true, opacity: 0.1, reflectivity: 0.5 });
 
-		field = new THREE.Mesh(fieldGeometry, fieldMaterial);
+		this.field = new THREE.Mesh(fieldGeometry, fieldMaterial);
 
-		scene.add(field);
-		field.position.set(0, 0, -1.5);
+		this.scene.add(this.field);
+		this.field.position.set(0, 0, -1.5);
 	};
 
 	generatePaddles(data) {
@@ -213,23 +216,23 @@ export default class Game extends AbstractView {
 		const paddleMaterial1 = new THREE.MeshPhongMaterial({ color: data.paddle1.color, transparent: true, opacity: 1, reflectivity: 0.5 });
 		const paddleMaterial2 = new THREE.MeshPhongMaterial({ color: data.paddle2.color, transparent: true, opacity: 1, reflectivity: 0.5 });
 
-		paddle1 = new THREE.Mesh(paddleGeometry, paddleMaterial1);
-		paddle2 = new THREE.Mesh(paddleGeometry, paddleMaterial2);
+		this.paddle1 = new THREE.Mesh(paddleGeometry, paddleMaterial1);
+		this.paddle2 = new THREE.Mesh(paddleGeometry, paddleMaterial2);
 
-		// add to scene
-		scene.add(paddle1);
-		scene.add(paddle2);
+		// add to scenethis.f
+		this.scene.add(this.paddle1);
+		this.scene.add(this.paddle2);
 	};
 
 	generateLights(data) {
-		directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-		directionalLight.position.set(0, 1, 1);
+		this.directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+		this.directionalLight.position.set(0, 1, 1);
 
-		ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+		this.ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
 
 		// add to scene
-		scene.add(directionalLight);
-		scene.add(ambientLight);
+		this.scene.add(this.directionalLight);
+		this.scene.add(this.ambientLight);
 	};
 
 	generateSkyBox(data) {
@@ -250,6 +253,6 @@ export default class Game extends AbstractView {
 		const starSphere = new THREE.Mesh(starGeometry, starMaterial);
 
 		// Ajouter la sphère étoilée à la scène
-		scene.add(starSphere);
+		this.scene.add(starSphere);
 	};
 }
