@@ -114,6 +114,59 @@ function manageLobby() {
     gameInterval = setInterval(calculateFrame, 10);
 }
 
+/* 
+    we are going to recieve a struct with all the lobby infos :
+        - game mode data:
+            - nbr of players;
+            - nbr of rounds;
+            - time limit;
+        - size of walls (ratio wall size over goal size);
+        - size of goals;
+        - paddles info :
+            - speed;
+            - size;
+        - ball infos :
+            - speed;
+            - size;
+        - for each player :
+            - lobby ID (its position in the array of players);
+            - login;
+            - unique account ID;
+            - color;
+            
+    at the start of the game we will have to :
+        - create all the objects and
+        - setup the whole game data according to the lobby info;
+        - fill the remaining variables with default ones;
+    at the start of each round we will have to :
+        - if (gamemode == battleroyale) set up each player position  :
+            - calculate each position according to the size of goals/walls + nbr of remaining players;
+            - set their positions to the calculated ones;
+        - put the ball back to the center;
+        - put the speeds back to default ones;
+
+    when a point gets scored :
+        - if (gamemode == battleroyale)
+            - nbr of players--;
+            - the one who got scored on gets eliminated;
+            - get rid of the eliminated player objects (player and paddle);
+            - OR : switch him to spectator mode = keep the player object but delete paddle;
+            - important : send info to client to delete meshes etc.
+        - else
+            - score++ for the player who scored (for this to work no matter the number of players,
+            it is necessary to store somewhere who hit the ball last);
+            - if score max reached = end of the game, the player who has the max score wins !
+    
+    if there is a time limit :
+        - if the limit is reached
+            - if there is a draw : start overtime (normal round except the ball speeds up I guess);
+            - the player who has the highest score wins;
+*/
+
+function manageLobbies() {
+    
+}
+
 // game.initData();
 lobbyInterval = setInterval(manageLobby, 20);
 

@@ -1,94 +1,63 @@
-const settings = require('./gameSettings');
+// const settings = require('./lobbySettings');
+
+// Field class
+class Field {
+    constructor(fieldData) {
+        this.goalsSize = fieldData.sizeOfGoals;
+        this.wallsSize = fieldData.sizeOfGoals * fieldData.wallsFactor;
+    }
+}
 
 // Player class
 class Player {
-    constructor(playerSettings) {
-        this.login = playerSettings.login;
-        this.id = playerSettings.id;
-        this.socket = playerSettings.socket;
-        this.clientId = playerSettings.clientId;
-        this.color = playerSettings.color;
-        this.paddle = new Paddle(playerSettings.paddle);
-        this.score = playerSettings.score;
-        this.connected = playerSettings.connected;
-        this.gameState = playerSettings.gameState;
-        this.roundState = playerSettings.roundState;
+    constructor(lobbyData, i) {
+        this.login = lobbyData[i].login;
+        this.ID = i;
+        this.accountID =lobbyData[i].accountID;
+        this.color = lobbyData[i].color;
+        this.score = 0;
+        this.paddle = new Paddle(lobbyData, i);
+        // this.socket = playerSettings.socket;
     }
 }
 
 // Paddle class
 class Paddle {
-    constructor(paddleSettings) {
-		this.pos = new Vector(paddleSettings.x, paddleSettings.y, 0);
-		this.dirToCenter = new Vector(paddleSettings.vX, paddleSettings.vY, 0);
-        this.dirToTop = new Vector(paddleSettings.vX, paddleSettings.vY, 0);
-        this.width = paddleSettings.width;
-        this.height = paddleSettings.height;
-        this.sp = paddleSettings.sp;
-        this.color = paddleSettings.color;
+    constructor(lobbyData) {
+		this.pos = new Vector(0, 0, 0);
+		this.dirToCenter = new Vector(0, 0, 0);
+        this.dirToTop = new Vector(0, 0, 0);
+        this.w = lobbyData.paddlesData.width;
+        this.h = lobbyData.paddlesData.height;
+        this.sp = lobbyData.paddlesData.speed;
+        this.col = lobbyData.paddlesData.color;
     }
 }
 
 // Ball class
 class Ball {
-    constructor(ballSettings) {
-        this.pos = new Vector(ballSettings.x, ballSettings.y, 0);
-		this.dir = new Vector(ballSettings.vX, ballSettings.vY, 0);
-        this.r = ballSettings.r;
-        this.sp = ballSettings.sp;
-        this.color = ballSettings.color;
-    }
-}
-
-// Field class
-class Field {
-    constructor(fieldSettings) {
-        this.paddleMin = fieldSettings.paddleMin;
-        this.paddleMax = fieldSettings.paddleMax;
-        this.playersMin = fieldSettings.playersMin;
-        this.playersMax = fieldSettings.playersMax;
-        this.goalMin = fieldSettings.goalMin;
-        this.goalMax = fieldSettings.goalMax;
-        this.wallMin = fieldSettings.wallMin;
-        this.wallMax = fieldSettings.wallMax;
-        this.ballMin = fieldSettings.ballMin;
-        this.ballMax = fieldSettings.ballMax;
-        
-        // this.[paddleSize, setPaddleSize] = useState(10);
-        // this.[goalSize, setGoalSize] = useState(paddleSize * 3);
-        // this.[wallSize, setWallSize] = useState(2);
-        // this.[ballSize, setBallSize] = useState(paddleMin);
-        // this.[nbrOfPlayers, setNbrOfPlayers] = useState(2);
-
-        this.nbrOfPlayers = fieldSettings.nbrOfPlayers;
-        this.wallToGoalRatio = fieldSettings.wallToGoalRatio;
-        this.goalSize = fieldSettings.goalSize;
-    }
-}
-
-// Score class
-class Score {
-    constructor(scoreSettings) {
-        this.color = scoreSettings.color;
-        this.fontsize = scoreSettings.fontsize;
-        this.font = scoreSettings.font;
+    constructor(ballData) {
+        this.pos = new Vector(0, 0, 0);
+		this.dir = new Vector(0, 0, 0);
+        this.r = ballData.r;
+        this.sp = ballData.sp;
+        this.color = ballData.color;
     }
 }
 
 // Data class
 class Data {
-    constructor(dataSettings) {
-        this.field = new Field(dataSettings.field);
-        this.player1 = new Player(dataSettings.player1);
-        this.player2 = new Player(dataSettings.player2);
-        this.paddle1 = this.player1.paddle;
-        this.paddle2 = this.player2.paddle;
-        this.ball = new Ball(dataSettings.ball);
-        this.score = new Score(dataSettings.score);
+    constructor(lobbyData) {
+        this.field = new Field(lobbyData.fieldData);
+        this.players = [];
+        for (let i=0; i<lobbyData.nbrOfPlayers; i++) {
+            this.players.push(new Player(lobbyData, i));
+        }
+        this.ball = new Ball(lobbyData.ballData);
     }
 }
 
 // Creating an instance of the Data class
-const data = new Data(settings);
+// const data = new Data(settings);
 
-module.exports = data;
+module.exports = { Data };
