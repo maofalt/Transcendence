@@ -6,6 +6,7 @@ const socketIo = require('socket.io');
 const objectsClasses = require('./gameLogic/gameObjectsClasses');
 // const game = require('./gameLogic/gameLogic');
 const lobbySettings = require('./gameLogic/lobbySettings');
+const debugDisp = require('./gameLogic/debugDisplay');
 
 const app = express();
 // const server = http.createServer(app);
@@ -76,9 +77,9 @@ server.listen(expressPort, () => {
         - setup the whole game data according to the lobby info;
         - fill the remaining variables with default ones;
     at the start of each round we will have to :
-        - if (gamemode == battleroyale) set up each player position  :
-            - calculate each position according to the size of goals/walls + nbr of remaining players;
-            - set their positions to the calculated ones;
+        - set up each player position  :
+        - calculate each position according to the size of goals/walls + nbr of remaining players;
+        - set their positions to the calculated ones;
         - put the ball back to the center;
         - put the speeds back to default ones;
 
@@ -120,50 +121,16 @@ function handleConnection(client) {
     console.log(`Number of connected clients: ${io.engine.clientsCount}`);
 }
 
-function displayPlayer(playerData) {
-    console.log(`
-        - login :                                           [ ${playerData.login} ]
-        - lobby ID (its position in the array of players) : [ ${playerData.ID} ]
-        - unique account ID :                               [ ${playerData.accountID} ]
-        - color :                                           [ ${playerData.color} ]
-        - paddle info :
-            - height :                                      [ ${playerData.paddle.h} ]
-            - speed :                                       [ ${playerData.paddle.sp} ]
-
-    `);
-}
-
-function displayData(data) {
-    console.log(`
-Data :
-    - game mode data:
-        - nbr of players :  [ ${data.gamemode.nbrOfPlayers} ]
-        - nbr of rounds :   [ ${data.gamemode.nbrOfRounds} ]
-        - time limit :      [ ${data.gamemode.timeLimit} ]
-    
-    - field data :
-        - size of goals :                                   [ ${data.field.wallsSize} ]
-        - size of walls (ratio wall size over goal size) :  [ ${data.field.goalsSize} ]
-    
-    - ball infos :
-        - speed :   [ ${data.ball.sp} ]
-        - radius :  [ ${data.ball.r} ]
-        - color :   [ 0x${data.ball.col} ]
-
-    - players :
-    `);
-    for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
-        displayPlayer(data.players[i]);
-    }
-}
-
-function manageLobby(lobbyData) {
+function initLobby(lobbyData) {
     let data = new objectsClasses.Data(lobbyData);
 
-    displayData(data);
+    debugDisp.displayData(data);
+    // init angles + positions of players;
+    // init camera pos according to those;
+    // 
 }
 
-manageLobby(lobbySettings.lobbyData);
+initLobby(lobbySettings.lobbyData);
 
 // Set up Socket.IO event handlers
 io.on('connection', (client) => {

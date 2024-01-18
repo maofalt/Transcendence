@@ -9,6 +9,17 @@ class Field {
     }
 }
 
+class Camera {
+    constructor() {
+        this.pos = new vecs.Vector(0, 0, 50);   // this can change (even during the game) depending on the number
+                                                // of players and size of field
+
+        this.target = new vecs.Vector(0, 0, 0); // this is fixed
+        // The rotation of the camera will be determined by the cliend, according to the ID of the player.
+        // It will also depend on user preferences : vertical view or horizontal view;
+    }
+}
+
 // Player class
 class Player {
     constructor(lobbyData, i) {
@@ -43,6 +54,7 @@ class Ball {
         this.r = ballData.radius;
         this.sp = ballData.speed;
         this.col = ballData.color;
+        this.lastHit = -1; // ID of the last player who hit the ball (-1 = no last hist = start of round)
     }
 }
 
@@ -51,6 +63,7 @@ class Data {
     constructor(lobbyData) {
         this.gamemode = lobbyData.gamemodeData;
         this.field = new Field(lobbyData.fieldData);
+        this.camera = new Camera();
         this.players = [];
         for (let i=0; i<lobbyData.gamemodeData.nbrOfPlayers; i++) {
             this.players.push(new Player(lobbyData, i));
