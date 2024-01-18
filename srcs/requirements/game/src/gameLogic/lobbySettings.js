@@ -21,23 +21,30 @@ const paddlesSettings = {
 const ballSettings = {
     speed: 4,
     radius: 2,
+    color: "ffffff",
 }
 
 const playerSettings = {
-    login: "bob",
+    login: "player",
     ID: 0,
     accountID: 0,
     color: "0000ff",
 }
-
-let playersArr = [];
 
 const lobbyData = {
     gamemodeData: gamemodeSettings,
     fieldData: fieldSettings,
     paddlesData: paddlesSettings,
     ballData: ballSettings,
-    players: playersArr,
+    playersData: [],
 }
+
+function setPlayersData() {
+    for (let i=0; i<lobbyData.gamemodeData.nbrOfPlayers; i++) {
+        lobbyData.playersData.push(playerSettings);
+    }
+}
+
+setPlayersData();
 
 module.exports = { lobbyData };

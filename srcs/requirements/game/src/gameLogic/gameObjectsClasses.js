@@ -1,4 +1,5 @@
 // const settings = require('./lobbySettings');
+const vecs = require('./vectors');
 
 // Field class
 class Field {
@@ -11,10 +12,10 @@ class Field {
 // Player class
 class Player {
     constructor(lobbyData, i) {
-        this.login = lobbyData[i].login;
+        this.login = lobbyData.playersData[i].login + `_${i}`;
         this.ID = i;
-        this.accountID =lobbyData[i].accountID;
-        this.color = lobbyData[i].color;
+        this.accountID =lobbyData.playersData[i].accountID;
+        this.color = lobbyData.playersData[i].color;
         this.score = 0;
         this.paddle = new Paddle(lobbyData, i);
         // this.socket = playerSettings.socket;
@@ -23,34 +24,35 @@ class Player {
 
 // Paddle class
 class Paddle {
-    constructor(lobbyData) {
-		this.pos = new Vector(0, 0, 0);
-		this.dirToCenter = new Vector(0, 0, 0);
-        this.dirToTop = new Vector(0, 0, 0);
-        this.w = lobbyData.paddlesData.width;
-        this.h = lobbyData.paddlesData.height;
+    constructor(lobbyData, i) {
+		this.pos = new vecs.Vector(0, 0, 0);
+		this.dirToCenter = new vecs.Vector(0, 0, 0);
+        this.dirToTop = new vecs.Vector(0, 0, 0);
+        this.w = 1;
+        this.h = lobbyData.paddlesData.size;
         this.sp = lobbyData.paddlesData.speed;
-        this.col = lobbyData.paddlesData.color;
+        this.col = lobbyData.playersData[i].color;
     }
 }
 
 // Ball class
 class Ball {
     constructor(ballData) {
-        this.pos = new Vector(0, 0, 0);
-		this.dir = new Vector(0, 0, 0);
-        this.r = ballData.r;
-        this.sp = ballData.sp;
-        this.color = ballData.color;
+        this.pos = new vecs.Vector(0, 0, 0);
+		this.dir = new vecs.Vector(0, 0, 0);
+        this.r = ballData.radius;
+        this.sp = ballData.speed;
+        this.col = ballData.color;
     }
 }
 
 // Data class
 class Data {
     constructor(lobbyData) {
+        this.gamemode = lobbyData.gamemodeData;
         this.field = new Field(lobbyData.fieldData);
         this.players = [];
-        for (let i=0; i<lobbyData.nbrOfPlayers; i++) {
+        for (let i=0; i<lobbyData.gamemodeData.nbrOfPlayers; i++) {
             this.players.push(new Player(lobbyData, i));
         }
         this.ball = new Ball(lobbyData.ballData);

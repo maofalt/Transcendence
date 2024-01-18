@@ -7,8 +7,6 @@ const objectsClasses = require('./gameLogic/gameObjectsClasses');
 // const game = require('./gameLogic/gameLogic');
 const lobbySettings = require('./gameLogic/lobbySettings');
 
-let data = objects.data;
-
 const app = express();
 // const server = http.createServer(app);
 
@@ -122,16 +120,45 @@ function handleConnection(client) {
     console.log(`Number of connected clients: ${io.engine.clientsCount}`);
 }
 
-function displayData(data) {
+function displayPlayer(playerData) {
     console.log(`
-    data.field :
-        ${data.field.goalsSize},
-        ${data.field.wallsSize},
+        - login :                                           [ ${playerData.login} ]
+        - lobby ID (its position in the array of players) : [ ${playerData.ID} ]
+        - unique account ID :                               [ ${playerData.accountID} ]
+        - color :                                           [ ${playerData.color} ]
+        - paddle info :
+            - height :                                      [ ${playerData.paddle.h} ]
+            - speed :                                       [ ${playerData.paddle.sp} ]
+
     `);
 }
 
+function displayData(data) {
+    console.log(`
+Data :
+    - game mode data:
+        - nbr of players :  [ ${data.gamemode.nbrOfPlayers} ]
+        - nbr of rounds :   [ ${data.gamemode.nbrOfRounds} ]
+        - time limit :      [ ${data.gamemode.timeLimit} ]
+    
+    - field data :
+        - size of goals :                                   [ ${data.field.wallsSize} ]
+        - size of walls (ratio wall size over goal size) :  [ ${data.field.goalsSize} ]
+    
+    - ball infos :
+        - speed :   [ ${data.ball.sp} ]
+        - radius :  [ ${data.ball.r} ]
+        - color :   [ 0x${data.ball.col} ]
+
+    - players :
+    `);
+    for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
+        displayPlayer(data.players[i]);
+    }
+}
+
 function manageLobby(lobbyData) {
-    let data = new objects.Data(lobbyData);
+    let data = new objectsClasses.Data(lobbyData);
 
     displayData(data);
 }
