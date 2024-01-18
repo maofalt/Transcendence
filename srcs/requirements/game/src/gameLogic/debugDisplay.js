@@ -24,7 +24,7 @@ Data :
 
 ======== field data : ======================================================
 	- size of goals :.......................................[ ${data.field.wallsSize} ]
-	- size of walls (ratio wall size over goal size) :......[ ${data.field.goalsSize} ]
+	- size of walls :.......................................[ ${data.field.goalsSize} ]
 
 ======== camera data : =====================================================
 	- position :............................................[ ${data.camera.pos.x}, ${data.camera.pos.y}, ${data.camera.pos.z} ]

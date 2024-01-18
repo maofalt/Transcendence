@@ -25,6 +25,7 @@ class Player {
     constructor(lobbyData, i) {
         this.login = lobbyData.playersData[i].login + `_${i}`;
         this.ID = i;
+        this.socketID = -1;
         this.accountID =lobbyData.playersData[i].accountID;
         this.color = lobbyData.playersData[i].color;
         this.score = 0;
