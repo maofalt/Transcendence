@@ -7,9 +7,9 @@ from .models import User
 
 class UserAdmin(BaseUserAdmin):
 
-    list_display = ('username', 'intra_id', 'playername', 'is_online', 'avatar_tag', 'date_joined', 'last_login')
+    list_display = ('username', 'email', 'playername', 'is_online', 'avatar_tag', 'date_joined', 'last_login')
 
-    search_fields = ('username', 'intra_id', 'playername')
+    search_fields = ('username', 'playername')
 
     ordering = ('playername',)
 
@@ -17,7 +17,7 @@ class UserAdmin(BaseUserAdmin):
 
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
-        ('Personal Info', {'fields': ('email', 'intra_id', 'playername', 'avatar')}),
+        ('Personal Info', {'fields': ('email', 'playername', 'avatar')}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         ('Important dates', {'fields': ('last_login', 'date_joined')}),
     )
@@ -26,7 +26,7 @@ class UserAdmin(BaseUserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('username', 'email', 'password1', 'password2', 'playername', 'intra_id'),
+            'fields': ('username', 'email', 'password1', 'password2', 'playername'),
         }),
     )
 

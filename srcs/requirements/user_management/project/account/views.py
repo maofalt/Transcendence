@@ -18,11 +18,15 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import User
 from .serializers import UserSerializer, AnonymousUserSerializer
-
+from rest_framework_simplejwt.tokens import RefreshToken
 # Create your views here.
 
 def home(request):
     return render(request, 'home.html')
+
+def get_token_for_user(user):
+    refresh = RefreshToken.for_user(user)
+    return str(refresh.access_token)
 
 def api_login_view(request):
     print("\n\n       URL:", request.build_absolute_uri())
@@ -40,13 +44,23 @@ def api_login_view(request):
             # Output information about the authenticated user
             print("User Information:")
             print(f"Username: {request.user.username}")
-            print(f"Intra ID: {request.user.intra_id}")
+            # print(f"Intra ID: {request.user.email}")
             print(f"Playername: {request.user.playername}")
             print(f"Is Online: {user.is_online}")
             print(f"Date Joined: {user.date_joined}")
             serializer = UserSerializer(user)
             redirect_url = '/api/user_management/'
-            return JsonResponse({'message': 'Authentication successful', 'user': serializer.data, 'redirect_url': redirect_url})
+            
+            token = get_token_for_user(user)
+            response = JsonResponse({'message': 'Authentication successful', 'user': serializer.data, 'redirect_url': redirect_url})
+            response.set_cookie(
+                key='jwtToken',
+                value=token,
+                httponly=True,
+                samesite='Lax'
+            )
+            print("token: ", token)
+            return response
 
         else:
             print("Authentication failed")
@@ -86,7 +100,8 @@ def api_signup_view(request):
         username = request.POST["username"]
         password = request.POST["password"]
         playername = request.POST["playername"]
-        intra_id = request.POST["intra_id"]
+        email = request.POST["email"]
+        # email = request.POST["email"]
 
         try:
             validate_password(password, user=User(username=username))
@@ -95,9 +110,10 @@ def api_signup_view(request):
 
         user = User(
             username=username,
+            email=email,
             password=make_password(password),
             playername=playername,
-            intra_id=intra_id
+            # email=email
         )
 
         try:

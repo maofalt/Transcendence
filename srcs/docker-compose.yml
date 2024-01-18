@@ -133,6 +133,8 @@ services:
       dockerfile: Dockerfile
     networks:
       - transcendence
+    env_file:
+      - .env
     #ports:
     #  - 8034:8000
     labels:

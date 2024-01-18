@@ -10,7 +10,7 @@
     <p>No avatar available</p>
 {% endif %}
 </p>
-<p>Intra ID: {{ user.intra_id }}</p>
+<p>Email: {{ user.email }}</p>
 <p>Playername: {{ user.playername }}</p>
 
 <p>Friends: <a href="{% url 'account:friend' %}" style="text-decoration: underline; color: blue; font-size: 14px;">{{ user.friends.count }}</a></p>
