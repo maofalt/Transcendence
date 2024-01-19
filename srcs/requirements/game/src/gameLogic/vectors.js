@@ -65,3 +65,5 @@ class Vector {
 		return new Vector();
 	}
 }
+
+module.exports = { Vector };

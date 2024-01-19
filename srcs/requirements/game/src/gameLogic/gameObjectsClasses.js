@@ -1,4 +1,16 @@
 // const settings = require('./lobbySettings');
+const vecs = require('./vectors');
+
+class Camera {
+    constructor() {
+        this.pos = new vecs.Vector(0, 0, 50);   // this can change (even during the game) depending on the number
+                                                // of players and size of field
+
+        this.target = new vecs.Vector(0, 0, 0); // this is fixed
+        // The rotation of the camera will be determined by the cliend, according to the ID of the player.
+        // It will also depend on user preferences : vertical view or horizontal view;
+    }
+}
 
 // Field class
 class Field {
@@ -12,9 +24,9 @@ class Field {
 // Wall class
 class Wall {
     constructor(lobbyData) {
-        this.pos = new Vector(0, 0, 0);
-		this.dirToCenter = new Vector(0, 0, 0); // direction from the center of the object to the center of the field;
-        this.dirToTop = new Vector(0, 0, 0); // direction from the center of the object to the top side of the object
+        this.pos = new vecs.Vector(0, 0, 0);
+		this.dirToCenter = new vecs.Vector(0, 0, 0); // direction from the center of the object to the center of the field;
+        this.dirToTop = new vecs.Vector(0, 0, 0); // direction from the center of the object to the top side of the object
                                              // (perpendicular to dirToCenter, on the x,y plane); (*)
         this.w = lobbyData.paddlesData.width;
         this.h = lobbyData.paddlesData.height;
@@ -25,10 +37,11 @@ class Wall {
 // Player class
 class Player {
     constructor(lobbyData, i) {
-        this.login = lobbyData[i].login;
+        this.login = lobbyData.playersData[i].login + `_${i}`;
         this.ID = i;
-        this.accountID =lobbyData[i].accountID;
-        this.color = lobbyData[i].color;
+        this.socketID = -1;
+        this.accountID =lobbyData.playersData[i].accountID;
+        this.color = lobbyData.playersData[i].color;
         this.score = 0;
         this.paddle = new Paddle(lobbyData, i);
         // this.socket = playerSettings.socket;
@@ -37,22 +50,22 @@ class Player {
 
 // Paddle class
 class Paddle {
-    constructor(lobbyData) {
-		this.pos = new Vector(0, 0, 0);
-		this.dirToCenter = new Vector(0, 0, 0); // dirToCenter and dirToTop = same def as in Wall Class (*)
-        this.dirToTop = new Vector(0, 0, 0);
-        this.w = lobbyData.paddlesData.width;
-        this.h = lobbyData.paddlesData.height;
+    constructor(lobbyData, i) {
+		this.pos = new vecs.Vector(0, 0, 0);
+		this.dirToCenter = new vecs.Vector(0, 0, 0); // dirToCenter and dirToTop = same def as in Wall Class (*)
+        this.dirToTop = new vecs.Vector(0, 0, 0);
+        this.w = 1;
+        this.h = lobbyData.paddlesData.size;
         this.sp = lobbyData.paddlesData.speed;
-        this.col = lobbyData.paddlesData.color;
+        this.col = lobbyData.playersData[i].color;
     }
 }
 
 // Ball class
 class Ball {
     constructor(ballData) {
-        this.pos = new Vector(0, 0, 0);
-		this.dir = new Vector(0, 0, 0); // dir in which the ball is moving (*)
+        this.pos = new vecs.Vector(0, 0, 0);
+		this.dir = new vecs.Vector(0, 0, 0); // direction in which the ball is moving
         this.r = ballData.r;
         this.sp = ballData.sp;
         this.color = ballData.color;
@@ -70,13 +83,17 @@ class Ball {
 // Data class
 class Data {
     constructor(lobbyData) {
-        // create field + ball objects
+        // get the gamemode info from the lobby data;
+        this.gamemode = lobbyData.gamemodeData;
+
+        // create camera + field + ball objects
+        this.camera = new Camera();
         this.field = new Field(lobbyData.fieldData);
         this.ball = new Ball(lobbyData.ballData);
 
         // create and fill the array of players
         this.players = [];
-        for (let i=0; i<lobbyData.nbrOfPlayers; i++) {
+        for (let i=0; i<lobbyData.gamemodeData.nbrOfPlayers; i++) {
             this.players.push(new Player(lobbyData, i));
         }
 

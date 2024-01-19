@@ -6,8 +6,8 @@ const socketIo = require('socket.io');
 const objectsClasses = require('./gameLogic/gameObjectsClasses');
 // const game = require('./gameLogic/gameLogic');
 const lobbySettings = require('./gameLogic/lobbySettings');
-
-let data = objects.data;
+const debugDisp = require('./gameLogic/debugDisplay');
+const init = require('./gameLogic/init');
 
 const app = express();
 // const server = http.createServer(app);
@@ -73,14 +73,26 @@ server.listen(expressPort, () => {
             - unique account ID;
             - color;
             
-    at the start of the game we will have to :
+    at the creation of the lobby we will have to :
         - create all the objects and
         - setup the whole game data according to the lobby info;
         - fill the remaining variables with default ones;
+        - set up each player position  :
+        - calculate each position according to the size of goals/walls + nbr of remaining players;
+
+    we will have to then wait for the start of the game :
+        - lobby waiting loop : should have a time limit, at which the room time outs and the game is canceled,
+        OR one winner is determined if its in a tournament = the player who was connected wins;
+        - in the waiting loop :
+            - the field is complete and displayed, according to the expected nbrOfPlayers + field dimensions;
+            - the players connected can see themselves and each other and move;
+            - the players who are not connected yet dont appear, or appear faded;
+            - BONUS : the ball is launched from the center like in a game ?
+
     at the start of each round we will have to :
-        - if (gamemode == battleroyale) set up each player position  :
-            - calculate each position according to the size of goals/walls + nbr of remaining players;
-            - set their positions to the calculated ones;
+        - set up each player position  :
+        - calculate each position according to the size of goals/walls + nbr of remaining players;
+        - set their positions to the calculated ones;
         - put the ball back to the center;
         - put the speeds back to default ones;
 
@@ -107,36 +119,22 @@ let gameInterval = 0;
 
 // const lobbyData = lobbySettings.lobbyData;
 
-function setPlayerStatus(client) {
-    lobbyData.players[io.engine.clientsCount - 1] = client.id;
-}
+// function setPlayerStatus(client) {
+//     lobbyData.players[io.engine.clientsCount - 1] = client.id;
+// }
 
 function handleConnection(client) {
 
     console.log("CLIENT CONNECTED");
     client.join("gameRoom");
 
-    setPlayerStatus(client);
+    // setPlayerStatus(client);
 
     console.log(`Client connected with ID: ${client.id}`);
     console.log(`Number of connected clients: ${io.engine.clientsCount}`);
 }
 
-function displayData(data) {
-    console.log(`
-    data.field :
-        ${data.field.goalsSize},
-        ${data.field.wallsSize},
-    `);
-}
-
-function manageLobby(lobbyData) {
-    let data = new objects.Data(lobbyData);
-
-    displayData(data);
-}
-
-manageLobby(lobbySettings.lobbyData);
+init.initLobby(lobbySettings.lobbyData);
 
 // Set up Socket.IO event handlers
 io.on('connection', (client) => {

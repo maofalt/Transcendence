@@ -2,8 +2,8 @@ const express = require('express');
 const http = require('http');
 // const fs = require('fs');
 const socketIo = require('socket.io');
-const objects = require('./gameLogic/gameObjects');
-const game = require('./gameLogic/gameLogic');
+const objects = require('./gameLogic/DEPREC_gameObjects');
+const game = require('./gameLogic/DEPREC_gameLogic');
 
 let data = objects.data;
 
