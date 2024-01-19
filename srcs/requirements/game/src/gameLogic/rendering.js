@@ -3,7 +3,7 @@ function updatePaddles(data) {
 
     for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
         currPaddle = data.players[i].paddle;
-        currPaddle.pos.add = currPaddle.pos.add(currPaddle.dir.scale(currPaddle.sp));
+        currPaddle.pos = currPaddle.pos.add(currPaddle.dirToTop.scale(currPaddle.sp));
     }
 }
 
@@ -16,9 +16,4 @@ function updateData(data) {
     updateBall(data);
 }
 
-function waitingLoop(data, io) {
-    updateData(data);
-    io.to("gameRoom").emit('render', data);
-}
-
-module.exports = { waitingLoop };
+module.exports = { updateData };

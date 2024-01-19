@@ -62,7 +62,13 @@ server.listen(expressPort, () => {
 // global vars
 let gameInterval = 0;
 
-render.waitingLoop(data, io);
+function waitingLoop() {
+    render.updateData(data);
+    io.to("gameRoom").emit('render', data);
+    console.log("sending render");
+}
+
+gameInterval = setInterval(waitingLoop, 20);
 
 //====================================== SOCKET HANDLING ======================================//
 
@@ -116,7 +122,10 @@ io.on('connection', (client) => {
     // disconnect event
     client.on('disconnect', () => {
         client.leave("gameRoom");
-        data.players[io.engine.clientsCount - 1].connected = false;
+        for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
+            if (data.players[i].socketID = client.id)
+                data.players[i].connected = false;
+        }
         // data.gamemode.nbrOfPlayers--; ?
         if (gameInterval)
             clearInterval(gameInterval);

@@ -13,7 +13,9 @@ const RemoteGame = () => {
 	let renderer, controls, scene;
 
 	// meshes
-	let ball, paddle1, paddle2, wall1, wall2, field;
+	let ball;
+	let paddles = [];
+	let walls = [];
 
 	// lights & camera
 	let camera, ambientLight, directionalLight;
@@ -35,54 +37,39 @@ const RemoteGame = () => {
 
 	function generateBall(data) {
 		const ballGeometry = new THREE.SphereGeometry(data.ball.r, 24, 12);
-		const ballMaterial = new THREE.MeshPhongMaterial({ color: data.ball.color, transparent: false, opacity: 1 });
+		const ballMaterial = new THREE.MeshPhongMaterial({ color: data.ball.col, transparent: false, opacity: 1 });
 
 		ball = new THREE.Mesh(ballGeometry, ballMaterial);
 		
 		// add to scene
 		scene.add(ball);
+
+		ball.position.set(data.ball.pos.x, data.ball.pos.y, data.ball.pos.z);
 	}
 
 	function generateWalls(data) {
-		const wallGeometry = new THREE.BoxGeometry(data.field.width, data.paddle1.width, 2);
-		const wallMaterial1 = new THREE.MeshPhongMaterial({ color: data.ball.color, transparent: true, opacity: 1, reflectivity: 0.5 });
-		const wallMaterial2 = new THREE.MeshPhongMaterial({ color: data.ball.color, transparent: true, opacity: 1, reflectivity: 0.5 });
+		const wallGeometry = new THREE.BoxGeometry(data.field.wallsSize, 1, 2);
+		const wallMaterial = new THREE.MeshPhongMaterial({ color: data.ball.col, transparent: true, opacity: 1, reflectivity: 0.5 });
 
-		wall1 = new THREE.Mesh(wallGeometry, wallMaterial1);
-		wall2 = new THREE.Mesh(wallGeometry, wallMaterial2);
-
-		// add to scene
-		scene.add(wall1);
-		scene.add(wall2);
-		wall1.position.set(0, data.field.height / 2 + data.paddle1.width / 2, 0);
-		wall2.position.set(0, -data.field.height / 2 - data.paddle1.width / 2, 0);
-	}
-
-	function generateField(data) {
-		const fieldGeometry = new THREE.BoxGeometry(data.field.width, data.field.height, 1);
-		const fieldMaterial = new THREE.MeshPhongMaterial({ color: data.ball.color, transparent: true, opacity: 0.1, reflectivity: 0.5 });
-
-		field = new THREE.Mesh(fieldGeometry, fieldMaterial);
-
-		scene.add(field);
-		field.position.set(0, 0, -1.5);
+		for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
+			walls[i] = new THREE.Mesh(wallGeometry, wallMaterial); // create Material
+			scene.add(walls[i]); // add mesh to the scene
+			walls[i].position.set(data.field.walls[i].pos.x, data.field.walls[i].pos.y, 0); // set the position
+		}
 	}
 
 	function generatePaddles(data) {
-		// const paddleMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff,  });
-		const paddleGeometry = new THREE.BoxGeometry(data.paddle1.width, data.paddle1.height, 2);
-		const paddleMaterial1 = new THREE.MeshPhongMaterial({ color: data.paddle1.color, transparent: true, opacity: 1, reflectivity: 0.5 });
-		const paddleMaterial2 = new THREE.MeshPhongMaterial({ color: data.paddle2.color, transparent: true, opacity: 1, reflectivity: 0.5 });
+		const paddleGeometry = new THREE.BoxGeometry(data.players[0].paddle.h, 1, 2);
+		const paddleMaterial = new THREE.MeshPhongMaterial({ color: data.players[0].paddle.col, transparent: true, opacity: 1, reflectivity: 0.5 });
 
-		paddle1 = new THREE.Mesh(paddleGeometry, paddleMaterial1);
-		paddle2 = new THREE.Mesh(paddleGeometry, paddleMaterial2);
-
-		// add to scene
-		scene.add(paddle1);
-		scene.add(paddle2);
+		for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
+			paddles[i] = new THREE.Mesh(paddleGeometry, paddleMaterial); // create Material
+			scene.add(paddles[i]); // add mesh to the scene
+			paddles[i].position.set(data.players[i].paddle.pos.x, data.players[i].paddle.pos.y, 0); // set the position
+		}
 	}
 
-	function generateLights(data){
+	function generateLights(){
 		directionalLight = new THREE.DirectionalLight(0xffffff, 1);
 		directionalLight.position.set(0, 1, 1);
 
@@ -121,12 +108,12 @@ const RemoteGame = () => {
 		camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 		renderer = new THREE.WebGLRenderer();
 
-		camera.position.set(0, 0, 40);
-		camera.lookAt(new THREE.Vector3(0, 0, 0));
+		camera.position.set(data.camera.pos.x, data.camera.pos.y, data.camera.pos.z);
+		camera.lookAt(new THREE.Vector3(data.camera.target.x, data.camera.target.y, data.camera.target.z));
 		// camera.rotation.set(0, 0, Math.PI / 2);
-		camera.rotation.set(0, 0, Math.PI);
-		if (clientId == 2)
-			camera.rotation.set(0, 0, Math.PI);
+		// camera.rotation.set(0, 0, Math.PI);
+		// if (clientId == 2)
+			// camera.rotation.set(0, 0, Math.PI);
 		
 		renderer.setSize(window.innerWidth, window.innerHeight);
 		containerRef.current.appendChild(renderer.domElement);
@@ -138,9 +125,9 @@ const RemoteGame = () => {
 		generateBall(data);
 		generatePaddles(data);
 		generateWalls(data);
-		generateField(data);
+		// generateField(data);
 		generateLights(data);
-		generateSkyBox(data);
+		// generateSkyBox(data);
 		drawAxes();
 
 		// render scene
@@ -148,10 +135,11 @@ const RemoteGame = () => {
 	};
 
 	function updateScene(data) {
-		// console.log("Updating Scene...");
-		ball.position.set(data.ball.x, data.ball.y, 0);
-		paddle1.position.set(data.paddle1.x, data.paddle1.y, 0);
-		paddle2.position.set(data.paddle2.x, data.paddle2.y, 0);
+		console.log("Updating Scene...");
+		ball.position.set(data.ball.pos.x, data.ball.pos.y, 0);
+		for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
+			paddles[i].position.set(data.players[i].paddle.pos.x, data.players[i].paddle.pos.y, data.players[i].paddle.pos.z);
+		}
 	}
 
 	useEffect(() => {
