@@ -14,21 +14,22 @@ const   fieldSettings = {
 }
 
 const paddlesSettings = {
+    width: 1,
+    height: 10,
     speed: 2,
-    size: 10,
 }
 
 const ballSettings = {
     speed: 4,
     radius: 2,
-    color: "ffffff",
+    color: "0xffffff",
 }
 
 const playerSettings = {
     login: "player",
     ID: 0,
     accountID: 0,
-    color: "0000ff",
+    color: "0x0000ff",
 }
 
 const lobbyData = {

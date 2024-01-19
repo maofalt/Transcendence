@@ -54,8 +54,8 @@ class Paddle {
 		this.pos = new vecs.Vector(0, 0, 0);
 		this.dirToCenter = new vecs.Vector(0, 0, 0); // dirToCenter and dirToTop = same def as in Wall Class (*)
         this.dirToTop = new vecs.Vector(0, 0, 0);
-        this.w = 1;
-        this.h = lobbyData.paddlesData.size;
+        this.w = lobbyData.paddlesData.width;
+        this.h = lobbyData.paddlesData.height;
         this.sp = lobbyData.paddlesData.speed;
         this.col = lobbyData.playersData[i].color;
     }
@@ -66,9 +66,9 @@ class Ball {
     constructor(ballData) {
         this.pos = new vecs.Vector(0, 0, 0);
 		this.dir = new vecs.Vector(0, 0, 0); // direction in which the ball is moving
-        this.r = ballData.r;
-        this.sp = ballData.sp;
-        this.color = ballData.color;
+        this.r = ballData.radius;
+        this.sp = ballData.speed;
+        this.col = ballData.color;
     }
 }
 
@@ -98,7 +98,7 @@ class Data {
         }
 
         // create walls & fill the array of walls
-        for (let i=0; i<lobbyData.nbrOfPlayers; i++) {
+        for (let i=0; i<lobbyData.gamemodeData.nbrOfPlayers; i++) {
             this.field.walls.push(new Wall(lobbyData));
         }
     }

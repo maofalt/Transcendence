@@ -134,7 +134,7 @@ function handleConnection(client) {
     console.log(`Number of connected clients: ${io.engine.clientsCount}`);
 }
 
-init.initLobby(lobbySettings.lobbyData);
+const data = init.initLobby(lobbySettings.lobbyData);
 
 // Set up Socket.IO event handlers
 io.on('connection', (client) => {

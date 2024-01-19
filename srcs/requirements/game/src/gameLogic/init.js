@@ -13,13 +13,13 @@ function initFieldShape(data) {
     let startingAngle = -Math.PI/2;
 
     for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
-        if (i == 0) {
-            data.players[i].paddle.pos.x = 0;
-            data.players[i].paddle.pos.y = -goalDist + 2;
-        } else {
-            data.players[i].paddle.pos.x = (goalDist - data.players[i].paddle.w * 2) * Math.cos(startingAngle + angle * i);
-            data.players[i].paddle.pos.y = (goalDist - data.players[i].paddle.w * 2) * Math.sin(startingAngle + angle * i);
-        }
+        // setting up the players positions
+        data.players[i].paddle.pos.x = (goalDist - data.players[i].paddle.w * 2) * Math.cos(startingAngle + angle * i);
+        data.players[i].paddle.pos.y = (goalDist - data.players[i].paddle.w * 2) * Math.sin(startingAngle + angle * i);
+
+        // setting up the walls positions
+        data.field.walls[i].pos.x = wallDist * Math.cos(startingAngle + angle / 2 + angle * i);
+        data.field.walls[i].pos.y = wallDist * Math.sin(startingAngle + angle / 2 + angle * i);
     }
 }
 
@@ -34,6 +34,8 @@ function initLobby(lobbyData) {
     // init camera pos according to those;
     // 
     debugDisp.displayData(data);
+
+    return data;
 }
 
 module.exports = { initLobby };
