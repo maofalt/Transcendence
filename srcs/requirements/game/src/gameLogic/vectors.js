@@ -28,11 +28,19 @@ class Vector {
 	}
 
 	// subtract a vector from another
+	// (I thought I was smart by first implementing this as "add the vector scaled by -1"
+	// and saving lines, but this would require a lot more calculations compared to
+	// just writing this - other for each component.
+	// This comment was useless but I'm having fun)
 	sub(otherVector) {
-		return this.add(otherVector.scale(-1));
+		return new Vector(
+			this.x - otherVector.x,
+			this.y - otherVector.y,
+			this.z - otherVector.z
+		);
 	}
 
-	// scale vector by a factor
+	// scales vector by a factor
 	scale(scaler) {
 		return new Vector(
 			this.x *= scaler,
@@ -41,12 +49,14 @@ class Vector {
 		);
 	}
 
-	// get the direction towards a point
-	getDirTo(point) {
+	// get the direction from a point to this vector/point 
+	// (this is trash af yes but my way of making it the other way around was less
+	// efficient and I'm lazy I'll think about it later)
+	getDirFrom(point) {
 		return this.sub(point).normalize();
 	}
 
-	// calculate distance from a point
+	// calculate distance from a point to this vec/point
 	getDistFrom(point) {
 		return this.sub(point).magnitude();
 	}

@@ -23,13 +23,13 @@ class Field {
 
 // Wall class
 class Wall {
-    constructor(lobbyData) {
+    constructor(lobbyData, wallSize) {
         this.pos = new vecs.Vector(0, 0, 0);
 		this.dirToCenter = new vecs.Vector(0, 0, 0); // direction from the center of the object to the center of the field;
         this.dirToTop = new vecs.Vector(0, 0, 0); // direction from the center of the object to the top side of the object
                                              // (perpendicular to dirToCenter, on the x,y plane); (*)
         this.w = lobbyData.paddlesData.width;
-        this.h = lobbyData.paddlesData.height;
+        this.h = wallSize;
         this.col = "0xffffff";
     }
 }
@@ -102,7 +102,7 @@ class Data {
 
         // create walls & fill the array of walls
         for (let i=0; i<lobbyData.gamemodeData.nbrOfPlayers; i++) {
-            this.field.walls.push(new Wall(lobbyData));
+            this.field.walls.push(new Wall(lobbyData, this.field.wallsSize));
         }
     }
 }

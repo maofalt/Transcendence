@@ -16,7 +16,7 @@ function initLoop(data, wallDist, goalDist, angle) {
         data.players[i].paddle.pos.y = (goalDist - data.players[i].paddle.w * 2) * Math.sin(currAngle);
         
         // setup the players paddles vectors :
-        data.players[i].paddle.dirToCenter = data.players[i].paddle.pos.getDirTo(center);
+        data.players[i].paddle.dirToCenter = center.getDirFrom(data.players[i].paddle.pos);
         // data.players[i].paddle.dirToCenter = something; // need to add the other direction vector but will check out best formula for this
 
         /*--------------------------------------------------------------------------------------------*/
@@ -28,7 +28,7 @@ function initLoop(data, wallDist, goalDist, angle) {
         data.field.walls[i].pos.y = wallDist * Math.sin(currAngle);
 
         // set up the walls vectors
-        data.field.walls[i].dirToCenter = data.field.walls[i].pos.getDirTo(center);
+        data.field.walls[i].dirToCenter = center.getDirFrom(data.field.walls[i].pos);
         // data.players[i].paddle.dirToCenter = something; // need to add the other direction vector but will check out best formula for this
     }
 }
@@ -50,9 +50,7 @@ function initLobby(lobbyData) {
     let data = new objectsClasses.Data(lobbyData);
 
     debugDisp.displayData(data); // display the game data
-
     initFieldShape(data); // init angles + positions of players and walls;
-
     debugDisp.displayData(data); // display the game data
 
     return data;
