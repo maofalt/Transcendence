@@ -1,10 +1,12 @@
 function displayPlayer(playerData) {
     console.log(`
 	--------------------------------------------------------------------
-	- login :...............................................[ ${playerData.login} ]
-	- lobby ID (its position in the array of players) :.....[ ${playerData.ID} ]
 	- unique account ID :...................................[ ${playerData.accountID} ]
+	- socket ID :...........................................[ ${playerData.socketID} ]
+	- lobby ID (its position in the array of players) :.....[ ${playerData.ID} ]
+	- login :...............................................[ ${playerData.login} ]
 	- color :...............................................[ ${playerData.color} ]
+	- score :...............................................[ ${playerData.score} ]
 	- paddle info :
 		- position :....................................[ ${playerData.paddle.pos.x}, ${playerData.paddle.pos.y}, ${playerData.paddle.pos.z} ]
 		- dir to center :...............................[ ${playerData.paddle.dirToCenter.x}, ${playerData.paddle.dirToCenter.y}, ${playerData.paddle.dirToCenter.z} ]

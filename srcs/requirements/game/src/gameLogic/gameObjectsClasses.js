@@ -7,8 +7,20 @@ class Camera {
                                                 // of players and size of field
 
         this.target = new vecs.Vector(0, 0, 0); // this is fixed
-        // The rotation of the camera will be determined by the cliend, according to the ID of the player.
+        // The rotation of the camera will be determined by the client, according to the ID of the player.
         // It will also depend on user preferences : vertical view or horizontal view;
+    }
+}
+
+// Gamemode class
+class GameMode {
+    constructor(gamemodeData) {
+        this.nbrOfPlayers = gamemodeData.nbrOfPlayers;
+        this.nbrOfRounds = gamemodeData.nbrOfRounds; // nbr of points needed to win
+        this.timeLimit = gamemodeData.timeLimit; // in minutes. gamemode needs either a nbr of rounds or a time limit. if not, the game will be
+                                                // infinite and therefore the setup is invalid;
+                                                // also nice to have an internal maximum for the duration of a game in case one lobby stays on
+                                                // so we can find a way to kill it;
     }
 }
 
@@ -37,14 +49,14 @@ class Wall {
 // Player class
 class Player {
     constructor(lobbyData, i) {
-        this.login = lobbyData.playersData[i].login + `_${i}`;
-        this.ID = i;
-        this.socketID = -1;
-        this.accountID =lobbyData.playersData[i].accountID;
+        this.accountID =lobbyData.playersData[i].accountID; // unique ID of the user account
+        this.socketID = -1; // ID of the client/server socket
+        this.ID = i; // position in the array of players in the lobby
+        this.login = lobbyData.playersData[i].login + `_${i}`; // user login
+        this.connected = false; // connection status
+        this.paddle = new Paddle(lobbyData, i); // creating paddle object for this player
         this.color = lobbyData.playersData[i].color;
         this.score = 0;
-        this.paddle = new Paddle(lobbyData, i);
-        // this.socket = playerSettings.socket;
     }
 }
 
@@ -53,7 +65,7 @@ class Paddle {
     constructor(lobbyData, i) {
 		this.pos = new vecs.Vector(0, 0, 0);
 		this.dirToCenter = new vecs.Vector(0, 0, 0); // dirToCenter and dirToTop = same def as in Wall Class (*)
-        this.dirToTop = new vecs.Vector(0, 0, 0);
+        this.dirToTop = new vecs.Vector(1, 0, 0);
         this.w = lobbyData.paddlesData.width;
         this.h = lobbyData.paddlesData.height;
         this.sp = lobbyData.paddlesData.speed;
@@ -87,7 +99,7 @@ class Ball {
 class Data {
     constructor(lobbyData) {
         // get the gamemode info from the lobby data;
-        this.gamemode = lobbyData.gamemodeData;
+        this.gamemode = new GameMode(lobbyData.gamemodeData);
 
         // create camera + field + ball objects
         this.camera = new Camera();
