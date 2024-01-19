@@ -87,6 +87,8 @@ function handleConnection(client) {
     console.log(`Client connected with ID: ${client.id}`);
     console.log(`Number of connected clients: ${io.engine.clientsCount}`);
 
+    client.emit('generate', data);
+
     debugDisp.displayData(data);
 }
 
