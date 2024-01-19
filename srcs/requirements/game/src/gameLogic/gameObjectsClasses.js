@@ -66,6 +66,9 @@ class Ball {
     constructor(ballData) {
         this.pos = new vecs.Vector(0, 0, 0);
 		this.dir = new vecs.Vector(0, 0, 0); // direction in which the ball is moving
+        this.lastHit = -1; // ID of the last player who hit the ball
+                           // Will be useful in gamemodes with more than 2 players where we want to give points to
+                           // the right player.
         this.r = ballData.radius;
         this.sp = ballData.speed;
         this.col = ballData.color;
