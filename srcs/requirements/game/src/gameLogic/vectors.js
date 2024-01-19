@@ -27,6 +27,11 @@ class Vector {
 		);
 	}
 
+	// subtract a vector from another
+	sub(otherVector) {
+		return this.add(otherVector.scale(-1));
+	}
+
 	// scale vector by a factor
 	scale(scaler) {
 		return new Vector(
@@ -34,6 +39,16 @@ class Vector {
 			this.y *= scaler,
 			this.z *= scaler
 		);
+	}
+
+	// get the direction towards a point
+	getDirTo(point) {
+		return this.sub(point).normalize();
+	}
+
+	// calculate distance from a point
+	getDistFrom(point) {
+		return this.sub(point).magnitude();
 	}
 
 	// normalize vector

@@ -24,20 +24,18 @@ const ballSettings = {
 }
 
 const playerSettings = {
-    login: "bob",
+    login: "player",
     ID: 0,
     accountID: 0,
     color: "0000ff",
 }
-
-let playersArr = [];
 
 const lobbyData = {
     gamemodeData: gamemodeSettings,
     fieldData: fieldSettings,
     paddlesData: paddlesSettings,
     ballData: ballSettings,
-    players: playersArr,
+    players: [],
 }
 
 module.exports = { lobbyData };
