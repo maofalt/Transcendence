@@ -1,5 +1,5 @@
 # Dockerfile for Node.js
-FROM node:19-bullseye-slim
+FROM node:20-bullseye-slim
 
 RUN apt-get update && apt-get install -y tini openssl
 
@@ -8,7 +8,7 @@ RUN which tini
 WORKDIR /app
 
 # Installer les dépendances du projet
-# COPY package*.json .
+
 COPY package*.json ./
 RUN npm install
 

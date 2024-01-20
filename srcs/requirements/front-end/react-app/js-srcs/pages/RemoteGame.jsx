@@ -187,6 +187,7 @@ const RemoteGame = () => {
 		const protocol = 'wss';
 		const io_url = hostname.includes("github.dev") ? `${protocol}://${hostname}` : `${protocol}://${hostname}:9443`;
 		// `${protocol}://${hostname}`
+		console.log(`Connecting to ${io_url}`)
 		const socket = io(`${io_url}`, {
 			path: '/game-logic/socket.io',
 			secure: hostname !== 'localhost',

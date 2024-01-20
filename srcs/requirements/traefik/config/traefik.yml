@@ -64,9 +64,9 @@ http:
       tls:
         certResolver: "myresolver"
 #GAMR FRONT END FOR DEVELOPMENT USING NODE.JS
-    reactDev:
+    jsDev:
       rule: "Host(`localhost`)"
-      service: "reactDevService"
+      service: "jsDevService"
       entryPoints:
         - "websecure"
       tls:
@@ -77,6 +77,14 @@ http:
       entryPoints: ["websecure"]
       middlewares: ["strip-game-logic"]
       service: "game"
+      tls:
+        certResolver: "myresolver"
+#USER_MANAGEMENT
+    user_management:
+      rule: "Host(`localhost`) && PathPrefix(`/api/user_management`)"
+      entryPoints: ["websecure"]
+      middlewares: ["user_management-headers"]
+      service: "user_management"
       tls:
         certResolver: "myresolver"
 #TOURNAMENT
@@ -129,15 +137,20 @@ http:
         servers:
           - url: "http://front-end:80"
 
-    reactDevService:
+    jsDevService:
       loadBalancer:
         servers:
-          - url: "http://react-dev:8033"
+          - url: "http://js-dev:8033"
 
     game:
       loadBalancer:
         servers:
           - url: "http://game:3000"
+
+    user_management:
+      loadBalancer:
+        servers:
+          - url: "http://user_management:8000"
 
     tournament:
       loadBalancer:
@@ -155,6 +168,11 @@ http:
           customRequestHeaders:
             Connection: "upgrade"
             Upgrade: "websocket"
+    
+    user_management-headers:
+      headers:
+        customResponseHeaders:
+          X-Forwarded-Prefix: "/api/user_management"
 #stripPrefix is used to remove the /game-logic from the request
     strip-game-logic:
       stripPrefix:

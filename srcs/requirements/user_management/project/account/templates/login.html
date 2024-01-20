@@ -1,0 +1,114 @@
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+
+<div id="loginPopup" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); z-index: 9999; width: 300px;">
+  <span style="float: right; cursor: pointer;" onclick="closeLoginPopup()">&times;</span>
+  <h2>LOG IN</h2>
+
+  <a>
+  <div id="errorMessage" style="color: red;"></div> <!-- This is where the error message will be displayed -->
+
+  <form id="loginForm" action="" method="POST" onsubmit="submitLoginForm(); return false;">
+    {% csrf_token %}
+    <input name="username" type="text">
+    <input name="password" type="password">
+    <input type="submit" value="Login">
+  </form>
+
+  <div id="oneTimeCodeSection" style="display: none;">
+    <input name="one_time_code" type="text" placeholder="One-Time Code">
+    <button onclick="submitOneTimeCode()">Submit Code</button>
+  </div>
+
+  <a href="#" id="signupLink">Sign up</a>
+  {% include 'signup.html' %}
+
+
+<script>
+  $(document).ready(function () {
+    var signupClicked = false;
+
+    $("#signupLink").click(function (event) {
+        event.stopPropagation()
+        signupClicked = true;
+
+        console.log('close login popup');
+        $("#darkLayer").fadeIn();
+        console.log('opacity applied');
+        $("#signupPopup").fadeIn();
+        console.log('fade in signup popup\n\n');
+    });
+    $("#loginLink").click(function () {
+    console.log('log in link clicked');
+    if (!signupClicked) {
+      $("#darkLayer").fadeIn();
+      console.log('opacity applied');
+      $("#loginPopup").fadeIn();
+      console.log('fade in login popup\n\n');
+    }
+    signupClicked = false; // Reset the flag after handling the click
+  });
+});
+
+  function closeLoginPopup() {
+      $("#darkLayer").fadeOut();
+      $("#loginPopup").fadeOut();
+      console.log('closeLoginPopup() called\n\n');
+    }
+
+    function closeSignupPopup() {
+    // $("#darkLayer").fadeOut();
+    $("#signupPopup").fadeOut();
+    console.log('closeSignupPopup() called\n\n');
+  }
+  function submitLoginForm() {
+    $.ajax({
+        url: '{% url "account:login" %}',
+        type: 'POST',
+        data: $('#loginForm').serialize(),
+        headers: { "X-CSRFToken": "{{ csrf_token }}" },
+        success: function (data) {
+          console.log('Login successful:', data);
+          // closeLoginPopup();
+          // window.location.href = '';
+          $('#loginForm').hide();
+          $('#oneTimeCodeSection').show();
+
+        },
+        error: function (xhr, textStatus, errorThrown) {
+            console.log('An error occurred while processing your request.');
+            var response = JSON.parse(xhr.responseText);
+            if (response && response.error) {
+                displayErrorMessage(response.error);
+            }
+            else {
+                displayErrorMessage('An error occurred while processing your request.');
+            }
+        }  
+    });
+  }
+  function submitOneTimeCode() {
+    var oneTimeCode = $('input[name="one_time_code"]').val();
+    var csrfToken = $('[name="csrfmiddlewaretoken"]').val();
+    console.log('submitOneTimeCode submit');
+    $.ajax({
+      url: '{% url "account:verify_one_time_code" %}',
+      type: 'POST',
+      data: { 'one_time_code': oneTimeCode },
+      headers: { "X-CSRFToken": csrfToken },
+      success: function (data) {
+        console.log('One-time code verification successful:', data);
+      },
+      error: function (xhr, textStatus, errorThrown) {
+        console.log('One-time code verification failed.');
+      }
+    });
+  }
+  
+
+  function displayErrorMessage(message) {
+    // Assuming you have an element with the id "errorMessage" to display the error message
+    $('#errorMessage').text(message).css('color', 'red');
+}
+</script>
