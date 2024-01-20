@@ -64,8 +64,11 @@ def api_login_view(request):
             try:
                 decoded_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
                 print("Decoded Token:", decoded_token)
-            return response
-
+                return response
+            except jwt.ExpiredSignatureError:
+                return JsonResponse({'error': 'Token has expired'}, status=400)
+            except jwt.InvalidTokenError:
+                return JsonResponse({'error': 'Invalid token'}, status=400)
         else:
             print("Authentication failed")
             return JsonResponse({'error': 'Authentication failed: Wrong user data'}, status=400)

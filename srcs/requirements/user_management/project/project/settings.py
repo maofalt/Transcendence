@@ -31,10 +31,10 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-q(kyo2-+=u8uat
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
-# ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'yourdomain.com', 'https://localhost:9443']
+# ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'yourdomain.com', 'https://localhost:9443']
 
-CSRF_TRUSTED_ORIGINS = ['https://localhost:9443']
+CSRF_TRUSTED_ORIGINS = ['https://localhost:9443', 'http://localhost:8000']
 
 
 # Application definition
