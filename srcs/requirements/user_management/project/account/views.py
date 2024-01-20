@@ -19,6 +19,7 @@ from rest_framework import status
 from .models import User
 from .serializers import UserSerializer, AnonymousUserSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
+import jwt
 # Create your views here.
 
 def home(request):
@@ -60,6 +61,9 @@ def api_login_view(request):
                 samesite='Lax'
             )
             print("token: ", token)
+            try:
+                decoded_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+                print("Decoded Token:", decoded_token)
             return response
 
         else:

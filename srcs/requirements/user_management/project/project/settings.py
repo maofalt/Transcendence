@@ -32,6 +32,9 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-q(kyo2-+=u8uat
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
+# ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'yourdomain.com', 'https://localhost:9443']
+
+CSRF_TRUSTED_ORIGINS = ['https://localhost:9443']
 
 
 # Application definition
@@ -45,6 +48,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'account',
     'rest_framework',
+    'corsheaders',
     'gameHistory_microservice',
     'gameHistory_microservice.api',
 ]
@@ -54,11 +58,16 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'project.middleware.PathPrefixMiddleware',
 
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "https://localhost:9443",
 ]
 
 REST_FRAMWORK = {
