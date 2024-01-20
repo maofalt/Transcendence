@@ -42,7 +42,7 @@ class Wall {
                                              // (perpendicular to dirToCenter, on the x,y plane); (*)
         this.w = lobbyData.paddlesData.width;
         this.h = wallSize;
-        this.col = "0xffffff";
+        this.col = 0xffffff;
     }
 }
 
@@ -64,6 +64,7 @@ class Player {
 class Paddle {
     constructor(lobbyData, i) {
 		this.pos = new vecs.Vector(0, 0, 0);
+        this.dir = new vecs.Vector(0, 0, 0);
 		this.dirToCenter = new vecs.Vector(0, 0, 0); // dirToCenter and dirToTop = same def as in Wall Class (*)
         this.dirToTop = new vecs.Vector(1, 0, 0);
         this.w = lobbyData.paddlesData.width;

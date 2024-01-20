@@ -10,10 +10,17 @@ function initLoop(data, wallDist, goalDist, angle) {
     for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
 
         currAngle = startingAngle + angle * i; // player current angle
-        
+
+        // get rid of imprecisions to avoid multiplying by very small values in the positions calculations
+        // and end up with too big a number that could also be interpreted as 'Infinity';
+        let mCos = Math.cos(currAngle);
+        // mCos = Math.abs(mCos) < 0.000001 ? 0 : mCos;
+        let mSin = Math.sin(currAngle);
+        // mSin = Math.abs(mSin) < 0.000001 ? 0 : mSin;
+
         // set up the players paddles positions :
-        data.players[i].paddle.pos.x = (goalDist - data.players[i].paddle.w * 2) * Math.cos(currAngle);
-        data.players[i].paddle.pos.y = (goalDist - data.players[i].paddle.w * 2) * Math.sin(currAngle);
+        data.players[i].paddle.pos.x = (goalDist - data.players[i].paddle.w * 2) * mCos;
+        data.players[i].paddle.pos.y = (goalDist - data.players[i].paddle.w * 2) * mSin;
         
         // setup the players paddles vectors :
         data.players[i].paddle.dirToCenter = center.getDirFrom(data.players[i].paddle.pos);
@@ -23,9 +30,16 @@ function initLoop(data, wallDist, goalDist, angle) {
 
         currAngle = startingAngle + angle / 2 + angle * i; // wall current angle
 
+        // get rid of imprecisions to avoid multiplying by very small values in the positions calculations
+        // and end up with too big a number that could also be interpreted as 'Infinity';
+        mCos = Math.cos(currAngle);
+        // mCos = Math.abs(mCos) < 0.000001 ? 0 : mCos;
+        mSin = Math.sin(currAngle);
+        // mSin = Math.abs(mSin) < 0.000001 ? 0 : mSin;
+
         // set up the walls positions
-        data.field.walls[i].pos.x = wallDist * Math.cos(currAngle);
-        data.field.walls[i].pos.y = wallDist * Math.sin(currAngle);
+        data.field.walls[i].pos.x = wallDist * mCos;
+        data.field.walls[i].pos.y = wallDist * mSin;
 
         // set up the walls vectors
         data.field.walls[i].dirToCenter = center.getDirFrom(data.field.walls[i].pos);

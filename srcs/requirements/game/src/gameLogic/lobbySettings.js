@@ -22,14 +22,14 @@ const paddlesSettings = {
 const ballSettings = {
     speed: 4,
     radius: 2,
-    color: "0xffffff",
+    color: 0xffffff,
 }
 
 const playerSettings = {
     login: "player",
     ID: 0,
     accountID: 0,
-    color: "0x0000ff",
+    color: 0x0000ff,
 }
 
 const lobbyData = {

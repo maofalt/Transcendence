@@ -60,7 +60,7 @@ const RemoteGame = () => {
 
 	function generatePaddles(data) {
 		const paddleGeometry = new THREE.BoxGeometry(data.players[0].paddle.h, 1, 2);
-		const paddleMaterial = new THREE.MeshPhongMaterial({ color: data.players[0].paddle.col, transparent: true, opacity: 1, reflectivity: 0.5 });
+		const paddleMaterial = new THREE.MeshPhongMaterial({ color: data.players[0].color, transparent: true, opacity: 1, reflectivity: 0.5 });
 
 		for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
 			paddles[i] = new THREE.Mesh(paddleGeometry, paddleMaterial); // create Material

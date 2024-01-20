@@ -43,9 +43,9 @@ class Vector {
 	// scales vector by a factor
 	scale(scaler) {
 		return new Vector(
-			this.x *= scaler,
-			this.y *= scaler,
-			this.z *= scaler
+			this.x * scaler,
+			this.y * scaler,
+			this.z * scaler
 		);
 	}
 

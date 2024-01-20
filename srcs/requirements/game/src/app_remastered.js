@@ -73,8 +73,8 @@ gameInterval = setInterval(waitingLoop, 20);
 //====================================== SOCKET HANDLING ======================================//
 
 function setPlayerStatus(client) {
-    data.players[io.engine.clientsCount - 1].socketID = client.id;
-    data.players[io.engine.clientsCount - 1].connected = true;
+    // data.players[io.engine.clientsCount - 1].socketID = client.id;
+    // data.players[io.engine.clientsCount - 1].connected = true;
 }
 
 function handleConnection(client) {
@@ -100,24 +100,28 @@ io.on('connection', (client) => {
     client.on('moveUp', () => {
         console.log(`client ${client.id} moving up`);
         for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
-            if (data.players[i].socketID = client.id)
-                data.players[i].paddle.dir = data.players[i].paddle.dirToTop;
+            if (data.players[i].socketID == client.id) {
+                data.players[i].paddle.dir = data.players[i].paddle.dirToTop.copy();
+            }
         }
     });
 
     client.on('moveDown', () => {
         console.log(`client ${client.id} moving down`);
         for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
-            if (data.players[i].socketID = client.id)
+            if (data.players[i].socketID == client.id) {
                 data.players[i].paddle.dir = data.players[i].paddle.dirToTop.scale(-1);
+            }
         }
     });
 
     client.on('stop', () => {
         console.log(`client ${client.id} stopping`);
         for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
-            if (data.players[i].socketID = client.id)
-                data.players[i].paddle.dir.x = data.players[i].paddle.dir.y = 0;
+            if (data.players[i].socketID == client.id) {
+                data.players[i].paddle.dir.x = 0;
+                data.players[i].paddle.dir.y = 0;
+            }
         }
     });
 
