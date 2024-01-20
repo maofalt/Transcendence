@@ -23,6 +23,7 @@ function initLoop(data, wallDist, goalDist, angle) {
         
         // setup the players paddles vectors :
         data.players[i].paddle.dirToCenter = center.getDirFrom(data.players[i].paddle.pos);
+        data.players[i].paddle.dirToTop = data.players[i].paddle.dirToCenter.rotateAroundZ(-Math.PI / 2);
         // data.players[i].paddle.dirToCenter = something; // need to add the other direction vector but will check out best formula for this
 
         /*--------------------------------------------------------------------------------------------*/
@@ -42,6 +43,7 @@ function initLoop(data, wallDist, goalDist, angle) {
 
         // set up the walls vectors
         data.field.walls[i].dirToCenter = center.getDirFrom(data.field.walls[i].pos);
+        data.field.walls[i].dirToTop = data.field.walls[i].dirToCenter.rotateAroundZ(-Math.PI / 2);
         // data.players[i].paddle.dirToCenter = something; // need to add the other direction vector but will check out best formula for this
     }
 }

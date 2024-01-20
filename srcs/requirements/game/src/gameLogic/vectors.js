@@ -49,6 +49,16 @@ class Vector {
 		);
 	}
 
+	// rotate around the Z axis (since all the game logic is in 2D and 3D is only a
+	// design choice, vectors rotations are probably only ever going to be around the Z axis)
+	rotateAroundZ(angle) {
+		return new Vector(
+			this.x * Math.cos(angle) - this.y * Math.sin(angle),
+			this.x * Math.sin(angle) + this.y * Math.cos(angle),
+			0
+		);
+	}
+
 	// get the direction from a point to this vector/point 
 	// (this is trash af yes but my way of making it the other way around was less
 	// efficient and I'm lazy I'll think about it later)

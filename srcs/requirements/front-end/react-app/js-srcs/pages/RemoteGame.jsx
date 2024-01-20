@@ -176,6 +176,8 @@ const RemoteGame = () => {
 		for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
 			paddles[i].mesh.position.set(data.players[i].paddle.pos.x, data.players[i].paddle.pos.y, data.players[i].paddle.pos.z);
 			paddles[i].mesh.material.opacity = data.players[i].connected ? 0.7 : 0.3;
+			paddles[i].dir1Mesh.position.set(data.players[i].paddle.pos.x, data.players[i].paddle.pos.y, data.players[i].paddle.pos.z);
+			paddles[i].dir2Mesh.position.set(data.players[i].paddle.pos.x, data.players[i].paddle.pos.y, data.players[i].paddle.pos.z);
 		}
 	}
 
