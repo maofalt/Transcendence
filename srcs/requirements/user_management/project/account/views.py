@@ -20,6 +20,8 @@ from .models import User
 from .serializers import UserSerializer, AnonymousUserSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 import jwt
+from django.conf import settings
+
 # Create your views here.
 
 def home(request):
@@ -27,10 +29,14 @@ def home(request):
 
 def get_token_for_user(user):
     refresh = RefreshToken.for_user(user)
+    refresh['username'] = user.username
+
     return str(refresh.access_token)
 
 def api_login_view(request):
     print("\n\n       URL:", request.build_absolute_uri())
+
+    secret_key = settings.SECRET_KEY
 
     if request.method == "POST":
         username = request.POST["username"]
@@ -62,7 +68,7 @@ def api_login_view(request):
             )
             print("token: ", token)
             try:
-                decoded_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+                decoded_token = jwt.decode(token, secret_key, algorithms=["HS256"])
                 print("Decoded Token:", decoded_token)
                 return response
             except jwt.ExpiredSignatureError:
