@@ -85,6 +85,8 @@ http:
       entryPoints: ["websecure"]
       middlewares: ["user_management-headers"]
       service: "user_management"
+      tls:
+        certResolver: "myresolver"
 #TOURNAMENT
     tournament:
       rule: "Host(`localhost`) && PathPrefix(`/api/tournament`)"
@@ -145,18 +147,15 @@ http:
         servers:
           - url: "http://game:3000"
 
-<<<<<<< HEAD
     user_management:
       loadBalancer:
         servers:
           - url: "http://user_management:8000"
 
-=======
     tournament:
       loadBalancer:
         servers:
           - url: "http://tournament:8001"
->>>>>>> main
 #midlewares used to modify the request before it is sent to the container 
 #e.g.: stripPrefix is used to remove the /game-logic from the request
   middlewares:
@@ -169,13 +168,11 @@ http:
           customRequestHeaders:
             Connection: "upgrade"
             Upgrade: "websocket"
-<<<<<<< HEAD
     
     user_management-headers:
       headers:
         customResponseHeaders:
           X-Forwarded-Prefix: "/api/user_management"
-=======
 #stripPrefix is used to remove the /game-logic from the request
     strip-game-logic:
       stripPrefix:
@@ -185,7 +182,6 @@ http:
       headers:
         customResponseHeaders:
           X-Forwarded-Prefix: "/api/tournament"
->>>>>>> main
 #this is used to add the X-Forwarded-Proto header to the request
     sslheader:
       headers:
