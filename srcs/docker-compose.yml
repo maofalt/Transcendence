@@ -15,8 +15,7 @@ services:
     volumes:
       - ./requirements/traefik/config:/etc/traefik
       - ./requirements/traefik/config/ssl/:/ssl-certs
-      - "${XDG_RUNTIME_DIR}/docker.sock:/var/run/docker.sock"
-      # - "/var/run/docker.sock:/var/run/docker.sock" # <-- actvate this if you are in Windows and comment the line above
+      - "${XDG_RUNTIME_DIR:-/var/run}/docker.sock:/var/run/docker.sock"
     networks:
       - transcendence
     restart: unless-stopped
@@ -32,8 +31,7 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     volumes:
-      # - "/var/run/docker.sock:/var/run/docker.sock"
-      - "${XDG_RUNTIME_DIR}/docker.sock:/var/run/docker.sock"
+      - "${XDG_RUNTIME_DIR:-/var/run}/docker.sock:/var/run/docker.sock"
       - portainer-data:/data
     networks:
       - transcendence
@@ -84,8 +82,9 @@ services:
     build: 
       context: ./requirements/game/
       dockerfile: Dockerfile
+    # IMPORTANT - this is insecure. Use .env file instead
     environment:
-      - DATABASE_URL=postgresql://user42:password@db:5432/mydatabase
+      - DATABASE_URL=postgresql://user42:password@db:5432/mydatabase # <-- use value from .env
     depends_on:
       - game-db
     networks:
@@ -108,10 +107,11 @@ services:
     build:
       context: ./requirements/game/postgreSQL/
       dockerfile: Dockerfile
+    # IMPORTANT - this is insecure. Use .env file instead
     environment:
-      POSTGRES_DB: mydatabase
-      POSTGRES_USER: user42
-      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydatabase # <-- use value from .env
+      POSTGRES_USER: user42 # <-- use value from .env
+      POSTGRES_PASSWORD: password # <-- use value from .env
     volumes:
       - game_db:/var/lib/postgresql/data
     networks:
@@ -125,25 +125,6 @@ services:
   #     - db
     # ports:
     #   - "5050:80"
-
-  tournament:
-    container_name: tournament
-    build:
-      context: ./requirements/tournament_service/
-      dockerfile: Dockerfile
-    networks:
-      - transcendence
-    env_file:
-      - .env
-    #ports:
-    #  - 8034:8000
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.tournament.rule=Host(`tournament.localhost`)"
-      - "traefik.http.routers.tournament.entrypoints=websecure"
-      - "traefik.http.services.tournament.loadbalancer.server.port=80"
-      - "traefik.http.routers.tournament.service=tournament"
-      - "traefik.http.routers.tournament.tls.certresolver=myresolver"
 
   user_management:
     container_name: user_management
@@ -185,6 +166,44 @@ services:
       POSTGRES_UNIX_SOCKET_DIRECTORIES: /var/run/postgresql
     volumes:
       - user-management-db:/var/lib/postgresql/data
+
+  tournament:
+      container_name: tournament
+      build:
+        context: ./requirements/tournament_service/
+        dockerfile: Dockerfile
+      networks:
+        - transcendence
+      volumes:
+        - ./requirements/tournament_service/app:/app
+      #ports:
+      #  - 8034:8000
+      labels:
+#tournament local ip
+      - "traefik.enable=true"
+      - "traefik.http.routers.tournament.rule=Host(`${LOCAL_IP}`) && PathPrefix(`/api/tournament`)"
+      - "traefik.http.routers.tournament.entrypoints=websecure"
+      - "traefik.http.routers.tournament.middlewares=strip-tournament@docker"
+      - "traefik.http.middlewares.strip-tournament.stripprefix.prefixes=/api/tournament"
+      - "traefik.http.services.tournament.loadbalancer.server.port=8001"
+      - "traefik.http.routers.tournament.service=tournament"
+      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto = https"
+      - "traefik.http.routers.tournament.tls.certresolver=myresolver"
+      # - "traefik.http.middlewares.tournament-headers.headers.customresponseheaders.X-Forwarded-Prefix=/api/tournament"
+      # - "traefik.http.routers.tournament.middlewares=tournament-headers"
+      
+  tournament_db:
+    container_name: tournament_db
+    build:
+      context: ./requirements/tournament_db/
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      POSTGRES_DB: tournament_db
+      POSTGRES_USER: tournament_master
+      POSTGRES_PASSWORD: 'i love miguel'
+    volumes:
+      - tournament-db:/var/lib/postgresql/data
     # ports:
     #   - 55432:5432
     networks:
@@ -197,6 +216,10 @@ volumes:
   game_db:
     driver: local
   user-management-db:
+    driver: local
+  tournament-db:
+    driver: local
+  postgres-data:
     driver: local
 
 #NETWORKS

@@ -10,6 +10,7 @@ import Profile from './pages/Profile'
 import Login from './pages/Login'
 import PlayRemote from './pages/PlayRemote'
 import RemoteGame from './pages/RemoteGame'
+import GameOptions from './pages/GameOptions'
 
 function App() {
 	const jsonUrl = '/api-proxy';
@@ -26,6 +27,7 @@ function App() {
 						<Route path='/play' element={<RemoteGame/>} />
 						<Route path='/profile' element={<Profile/>} />
 						<Route path='/options' element={<Options/>} />
+						<Route path='/gameoptions' element={<GameOptions/>} />
 						<Route path='/login' element={<Login/>} />
 						{/* <Route path='/create' element={<Create jsonUrl={jsonUrl}/>} /> */}
 						{/* <Route path='/blog/:id' element={<PageDetails jsonUrl={jsonUrl}/>} /> */}
