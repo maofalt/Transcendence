@@ -10,7 +10,7 @@ from django.db.utils import IntegrityError
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt # CSRF (Cross-Site Request Forgery) protection middleware. 
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -63,7 +63,7 @@ def api_login_view(request):
             redirect_url = '/api/user_management/'
             
             send_one_time_code(request)
-
+            
             token = get_token_for_user(user)
             response = JsonResponse({'message': 'Authentication successful', 'user': serializer.data, 'redirect_url': redirect_url, 'requires_2fa': True})
             response.set_cookie(
@@ -108,7 +108,7 @@ def send_one_time_code(request):
     to_email = request.user.email
     send_mail(subject, message, from_email, [to_email])
 
-
+@csrf_protect
 def verify_one_time_code(request):
     if request.method == 'POST':
         submitted_code = request.POST.get('one_time_code')

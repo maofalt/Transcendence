@@ -17,6 +17,7 @@
   </form>
 
   <div id="oneTimeCodeSection" style="display: none;">
+    {% csrf_token %}
     <input name="one_time_code" type="text" placeholder="One-Time Code">
     <button onclick="submitOneTimeCode()">Submit Code</button>
   </div>
@@ -90,17 +91,18 @@
   }
   function submitOneTimeCode() {
     var oneTimeCode = $('input[name="one_time_code"]').val();
-    var csrfToken = $('[name="csrfmiddlewaretoken"]').val();
     console.log('submitOneTimeCode submit');
     $.ajax({
       url: '{% url "account:verify_one_time_code" %}',
       type: 'POST',
       data: { 'one_time_code': oneTimeCode },
-      headers: { "X-CSRFToken": csrfToken },
+      headers: { "X-CSRFToken": "{{ csrf_token }}" },
       success: function (data) {
+        console.log('CSRF Token from server:', data.csrf_token)
         console.log('One-time code verification successful:', data);
       },
       error: function (xhr, textStatus, errorThrown) {
+        console.log('CSRF Token from server:', data.csrf_token)
         console.log('One-time code verification failed.');
       }
     });

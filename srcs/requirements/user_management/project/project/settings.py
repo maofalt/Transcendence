@@ -137,12 +137,18 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+CSRF_COOKIE_SECURE = True
+
+CSRF_COOKIE_SAMESITE = 'Lax'
+
 # email access setting
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'cscard1002@gmail.com'
+# EMAIL_HOST_USER = 'jischoi@student.42.fr'
+# EMAIL_HOST_PASSWORD = '2950613Choi!'
 EMAIL_HOST_PASSWORD = 'dhefhwnswtqtldzz'
 
 
