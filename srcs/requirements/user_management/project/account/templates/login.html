@@ -16,6 +16,11 @@
     <input type="submit" value="Login">
   </form>
 
+  <div id="oneTimeCodeSection" style="display: none;">
+    <input name="one_time_code" type="text" placeholder="One-Time Code">
+    <button onclick="submitOneTimeCode()">Submit Code</button>
+  </div>
+
   <a href="#" id="signupLink">Sign up</a>
   {% include 'signup.html' %}
 
@@ -65,8 +70,10 @@
         headers: { "X-CSRFToken": "{{ csrf_token }}" },
         success: function (data) {
           console.log('Login successful:', data);
-          closeLoginPopup();
-          window.location.href = '';
+          // closeLoginPopup();
+          // window.location.href = '';
+          $('#loginForm').hide();
+          $('#oneTimeCodeSection').show();
 
         },
         error: function (xhr, textStatus, errorThrown) {
@@ -81,6 +88,25 @@
         }  
     });
   }
+  function submitOneTimeCode() {
+    var oneTimeCode = $('input[name="one_time_code"]').val();
+    var csrfToken = $('[name="csrfmiddlewaretoken"]').val();
+    console.log('submitOneTimeCode submit');
+    $.ajax({
+      url: '{% url "account:verify_one_time_code" %}',
+      type: 'POST',
+      data: { 'one_time_code': oneTimeCode },
+      headers: { "X-CSRFToken": csrfToken },
+      success: function (data) {
+        console.log('One-time code verification successful:', data);
+      },
+      error: function (xhr, textStatus, errorThrown) {
+        console.log('One-time code verification failed.');
+      }
+    });
+  }
+  
+
   function displayErrorMessage(message) {
     // Assuming you have an element with the id "errorMessage" to display the error message
     $('#errorMessage').text(message).css('color', 'red');
