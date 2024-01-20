@@ -1,0 +1,37 @@
+
+<h1>
+    {{ user.username }}'s profile
+</h1>
+
+<p>Username: {{ user.username }}
+{% if user.avatar %}
+    <img src="{{ user.avatar.url }}" alt="Avatar" width="30" height="30">
+{% else %}
+    <p>No avatar available</p>
+{% endif %}
+</p>
+<p>Email: {{ user.email }}</p>
+<p>Playername: {{ user.playername }}</p>
+
+<p>Friends: <a href="{% url 'account:friend' %}" style="text-decoration: underline; color: blue; font-size: 14px;">{{ user.friends.count }}</a></p>
+
+
+<p>사용자 ID: {{ user.game_stats.user }}</p>
+
+<h2>GameStats</h2>
+<p>Game Player: {{ user.game_stats.user }}</p>
+<p>Total Games Played: {{ user.game_stats.total_games_played }}</p>
+<p>Games Won: {{ user.game_stats.games_won }}</p>
+<p>Games Lost: {{ user.game_stats.games_lost }}</p>
+
+
+<a href="{% url 'account:profile_update' %}" style="text-decoration: underline; color: blue; font-size: 14px;">Update Profile</a>
+<p>
+<button type="button" onclick="redirectToGameStatsPage()">GAME STATS TEST</button>
+<script>
+    // JavaScript function to redirect to the specified URL
+    function redirectToGameStatsPage() {
+        const username = "{{ user.username }}";
+        window.location.href = `../gameHistory_microservice/api/game-stats/${username}/`;
+    }
+</script>
