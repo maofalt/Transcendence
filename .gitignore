@@ -7,5 +7,6 @@ ws-simple/
 trancendence-front-end/
 *.pyc
 t\ access\ issue
+*.json
 node-proxy-server/
 __pycache__

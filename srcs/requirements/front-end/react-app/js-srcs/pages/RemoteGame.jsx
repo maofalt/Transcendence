@@ -12,8 +12,24 @@ const RemoteGame = () => {
 	const containerRef = useRef();
 	let renderer, controls, scene;
 
+	class SpObject {
+		constructor(objMesh, dirMesh) {
+			this.mesh = objMesh;
+			this.dirMesh = dirMesh;
+		}
+	}
+
+	class BoxObject {
+		constructor(objMesh, dir1Mesh, dir2Mesh) {
+			this.mesh = objMesh;
+			this.dir1Mesh = dir1Mesh;
+			this.dir2Mesh = dir2Mesh;
+		}
+	}
 	// meshes
-	let ball, paddle1, paddle2, wall1, wall2, field;
+	let ball;
+	let paddles = [];
+	let walls = [];
 
 	// lights & camera
 	let camera, ambientLight, directionalLight;
@@ -21,11 +37,11 @@ const RemoteGame = () => {
 	function drawAxes() {
 		// axes length
 		const axisLength = 5;
-	
+		const center = new THREE.Vector3(0, 0, 0);
 		// X, Y & Z in Red, Green & Blue
-		const arrowX = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 0, 0), axisLength, 0xff0000);
-		const arrowZ = new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 0), axisLength, 0x00ff00);
-		const arrowY = new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), new THREE.Vector3(0, 0, 0), axisLength, 0x0000ff);
+		const arrowX = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), center, axisLength, 0xff0000);
+		const arrowZ = new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), center, axisLength, 0x00ff00);
+		const arrowY = new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), center, axisLength, 0x0000ff);
 		
 		//add to scene
 		scene.add(arrowX);
@@ -35,54 +51,61 @@ const RemoteGame = () => {
 
 	function generateBall(data) {
 		const ballGeometry = new THREE.SphereGeometry(data.ball.r, 24, 12);
-		const ballMaterial = new THREE.MeshPhongMaterial({ color: data.ball.color, transparent: false, opacity: 1 });
+		const ballMaterial = new THREE.MeshPhongMaterial({ color: data.ball.col, transparent: false, opacity: 0.7 });
+		const dir1 = new THREE.ArrowHelper(
+			new THREE.Vector3(data.ball.dir.x,
+							data.ball.dir.y,
+							data.ball.dir.z,),
+				data.ball.pos, 5, 0xff0000);
 
-		ball = new THREE.Mesh(ballGeometry, ballMaterial);
+		ball = new SpObject(new THREE.Mesh(ballGeometry, ballMaterial), dir1);
 		
 		// add to scene
-		scene.add(ball);
+		scene.add(ball.mesh);
+		scene.add(ball.dirMesh);
+
+		ball.mesh.position.set(data.ball.pos.x, data.ball.pos.y, data.ball.pos.z);
 	}
 
 	function generateWalls(data) {
-		const wallGeometry = new THREE.BoxGeometry(data.field.width, data.paddle1.width, 2);
-		const wallMaterial1 = new THREE.MeshPhongMaterial({ color: data.ball.color, transparent: true, opacity: 1, reflectivity: 0.5 });
-		const wallMaterial2 = new THREE.MeshPhongMaterial({ color: data.ball.color, transparent: true, opacity: 1, reflectivity: 0.5 });
+		const wallGeometry = new THREE.BoxGeometry(data.field.wallsSize, 1, 2);
+		const wallMaterial = new THREE.MeshPhongMaterial({ color: data.ball.col, transparent: true, opacity: 1, reflectivity: 0.5 });
 
-		wall1 = new THREE.Mesh(wallGeometry, wallMaterial1);
-		wall2 = new THREE.Mesh(wallGeometry, wallMaterial2);
-
-		// add to scene
-		scene.add(wall1);
-		scene.add(wall2);
-		wall1.position.set(0, data.field.height / 2 + data.paddle1.width / 2, 0);
-		wall2.position.set(0, -data.field.height / 2 - data.paddle1.width / 2, 0);
-	}
-
-	function generateField(data) {
-		const fieldGeometry = new THREE.BoxGeometry(data.field.width, data.field.height, 1);
-		const fieldMaterial = new THREE.MeshPhongMaterial({ color: data.ball.color, transparent: true, opacity: 0.1, reflectivity: 0.5 });
-
-		field = new THREE.Mesh(fieldGeometry, fieldMaterial);
-
-		scene.add(field);
-		field.position.set(0, 0, -1.5);
+		for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
+			walls[i] = new THREE.Mesh(wallGeometry, wallMaterial); // create Material
+			scene.add(walls[i]); // add mesh to the scene
+			walls[i].position.set(data.field.walls[i].pos.x, data.field.walls[i].pos.y, 0); // set the position
+			walls[i].rotation.set(0, 0, data.field.walls[i].angle + Math.PI / 2); // set the rotation to the proper orientation (facing center)
+		}
 	}
 
 	function generatePaddles(data) {
-		// const paddleMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff,  });
-		const paddleGeometry = new THREE.BoxGeometry(data.paddle1.width, data.paddle1.height, 2);
-		const paddleMaterial1 = new THREE.MeshPhongMaterial({ color: data.paddle1.color, transparent: true, opacity: 1, reflectivity: 0.5 });
-		const paddleMaterial2 = new THREE.MeshPhongMaterial({ color: data.paddle2.color, transparent: true, opacity: 1, reflectivity: 0.5 });
+		for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
+			const paddleGeometry = new THREE.BoxGeometry(data.players[i].paddle.h, 1, 2);
+			const paddleMaterial = new THREE.MeshPhongMaterial({ color: data.players[i].color, transparent: true, opacity: 0.7, reflectivity: 0.5 });
 
-		paddle1 = new THREE.Mesh(paddleGeometry, paddleMaterial1);
-		paddle2 = new THREE.Mesh(paddleGeometry, paddleMaterial2);
+			const dir1 = new THREE.ArrowHelper(
+				new THREE.Vector3(data.players[i].paddle.dirToCenter.x,
+								data.players[i].paddle.dirToCenter.y,
+								data.players[i].paddle.dirToCenter.z,),
+					data.players[i].paddle.pos, 5, 0xff0000);
+			const dir2 = new THREE.ArrowHelper(
+				new THREE.Vector3(data.players[i].paddle.dirToTop.x,
+								data.players[i].paddle.dirToTop.y,
+								data.players[i].paddle.dirToTop.z,),
+					data.players[i].paddle.pos, 5, 0x00ff00);
 
-		// add to scene
-		scene.add(paddle1);
-		scene.add(paddle2);
+			paddles[i] = new BoxObject(new THREE.Mesh(paddleGeometry, paddleMaterial), dir1, dir2);
+			scene.add(paddles[i].mesh); // add mesh to the scene
+			scene.add(paddles[i].dir1Mesh);
+			scene.add(paddles[i].dir2Mesh);
+
+			paddles[i].mesh.position.set(data.players[i].paddle.pos.x, data.players[i].paddle.pos.y, 0); // set the position
+			paddles[i].mesh.rotation.set(0, 0, data.players[i].paddle.angle + Math.PI / 2); // set the rotation to the proper orientation (facing center)
+		}
 	}
 
-	function generateLights(data){
+	function generateLights(){
 		directionalLight = new THREE.DirectionalLight(0xffffff, 1);
 		directionalLight.position.set(0, 1, 1);
 
@@ -118,15 +141,15 @@ const RemoteGame = () => {
 		console.log("Generating Scene...");
 
 		scene = new THREE.Scene();
-		camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+		camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.4, 1000);
 		renderer = new THREE.WebGLRenderer();
 
-		camera.position.set(0, 0, 40);
-		camera.lookAt(new THREE.Vector3(0, 0, 0));
+		camera.position.set(data.camera.pos.x, data.camera.pos.y, data.camera.pos.z);
+		camera.lookAt(new THREE.Vector3(data.camera.target.x, data.camera.target.y, data.camera.target.z));
 		// camera.rotation.set(0, 0, Math.PI / 2);
-		camera.rotation.set(0, 0, Math.PI);
-		if (clientId == 2)
-			camera.rotation.set(0, 0, Math.PI);
+		// camera.rotation.set(0, 0, Math.PI);
+		// if (clientId == 2)
+			// camera.rotation.set(0, 0, Math.PI);
 		
 		renderer.setSize(window.innerWidth, window.innerHeight);
 		containerRef.current.appendChild(renderer.domElement);
@@ -138,7 +161,7 @@ const RemoteGame = () => {
 		generateBall(data);
 		generatePaddles(data);
 		generateWalls(data);
-		generateField(data);
+		// generateField(data);
 		generateLights(data);
 		generateSkyBox(data);
 		drawAxes();
@@ -148,10 +171,14 @@ const RemoteGame = () => {
 	};
 
 	function updateScene(data) {
-		// console.log("Updating Scene...");
-		ball.position.set(data.ball.x, data.ball.y, 0);
-		paddle1.position.set(data.paddle1.x, data.paddle1.y, 0);
-		paddle2.position.set(data.paddle2.x, data.paddle2.y, 0);
+		console.log("Updating Scene...");
+		ball.mesh.position.set(data.ball.pos.x, data.ball.pos.y, 0);
+		for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
+			paddles[i].mesh.position.set(data.players[i].paddle.pos.x, data.players[i].paddle.pos.y, data.players[i].paddle.pos.z);
+			paddles[i].mesh.material.opacity = data.players[i].connected ? 0.7 : 0.3;
+			paddles[i].dir1Mesh.position.set(data.players[i].paddle.pos.x, data.players[i].paddle.pos.y, data.players[i].paddle.pos.z);
+			paddles[i].dir2Mesh.position.set(data.players[i].paddle.pos.x, data.players[i].paddle.pos.y, data.players[i].paddle.pos.z);
+		}
 	}
 
 	useEffect(() => {

@@ -97,6 +97,8 @@ const GameOptions = () => {
 		
 		renderer.setSize(viewPort.width, viewPort.height);
 		containerRef.current.appendChild(renderer.domElement);
+		var pixelRatio = window.devicePixelRatio || 1;
+		renderer.setPixelRatio(pixelRatio);
 
 		let controls = new OrbitControls(camera, renderer.domElement);
 		controls.target.set(0, 0, 0);
@@ -210,7 +212,7 @@ const GameOptions = () => {
 			// updateGoals(goalDist, goals, angle, goalSize);
 			updateWalls(wallDist, walls, angle, goalSize * wallSize);
 			updatePlayers(goalDist - 2, players, angle, paddleSize);
-	
+
 			let camDist = (wallDist > goalDist ? wallDist : goalDist);
 			camera.position.set(0, 0, camDist * 2);
 	

@@ -27,13 +27,48 @@ class Vector {
 		);
 	}
 
-	// scale vector by a factor
+	// subtract a vector from another
+	// (I thought I was smart by first implementing this as "add the vector scaled by -1"
+	// and saving lines, but this would require a lot more calculations compared to
+	// just writing this - other for each component.
+	// This comment was useless but I'm having fun)
+	sub(otherVector) {
+		return new Vector(
+			this.x - otherVector.x,
+			this.y - otherVector.y,
+			this.z - otherVector.z
+		);
+	}
+
+	// scales vector by a factor
 	scale(scaler) {
 		return new Vector(
-			this.x *= scaler,
-			this.y *= scaler,
-			this.z *= scaler
+			this.x * scaler,
+			this.y * scaler,
+			this.z * scaler
 		);
+	}
+
+	// rotate around the Z axis (since all the game logic is in 2D and 3D is only a
+	// design choice, vectors rotations are probably only ever going to be around the Z axis)
+	rotateAroundZ(angle) {
+		return new Vector(
+			this.x * Math.cos(angle) - this.y * Math.sin(angle),
+			this.x * Math.sin(angle) + this.y * Math.cos(angle),
+			0
+		);
+	}
+
+	// get the direction from a point to this vector/point 
+	// (this is trash af yes but my way of making it the other way around was less
+	// efficient and I'm lazy I'll think about it later)
+	getDirFrom(point) {
+		return this.sub(point).normalize();
+	}
+
+	// calculate distance from a point to this vec/point
+	getDistFrom(point) {
+		return this.sub(point).magnitude();
 	}
 
 	// normalize vector
@@ -50,3 +85,5 @@ class Vector {
 		return new Vector();
 	}
 }
+
+module.exports = { Vector };
