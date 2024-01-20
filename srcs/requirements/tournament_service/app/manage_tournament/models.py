@@ -2,13 +2,13 @@ from django.db import models
 
 class Tournament(models.Model):
     tournament_id = models.AutoField(primary_key=True)
-    tournement_name = models.CharField(max_length=255, unique=True)
-    game_type = models.ForeignKey('GameType', on_delete=models.SET_NULL, null=True, to_field='type_id')
+    tournament_name = models.CharField(max_length=255, unique=True)
+    game_type = models.ForeignKey('GameType', on_delete=models.PROTECT, null=False, to_field='type_id', default=1)
     created_at = models.DateTimeField(auto_now_add=True)
     nbr_of_player = models.IntegerField(default=2)
-    tournament_type = models.ForeignKey('TournamentType', on_delete=models.SET_NULL, null=True, to_field='type_id')
-    registration = models.ForeignKey('RegistrationType', on_delete=models.SET_NULL, null=True, to_field='type_id')
-    setting_id = models.ForeignKey('MatchSetting', on_delete=models.SET_NULL, null=True, to_field='setting_id')
+    tournament_type = models.ForeignKey('TournamentType', on_delete=models.PROTECT, null=False, to_field='type_id', default=1)
+    registration = models.ForeignKey('RegistrationType', on_delete=models.PROTECT, null=False, to_field='type_id', default=1)
+    setting_id = models.ForeignKey('MatchSetting', on_delete=models.PROTECT, null=False, to_field='setting_id', default=1)
     registration_period_min = models.IntegerField(default=15)
     host_id = models.IntegerField()
 
