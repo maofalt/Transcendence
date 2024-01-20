@@ -1,0 +1,80 @@
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<div id="signupPopup" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); z-index: 9999; width: 300px;">
+    <span style="float: right; cursor: pointer;" onclick="closeSignupPopup()">&times;</span>
+    <h2>Sign Up</h2>
+
+    <div id="signupPopupError" style="color: red;"></div> <!-- Add this line -->
+
+    <form id="signupForm" action="" method="POST" onsubmit="submitSignupForm(); return false;">
+        {% csrf_token %}
+        <p>ID</p>
+        <input name="username" type="text">
+        <p>PASSWORD
+            <span style="color: green; font-size: smaller;">(minimum 8 characters, at least 1 digit, 1 alphabet, different from email and playername)</span>
+        </p>
+        <input name="password" type="password">
+        <p>CONFIRM PASSWORD</p>
+        <input name="confirm_password" id="confirmPassword" type="password" oninput="checkPasswordMatch();">
+        <div id="confirmPasswordError" style="color: red;"></div>
+        <p>PLAYERNAME</p>
+        <input name="playername" type="text">
+        <p>email</p>
+        <input name="email" type="text" placeholder="example@example.com">
+        <input type="submit" value="Sign up">
+    </form>
+
+
+<script>
+    function closeSignupPopup() {
+    //   $("#darkLayer").fadeOut();
+      $("#signupPopup").fadeOut();
+      console.log('closeSignupPopup() called\n\n');
+    }
+    function checkPasswordMatch() {
+        var password = $("#signupForm input[name='password']").val();
+        var confirmPassword = $("#confirmPassword").val();
+
+        if (password !== confirmPassword) {
+            $("#confirmPasswordError").text("Passwords do not match");
+        } else {
+            $("#confirmPasswordError").text("");
+        }
+    }
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+    return cookieValue;
+    }
+    function submitSignupForm() {
+        $.ajax({
+            url: '{% url "account:signup" %}',
+            type: 'POST',
+            data: $('#signupForm').serialize(),
+            headers: { "X-CSRFToken": getCookie('csrftoken') },
+            success: function (data) {
+                if (data.success) {
+                    console.log('signed up success\n\n');
+                    closeSignupPopup();
+                } else {
+                    $('#signupPopupError').text(data.error_message);
+                }
+            },
+            error: function () {
+                // Handle error
+                console.log('An error occurred while processing your request.');
+            }
+        });
+    }
+</script>
