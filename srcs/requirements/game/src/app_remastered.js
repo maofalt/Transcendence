@@ -65,7 +65,7 @@ let gameInterval = 0;
 function waitingLoop() {
     render.updateData(data);
     io.to("gameRoom").emit('render', data);
-    console.log("sending render");
+    // console.log("sending render");
 }
 
 gameInterval = setInterval(waitingLoop, 20);
@@ -73,8 +73,10 @@ gameInterval = setInterval(waitingLoop, 20);
 //====================================== SOCKET HANDLING ======================================//
 
 function setPlayerStatus(client) {
-    // data.players[io.engine.clientsCount - 1].socketID = client.id;
-    // data.players[io.engine.clientsCount - 1].connected = true;
+    if (io.engine.clientsCount <= data.gamemode.nbrOfPlayers) {
+        data.players[io.engine.clientsCount - 1].socketID = client.id;
+        data.players[io.engine.clientsCount - 1].connected = true;
+    }
 }
 
 function handleConnection(client) {
@@ -129,12 +131,12 @@ io.on('connection', (client) => {
     client.on('disconnect', () => {
         client.leave("gameRoom");
         for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
-            if (data.players[i].socketID = client.id)
+            if (data.players[i].socketID == client.id)
                 data.players[i].connected = false;
         }
         // data.gamemode.nbrOfPlayers--; ?
-        if (gameInterval)
-            clearInterval(gameInterval);
+        // if (gameInterval)
+        //     clearInterval(gameInterval);
         console.log(`Client disconnected with ID: ${client.id} (num clients: ${io.engine.clientsCount})`);
     });
 });

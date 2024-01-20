@@ -9,8 +9,8 @@ const   gamemodeSettings = {
 }
 
 const   fieldSettings = {
-    wallsFactor: 1.2, // by how much we multiply the goals size to get the walls size; from 0 to 2 (0 == no walls)
-    sizeOfGoals: 10, // arbitrary max, minumum needs to be calculated tho;
+    wallsFactor: 1.5, // by how much we multiply the goals size to get the walls size; from 0 to 2 (0 == no walls)
+    sizeOfGoals: 20, // arbitrary max, minumum needs to be calculated tho;
 }
 
 const paddlesSettings = {

@@ -40,6 +40,7 @@ class Wall {
 		this.dirToCenter = new vecs.Vector(0, 0, 0); // direction from the center of the object to the center of the field;
         this.dirToTop = new vecs.Vector(0, 0, 0); // direction from the center of the object to the top side of the object
                                              // (perpendicular to dirToCenter, on the x,y plane); (*)
+        this.angle = 0;
         this.w = lobbyData.paddlesData.width;
         this.h = wallSize;
         this.col = 0xffffff;
@@ -67,6 +68,7 @@ class Paddle {
         this.dir = new vecs.Vector(0, 0, 0);
 		this.dirToCenter = new vecs.Vector(0, 0, 0); // dirToCenter and dirToTop = same def as in Wall Class (*)
         this.dirToTop = new vecs.Vector(1, 0, 0);
+        this.angle = 0;
         this.w = lobbyData.paddlesData.width;
         this.h = lobbyData.paddlesData.height;
         this.sp = lobbyData.paddlesData.speed;

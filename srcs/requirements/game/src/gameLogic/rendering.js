@@ -1,7 +1,7 @@
 function updatePaddles(data) {
     let currPaddle = 0;
 
-    console.log('test');
+    // console.log('test');
     for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
         currPaddle = data.players[i].paddle;
         // console.log(`
