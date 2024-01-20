@@ -16,6 +16,8 @@ urlpatterns = [
     path("detail", views.detail_view, name="detail"),
     path("profile_update", views.profile_update_view, name="profile_update"),
     path("password_update", views.password_update_view, name="password_update"),
+    path('verify_one_time_code', views.verify_one_time_code, name='verify_one_time_code'),
+
 ]
 
 if settings.DEBUG:

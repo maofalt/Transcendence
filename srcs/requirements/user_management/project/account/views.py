@@ -12,7 +12,6 @@ from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt # CSRF (Cross-Site Request Forgery) protection middleware. 
 
-# microservice connection
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -21,8 +20,13 @@ from .serializers import UserSerializer, AnonymousUserSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 import jwt
 from django.conf import settings
+# 2FA
+import random
+from django.core.mail import send_mail
+from django.utils.crypto import get_random_string
+from django.contrib.sessions.models import Session
 
-# Create your views here.
+
 
 def home(request):
     return render(request, 'home.html')
@@ -51,22 +55,24 @@ def api_login_view(request):
             # Output information about the authenticated user
             print("User Information:")
             print(f"Username: {request.user.username}")
-            # print(f"Intra ID: {request.user.email}")
+            print(f"email: {request.user.email}")
             print(f"Playername: {request.user.playername}")
             print(f"Is Online: {user.is_online}")
             print(f"Date Joined: {user.date_joined}")
             serializer = UserSerializer(user)
             redirect_url = '/api/user_management/'
             
+            send_one_time_code(request)
+
             token = get_token_for_user(user)
-            response = JsonResponse({'message': 'Authentication successful', 'user': serializer.data, 'redirect_url': redirect_url})
+            response = JsonResponse({'message': 'Authentication successful', 'user': serializer.data, 'redirect_url': redirect_url, 'requires_2fa': True})
             response.set_cookie(
                 key='jwtToken',
                 value=token,
                 httponly=True,
                 samesite='Lax'
             )
-            print("token: ", token)
+            print("\ntoken: ", token)
             try:
                 decoded_token = jwt.decode(token, secret_key, algorithms=["HS256"])
                 print("Decoded Token:", decoded_token)
@@ -87,6 +93,35 @@ def api_login_view(request):
 # It's important to use csrf_exempt with caution, especially when dealing with sensitive operations like authentication and logout.
 # If CSRF protection is disabled, you need to ensure that proper security measures are in place
 # to prevent potential security vulnerabilities.
+
+def generate_one_time_code():
+    return get_random_string(length=6, allowed_chars='1234567890')
+
+def send_one_time_code(request):
+    one_time_code = generate_one_time_code()
+    request.session['one_time_code'] = one_time_code
+
+    print("\n\nCHECK CODE ON SESSION: ", request.session.get('one_time_code'))
+    subject = 'Your Access Code for PONG'
+    message = f'Your one-time code is: {one_time_code}'
+    from_email = 'no-reply@student.42.fr' 
+    to_email = request.user.email
+    send_mail(subject, message, from_email, [to_email])
+
+
+def verify_one_time_code(request):
+    if request.method == 'POST':
+        submitted_code = request.POST.get('one_time_code')
+        stored_code = request.session.get('one_time_code')
+        print("\n\ncode from Session : ", stored_code)
+        print("code from User : ", submitted_code, '\n\n')
+        if submitted_code == stored_code:
+            del request.session['one_time_code']
+            return JsonResponse({'message': 'One-time code verification successful'})
+        else:
+            return JsonResponse({'error': 'One-time code verification failed'}, status=400)
+
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 def get_serializer(user):
     if user.is_authenticated:
@@ -126,7 +161,6 @@ def api_signup_view(request):
             email=email,
             password=make_password(password),
             playername=playername,
-            # email=email
         )
 
         try:
