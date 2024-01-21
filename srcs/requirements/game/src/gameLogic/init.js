@@ -58,6 +58,8 @@ function initFieldShape(data) {
     let wallDist = gs / Math.sin(a) + ws / Math.tan(a); // pythagore to find the dist the walls have to be from the center
     let goalDist = gs / Math.tan(a) + ws / Math.sin(a); // same but for goals;
 
+    data.camera.pos.z = wallDist < goalDist ? goalDist : wallDist;
+
     initLoop(data, wallDist, goalDist, angle); // looping through the players array and the walls array to init their pos and dir;
 }
 

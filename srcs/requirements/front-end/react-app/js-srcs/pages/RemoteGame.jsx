@@ -163,7 +163,7 @@ const RemoteGame = () => {
 		generateWalls(data);
 		// generateField(data);
 		generateLights(data);
-		generateSkyBox(data);
+		// generateSkyBox(data);
 		drawAxes();
 
 		// render scene
