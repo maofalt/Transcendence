@@ -25,8 +25,7 @@ import random
 from django.core.mail import send_mail
 from django.utils.crypto import get_random_string
 from django.contrib.sessions.models import Session
-
-
+from django.middleware.csrf import get_token
 
 def home(request):
     return render(request, 'home.html')
@@ -41,31 +40,28 @@ def api_login_view(request):
     print("\n\n       URL:", request.build_absolute_uri())
 
     secret_key = settings.SECRET_KEY
-
     if request.method == "POST":
         username = request.POST["username"]
         password = request.POST["password"]
         user = authenticate(username=username, password=password)
         if user is not None:
-            login(request, user)
-            user.is_online = True
-            user.save()
-            print(request.user.username, ": is_online status", request.user.is_online)
-
+            request.session['pending_username'] = user.username
+            # login(request, user)
+            # print("USer logged in temporary for 2FA.")
             # Output information about the authenticated user
             print("User Information:")
-            print(f"Username: {request.user.username}")
-            print(f"email: {request.user.email}")
-            print(f"Playername: {request.user.playername}")
+            print(f"Username: {user.username}")
+            print(f"email: {user.email}")
+            print(f"Playername: {user.playername}")
             print(f"Is Online: {user.is_online}")
             print(f"Date Joined: {user.date_joined}")
             serializer = UserSerializer(user)
             redirect_url = '/api/user_management/'
             
-            send_one_time_code(request)
+            send_one_time_code(request, user.email)
             
             token = get_token_for_user(user)
-            response = JsonResponse({'message': 'Authentication successful', 'user': serializer.data, 'redirect_url': redirect_url, 'requires_2fa': True})
+            response = JsonResponse({'message': 'Password Authentication successful', 'user': serializer.data, 'redirect_url': redirect_url, 'requires_2fa': True})
             response.set_cookie(
                 key='jwtToken',
                 value=token,
@@ -86,18 +82,10 @@ def api_login_view(request):
             return JsonResponse({'error': 'Authentication failed: Wrong user data'}, status=400)
     return JsonResponse({'error': 'Invalid request method'}, status=400)
 
-# This is useful in cases where you intentionally want to allow certain requests without requiring the usual CSRF token.
-# In your specific example, the @csrf_exempt decorator is applied to the api_logout_view view.
-# This means that the CSRF protection will not be enforced for the api_logout_view view,
-# allowing you to make POST requests without including the CSRF token in the request headers.
-# It's important to use csrf_exempt with caution, especially when dealing with sensitive operations like authentication and logout.
-# If CSRF protection is disabled, you need to ensure that proper security measures are in place
-# to prevent potential security vulnerabilities.
-
 def generate_one_time_code():
     return get_random_string(length=6, allowed_chars='1234567890')
 
-def send_one_time_code(request):
+def send_one_time_code(request, email):
     one_time_code = generate_one_time_code()
     request.session['one_time_code'] = one_time_code
 
@@ -105,21 +93,31 @@ def send_one_time_code(request):
     subject = 'Your Access Code for PONG'
     message = f'Your one-time code is: {one_time_code}'
     from_email = 'no-reply@student.42.fr' 
-    to_email = request.user.email
+    to_email = email
     send_mail(subject, message, from_email, [to_email])
 
 @csrf_protect
 def verify_one_time_code(request):
     if request.method == 'POST':
+        csrf_token = get_token(request)
+        print("\n\nCSRF Token from request:", request.headers.get('X-CSRFToken'))
         submitted_code = request.POST.get('one_time_code')
         stored_code = request.session.get('one_time_code')
         print("\n\ncode from Session : ", stored_code)
         print("code from User : ", submitted_code, '\n\n')
-        if submitted_code == stored_code:
-            del request.session['one_time_code']
-            return JsonResponse({'message': 'One-time code verification successful'})
+        pending_username = request.session.get('pending_username')
+        if pending_username:
+            user = User.objects.get(username=pending_username)
+            if submitted_code == stored_code:
+                del request.session['one_time_code']
+                login(request, user)
+                user.is_online = True
+                user.save()
+                return JsonResponse({'message': 'One-time code verification successful', 'csrf_token': csrf_token})
+            else:
+                return JsonResponse({'error': 'One-time code verification failed', 'csrf_token': csrf_token}, status=400)
         else:
-            return JsonResponse({'error': 'One-time code verification failed'}, status=400)
+            return JsonResponse({'error': 'User authentication not found'}, status=400)
 
     return JsonResponse({'error': 'Invalid request method'}, status=400)
 
