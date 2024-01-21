@@ -112,6 +112,7 @@ def verify_one_time_code(request):
                 del request.session['one_time_code']
                 login(request, user)
                 user.is_online = True
+                print(f"Is Online: {user.is_online}")
                 user.save()
                 return JsonResponse({'message': 'One-time code verification successful', 'csrf_token': csrf_token})
             else:
