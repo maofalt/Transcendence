@@ -202,6 +202,7 @@ def api_signup_view(request):
 
     return JsonResponse({'success': False, 'error_message': 'Invalid request method'}, status=400)
 
+@login_required
 def friend_view(request):
     user = request.user
     friends = user.friends.all()
@@ -215,7 +216,7 @@ def friend_view(request):
 
     return render(request, 'friends.html', {'friends': friends, 'search_query': search_query, 'search_results': search_results})
 
-
+@login_required
 def detail_view(request):
     game_stats = request.user.game_stats
     return render(request, 'detail.html')

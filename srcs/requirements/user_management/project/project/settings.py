@@ -147,8 +147,6 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'cscard1002@gmail.com'
-# EMAIL_HOST_USER = 'jischoi@student.42.fr'
-# EMAIL_HOST_PASSWORD = '2950613Choi!'
 EMAIL_HOST_PASSWORD = 'dhefhwnswtqtldzz'
 
 
