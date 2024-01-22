@@ -1,4 +1,4 @@
-const	settings = require('./gameSettings');
+const	settings = require('./DEPREC_gameSettings');
 
 // global vars
 let numClients = 0;

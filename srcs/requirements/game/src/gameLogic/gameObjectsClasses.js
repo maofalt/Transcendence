@@ -1,94 +1,128 @@
-const settings = require('./gameSettings');
+// const settings = require('./lobbySettings');
+const vecs = require('./vectors');
 
-// Player class
-class Player {
-    constructor(playerSettings) {
-        this.login = playerSettings.login;
-        this.id = playerSettings.id;
-        this.socket = playerSettings.socket;
-        this.clientId = playerSettings.clientId;
-        this.color = playerSettings.color;
-        this.paddle = new Paddle(playerSettings.paddle);
-        this.score = playerSettings.score;
-        this.connected = playerSettings.connected;
-        this.gameState = playerSettings.gameState;
-        this.roundState = playerSettings.roundState;
+class Camera {
+    constructor() {
+        this.pos = new vecs.Vector(0, 0, 50);   // this can change (even during the game) depending on the number
+                                                // of players and size of field
+
+        this.target = new vecs.Vector(0, 0, 0); // this is fixed
+        // The rotation of the camera will be determined by the client, according to the ID of the player.
+        // It will also depend on user preferences : vertical view or horizontal view;
     }
 }
 
-// Paddle class
-class Paddle {
-    constructor(paddleSettings) {
-		this.pos = new Vector(paddleSettings.x, paddleSettings.y, 0);
-		this.dirToCenter = new Vector(paddleSettings.vX, paddleSettings.vY, 0);
-        this.dirToTop = new Vector(paddleSettings.vX, paddleSettings.vY, 0);
-        this.width = paddleSettings.width;
-        this.height = paddleSettings.height;
-        this.sp = paddleSettings.sp;
-        this.color = paddleSettings.color;
-    }
-}
-
-// Ball class
-class Ball {
-    constructor(ballSettings) {
-        this.pos = new Vector(ballSettings.x, ballSettings.y, 0);
-		this.dir = new Vector(ballSettings.vX, ballSettings.vY, 0);
-        this.r = ballSettings.r;
-        this.sp = ballSettings.sp;
-        this.color = ballSettings.color;
+// Gamemode class
+class GameMode {
+    constructor(gamemodeData) {
+        this.nbrOfPlayers = gamemodeData.nbrOfPlayers;
+        this.nbrOfRounds = gamemodeData.nbrOfRounds; // nbr of points needed to win
+        this.timeLimit = gamemodeData.timeLimit; // in minutes. gamemode needs either a nbr of rounds or a time limit. if not, the game will be
+                                                // infinite and therefore the setup is invalid;
+                                                // also nice to have an internal maximum for the duration of a game in case one lobby stays on
+                                                // so we can find a way to kill it;
     }
 }
 
 // Field class
 class Field {
-    constructor(fieldSettings) {
-        this.paddleMin = fieldSettings.paddleMin;
-        this.paddleMax = fieldSettings.paddleMax;
-        this.playersMin = fieldSettings.playersMin;
-        this.playersMax = fieldSettings.playersMax;
-        this.goalMin = fieldSettings.goalMin;
-        this.goalMax = fieldSettings.goalMax;
-        this.wallMin = fieldSettings.wallMin;
-        this.wallMax = fieldSettings.wallMax;
-        this.ballMin = fieldSettings.ballMin;
-        this.ballMax = fieldSettings.ballMax;
-        
-        // this.[paddleSize, setPaddleSize] = useState(10);
-        // this.[goalSize, setGoalSize] = useState(paddleSize * 3);
-        // this.[wallSize, setWallSize] = useState(2);
-        // this.[ballSize, setBallSize] = useState(paddleMin);
-        // this.[nbrOfPlayers, setNbrOfPlayers] = useState(2);
-
-        this.nbrOfPlayers = fieldSettings.nbrOfPlayers;
-        this.wallToGoalRatio = fieldSettings.wallToGoalRatio;
-        this.goalSize = fieldSettings.goalSize;
+    constructor(fieldData) {
+        this.goalsSize = fieldData.sizeOfGoals;
+        this.wallsSize = fieldData.sizeOfGoals * fieldData.wallsFactor;
+        this.walls = [];
     }
 }
 
-// Score class
-class Score {
-    constructor(scoreSettings) {
-        this.color = scoreSettings.color;
-        this.fontsize = scoreSettings.fontsize;
-        this.font = scoreSettings.font;
+// Wall class
+class Wall {
+    constructor(lobbyData, wallSize) {
+        this.pos = new vecs.Vector(0, 0, 0);
+		this.dirToCenter = new vecs.Vector(0, 0, 0); // direction from the center of the object to the center of the field;
+        this.dirToTop = new vecs.Vector(0, 0, 0); // direction from the center of the object to the top side of the object
+                                             // (perpendicular to dirToCenter, on the x,y plane); (*)
+        this.angle = 0;
+        this.w = lobbyData.paddlesData.width;
+        this.h = wallSize;
+        this.col = 0xffffff;
     }
 }
+
+// Player class
+class Player {
+    constructor(lobbyData, i) {
+        this.accountID =lobbyData.playersData[i].accountID; // unique ID of the user account
+        this.socketID = -1; // ID of the client/server socket
+        this.ID = i; // position in the array of players in the lobby
+        this.login = lobbyData.playersData[i].login + `_${i}`; // user login
+        this.connected = false; // connection status
+        this.paddle = new Paddle(lobbyData, i); // creating paddle object for this player
+        this.color = lobbyData.playersData[i].color;
+        this.score = 0;
+    }
+}
+
+// Paddle class
+class Paddle {
+    constructor(lobbyData, i) {
+		this.pos = new vecs.Vector(0, 0, 0);
+        this.dir = new vecs.Vector(0, 0, 0);
+		this.dirToCenter = new vecs.Vector(0, 0, 0); // dirToCenter and dirToTop = same def as in Wall Class (*)
+        this.dirToTop = new vecs.Vector(1, 0, 0);
+        this.angle = 0;
+        this.w = lobbyData.paddlesData.width;
+        this.h = lobbyData.paddlesData.height;
+        this.sp = lobbyData.paddlesData.speed;
+        this.col = lobbyData.playersData[i].color;
+    }
+}
+
+// Ball class
+class Ball {
+    constructor(ballData) {
+        this.pos = new vecs.Vector(0, 0, 0);
+		this.dir = new vecs.Vector(0, 0, 0); // direction in which the ball is moving
+        this.lastHit = -1; // ID of the last player who hit the ball
+                           // Will be useful in gamemodes with more than 2 players where we want to give points to
+                           // the right player.
+        this.r = ballData.radius;
+        this.sp = ballData.speed;
+        this.col = ballData.color;
+    }
+}
+
+// *** :  All the vectors in the game are (for now at least) in the x,y plane, and therefore they have no z component;
+//      or to be more precise, a z component of 0. Vectors require a z component since in the client part we use threeJS,
+//      but all calculations are still performed in 2D.
+//      3D is only a visual effect and a design choice, and I have chosen to implement the z here in order to not think
+//      about it in the client and just transfer the values.
+//      Another possibility could have been to just put 0 for z everywhere in the client, maybe it would
+//      save calculations here. We will see.
 
 // Data class
 class Data {
-    constructor(dataSettings) {
-        this.field = new Field(dataSettings.field);
-        this.player1 = new Player(dataSettings.player1);
-        this.player2 = new Player(dataSettings.player2);
-        this.paddle1 = this.player1.paddle;
-        this.paddle2 = this.player2.paddle;
-        this.ball = new Ball(dataSettings.ball);
-        this.score = new Score(dataSettings.score);
+    constructor(lobbyData) {
+        // get the gamemode info from the lobby data;
+        this.gamemode = new GameMode(lobbyData.gamemodeData);
+
+        // create camera + field + ball objects
+        this.camera = new Camera();
+        this.field = new Field(lobbyData.fieldData);
+        this.ball = new Ball(lobbyData.ballData);
+
+        // create and fill the array of players
+        this.players = [];
+        for (let i=0; i<lobbyData.gamemodeData.nbrOfPlayers; i++) {
+            this.players.push(new Player(lobbyData, i));
+        }
+
+        // create walls & fill the array of walls
+        for (let i=0; i<lobbyData.gamemodeData.nbrOfPlayers; i++) {
+            this.field.walls.push(new Wall(lobbyData, this.field.wallsSize));
+        }
     }
 }
 
 // Creating an instance of the Data class
-const data = new Data(settings);
+// const data = new Data(settings);
 
-module.exports = data;
+module.exports = { Data };
