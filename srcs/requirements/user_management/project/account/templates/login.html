@@ -17,8 +17,9 @@
   </form>
 
   <div id="oneTimeCodeSection" style="display: none;">
+    {% csrf_token %}
     <input name="one_time_code" type="text" placeholder="One-Time Code">
-    <button onclick="submitOneTimeCode()">Submit Code</button>
+    <button onclick="submitOneTimeCode('login')">Submit Code</button>
   </div>
 
   <a href="#" id="signupLink">Sign up</a>
@@ -64,51 +65,77 @@
   }
   function submitLoginForm() {
     $.ajax({
-        url: '{% url "account:login" %}',
-        type: 'POST',
-        data: $('#loginForm').serialize(),
-        headers: { "X-CSRFToken": "{{ csrf_token }}" },
-        success: function (data) {
-          console.log('Login successful:', data);
-          // closeLoginPopup();
-          // window.location.href = '';
+      url: '{% url "account:login" %}',
+      type: 'POST',
+      data: $('#loginForm').serialize(),
+      headers: { "X-CSRFToken": "{{ csrf_token }}" },
+      success: function (data) {
+        console.log('Login successful:', data);
+        if (data.requires_2fa) {
+        // closeLoginPopup();
+        // window.location.href = '';
           $('#loginForm').hide();
           $('#oneTimeCodeSection').show();
-
-        },
-        error: function (xhr, textStatus, errorThrown) {
-            console.log('An error occurred while processing your request.');
-            var response = JSON.parse(xhr.responseText);
-            if (response && response.error) {
-                displayErrorMessage(response.error);
-            }
-            else {
-                displayErrorMessage('An error occurred while processing your request.');
-            }
-        }  
+        } else {
+          console.log('2FA not required');
+        }
+      },
+      error: function (xhr, textStatus, errorThrown) {
+        console.log('An error occurred while processing your request.');
+        var response = JSON.parse(xhr.responseText);
+        if (response && response.error) {
+            displayErrorMessage(response.error);
+        } else {
+            displayErrorMessage('An error occurred while processing your request.');
+        }
+      }  
     });
   }
-  function submitOneTimeCode() {
+  function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      var cookies = document.cookie.split(';');
+      for (var i = 0; i < cookies.length; i++) {
+        var cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+  function submitOneTimeCode(context) {
     var oneTimeCode = $('input[name="one_time_code"]').val();
-    var csrfToken = $('[name="csrfmiddlewaretoken"]').val();
     console.log('submitOneTimeCode submit');
     $.ajax({
       url: '{% url "account:verify_one_time_code" %}',
       type: 'POST',
-      data: { 'one_time_code': oneTimeCode },
-      headers: { "X-CSRFToken": csrfToken },
+      data: { 'one_time_code': oneTimeCode, 'context': context },
+      headers: { "X-CSRFToken": getCookie('csrftoken') },
       success: function (data) {
         console.log('One-time code verification successful:', data);
+        closeLoginPopup();
+        window.location.href = '';
       },
       error: function (xhr, textStatus, errorThrown) {
         console.log('One-time code verification failed.');
+        var response;
+        try {
+          response = JSON.parse(xhr.responseText);
+        } catch (e) {
+          response = { error: 'An error occurred while processing your request.' };
+        }
+        displayErrorMessage(response.error);
+      },
+      complete: function (xhr, textStatus) {
+        console.log('Request complete. Status:', textStatus);
       }
     });
   }
   
 
   function displayErrorMessage(message) {
-    // Assuming you have an element with the id "errorMessage" to display the error message
     $('#errorMessage').text(message).css('color', 'red');
 }
 </script>
