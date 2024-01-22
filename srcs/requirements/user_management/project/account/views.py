@@ -11,7 +11,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
-
+#JWT
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -21,6 +21,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 import jwt
 from django.conf import settings
 # 2FA
+import json
+from django.core.validators import validate_email
 import random
 from django.core.mail import send_mail
 from django.utils.crypto import get_random_string
@@ -85,7 +87,10 @@ def api_login_view(request):
 def generate_one_time_code():
     return get_random_string(length=6, allowed_chars='1234567890')
 
-def send_one_time_code(request, email):
+@csrf_exempt
+def send_one_time_code(request, email=None):
+    if email is None and request.method == 'POST':
+        email = request.POST.get('email', None)
     one_time_code = generate_one_time_code()
     request.session['one_time_code'] = one_time_code
 
@@ -96,6 +101,8 @@ def send_one_time_code(request, email):
     to_email = email
     send_mail(subject, message, from_email, [to_email])
 
+    return JsonResponse({'success': True})
+
 @csrf_protect
 def verify_one_time_code(request):
     if request.method == 'POST':
@@ -103,6 +110,7 @@ def verify_one_time_code(request):
         print("\n\nCSRF Token from request:", request.headers.get('X-CSRFToken'))
         submitted_code = request.POST.get('one_time_code')
         stored_code = request.session.get('one_time_code')
+        context = request.POST.get('context')
         print("\n\ncode from Session : ", stored_code)
         print("code from User : ", submitted_code, '\n\n')
         pending_username = request.session.get('pending_username')
@@ -110,17 +118,18 @@ def verify_one_time_code(request):
             user = User.objects.get(username=pending_username)
             if submitted_code == stored_code:
                 del request.session['one_time_code']
-                login(request, user)
-                user.is_online = True
-                print(f"Is Online: {user.is_online}")
-                user.save()
-                return JsonResponse({'message': 'One-time code verification successful', 'csrf_token': csrf_token})
+                if context == 'login':
+                    login(request, user)
+                    user.is_online = True
+                    print(f"Is Online: {user.is_online}")
+                    user.save()
+                return JsonResponse({'success': True, 'message': 'One-time code verification successful', 'csrf_token': csrf_token})
             else:
-                return JsonResponse({'error': 'One-time code verification failed', 'csrf_token': csrf_token}, status=400)
+                return JsonResponse({'success': False, 'error': 'One-time code verification failed', 'csrf_token': csrf_token}, status=400)
         else:
-            return JsonResponse({'error': 'User authentication not found'}, status=400)
+            return JsonResponse({'success': False, 'error': 'User authentication not found'}, status=400)
 
-    return JsonResponse({'error': 'Invalid request method'}, status=400)
+    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=400)
 
 def get_serializer(user):
     if user.is_authenticated:
@@ -147,13 +156,23 @@ def api_signup_view(request):
         username = request.POST["username"]
         password = request.POST["password"]
         playername = request.POST["playername"]
-        email = request.POST["email"]
-        # email = request.POST["email"]
+        email = request.POST["signupEmail"]
 
         try:
             validate_password(password, user=User(username=username))
         except ValidationError as e:
             return JsonResponse({'success': False, 'error_message': e.messages[0]})
+
+        try:
+            validate_email(email)
+        except ValidationError:
+            return JsonResponse({'success': False, 'error_message': 'Invalid email'})
+
+        if User.objects.filter(username=username).exists():
+            return JsonResponse({'success': False, 'error_message': 'Username already exists'})
+
+        if User.objects.filter(playername=playername).exists():
+            return JsonResponse({'success': False, 'error_message': 'Playername already exists'})
 
         user = User(
             username=username,
@@ -220,9 +239,13 @@ def profile_update_view(request):
         
         if user_form.is_valid():
             user = user_form.save(commit=False)
-            user.save()
-            messages.success(request, 'Your profile has update.')
-            return redirect('account:detail')
+            if User.objects.filter(playername=user.playername).exclude(username=request.user.username).exists():
+                messages.error(request, 'Playername already exists. Please choose a different one.')
+                return redirect('account:profile_update')
+            else:
+                user.save()    
+                messages.success(request, 'Your profile has update.')
+                return redirect('account:detail')
     else:
         user_form = ProfileUpdateForm(instance=request.user)
 

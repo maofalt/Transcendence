@@ -19,7 +19,7 @@
   <div id="oneTimeCodeSection" style="display: none;">
     {% csrf_token %}
     <input name="one_time_code" type="text" placeholder="One-Time Code">
-    <button onclick="submitOneTimeCode()">Submit Code</button>
+    <button onclick="submitOneTimeCode('login')">Submit Code</button>
   </div>
 
   <a href="#" id="signupLink">Sign up</a>
@@ -105,13 +105,13 @@
     }
     return cookieValue;
   }
-  function submitOneTimeCode() {
+  function submitOneTimeCode(context) {
     var oneTimeCode = $('input[name="one_time_code"]').val();
     console.log('submitOneTimeCode submit');
     $.ajax({
       url: '{% url "account:verify_one_time_code" %}',
       type: 'POST',
-      data: { 'one_time_code': oneTimeCode },
+      data: { 'one_time_code': oneTimeCode, 'context': context },
       headers: { "X-CSRFToken": getCookie('csrftoken') },
       success: function (data) {
         console.log('One-time code verification successful:', data);
