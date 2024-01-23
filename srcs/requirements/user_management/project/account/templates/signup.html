@@ -131,11 +131,17 @@
     function verifyCode(context) {
         var email = $("#signupEmail").val();
         var verificationCode = $("#verificationCode").val();
+        var username = $("#signupForm input[name='username']").val();
+        console.log('Username:', username);
 
         $.ajax({
             url: '{% url "account:verify_one_time_code" %}',
             type: 'POST',
-            data: { 'email': email, 'one_time_code': verificationCode, 'context': context },
+            data: {
+                'email': email,
+                'one_time_code': verificationCode,
+                'context': context,
+                'pending_username': username },
             headers: { "X-CSRFToken": getCookie('csrftoken') },
             success: function (data) {
                 if (data.success) {
