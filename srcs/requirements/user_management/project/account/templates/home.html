@@ -53,8 +53,7 @@
   <div id="darkLayer"></div>
 
 <h1>Login</h1>
-<button id="devDbButton">DEV-DB</button>
-<p></p>
+
 {% if user.is_authenticated %}
 <p>Welcome {{ user.username }}</p>
 <form method="post" action="{% url 'account:logout' %}">
@@ -70,9 +69,11 @@
 {% include 'login.html' %}
 {% endif %}
 
+<p></p>
+<button id="devDbButton">DEV-DB</button>
+<p></p>
 
 <script>
-  // jQuery code for handling the DEV-DB button click
   $(document).ready(function () {
       $('#devDbButton').on('click', function () {
           $.ajax({
@@ -80,9 +81,10 @@
               url: '{% url "account:print_db" %}',
               success: function (data) {
                   console.log('Print all user data successful:', data);
+                  window.location.href = '{% url "account:print_db" %}';
               },
               error: function (error) {
-                  console.error('Error printing all user data:', error);
+                  console.error('Error Cannot print user data:', error);
               }
           });
       });

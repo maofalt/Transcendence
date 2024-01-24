@@ -18,7 +18,7 @@ urlpatterns = [
     path("password_update", views.password_update_view, name="password_update"),
     path('verify_one_time_code', views.verify_one_time_code, name='verify_one_time_code'),
     path('send_one_time_code', views.send_one_time_code, name='send_one_time_code'),
-    path('developer_setting', views.print_all_user_data, name='print_db')
+    path('developer_setting', views.print_all_user_data, name='print_db'),
 ]
 
 if settings.DEBUG:

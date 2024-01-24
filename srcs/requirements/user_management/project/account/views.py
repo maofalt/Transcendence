@@ -118,10 +118,10 @@ def verify_one_time_code(request):
         pending_username = request.session.get('pending_username') or request.POST.get('pending_username')
         print("pending_username : ", pending_username, '\n\n')
         if pending_username:
-            user = User.objects.get(username=pending_username)
             if submitted_code == stored_code:
                 del request.session['one_time_code']
                 if context == 'login':
+                    user = User.objects.get(username=pending_username)
                     login(request, user)
                     user.is_online = True
                     print(f"Is Online: {user.is_online}")
@@ -301,14 +301,6 @@ class UserAPIView(APIView):
 
 def print_all_user_data(request):
     all_users = User.objects.all()
+    context = {'users': all_users}
 
-    for user in all_users:
-        print(f"User ID: {user.id}")
-        print(f"Username: {user.username}")
-        print(f"Email: {user.email}")
-        print(f"Playername: {user.playername}")
-        print(f"Is Online: {user.is_online}")
-        print(f"Date Joined: {user.date_joined}")
-        print("-----")
-
-    return render(request, 'print_user_data.html', {'users': all_users})
+    return render(request, 'print_user_data.html', context)
