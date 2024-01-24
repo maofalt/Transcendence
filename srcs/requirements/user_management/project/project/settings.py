@@ -150,6 +150,9 @@ EMAIL_HOST_USER = 'cscard1002@gmail.com'
 EMAIL_HOST_PASSWORD = 'dhefhwnswtqtldzz'
 
 
+SECURE_SSL_REDIRECT = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 

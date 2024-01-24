@@ -1,5 +1,8 @@
 from .models import User
 from .forms import ProfileUpdateForm, PasswordUpdateForm
+from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
+from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView
+from django.urls import reverse_lazy
 from gameHistory_microservice.models import GameStats
 from django.db.utils import IntegrityError
 from django.core.exceptions import ValidationError
@@ -12,6 +15,14 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
+from django.db import transaction
+from django.urls import reverse
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.template.loader import render_to_string
+import secrets
+
+import logging
 
 #JWT
 from rest_framework.views import APIView
@@ -30,6 +41,9 @@ from django.core.mail import send_mail
 from django.utils.crypto import get_random_string
 from django.contrib.sessions.models import Session
 from django.middleware.csrf import get_token
+
+logger = logging.getLogger(__name__)
+User = get_user_model()
 
 def home(request):
     return render(request, 'home.html')
@@ -211,13 +225,18 @@ def api_signup_view(request):
 def delete_account(request):
     user = request.user
     try:
-        user.game_stats.delete()
+        with transaction.atomic():
+            user.game_stats.all().delete()
 
         user.is_online = False
         user.save()
         request.user.delete()
-        return JsonResponse({'success': True, 'message': '사용자 계정이 성공적으로 삭제되었습니다.'})
+
+        logger.info(f"User {user.username} deleted successfully.")
+        
+        return JsonResponse({'success': True, 'message': 'Account deleted successfully'})
     except Exception as e:
+        logger.error(f"Error deleting account: {str(e)}")
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 
@@ -285,6 +304,71 @@ def password_update_view(request):
     
     return render(request, 'password_update.html', {'form': form})
 
+# def password_resetForm_view(request, token):
+#     print("\n\n>> access from link sent by email\n")
+#     if not token:
+#         return JsonResponse({'success': False, 'error': 'Token not provided'})
+#     try:
+#         user = User.objects.get(reset_token=token)
+#     except User.DoesNotExist:
+#         return JsonResponse({'success': False, 'error': 'User not found'})
+
+#     if request.method == 'POST':
+#         form = PasswordResetForm(request.POST)
+#         if form.is_valid():
+#             form.save(request=request)
+#             messages.success(request, 'Your password has been reset successfully. Please login again.')
+#             return redirect('account:login')
+#         else:
+#         form = PasswordResetForm()
+
+#     return render(request, 'password_reset.html', {'form': form})
+
+class CustomPasswordResetView(PasswordResetView):
+    template_name = 'password_reset.html'
+    email_template_name = 'password_reset_email.html'
+    form_class = PasswordResetForm
+    success_url = reverse_lazy('account:password_reset_done')
+
+class CustomPasswordResetConfirmView(PasswordResetConfirmView):
+    template_name = 'password_reset_confirm.html'
+    form_class = SetPasswordForm 
+
+def password_reset_link(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        print("usernamen: ", username)
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'User not found'})
+
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = generate_unique_token()
+        # user.reset_token = token
+        # user.save()
+
+        # reset_url = request.build_absolute_uri(reverse_lazy('account:password_reset'))
+
+        reset_url = request.build_absolute_uri(reverse_lazy('account:password_reset_confirm', kwargs={'uidb64': uid, 'token': token}))
+        print("reset_link: ", reset_url)
+
+        print("\n\nCHECK UNIQUE TOKEN: ", token)
+        subject = 'Pong Password Reset'
+        email_content = render_to_string('password_reset_email.html', {'reset_url': reset_url, 'user': user})
+        from_email = 'no-reply@student.42.fr' 
+        to_email = user.email
+        send_mail(subject, email_content, from_email, [to_email], fail_silently=False)
+        # view = CustomPasswordResetView.as_view()
+        # return view.dispatch(request)
+        return JsonResponse({'success': True, 'message': 'Password reset link sent successfully'})
+
+    else:
+        return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+
+def generate_unique_token():
+    return secrets.token_hex(32)
 
 class UserAPIView(APIView):
     def get(self, request, *args, **kwargs):

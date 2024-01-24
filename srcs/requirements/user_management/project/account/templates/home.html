@@ -54,6 +54,10 @@
 
 <h1>Login</h1>
 
+<p></p>
+<button id="devDbButton">DEV-DB</button>
+<p></p>
+
 {% if user.is_authenticated %}
 <p>Welcome {{ user.username }}</p>
 <form method="post" action="{% url 'account:logout' %}">
@@ -68,10 +72,6 @@
 <a href="#" id="loginLink">Log in</a>
 {% include 'login.html' %}
 {% endif %}
-
-<p></p>
-<button id="devDbButton">DEV-DB</button>
-<p></p>
 
 <script>
   $(document).ready(function () {
