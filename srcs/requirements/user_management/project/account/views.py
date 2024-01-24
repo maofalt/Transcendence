@@ -1,16 +1,18 @@
-from django.contrib.auth import authenticate, login, logout, get_user_model
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
 from .models import User
-from django.contrib.auth.hashers import make_password, check_password
-from django.contrib.auth.decorators import login_required
 from .forms import ProfileUpdateForm, PasswordUpdateForm
 from gameHistory_microservice.models import GameStats
 from django.db.utils import IntegrityError
-from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-from django.http import JsonResponse
+from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout, get_user_model
+from django.contrib.auth.hashers import make_password, check_password
+from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
+from django.http import JsonResponse
+from django.shortcuts import render, redirect, get_object_or_404
+
 #JWT
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -180,6 +182,7 @@ def api_signup_view(request):
             password=make_password(password),
             playername=playername,
         )
+        print("PASSWORD : ", password)
 
         try:
             user.save()
@@ -201,6 +204,21 @@ def api_signup_view(request):
         return JsonResponse({'success': True})
 
     return JsonResponse({'success': False, 'error_message': 'Invalid request method'}, status=400)
+
+@require_POST
+@login_required
+def delete_account(request):
+    user = request.user
+    try:
+        user.game_stats.delete()
+
+        user.is_online = False
+        user.save()
+        request.user.delete()
+        return JsonResponse({'success': True, 'message': '사용자 계정이 성공적으로 삭제되었습니다.'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
 
 @login_required
 def friend_view(request):
@@ -280,3 +298,16 @@ class UserAPIView(APIView):
             return Response({"detail": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
 
+def print_all_user_data(request):
+    all_users = User.objects.all()
+
+    for user in all_users:
+        print(f"User ID: {user.id}")
+        print(f"Username: {user.username}")
+        print(f"Email: {user.email}")
+        print(f"Playername: {user.playername}")
+        print(f"Is Online: {user.is_online}")
+        print(f"Date Joined: {user.date_joined}")
+        print("-----")
+
+    return render(request, 'print_user_data.html', {'users': all_users})

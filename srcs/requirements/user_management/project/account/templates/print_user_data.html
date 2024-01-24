@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Data</title>
+</head>
+<body>
+
+<h2>User Data</h2>
+
+<table border="1">
+    <tr>
+        <th>User ID</th>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Playername</th>
+        <th>Is Online</th>
+        <th>Date Joined</th>
+    </tr>
+    
+    {% for user in users %}
+        <tr>
+            <td>{{ user.id }}</td>
+            <td>{{ user.username }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.playername }}</td>
+            <td>{{ user.is_online }}</td>
+            <td>{{ user.date_joined }}</td>
+        </tr>
+    {% endfor %}
+</table>
+
+</body>
+</html>

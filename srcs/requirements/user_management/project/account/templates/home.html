@@ -53,6 +53,8 @@
   <div id="darkLayer"></div>
 
 <h1>Login</h1>
+<button id="devDbButton">DEV-DB</button>
+<p></p>
 {% if user.is_authenticated %}
 <p>Welcome {{ user.username }}</p>
 <form method="post" action="{% url 'account:logout' %}">
@@ -68,3 +70,21 @@
 {% include 'login.html' %}
 {% endif %}
 
+
+<script>
+  // jQuery code for handling the DEV-DB button click
+  $(document).ready(function () {
+      $('#devDbButton').on('click', function () {
+          $.ajax({
+              type: 'GET',
+              url: '{% url "account:print_db" %}',
+              success: function (data) {
+                  console.log('Print all user data successful:', data);
+              },
+              error: function (error) {
+                  console.error('Error printing all user data:', error);
+              }
+          });
+      });
+  });
+</script>
