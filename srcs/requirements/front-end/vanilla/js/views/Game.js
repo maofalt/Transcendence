@@ -142,6 +142,11 @@ export default class Game extends AbstractView {
 
 		this.camera.position.set(data.camera.pos.x, data.camera.pos.y, data.camera.pos.z);
 		this.camera.lookAt(new THREE.Vector3(data.camera.target.x, data.camera.target.y, data.camera.target.z));
+		// for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
+		// 	if (data.players[i].socketID = io) {
+		// 		this.camera.rotation.set(0, 0, data.players[i].paddle.angle);
+		// 	}
+		// }
 		// for later : set cam rotation depending on which client this is so the player is always at the same place;
 		
 		this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -167,6 +172,7 @@ export default class Game extends AbstractView {
 	updateScene(data) {
 		console.log("Updating Scene...");
 		this.ball.mesh.position.set(data.ball.pos.x, data.ball.pos.y, 0);
+		this.ball.dirMesh.position.set(data.ball.pos.x, data.ball.pos.y, 0);
 		for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
 			this.paddles[i].mesh.position.set(data.players[i].paddle.pos.x, data.players[i].paddle.pos.y, data.players[i].paddle.pos.z);
 			this.paddles[i].mesh.material.opacity = data.players[i].connected ? 0.7 : 0.3;
@@ -177,7 +183,7 @@ export default class Game extends AbstractView {
 
 	drawAxes() {
 		// axes length
-		const axisLength = 5;
+		const axisLength = 10;
 		const center = new THREE.Vector3(0, 0, 0);
 		// X, Y & Z in Red, Green & Blue
 		const arrowX = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), center, axisLength, 0xff0000);
@@ -197,7 +203,7 @@ export default class Game extends AbstractView {
 			new THREE.Vector3(data.ball.dir.x,
 							data.ball.dir.y,
 							data.ball.dir.z,),
-				data.ball.pos, 5, 0xff0000);
+				data.ball.pos, 10, 0xff0000);
 
         this.ball = new SpObject(new THREE.Mesh(ballGeometry, ballMaterial), dir1);
 		
@@ -229,12 +235,12 @@ export default class Game extends AbstractView {
 				new THREE.Vector3(data.players[i].paddle.dirToCenter.x,
 								data.players[i].paddle.dirToCenter.y,
 								data.players[i].paddle.dirToCenter.z,),
-					data.players[i].paddle.pos, 5, 0xff0000);
+					data.players[i].paddle.pos, 10, 0xff0000);
 			const dir2 = new THREE.ArrowHelper(
 				new THREE.Vector3(data.players[i].paddle.dirToTop.x,
 								data.players[i].paddle.dirToTop.y,
 								data.players[i].paddle.dirToTop.z,),
-					data.players[i].paddle.pos, 5, 0x00ff00);
+					data.players[i].paddle.pos, 10, 0x00ff00);
 
             this.paddles[i] = new BoxObject(new THREE.Mesh(paddleGeometry, paddleMaterial), dir1, dir2);
 			this.scene.add(this.paddles[i].mesh); // add mesh to the scene

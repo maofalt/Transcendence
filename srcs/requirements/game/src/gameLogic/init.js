@@ -22,7 +22,7 @@ function initLoop(data, wallDist, goalDist, angle) {
         data.players[i].paddle.pos.y = (goalDist - data.players[i].paddle.w * 2) * mSin;
         
         // setup the players paddles vectors :
-        data.players[i].paddle.dirToCenter = center.getDirFrom(data.players[i].paddle.pos);
+        data.players[i].paddle.dirToCenter = center.getDirFrom(data.players[i].paddle.pos).normalize();
         data.players[i].paddle.dirToTop = data.players[i].paddle.dirToCenter.rotateAroundZ(-Math.PI / 2);
         // data.players[i].paddle.dirToCenter = something; // need to add the other direction vector but will check out best formula for this
 
@@ -42,9 +42,19 @@ function initLoop(data, wallDist, goalDist, angle) {
         data.field.walls[i].pos.y = wallDist * mSin;
 
         // set up the walls vectors
-        data.field.walls[i].dirToCenter = center.getDirFrom(data.field.walls[i].pos);
+        data.field.walls[i].dirToCenter = center.getDirFrom(data.field.walls[i].pos).normalize();
         data.field.walls[i].dirToTop = data.field.walls[i].dirToCenter.rotateAroundZ(-Math.PI / 2);
         // data.players[i].paddle.dirToCenter = something; // need to add the other direction vector but will check out best formula for this
+    }
+}
+
+function initWalls(data) {
+    let wall = 0;
+
+    for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
+        wall = data.field.walls[i];
+        wall.top = wall.pos.add(wall.dirToTop.scale(wall.h / 2));
+        wall.bottom = wall.pos.add(wall.dirToTop.scale(-wall.h / 2));
     }
 }
 
@@ -61,6 +71,7 @@ function initFieldShape(data) {
     data.camera.pos.z = wallDist < goalDist ? (goalDist * 2) : (wallDist * 2);
 
     initLoop(data, wallDist, goalDist, angle); // looping through the players array and the walls array to init their pos and dir;
+    initWalls(data);
 }
 
 function initLobby(lobbyData) {
@@ -69,7 +80,6 @@ function initLobby(lobbyData) {
     debugDisp.displayData(data); // display the game data
     initFieldShape(data); // init angles + positions of players and walls;
     debugDisp.displayData(data); // display the game data
-
     return data;
 }
 

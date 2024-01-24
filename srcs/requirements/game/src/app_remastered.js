@@ -68,7 +68,7 @@ function waitingLoop() {
     // console.log("sending render");
 }
 
-gameInterval = setInterval(waitingLoop, 20);
+// gameInterval = setInterval(waitingLoop, 20);
 
 //====================================== SOCKET HANDLING ======================================//
 
@@ -89,8 +89,9 @@ function handleConnection(client) {
     console.log(`Client connected with ID: ${client.id}`);
     console.log(`Number of connected clients: ${io.engine.clientsCount}`);
 
+    data.ball.dir.y = -1;
+    gameInterval = setInterval(waitingLoop, 20);
     client.emit('generate', data);
-
     debugDisp.displayData(data);
 }
 
