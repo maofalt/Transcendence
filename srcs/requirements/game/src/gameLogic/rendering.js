@@ -38,6 +38,8 @@ function ballHitsPaddle(data) {
         // if (ball.pos.getDistFrom(paddle.pos) < ball.sp + ball.r) {
         potentialHitPoint = ball.pos.add(paddle.dirToCenter.scale(-ball.r));
         futureHitPos = potentialHitPoint.add(ball.dir.scale(ball.sp));
+        paddle.top = paddle.pos.add(paddle.dirToTop.scale(paddle.h / 2));
+        paddle.bottom = paddle.pos.add(paddle.dirToTop.scale(-paddle.h / 2));
         hitScaler = vecs.segmentsIntersect(
             potentialHitPoint,
             futureHitPos,

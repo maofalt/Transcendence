@@ -2,3 +2,5 @@ ws-simple/
 trancendence-front-end/
 game/
 srcs/requirements/node_modules/
+node_modules/
+package.json
