@@ -38,8 +38,6 @@ function ballHitsPaddle(data) {
         // if (ball.pos.getDistFrom(paddle.pos) < ball.sp + ball.r) {
         potentialHitPoint = ball.pos.add(paddle.dirToCenter.scale(-ball.r));
         futureHitPos = potentialHitPoint.add(ball.dir.scale(ball.sp));
-        paddle.top = paddle.pos.add(paddle.dirToTop.scale(paddle.h / 2));
-        paddle.bottom = paddle.pos.add(paddle.dirToTop.scale(-paddle.h / 2));
         hitScaler = vecs.segmentsIntersect(
             potentialHitPoint,
             futureHitPos,
@@ -48,8 +46,9 @@ function ballHitsPaddle(data) {
         );
         if (hitScaler > 0) {
             let ballPath = futureHitPos.getDirFrom(potentialHitPoint).normalize();
-            // ball.pos = futureHitPos.add(ballPath.scale(hitScaler)).add(paddle.dirToCenter.scale(-ball.r));
-            ball.dir = ball.dir.scale(-1);
+            ball.pos = potentialHitPoint.add(ballPath.scale(hitScaler)).add(paddle.dirToCenter.scale(ball.r));
+            // ball.dir = ball.dir.scale(-1);
+            ball.dir = paddle.pos.getDirFrom(ball.pos).normalize();
             console.log("!!!!!!!!!!!!!!!!! COLLISION WESH !!!!!!!!!!!!!!");
             return true;
         }
@@ -68,6 +67,8 @@ function updatePaddles(data) {
         // curr pad speed ${currPaddle.sp}
         // curr pad dir to top ${currPaddle.dir.scale(currPaddle.sp).x}, ${currPaddle.dir.scale(currPaddle.sp).y}`);
         currPaddle.pos = currPaddle.pos.add(currPaddle.dir.scale(currPaddle.sp));
+        currPaddle.top = currPaddle.top.add(currPaddle.dir.scale(currPaddle.sp));
+        currPaddle.bottom = currPaddle.bottom.add(currPaddle.dir.scale(currPaddle.sp));
     }
 }
 

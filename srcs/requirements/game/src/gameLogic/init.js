@@ -54,7 +54,21 @@ function initWalls(data) {
     for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
         wall = data.field.walls[i];
         wall.top = wall.pos.add(wall.dirToTop.scale(wall.h / 2));
+        wall.top = wall.top.add(wall.dirToCenter.scale(wall.w / 2));
         wall.bottom = wall.pos.add(wall.dirToTop.scale(-wall.h / 2));
+        wall.bottom = wall.bottom.add(wall.dirToCenter.scale(wall.w / 2));
+    }
+}
+
+function initPaddles(data) {
+    let paddle = 0;
+
+    for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
+        paddle = data.players[i].paddle;
+        paddle.top = paddle.pos.add(paddle.dirToTop.scale(paddle.h / 2));
+        paddle.top = paddle.top.add(paddle.dirToCenter.scale(paddle.w / 2));
+        paddle.bottom = paddle.pos.add(paddle.dirToTop.scale(-paddle.h / 2));
+        paddle.bottom = paddle.bottom.add(paddle.dirToCenter.scale(paddle.w / 2));
     }
 }
 
@@ -72,6 +86,7 @@ function initFieldShape(data) {
 
     initLoop(data, wallDist, goalDist, angle); // looping through the players array and the walls array to init their pos and dir;
     initWalls(data);
+    initPaddles(data);
 }
 
 function initLobby(lobbyData) {
