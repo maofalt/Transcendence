@@ -19,8 +19,11 @@ function ballHitsWall(data) {
         if (hitScaler > 0) {
             let ballPath = futureHitPos.getDirFrom(potentialHitPoint).normalize();
             // ball.pos = futureHitPos.add(ballPath.scale(hitScaler)).add(wall.dirToCenter.scale(-ball.r));
-            ball.dir = ball.dir.scale(-1);
-            console.log("!!!!!!!!!!!!!!!!! COLLISION WESH !!!!!!!!!!!!!!");
+            // ball.dir = ball.dir.scale(-1);
+            let dot = ball.dir.dotProduct(wall.dirToCenter);
+            let a = Math.acos(dot / ball.dir.mag * wall.dirToCenter.mag);
+            ball.dir = ball.dir.rotateAroundZ(-2 * a);
+            console.log("!!!!!!!!!!!!!!!!! COLLISION WALL WESH !!!!!!!!!!!!!!");
             return true;
         }
         // }
@@ -48,7 +51,7 @@ function ballHitsPaddle(data) {
             let ballPath = futureHitPos.getDirFrom(potentialHitPoint).normalize();
             ball.pos = potentialHitPoint.add(ballPath.scale(hitScaler)).add(paddle.dirToCenter.scale(ball.r));
             // ball.dir = ball.dir.scale(-1);
-            ball.dir = paddle.pos.getDirFrom(ball.pos).normalize();
+            ball.dir = ball.pos.getDirFrom(paddle.pos).normalize();
             console.log("!!!!!!!!!!!!!!!!! COLLISION WESH !!!!!!!!!!!!!!");
             return true;
         }
