@@ -90,7 +90,8 @@ function handleConnection(client) {
     console.log(`Number of connected clients: ${io.engine.clientsCount}`);
 
     data.ball.dir.y = -1;
-    gameInterval = setInterval(waitingLoop, 20);
+    if (io.engine.clientsCount == 1)
+        gameInterval = setInterval(waitingLoop, 20);
     client.emit('generate', data);
     debugDisp.displayData(data);
 }
