@@ -1,8 +1,8 @@
 from .models import User
+from django import forms
 from .forms import ProfileUpdateForm, PasswordUpdateForm
 from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
-from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView
-from django.urls import reverse_lazy
+from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView, PasswordResetDoneView
 from gameHistory_microservice.models import GameStats
 from django.db.utils import IntegrityError
 from django.core.exceptions import ValidationError
@@ -13,16 +13,19 @@ from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db import transaction
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_decode
+from django.views.generic.edit import FormView
 import secrets
 
 import logging
+
 
 #JWT
 from rest_framework.views import APIView
@@ -320,19 +323,103 @@ def password_update_view(request):
 #             messages.success(request, 'Your password has been reset successfully. Please login again.')
 #             return redirect('account:login')
 #         else:
-#         form = PasswordResetForm()
+#             form = PasswordResetForm()
 
 #     return render(request, 'password_reset.html', {'form': form})
 
-class CustomPasswordResetView(PasswordResetView):
-    template_name = 'password_reset.html'
-    email_template_name = 'password_reset_email.html'
-    form_class = PasswordResetForm
-    success_url = reverse_lazy('account:password_reset_done')
+class CustomPasswordResetDoneView(PasswordResetDoneView):
+    template_name = 'password_reset_done.html'
+
+def custom_password_reset_done(request):
+    if request.method == 'POST':
+        return JsonResponse({'success': True, 'message': 'Password reset successful'})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+class CustomPasswordResetForm(SetPasswordForm):
+    """
+    A custom password reset form without the 'user' argument in the __init__ method.
+    """
+    new_password1 = forms.CharField(
+        label="New password",
+        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}),
+        strip=False,
+    )
+    new_password2 = forms.CharField(
+        label="Confirm new password",
+        strip=False,
+        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}),
+    )
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, user=user, **kwargs)
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.save()
+        return user
 
 class CustomPasswordResetConfirmView(PasswordResetConfirmView):
     template_name = 'password_reset_confirm.html'
-    form_class = SetPasswordForm 
+    form_class = CustomPasswordResetForm 
+
+    def get_user(self, uidb64):
+        try:
+            uid = urlsafe_base64_decode(uidb64).decode()
+            user = User.objects.get(pk=uid)
+            print("--> Found user:", user)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+            print("--> User not found.")
+        return user
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.get_user(self.kwargs.get('uidb64', ''))
+
+        if user is not None:
+            context['user'] = user
+            context['token'] = self.kwargs.get('token', '')
+            form = self.form_class(user=user)
+            context['form'] = form
+            print("--> get_context_data: ", context['user'])
+        else:
+            # Handle the case where the user is not found
+            # You might want to add an error message or redirect
+            print("--> User not found.")
+            context['user'] = None
+
+        return context
+
+    def post(self, request, *args, **kwargs):
+        print("POST method is called.")
+        uidb64 = kwargs.get('uidb64', '')
+        token = kwargs.get('token', '')
+        
+        user = self.get_user(uidb64)
+
+        print("Form data:", request.POST)
+        form = self.form_class(request.POST, user=user)
+
+        if form.is_valid():
+            print("Form is valid. User: ", user)
+            print("New password 1:", form.cleaned_data['new_password1'])
+            print("New password 2:", form.cleaned_data['new_password2'])
+
+            if user is not None and default_token_generator.check_token(user, token):
+                print("Token validation successful.")
+                form.save()
+                login(self.request, user)
+                print("Password reset successful.")
+                return JsonResponse({'success': True, 'redirect_url': '/api/user_management/password_reset/done/'})
+            else:
+                print("Token validation failed.")
+                return JsonResponse({'success': False, 'error_message': 'Invalid password reset link.'})
+        else:
+            print("Form is not valid. Errors:", form.errors)
+
+        return JsonResponse({'success': False, 'error_message': 'Form validation failed.'})
 
 def password_reset_link(request):
     if request.method == 'POST':
