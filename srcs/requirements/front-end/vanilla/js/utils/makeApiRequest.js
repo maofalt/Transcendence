@@ -3,6 +3,7 @@ export async function makeApiRequest(url, method = 'GET', body = null, headers =
         // Setting up default headers
         const defaultHeaders = {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
             ...headers,
         };
 
@@ -20,14 +21,25 @@ export async function makeApiRequest(url, method = 'GET', body = null, headers =
         // Making the fetch call
         const response = await fetch(url, options);
 
-        // Parsing JSON response
-        const data = await response.json();
+        // Check if response is OK
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
 
-        // Returning status code and data
-        return {
-            status: response.status,
-            body: data
-        };
+        // Check if response is JSON
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+            const data = await response.json();
+            return {
+                status: response.status,
+                body: data
+            };
+        } else {
+            return {
+                status: response.status,
+                body: "Response not JSON"
+            };
+        }
 
     } catch (error) {
         // Returning error details

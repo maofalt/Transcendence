@@ -1,5 +1,6 @@
 import '@css/tournament.css'
 import AbstractView from "./AbstractView";
+import { makeApiRequest } from '@utils/makeApiRequest.js';
 
 export default class Tournament extends AbstractView {
     constructor(element) {
@@ -77,10 +78,15 @@ export default class Tournament extends AbstractView {
             titleElement,
             // deleteButton, 
             tournamentListTable);
-        // tournamentContainer.appendChild(titleElement);
-        // tournamentContainer.appendChild(deleteButton);
 
-        // this.appendChildren(tournamentContainer)
+        // get info from tournament api
+        try {
+            const response = await makeApiRequest('api/tournament/create-and-list/', 'GET');
+            console.log('Status Code:', response.status);
+            console.log('Response Body:', response.body);
+        } catch (error) {
+            console.error('Request Failed:', error);
+        }
 
         const htmlContent = tournamentContainer.innerHTML;
 
