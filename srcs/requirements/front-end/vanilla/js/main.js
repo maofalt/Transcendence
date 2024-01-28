@@ -65,7 +65,7 @@ let currentView = null;
 
 const router = async () => {
 	const path = window.location.pathname; // get the current path
-	const match = routes[Object.keys(routes).find(route => route == path)] || routes['/404']; // find the matching route or use the 404 route
+	const match = routes[path] || routes['/404']; // find the matching route or use the 404 route
 	
 	// if view has a destroy function, call it
 	if (currentView && currentView.destroy && currentView != match.view)
