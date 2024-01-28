@@ -1,6 +1,6 @@
-const settings = require('./gameSettings');
-const objects = require('./gameObjects');
-const collisions = require('./gameCollisions');
+const settings = require('./DEPREC_gameSettings');
+const objects = require('./DEPREC_gameObjects');
+const collisions = require('./DEPREC_gameCollisions');
 
 let data = objects.data;
 

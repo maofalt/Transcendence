@@ -169,6 +169,8 @@ services:
       POSTGRES_UNIX_SOCKET_DIRECTORIES: /var/run/postgresql
     volumes:
       - user-management-db:/var/lib/postgresql/data
+    networks:
+        - transcendence
 
   tournament:
       container_name: tournament

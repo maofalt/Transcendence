@@ -1,3 +1,13 @@
+<style>
+    #signupButton:disabled {
+        background-color: grey !important;
+        cursor: not-allowed !important;
+    }
+    #signupButton:enabled {
+        background-color: green !important;
+        cursor: pointer !important;
+    }
+</style>
 
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 
@@ -10,23 +20,41 @@
     <form id="signupForm" action="" method="POST" onsubmit="submitSignupForm(); return false;">
         {% csrf_token %}
         <p>ID</p>
-        <input name="username" type="text">
+        <input name="username" type="text" required>
         <p>PASSWORD
             <span style="color: green; font-size: smaller;">(minimum 8 characters, at least 1 digit, 1 alphabet, different from email and playername)</span>
         </p>
         <input name="password" type="password">
         <p>CONFIRM PASSWORD</p>
-        <input name="confirm_password" id="confirmPassword" type="password" oninput="checkPasswordMatch();">
+        <input name="confirm_password" id="confirmPassword" type="password" oninput="checkPasswordMatch(); required">
         <div id="confirmPasswordError" style="color: red;"></div>
         <p>PLAYERNAME</p>
-        <input name="playername" type="text">
-        <p>email</p>
-        <input name="email" type="text" placeholder="example@example.com">
-        <input type="submit" value="Sign up">
+        <input name="playername" type="text" required>
+        <p>EMAIL</p>
+        <p>
+            <label for="signupEmail"></label>
+            <input name="signupEmail" id="signupEmail" type="text" placeholder="example@example.com" style="width: 200px; margin-right: 5px;">
+            <button type="button" onclick="sendVerificationCode()">Send Code</button>
+        </p>
+        <p>
+            <label for="access_code"></label>
+            <input name="access_code" id="verificationCode" type="text" placeholder="######" style="width: 200px; margin-right: 5px;">
+            <button type="button" onclick="verifyCode('signup')">Verify Code</button>
+            <span id="successMessage" style="color: green; margin-top: 5px;"></span>
+        </p>
+        <input type="submit" value="Sign up" id="signupButton" disabled>
     </form>
 
 
 <script>
+    $(document).ready(function () {
+    updateSignupButtonStatus();
+    $("#signupButton").toggleClass("enabled", false);
+
+    $("#signupForm input").on("input", function() {
+        updateSignupButtonStatus();
+    });
+});
     function closeSignupPopup() {
     //   $("#darkLayer").fadeOut();
       $("#signupPopup").fadeOut();
@@ -42,6 +70,29 @@
             $("#confirmPasswordError").text("");
         }
     }
+    function updateSignupButtonStatus() {
+        console.log('updateSignupButtonStatus() called\n\n');
+
+        var form = $("#signupForm")[0];
+        var allFieldsFilled = Array.from(form.elements).every(function(element) {
+            return element.checkValidity();
+        });
+
+        var password = $("#signupForm input[name='password']").val();
+        var confirmPassword = $("#confirmPassword").val();
+        var isPasswordMatch = password === confirmPassword;
+
+        var isCodeVerified = $("#successMessage").text() === "Verified successfully";
+
+        if (allFieldsFilled && isPasswordMatch && isCodeVerified) {
+            $("#signupButton").prop("disabled", false);
+            console.log('BUTTON: need to be enable\n\n');
+
+        } else {
+            $("#signupButton").prop("disabled", true);
+        }
+        $("#signupButton").toggleClass("enabled", allFieldsFilled && isPasswordMatch && isCodeVerified);
+    }
     function getCookie(name) {
         var cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -56,6 +107,56 @@
             }
         }
     return cookieValue;
+    }
+    function sendVerificationCode() {
+        var email = $("#signupEmail").val();
+
+        $.ajax({
+            url: '{% url "account:send_one_time_code" %}',
+            type: 'POST',
+            data: { 'email': email },
+            headers: { "X-CSRFToken": getCookie('csrftoken') },
+            success: function (data) {
+                if (data.success) {
+                    console.log('Code sent successfully');
+                } else {
+                    console.log('Failed to send code:', data.error_message);
+                }
+            },
+            error: function () {
+                console.log('An error occurred while processing your request.');
+            }
+        });
+    }
+    function verifyCode(context) {
+        var email = $("#signupEmail").val();
+        var verificationCode = $("#verificationCode").val();
+        var username = $("#signupForm input[name='username']").val();
+        console.log('Username:', username);
+
+        $.ajax({
+            url: '{% url "account:verify_one_time_code" %}',
+            type: 'POST',
+            data: {
+                'email': email,
+                'one_time_code': verificationCode,
+                'context': context,
+                'pending_username': username },
+            headers: { "X-CSRFToken": getCookie('csrftoken') },
+            success: function (data) {
+                if (data.success) {
+                    console.log('Code verified successfully');
+                    $("#successMessage").text("Verified successfully");
+                    updateSignupButtonStatus();
+                    // submitSignupForm();
+                } else {
+                    console.log('Failed to verify code:', data.error_message);
+                }
+            },
+            error: function () {
+                console.log('An error occurred while processing your request.');
+            }
+        });
     }
     function submitSignupForm() {
         $.ajax({

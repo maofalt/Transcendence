@@ -10,9 +10,8 @@ from django.db.utils import IntegrityError
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt # CSRF (Cross-Site Request Forgery) protection middleware. 
-
-# microservice connection
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
+#JWT
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -21,8 +20,14 @@ from .serializers import UserSerializer, AnonymousUserSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 import jwt
 from django.conf import settings
-
-# Create your views here.
+# 2FA
+import json
+from django.core.validators import validate_email
+import random
+from django.core.mail import send_mail
+from django.utils.crypto import get_random_string
+from django.contrib.sessions.models import Session
+from django.middleware.csrf import get_token
 
 def home(request):
     return render(request, 'home.html')
@@ -37,36 +42,35 @@ def api_login_view(request):
     print("\n\n       URL:", request.build_absolute_uri())
 
     secret_key = settings.SECRET_KEY
-
     if request.method == "POST":
         username = request.POST["username"]
         password = request.POST["password"]
         user = authenticate(username=username, password=password)
         if user is not None:
-            login(request, user)
-            user.is_online = True
-            user.save()
-            print(request.user.username, ": is_online status", request.user.is_online)
-
+            request.session['pending_username'] = user.username
+            # login(request, user)
+            # print("USer logged in temporary for 2FA.")
             # Output information about the authenticated user
             print("User Information:")
-            print(f"Username: {request.user.username}")
-            # print(f"Intra ID: {request.user.email}")
-            print(f"Playername: {request.user.playername}")
+            print(f"Username: {user.username}")
+            print(f"email: {user.email}")
+            print(f"Playername: {user.playername}")
             print(f"Is Online: {user.is_online}")
             print(f"Date Joined: {user.date_joined}")
             serializer = UserSerializer(user)
             redirect_url = '/api/user_management/'
             
+            send_one_time_code(request, user.email)
+            
             token = get_token_for_user(user)
-            response = JsonResponse({'message': 'Authentication successful', 'user': serializer.data, 'redirect_url': redirect_url})
+            response = JsonResponse({'message': 'Password Authentication successful', 'user': serializer.data, 'redirect_url': redirect_url, 'requires_2fa': True})
             response.set_cookie(
                 key='jwtToken',
                 value=token,
                 httponly=True,
                 samesite='Lax'
             )
-            print("token: ", token)
+            print("\ntoken: ", token)
             try:
                 decoded_token = jwt.decode(token, secret_key, algorithms=["HS256"])
                 print("Decoded Token:", decoded_token)
@@ -80,13 +84,53 @@ def api_login_view(request):
             return JsonResponse({'error': 'Authentication failed: Wrong user data'}, status=400)
     return JsonResponse({'error': 'Invalid request method'}, status=400)
 
-# This is useful in cases where you intentionally want to allow certain requests without requiring the usual CSRF token.
-# In your specific example, the @csrf_exempt decorator is applied to the api_logout_view view.
-# This means that the CSRF protection will not be enforced for the api_logout_view view,
-# allowing you to make POST requests without including the CSRF token in the request headers.
-# It's important to use csrf_exempt with caution, especially when dealing with sensitive operations like authentication and logout.
-# If CSRF protection is disabled, you need to ensure that proper security measures are in place
-# to prevent potential security vulnerabilities.
+def generate_one_time_code():
+    return get_random_string(length=6, allowed_chars='1234567890')
+
+@csrf_exempt
+def send_one_time_code(request, email=None):
+    if email is None and request.method == 'POST':
+        email = request.POST.get('email', None)
+    one_time_code = generate_one_time_code()
+    request.session['one_time_code'] = one_time_code
+
+    print("\n\nCHECK CODE ON SESSION: ", request.session.get('one_time_code'))
+    subject = 'Your Access Code for PONG'
+    message = f'Your one-time code is: {one_time_code}'
+    from_email = 'no-reply@student.42.fr' 
+    to_email = email
+    send_mail(subject, message, from_email, [to_email])
+
+    return JsonResponse({'success': True})
+
+@csrf_protect
+def verify_one_time_code(request):
+    if request.method == 'POST':
+        csrf_token = get_token(request)
+        print("\n\nCSRF Token from request:", request.headers.get('X-CSRFToken'))
+        submitted_code = request.POST.get('one_time_code').strip()
+        stored_code = request.session.get('one_time_code').strip()
+        context = request.POST.get('context')
+        print("\n\ncode from Session : ", stored_code)
+        print("code from User : ", submitted_code, '\n\n')
+        pending_username = request.session.get('pending_username') or request.POST.get('pending_username')
+        print("pending_username : ", pending_username, '\n\n')
+        if pending_username:
+            user = User.objects.get(username=pending_username)
+            if submitted_code == stored_code:
+                del request.session['one_time_code']
+                if context == 'login':
+                    login(request, user)
+                    user.is_online = True
+                    print(f"Is Online: {user.is_online}")
+                    user.save()
+                return JsonResponse({'success': True, 'message': 'One-time code verification successful', 'csrf_token': csrf_token})
+            else:
+                return JsonResponse({'success': False, 'error': 'One-time code verification failed', 'csrf_token': csrf_token}, status=400)
+        else:
+            return JsonResponse({'success': False, 'error': 'User authentication not found'}, status=400)
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=400)
 
 def get_serializer(user):
     if user.is_authenticated:
@@ -113,20 +157,29 @@ def api_signup_view(request):
         username = request.POST["username"]
         password = request.POST["password"]
         playername = request.POST["playername"]
-        email = request.POST["email"]
-        # email = request.POST["email"]
+        email = request.POST["signupEmail"]
 
         try:
             validate_password(password, user=User(username=username))
         except ValidationError as e:
             return JsonResponse({'success': False, 'error_message': e.messages[0]})
 
+        try:
+            validate_email(email)
+        except ValidationError:
+            return JsonResponse({'success': False, 'error_message': 'Invalid email'})
+
+        if User.objects.filter(username=username).exists():
+            return JsonResponse({'success': False, 'error_message': 'Username already exists'})
+
+        if User.objects.filter(playername=playername).exists():
+            return JsonResponse({'success': False, 'error_message': 'Playername already exists'})
+
         user = User(
             username=username,
             email=email,
             password=make_password(password),
             playername=playername,
-            # email=email
         )
 
         try:
@@ -150,6 +203,7 @@ def api_signup_view(request):
 
     return JsonResponse({'success': False, 'error_message': 'Invalid request method'}, status=400)
 
+@login_required
 def friend_view(request):
     user = request.user
     friends = user.friends.all()
@@ -163,7 +217,7 @@ def friend_view(request):
 
     return render(request, 'friends.html', {'friends': friends, 'search_query': search_query, 'search_results': search_results})
 
-
+@login_required
 def detail_view(request):
     game_stats = request.user.game_stats
     return render(request, 'detail.html')
@@ -187,9 +241,13 @@ def profile_update_view(request):
         
         if user_form.is_valid():
             user = user_form.save(commit=False)
-            user.save()
-            messages.success(request, 'Your profile has update.')
-            return redirect('account:detail')
+            if User.objects.filter(playername=user.playername).exclude(username=request.user.username).exists():
+                messages.error(request, 'Playername already exists. Please choose a different one.')
+                return redirect('account:profile_update')
+            else:
+                user.save()    
+                messages.success(request, 'Your profile has update.')
+                return redirect('account:detail')
     else:
         user_form = ProfileUpdateForm(instance=request.user)
 
