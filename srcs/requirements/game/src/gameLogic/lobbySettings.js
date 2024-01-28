@@ -20,7 +20,7 @@ const paddlesSettings = {
 }
 
 const ballSettings = {
-    speed: 0.1,
+    speed: 0.5,
     radius: 1.5,
     color: 0xffffff,
 }

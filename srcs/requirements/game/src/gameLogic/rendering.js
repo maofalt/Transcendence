@@ -20,9 +20,9 @@ function ballHitsWall(data) {
             let ballPath = futureHitPos.getDirFrom(potentialHitPoint).normalize();
             // ball.pos = futureHitPos.add(ballPath.scale(hitScaler)).add(wall.dirToCenter.scale(-ball.r));
             // ball.dir = ball.dir.scale(-1);
-            let dot = ball.dir.dotProduct(wall.dirToCenter);
-            let a = Math.acos(dot / ball.dir.mag * wall.dirToCenter.mag);
-            ball.dir = ball.dir.rotateAroundZ(-2 * a);
+            let dot = ball.dir.dotProduct(wall.dirToTop);
+            let a = Math.acos(dot / ball.dir.mag * wall.dirToTop.mag);
+            ball.dir = ball.dir.rotateAroundZ(2 * a);
             console.log("!!!!!!!!!!!!!!!!! COLLISION WALL WESH !!!!!!!!!!!!!!");
             return true;
         }
@@ -82,8 +82,8 @@ function updateBall(data) {
     }
     if (data.ball.pos.getDistFrom(new vecs.Vector(0, 0, 0)) > 25) {
         data.ball.pos = new vecs.Vector(0, 0, 0);
-        data.ball.dir.x = data.ball.dir.x == 0 ? 1 : 0;
-        data.ball.dir.y = data.ball.dir.y == 0 ? 1 : 0;
+        // data.ball.dir.x = data.ball.dir.x == 0 ? 1 : 0;
+        // data.ball.dir.y = data.ball.dir.y == 0 ? 1 : 0;
     }
     // else
         // console.log("COLLISION");
