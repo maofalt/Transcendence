@@ -13,7 +13,8 @@ const render = require('./gameLogic/rendering');
 // const game = require('./gameLogic/gameLogic');
 // const objectsClasses = require('./gameLogic/gameObjectsClasses');
 
-const data = init.initLobby(lobbySettings.lobbyData);
+// const data = init.initLobby(lobbySettings.lobbyData);
+let data = 0;
 
 const app = express();
 // const server = http.createServer(app);
@@ -83,15 +84,17 @@ function handleConnection(client) {
 
     console.log("CLIENT CONNECTED");
     client.join("gameRoom");
-
+    
+    if (io.engine.clientsCount == 1) {
+        data = init.initLobby(lobbySettings.lobbyData);
+        gameInterval = setInterval(waitingLoop, 20);
+        data.ball.dir.y = -1;
+    }
     setPlayerStatus(client);
 
     console.log(`Client connected with ID: ${client.id}`);
     console.log(`Number of connected clients: ${io.engine.clientsCount}`);
 
-    data.ball.dir.y = -1;
-    if (io.engine.clientsCount == 1)
-        gameInterval = setInterval(waitingLoop, 20);
     client.emit('generate', data);
     debugDisp.displayData(data);
 }
@@ -139,6 +142,10 @@ io.on('connection', (client) => {
         // data.gamemode.nbrOfPlayers--; ?
         // if (gameInterval)
         //     clearInterval(gameInterval);
+        if (io.engine.clientsCount <= 1) {
+            clearInterval(gameInterval);
+            delete data;
+        }
         console.log(`Client disconnected with ID: ${client.id} (num clients: ${io.engine.clientsCount})`);
     });
 });

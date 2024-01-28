@@ -80,7 +80,7 @@ function updateBall(data) {
         // console.log("PAS COLLISION");
         data.ball.pos = data.ball.pos.add(data.ball.dir.scale(data.ball.sp));
     }
-    if (data.ball.pos.getDistFrom(new vecs.Vector(0, 0, 0)) > 25) {
+    if (data.ball.pos.getDistFrom(new vecs.Vector(0, 0, 0)) > 70) {
         data.ball.pos = new vecs.Vector(0, 0, 0);
         // data.ball.dir.x = data.ball.dir.x == 0 ? 1 : 0;
         // data.ball.dir.y = data.ball.dir.y == 0 ? 1 : 0;
