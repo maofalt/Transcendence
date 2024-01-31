@@ -108,7 +108,7 @@ io.on('connection', (client) => {
         console.log(`client ${client.id} moving up`);
         for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
             if (data.players[i].socketID == client.id) {
-                data.players[i].paddle.dir = data.players[i].paddle.dirToTop.copy();
+                data.players[i].paddle.currSp = data.players[i].paddle.sp;
             }
         }
     });
@@ -117,7 +117,7 @@ io.on('connection', (client) => {
         console.log(`client ${client.id} moving down`);
         for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
             if (data.players[i].socketID == client.id) {
-                data.players[i].paddle.dir = data.players[i].paddle.dirToTop.scale(-1);
+                data.players[i].paddle.currSp = -data.players[i].paddle.sp;
             }
         }
     });
@@ -126,8 +126,7 @@ io.on('connection', (client) => {
         console.log(`client ${client.id} stopping`);
         for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
             if (data.players[i].socketID == client.id) {
-                data.players[i].paddle.dir.x = 0;
-                data.players[i].paddle.dir.y = 0;
+                data.players[i].paddle.currSp = 0;
             }
         }
     });

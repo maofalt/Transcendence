@@ -57,6 +57,8 @@ function initWalls(data) {
         wall.top = wall.top.add(wall.dirToCenter.scale(wall.w / 2));
         wall.bottom = wall.pos.add(wall.dirToTop.scale(-wall.h / 2));
         wall.bottom = wall.bottom.add(wall.dirToCenter.scale(wall.w / 2));
+        wall.topBack = wall.top.add(wall.dirToCenter.scale(-wall.w));
+        wall.bottomBack = wall.bottom.add(wall.dirToCenter.scale(-wall.w));
     }
 }
 
@@ -69,6 +71,8 @@ function initPaddles(data) {
         paddle.top = paddle.top.add(paddle.dirToCenter.scale(paddle.w / 2));
         paddle.bottom = paddle.pos.add(paddle.dirToTop.scale(-paddle.h / 2));
         paddle.bottom = paddle.bottom.add(paddle.dirToCenter.scale(paddle.w / 2));
+        paddle.topBack = paddle.top.add(paddle.dirToCenter.scale(-paddle.w));
+        paddle.bottomBack = paddle.bottom.add(paddle.dirToCenter.scale(-paddle.w));
     }
 }
 

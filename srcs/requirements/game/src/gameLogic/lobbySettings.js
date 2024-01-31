@@ -1,7 +1,7 @@
 // Lobby Settings, used to initialize the lobby, and to reset objects at the start of each round;
 
 const   gamemodeSettings = {
-    nbrOfPlayers: 4, // from 2 to 8 - 10 ?
+    nbrOfPlayers: 2, // from 2 to 8 - 10 ?
     nbrOfRounds: 5, // from 1 to 10
     timeLimit: 0, // in minutes, from 1 to 30. anything under 1 == no time limit;
     // IMPORTANT : game needs either a time limit or a nbr of rounds; if none = invalid setup.
@@ -16,11 +16,11 @@ const   fieldSettings = {
 const paddlesSettings = {
     width: 1,
     height: 10,
-    speed: 1,
+    speed: 0.2,
 }
 
 const ballSettings = {
-    speed: 0.7,
+    speed: 0.1,
     radius: 1.5,
     color: 0xffffff,
 }
