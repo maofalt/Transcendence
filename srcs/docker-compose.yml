@@ -94,6 +94,7 @@ services:
       - transcendence
     volumes:
       - ./requirements/traefik/config/ssl/:/etc/game/ssl/
+      - ./requirements/game/:/app/
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.game.rule=Host(`${LOCAL_IP}`) && PathPrefix(`/game-logic`)"
