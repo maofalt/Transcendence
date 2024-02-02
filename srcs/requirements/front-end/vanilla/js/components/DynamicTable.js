@@ -1,5 +1,3 @@
-import ModalTable from "./ModalTable";
-
 class DynamicTable extends HTMLElement {
     static get observedAttributes() {
         return ['data-headers', 'data-rows'];
@@ -10,7 +8,7 @@ class DynamicTable extends HTMLElement {
         this.attachShadow({ mode: 'open'});
         this.shadowRoot.innerHTML = `
             <link rel="stylesheet" href="../../css/DynamicTable.css">
-            <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+            <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"> 
             <table class="table">
                 <thead><tr id="table-headers"></tr></thead>
                 <tbody id="table-body"></tbody>
