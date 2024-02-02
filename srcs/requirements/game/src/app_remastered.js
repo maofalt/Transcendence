@@ -13,7 +13,8 @@ const render = require('./gameLogic/rendering');
 // const game = require('./gameLogic/gameLogic');
 // const objectsClasses = require('./gameLogic/gameObjectsClasses');
 
-const data = init.initLobby(lobbySettings.lobbyData);
+// const data = init.initLobby(lobbySettings.lobbyData);
+let data = 0;
 
 const app = express();
 // const server = http.createServer(app);
@@ -68,7 +69,7 @@ function waitingLoop() {
     // console.log("sending render");
 }
 
-gameInterval = setInterval(waitingLoop, 20);
+// gameInterval = setInterval(waitingLoop, 20);
 
 //====================================== SOCKET HANDLING ======================================//
 
@@ -83,14 +84,18 @@ function handleConnection(client) {
 
     console.log("CLIENT CONNECTED");
     client.join("gameRoom");
-
+    
+    if (io.engine.clientsCount == 1) {
+        data = init.initLobby(lobbySettings.lobbyData);
+        gameInterval = setInterval(waitingLoop, 20);
+        data.ball.dir.y = -1;
+    }
     setPlayerStatus(client);
 
     console.log(`Client connected with ID: ${client.id}`);
     console.log(`Number of connected clients: ${io.engine.clientsCount}`);
 
     client.emit('generate', data);
-
     debugDisp.displayData(data);
 }
 
@@ -103,7 +108,7 @@ io.on('connection', (client) => {
         console.log(`client ${client.id} moving up`);
         for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
             if (data.players[i].socketID == client.id) {
-                data.players[i].paddle.dir = data.players[i].paddle.dirToTop.copy();
+                data.players[i].paddle.currSp = data.players[i].paddle.sp;
             }
         }
     });
@@ -112,7 +117,7 @@ io.on('connection', (client) => {
         console.log(`client ${client.id} moving down`);
         for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
             if (data.players[i].socketID == client.id) {
-                data.players[i].paddle.dir = data.players[i].paddle.dirToTop.scale(-1);
+                data.players[i].paddle.currSp = -data.players[i].paddle.sp;
             }
         }
     });
@@ -121,8 +126,7 @@ io.on('connection', (client) => {
         console.log(`client ${client.id} stopping`);
         for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
             if (data.players[i].socketID == client.id) {
-                data.players[i].paddle.dir.x = 0;
-                data.players[i].paddle.dir.y = 0;
+                data.players[i].paddle.currSp = 0;
             }
         }
     });
@@ -137,6 +141,10 @@ io.on('connection', (client) => {
         // data.gamemode.nbrOfPlayers--; ?
         // if (gameInterval)
         //     clearInterval(gameInterval);
+        if (io.engine.clientsCount <= 1) {
+            clearInterval(gameInterval);
+            delete data;
+        }
         console.log(`Client disconnected with ID: ${client.id} (num clients: ${io.engine.clientsCount})`);
     });
 });

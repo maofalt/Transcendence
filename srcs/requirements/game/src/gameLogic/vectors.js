@@ -71,6 +71,11 @@ class Vector {
 		return this.sub(point).magnitude();
 	}
 
+	// dot product of this vector and another one
+	dotProduct(vector) {
+		return (this.x * vector.x + this.y * vector.y);
+	}
+
 	// normalize vector
 	normalize() {
 		const mag = this.magnitude();
@@ -86,4 +91,39 @@ class Vector {
 	}
 }
 
-module.exports = { Vector };
+function segmentsIntersect(p1, p2, p3, p4) {
+	let a, b, c;
+
+	// console.log(`${p1.x} ${p1.y},
+	// ${p2.x} ${p2.y},
+	// ${p3.x} ${p3.y},
+	// ${p4.x} ${p4.y}
+	// `);
+
+	a = (p4.x - p3.x) * (p2.y - p1.y) - (p4.y - p3.y) * (p2.x - p1.x);
+	b = (p4.x - p3.x) * (p3.y - p1.y) - (p4.y - p3.y) * (p3.x - p1.x);
+	a = (a < 0.000001 && a > -0.000001) ? 0 : a;
+	b = (b < 0.000001 && b > -0.000001) ? 0 : b;
+
+	c = Math.fround((p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x));
+	c = (c < 0.000001 && c > -0.000001) ? 0 : c;
+	
+	// console.log(`a = ${a}, b = ${b}, c = ${c}\n`);
+
+	if (a == 0 || b == 0) {
+		return (-1);
+	}
+
+
+	let alpha = Math.fround(b / a);
+	let beta = Math.fround(c / a);
+
+	// console.log(`alpha = ${alpha}, beta = ${beta}\n`);
+
+	if (alpha <= 1 && alpha >= 0 && beta <= 1 && beta >= 0) {
+		return (alpha);
+	}
+	return (-1);
+}
+
+module.exports = { Vector, segmentsIntersect };

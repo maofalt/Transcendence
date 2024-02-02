@@ -108,13 +108,12 @@ def verify_one_time_code(request):
     if request.method == 'POST':
         csrf_token = get_token(request)
         print("\n\nCSRF Token from request:", request.headers.get('X-CSRFToken'))
-        submitted_code = request.POST.get('one_time_code').strip()
-        stored_code = request.session.get('one_time_code').strip()
+        submitted_code = request.POST.get('one_time_code')
+        stored_code = request.session.get('one_time_code')
         context = request.POST.get('context')
         print("\n\ncode from Session : ", stored_code)
         print("code from User : ", submitted_code, '\n\n')
-        pending_username = request.session.get('pending_username') or request.POST.get('pending_username')
-        print("pending_username : ", pending_username, '\n\n')
+        pending_username = request.session.get('pending_username')
         if pending_username:
             user = User.objects.get(username=pending_username)
             if submitted_code == stored_code:

@@ -1,7 +1,7 @@
 // Lobby Settings, used to initialize the lobby, and to reset objects at the start of each round;
 
 const   gamemodeSettings = {
-    nbrOfPlayers: 7, // from 2 to 8 - 10 ?
+    nbrOfPlayers: 5, // from 2 to 8 - 10 ?
     nbrOfRounds: 5, // from 1 to 10
     timeLimit: 0, // in minutes, from 1 to 30. anything under 1 == no time limit;
     // IMPORTANT : game needs either a time limit or a nbr of rounds; if none = invalid setup.
@@ -9,18 +9,18 @@ const   gamemodeSettings = {
 }
 
 const   fieldSettings = {
-    wallsFactor: 1.5, // by how much we multiply the goals size to get the walls size; from 0 to 2 (0 == no walls)
-    sizeOfGoals: 20, // arbitrary max, minumum needs to be calculated tho;
+    wallsFactor: 1, // by how much we multiply the goals size to get the walls size; from 0 to 2 (0 == no walls)
+    sizeOfGoals: 25, // arbitrary max, minumum needs to be calculated tho;
 }
 
 const paddlesSettings = {
-    width: 1,
-    height: 7,
-    speed: 2,
+    width: 2,
+    height: 10,
+    speed: 0.5,
 }
 
 const ballSettings = {
-    speed: 4,
+    speed: 0.7,
     radius: 2,
     color: 0xffffff,
 }
