@@ -147,7 +147,7 @@ export default class Game extends AbstractView {
 		for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
 			if (data.players[i].socketID == socket.id) {
 				console.log(`socket : ${data.players[i].socketID}, client : ${socket.id}, ${i}, angle = ${data.players[i].paddle.angle}`);
-				this.camera.rotation.set(0, 0, -data.players[i].paddle.angle - Math.PI / 2);
+				this.camera.rotation.set(0, 0, 2 * Math.PI/data.gamemode.nbrOfPlayers * i);
 			}
 		}
 		// this.camera.rotation.set(0, 0, 90);
@@ -174,12 +174,12 @@ export default class Game extends AbstractView {
 	updateScene(data, socket) {
 		console.log("Updating Scene...");
 		this.ball.mesh.position.set(data.ball.pos.x, data.ball.pos.y, 0);
-		this.ball.dirMesh.position.set(data.ball.pos.x, data.ball.pos.y, 0);
+		// this.ball.dirMesh.position.set(data.ball.pos.x, data.ball.pos.y, 0);
 		for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
 			this.paddles[i].mesh.position.set(data.players[i].paddle.pos.x, data.players[i].paddle.pos.y, data.players[i].paddle.pos.z);
 			this.paddles[i].mesh.material.opacity = data.players[i].connected ? 0.7 : 0.3;
-			this.paddles[i].dir1Mesh.position.set(data.players[i].paddle.pos.x, data.players[i].paddle.pos.y, data.players[i].paddle.pos.z);
-			this.paddles[i].dir2Mesh.position.set(data.players[i].paddle.pos.x, data.players[i].paddle.pos.y, data.players[i].paddle.pos.z);
+			// this.paddles[i].dir1Mesh.position.set(data.players[i].paddle.pos.x, data.players[i].paddle.pos.y, data.players[i].paddle.pos.z);
+			// this.paddles[i].dir2Mesh.position.set(data.players[i].paddle.pos.x, data.players[i].paddle.pos.y, data.players[i].paddle.pos.z);
 			// for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
 			// 	if (data.players[i].socketID = socket.id) {
 			// 		this.camera.rotation.set(0, 0, data.players[i].paddle.angle + Math.PI / 2);
@@ -216,7 +216,7 @@ export default class Game extends AbstractView {
 		
 		// add to scene
 		this.scene.add(this.ball.mesh);
-		this.scene.add(this.ball.dirMesh);
+		// this.scene.add(this.ball.dirMesh);
 
 		this.ball.mesh.position.set(data.ball.pos.x, data.ball.pos.y, data.ball.pos.z);
 	}
@@ -251,8 +251,8 @@ export default class Game extends AbstractView {
 
             this.paddles[i] = new BoxObject(new THREE.Mesh(paddleGeometry, paddleMaterial), dir1, dir2);
 			this.scene.add(this.paddles[i].mesh); // add mesh to the scene
-			this.scene.add(this.paddles[i].dir1Mesh);
-			this.scene.add(this.paddles[i].dir2Mesh);
+			// this.scene.add(this.paddles[i].dir1Mesh);
+			// this.scene.add(this.paddles[i].dir2Mesh);
 
 			this.paddles[i].mesh.position.set(data.players[i].paddle.pos.x, data.players[i].paddle.pos.y, 0); // set the position
 			this.paddles[i].mesh.rotation.set(0, 0, data.players[i].paddle.angle + Math.PI / 2); // set the rotation to the proper orientation (facing center)
