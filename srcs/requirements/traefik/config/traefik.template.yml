@@ -34,8 +34,8 @@ providers:
 #certficates we own and want to use
 tls:
   certificates:
-    - certFile: /ssl-certs/game.localhost.crt
-      keyFile: /ssl-certs/game.localhost.key
+    - certFile: /ssl-certs/game.HOST_NAME.crt
+      keyFile: /ssl-certs/game.HOST_NAME.key
 
 ## DYNAMIC CONFIGURATION
 #if dynamic configuration doesnt work probably the filepath in providers is wrong
@@ -43,21 +43,21 @@ http:
   routers:
 #PORTAINER FRONT END
     portainer:
-      rule: "Host(`portainer.localhost`)"
+      rule: "Host(`portainer.HOST_NAME`)"
       entryPoints: ["websecure"]
       service: portainer-service
       tls:
         certResolver: myresolver
 #PORTAINER API    
     edge:
-      rule: "Host(`portaineredge.localhost`)"
+      rule: "Host(`portaineredge.HOST_NAME`)"
       entryPoints: ["websecure"]
       service: edge-service
       tls:
         certResolver: myresolver
 #GAME FRONT END with nGINX
     frontEnd:
-      rule: "Host(`front-end.localhost`)"
+      rule: "Host(`front-end.HOST_NAME`)"
       service: "frontEnd"
       entryPoints:
         - "websecure"
@@ -65,7 +65,7 @@ http:
         certResolver: "myresolver"
 #GAMR FRONT END FOR DEVELOPMENT USING NODE.JS
     jsDev:
-      rule: "Host(`10.24.107.3`)"
+      rule: "Host(`HOST_IP`)"
       service: "jsDevService"
       entryPoints:
         - "websecure"
@@ -73,7 +73,7 @@ http:
         certResolver: "myresolver"
 #GAME LOGIC
     game:
-      rule: "Host(`10.24.107.3`) && PathPrefix(`/game-logic`)"
+      rule: "Host(`HOST_IP`) && PathPrefix(`/game-logic`)"
       entryPoints: ["websecure"]
       middlewares: ["strip-game-logic"]
       service: "game"
@@ -81,7 +81,7 @@ http:
         certResolver: "myresolver"
 #USER_MANAGEMENT
     user_management:
-      rule: "Host(`10.24.107.3`) && PathPrefix(`/api/user_management`)"
+      rule: "Host(`HOST_IP`) && PathPrefix(`/api/user_management`)"
       entryPoints: ["websecure"]
       middlewares: ["user_management-headers"]
       service: "user_management"
@@ -89,7 +89,7 @@ http:
         certResolver: "myresolver"
 #TOURNAMENT
     tournament:
-      rule: "Host(`10.24.107.3`) && PathPrefix(`/api/tournament`)"
+      rule: "Host(`HOST_IP`) && PathPrefix(`/api/tournament`)"
       entryPoints: ["websecure"]
       middlewares: ["tournament-headers"]
       service: "tournament"
