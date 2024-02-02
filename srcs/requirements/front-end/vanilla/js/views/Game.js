@@ -101,8 +101,8 @@ export default class Game extends AbstractView {
 
 		this.socket.on('generate', data => {
 			// Generate scene and update it
-			this.generateScene(data);
-			this.updateScene(data);
+			this.generateScene(data, this.socket);
+			this.updateScene(data, this.socket);
 			this.renderer.render(this.scene, this.camera);
 		});
 
@@ -133,27 +133,29 @@ export default class Game extends AbstractView {
 		// Additional cleanup (disposing Three.js objects, etc.)
 	};
 
-	generateScene(data) {
+	generateScene(data, socket) {
 		console.log("Generating Scene...");
 
 		this.scene = new THREE.Scene();
 		this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 		this.renderer = new THREE.WebGLRenderer();
-
+		// this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+		// this.controls.target.set(0, 0, 0);
+		
 		this.camera.position.set(data.camera.pos.x, data.camera.pos.y, data.camera.pos.z);
 		this.camera.lookAt(new THREE.Vector3(data.camera.target.x, data.camera.target.y, data.camera.target.z));
-		// for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
-		// 	if (data.players[i].socketID = io) {
-		// 		this.camera.rotation.set(0, 0, data.players[i].paddle.angle);
-		// 	}
-		// }
+		for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
+			if (data.players[i].socketID == socket.id) {
+				console.log(`socket : ${data.players[i].socketID}, client : ${socket.id}, ${i}, angle = ${data.players[i].paddle.angle}`);
+				this.camera.rotation.set(0, 0, -data.players[i].paddle.angle - Math.PI / 2);
+			}
+		}
+		// this.camera.rotation.set(0, 0, 90);
 		// for later : set cam rotation depending on which client this is so the player is always at the same place;
 		
 		this.renderer.setSize(window.innerWidth, window.innerHeight);
 		this.container.appendChild(this.renderer.domElement);
-
-		this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-		this.controls.target.set(0, 0, 0);
+		
 
 		// generate objects
 		this.generateBall(data);
@@ -169,7 +171,7 @@ export default class Game extends AbstractView {
 	};
 
 	// Other methods (generateScene, updateScene, etc.) here
-	updateScene(data) {
+	updateScene(data, socket) {
 		console.log("Updating Scene...");
 		this.ball.mesh.position.set(data.ball.pos.x, data.ball.pos.y, 0);
 		this.ball.dirMesh.position.set(data.ball.pos.x, data.ball.pos.y, 0);
@@ -178,6 +180,11 @@ export default class Game extends AbstractView {
 			this.paddles[i].mesh.material.opacity = data.players[i].connected ? 0.7 : 0.3;
 			this.paddles[i].dir1Mesh.position.set(data.players[i].paddle.pos.x, data.players[i].paddle.pos.y, data.players[i].paddle.pos.z);
 			this.paddles[i].dir2Mesh.position.set(data.players[i].paddle.pos.x, data.players[i].paddle.pos.y, data.players[i].paddle.pos.z);
+			// for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
+			// 	if (data.players[i].socketID = socket.id) {
+			// 		this.camera.rotation.set(0, 0, data.players[i].paddle.angle + Math.PI / 2);
+			// 	}
+			// }
 		}
 	}
 
