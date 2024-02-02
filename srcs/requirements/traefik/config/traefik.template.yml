@@ -73,7 +73,11 @@ http:
         certResolver: "myresolver"
 #GAME LOGIC
     game:
+<<<<<<< HEAD
       rule: "Host(`HOST_IP`) && PathPrefix(`/game-logic`)"
+=======
+      rule: "Host(`HOST_NAME`) && PathPrefix(`/game-logic`)"
+>>>>>>> main
       entryPoints: ["websecure"]
       middlewares: ["strip-game-logic"]
       service: "game"
@@ -81,7 +85,11 @@ http:
         certResolver: "myresolver"
 #USER_MANAGEMENT
     user_management:
+<<<<<<< HEAD
       rule: "Host(`HOST_IP`) && PathPrefix(`/api/user_management`)"
+=======
+      rule: "Host(`HOST_NAME`) && PathPrefix(`/api/user_management`)"
+>>>>>>> main
       entryPoints: ["websecure"]
       middlewares: ["user_management-headers"]
       service: "user_management"
@@ -89,7 +97,11 @@ http:
         certResolver: "myresolver"
 #TOURNAMENT
     tournament:
+<<<<<<< HEAD
       rule: "Host(`HOST_IP`) && PathPrefix(`/api/tournament`)"
+=======
+      rule: "Host(`HOST_NAME`) && PathPrefix(`/api/tournament`)"
+>>>>>>> main
       entryPoints: ["websecure"]
       middlewares: ["tournament-headers"]
       service: "tournament"

@@ -10,3 +10,6 @@ t\ access\ issue
 *.json
 node-proxy-server/
 __pycache__
+game/
+srcs/requirements/node_modules/
+node_modules/
