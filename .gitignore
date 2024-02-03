@@ -9,3 +9,5 @@ trancendence-front-end/
 t\ access\ issue
 node-proxy-server/
 __pycache__
+traefik.yml
+*.key

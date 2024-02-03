@@ -41,28 +41,6 @@ tls:
 #if dynamic configuration doesnt work probably the filepath in providers is wrong
 http:
   routers:
-#PORTAINER FRONT END
-    portainer:
-      rule: "Host(`portainer.transcendence.lol`)"
-      entryPoints: ["websecure"]
-      service: portainer-service
-      tls:
-        certResolver: myresolver
-#PORTAINER API    
-    edge:
-      rule: "Host(`portaineredge.transcendence.lol`)"
-      entryPoints: ["websecure"]
-      service: edge-service
-      tls:
-        certResolver: myresolver
-#GAME FRONT END with nGINX
-    frontEnd:
-      rule: "Host(`front-end.transcendence.lol`)"
-      service: "frontEnd"
-      entryPoints:
-        - "websecure"
-      tls:
-        certResolver: "myresolver"
 #GAMR FRONT END FOR DEVELOPMENT USING NODE.JS
     jsDev:
       rule: "Host(`transcendence.lol`)"
