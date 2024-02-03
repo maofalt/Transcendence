@@ -20,11 +20,9 @@ function ballHitsWall(data) {
             if (hitScaler > 0) {
                 let ballPath = futureHitPos.getDirFrom(potentialHitPoint).normalize();
                 // ball.pos = futureHitPos.add(ballPath.scale(hitScaler)).add(wall.dirToCenter.scale(-ball.r));
-                // ball.dir = ball.dir.scale(-1);
                 let dot = ball.dir.dotProduct(wall.dirToTop);
                 let a = Math.acos(dot / ball.dir.mag * wall.dirToTop.mag);
                 ball.dir = ball.dir.rotateAroundZ(2 * a);
-                console.log("!!!!!!!!!!!!!!!!! COLLISION WALL WESH !!!!!!!!!!!!!!");
                 return true;
             }
         }
@@ -32,88 +30,68 @@ function ballHitsWall(data) {
     return false;
 }
 
-function checkCorner(ball, corner) {
+function checkCorner(ball, corner, center) {
     let distToCorner, vecCornerDist, cornerHitPoint = 0;
 
     distToCorner = corner.sub(ball.pos).mag;
     if (distToCorner > ball.sp && distToCorner > ball.r)
         return false;
     if (distToCorner < ball.r) {
-        ball.dir = ball.pos.getDirFrom(corner);
+        ball.dir = ball.pos.getDirFrom(center);
         return false;
     }
-    // console.log(`!!!!!  ${distToCorner}  ${ball.dir.x}  !!!!!`);
     vecCornerDist = ball.dir.scale(distToCorner);
     cornerHitPoint = ball.pos.add(vecCornerDist);
     if (cornerHitPoint.getDistFrom(corner) < ball.r) {
         let cornerToHitPointDist = corner.sub(cornerHitPoint).mag;
         let scaler = Math.sqrt(ball.r ** 2 - cornerToHitPointDist ** 2);
         ball.pos = cornerHitPoint.add(ball.dir.scale(-scaler));
-        ball.dir = ball.pos.getDirFrom(corner);
+        ball.dir = ball.pos.getDirFrom(center);
         return true;
     }
     return false;
 }
 
-function ballHitsPaddle(data) {
+function ballHitsPaddleSide (paddle, ball, segP1, segP2, scaledNormalVec) {
     let potentialHitPoint, futureHitPos, hitScaler;
+
+    potentialHitPoint = ball.pos.sub(scaledNormalVec);
+    futureHitPos = potentialHitPoint.add(ball.dir.scale(ball.sp));
+    hitScaler = vecs.segmentsIntersect(
+        potentialHitPoint,
+        futureHitPos,
+        segP1,
+        segP2
+    );
+    if (hitScaler > 0) {
+        let ballPath = futureHitPos.getDirFrom(potentialHitPoint).normalize();
+        ball.pos = potentialHitPoint.add(ballPath.scale(hitScaler)).add(scaledNormalVec);
+        ball.dir = ball.pos.getDirFrom(paddle.pos).normalize();
+        return true;
+    }
+}
+
+function ballHitsPaddle(data) {
+    // let potentialHitPoint, futureHitPos, hitScaler;
     let ball, paddle;
 
     ball = data.ball;
     for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
         paddle = data.players[i].paddle;
         if (ball.pos.getDistFrom(paddle.pos) < ball.sp + ball.r + paddle.h / 2) {
-            potentialHitPoint = ball.pos.add(paddle.dirToCenter.scale(-ball.r));
-            futureHitPos = potentialHitPoint.add(ball.dir.scale(ball.sp));
-            hitScaler = vecs.segmentsIntersect(
-                potentialHitPoint,
-                futureHitPos,
-                paddle.top,
-                paddle.bottom
-            );
-            if (hitScaler > 0) {
-                let ballPath = futureHitPos.getDirFrom(potentialHitPoint).normalize();
-                ball.pos = potentialHitPoint.add(ballPath.scale(hitScaler)).add(paddle.dirToCenter.scale(ball.r));
-                // ball.dir = ball.dir.scale(-1);
-                ball.dir = ball.pos.getDirFrom(paddle.pos).normalize();
-                console.log("!!!!!!!!!!!!!!!!! COLLISION WESH !!!!!!!!!!!!!!");
+            // if (ballHitsPaddleCenter(paddle, ball) ||
+            //     ballHitsPaddleTop(paddle, ball) || 
+            //     ballHitsPaddleBottom(paddle, ball)) {
+            //     return true;
+            // }
+            if (ballHitsPaddleSide(paddle, ball, paddle.top, paddle.bottom, paddle.dirToCenter.scale(ball.r)) ||
+                ballHitsPaddleSide(paddle, ball, paddle.top, paddle.topBack, paddle.dirToTop.scale(ball.r)) ||
+                ballHitsPaddleSide(paddle, ball, paddle.bottom, paddle.bottomBack, paddle.dirToTop.scale(-ball.r))) {
                 return true;
             }
-            potentialHitPoint = ball.pos.add(paddle.dirToTop.scale(-ball.r));
-            futureHitPos = potentialHitPoint.add(ball.dir.scale(ball.sp));
-            hitScaler = vecs.segmentsIntersect(
-                potentialHitPoint,
-                futureHitPos,
-                paddle.top,
-                paddle.topBack
-            );
-            if (hitScaler > 0) {
-                let ballPath = futureHitPos.getDirFrom(potentialHitPoint).normalize();
-                ball.pos = potentialHitPoint.add(ballPath.scale(hitScaler)).add(paddle.dirToTop.scale(ball.r));
-                // ball.dir = ball.dir.scale(-1);
-                ball.dir = ball.pos.getDirFrom(paddle.pos).normalize();
-                console.log("!!!!!!!!!!!!!!!!! COLLISION WESH !!!!!!!!!!!!!!");
+            if (checkCorner(ball, paddle.top, paddle.pos))
                 return true;
-            }
-            potentialHitPoint = ball.pos.add(paddle.dirToTop.scale(ball.r));
-            futureHitPos = potentialHitPoint.add(ball.dir.scale(ball.sp));
-            hitScaler = vecs.segmentsIntersect(
-                potentialHitPoint,
-                futureHitPos,
-                paddle.bottom,
-                paddle.bottomBack
-            );
-            if (hitScaler > 0) {
-                let ballPath = futureHitPos.getDirFrom(potentialHitPoint).normalize();
-                ball.pos = potentialHitPoint.add(ballPath.scale(hitScaler)).add(paddle.dirToTop.scale(-ball.r));
-                // ball.dir = ball.dir.scale(-1);
-                ball.dir = ball.pos.getDirFrom(paddle.pos).normalize();
-                console.log("!!!!!!!!!!!!!!!!! COLLISION WESH !!!!!!!!!!!!!!");
-                return true;
-            }
-            if (checkCorner(ball, paddle.top))
-                return true;
-            if (checkCorner(ball, paddle.bottom))
+            if (checkCorner(ball, paddle.bottom, paddle.pos))
                 return true;
         }
     }
