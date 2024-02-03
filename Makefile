@@ -1,6 +1,9 @@
 BASE_FILE = -f srcs/docker-compose.yml
 OVERRIDE_FILE= -f srcs/docker-compose.override.yml
 
+HOST_NAME ?= localhost
+HOST_IP ?= localhost
+
 ENV ?= dev
 
 ifeq ($(ENV), dev)
@@ -15,7 +18,7 @@ COMPOSE_FILE = -f srcs/docker-compose.yml
 
 all: build up logs
 
-build: set-ip set-codeespace-url set-permissions decrypt-mama
+build: set-ip set-codeespace-url set-permissions decrypt-mama replace
 	docker-compose $(COMPOSE_FILE) build
 
 up:
@@ -47,4 +50,8 @@ set-permissions:
 	chmod 600 srcs/requirements/traefik/config/ssl/acme.json
 
 decrypt-mama:
-	gpg srcs/.env.gpg
+	gpg -d -o srcs/.env srcs/.env.gpg
+
+replace:
+	sed -e 's/HOST_IP/$(HOST_IP)/g' -e 's/HOST_NAME/$(HOST_NAME)/g' \
+	srcs/requirements/traefik/config/traefik.template.yml > srcs/requirements/traefik/config/traefik.yml
