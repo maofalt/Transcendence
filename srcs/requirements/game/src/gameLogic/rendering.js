@@ -98,21 +98,57 @@ function ballHitsPaddle(data) {
     return false;
 }
 
+function updatePaddlesPoints(currPaddle, dir) {
+    currPaddle.pos = currPaddle.pos.add(dir);
+    currPaddle.top = currPaddle.top.add(dir);
+    currPaddle.bottom = currPaddle.bottom.add(dir);
+    currPaddle.topBack = currPaddle.topBack.add(dir);
+    currPaddle.bottomBack = currPaddle.bottomBack.add(dir);
+}
+
+function resetPaddlePoints(paddle) {
+    paddle.top = paddle.pos.add(paddle.dirToTop.scale(paddle.h / 2));
+    paddle.top = paddle.top.add(paddle.dirToCenter.scale(paddle.w / 2));
+    paddle.bottom = paddle.pos.add(paddle.dirToTop.scale(-paddle.h / 2));
+    paddle.bottom = paddle.bottom.add(paddle.dirToCenter.scale(paddle.w / 2));
+    paddle.topBack = paddle.top.add(paddle.dirToCenter.scale(-paddle.w));
+    paddle.bottomBack = paddle.bottom.add(paddle.dirToCenter.scale(-paddle.w));
+}
+
+function handleDash(currPaddle) {
+    if (currPaddle.dashSp != 0) {
+        currPaddle.dashFrameCounter++;
+        if (currPaddle.dashFrameCounter == 5) {
+            currPaddle.dashSp = 0;
+            currPaddle.dashFrameCounter = 0;
+        }
+    }
+}
+
 function updatePaddles(data) {
     let currPaddle = 0;
 
     // console.log('test');
     for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
         currPaddle = data.players[i].paddle;
-        let dir = currPaddle.dirToTop.scale(currPaddle.currSp);
+        let dir = 0;
+        
+        dir = (currPaddle.dashSp != 0) ? currPaddle.dirToTop.scale(currPaddle.dashSp) : currPaddle.dirToTop.scale(currPaddle.currSp);
         // console.log(`
         // curr pad speed ${currPaddle.sp}
         // curr pad dir to top ${currPaddle.dir.scale(currPaddle.sp).x}, ${currPaddle.dir.scale(currPaddle.sp).y}`);
-        currPaddle.pos = currPaddle.pos.add(dir);
-        currPaddle.top = currPaddle.top.add(dir);
-        currPaddle.bottom = currPaddle.bottom.add(dir);
-        currPaddle.topBack = currPaddle.topBack.add(dir);
-        currPaddle.bottomBack = currPaddle.bottomBack.add(dir);
+        updatePaddlesPoints(currPaddle, dir);
+        handleDash(currPaddle);
+
+        let vecToStart = currPaddle.pos.sub(currPaddle.startingPos);
+        let limitDist = (data.field.goalsSize - currPaddle.h - currPaddle.w) / 2;
+
+        if (vecToStart.mag > limitDist) {
+            vecToStart = vecToStart.normalize();
+            dir = vecToStart.scale(limitDist);
+            currPaddle.pos = currPaddle.startingPos.add(vecToStart.scale(limitDist));
+            resetPaddlePoints(currPaddle);
+        }
     }
 }
 

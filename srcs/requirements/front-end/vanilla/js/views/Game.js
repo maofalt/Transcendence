@@ -79,6 +79,8 @@ export default class Game extends AbstractView {
 			this.socket.emit('moveUp');
 		if (event.key == "s")
 			this.socket.emit('moveDown');
+		if (event.key == "d")
+			this.socket.emit('dash');
 	};
 
 	handleKeyRelease(event) {

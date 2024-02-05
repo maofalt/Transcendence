@@ -107,7 +107,7 @@ io.on('connection', (client) => {
     client.on('moveUp', () => {
         console.log(`client ${client.id} moving up`);
         for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
-            if (data.players[i].socketID == client.id) {
+            if (data.players[i].socketID == client.id && !data.players[i].paddle.dashSp) {
                 data.players[i].paddle.currSp = data.players[i].paddle.sp;
             }
         }
@@ -116,8 +116,22 @@ io.on('connection', (client) => {
     client.on('moveDown', () => {
         console.log(`client ${client.id} moving down`);
         for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
-            if (data.players[i].socketID == client.id) {
+            if (data.players[i].socketID == client.id && !data.players[i].paddle.dashSp) {
                 data.players[i].paddle.currSp = -data.players[i].paddle.sp;
+            }
+        }
+    });
+
+    client.on('dash', () => {
+        console.log(`client ${client.id} dashing`);
+        for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
+            if (data.players[i].socketID == client.id && !data.players[i].paddle.dashSp) {
+                if (data.players[i].paddle.currSp == 0) {
+                    // do something for this err case
+                    return ;
+                }
+                data.players[i].paddle.dashSp = data.players[i].paddle.currSp > 0 ? data.players[i].paddle.w * 1.5 : data.players[i].paddle.w * -1.5;
+                // data.players[i].paddle.dashSp = data.players[i].paddle.w * 1.5 * (data.players[i].paddle.currSp > 0);
             }
         }
     });
@@ -125,7 +139,7 @@ io.on('connection', (client) => {
     client.on('stop', () => {
         console.log(`client ${client.id} stopping`);
         for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
-            if (data.players[i].socketID == client.id) {
+            if (data.players[i].socketID == client.id && !data.players[i].paddle.dashing) {
                 data.players[i].paddle.currSp = 0;
             }
         }

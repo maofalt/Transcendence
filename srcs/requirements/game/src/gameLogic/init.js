@@ -20,6 +20,7 @@ function initLoop(data, wallDist, goalDist, angle) {
         // set up the players paddles positions :
         data.players[i].paddle.pos.x = (goalDist - data.players[i].paddle.w * 2) * mCos;
         data.players[i].paddle.pos.y = (goalDist - data.players[i].paddle.w * 2) * mSin;
+        data.players[i].paddle.startingPos = data.players[i].paddle.pos;
         
         // setup the players paddles vectors :
         data.players[i].paddle.dirToCenter = center.getDirFrom(data.players[i].paddle.pos).normalize();

@@ -69,6 +69,7 @@ class Player {
 class Paddle {
     constructor(lobbyData, i) {
 		this.pos = new vecs.Vector(0, 0, 0);
+        this.startingPos = new vecs.Vector(0, 0, 0);
         this.dir = new vecs.Vector(0, 0, 0);
 		this.dirToCenter = new vecs.Vector(0, 0, 0); // dirToCenter and dirToTop = same def as in Wall Class (*)
         this.dirToTop = new vecs.Vector(1, 0, 0);
@@ -82,6 +83,8 @@ class Paddle {
         this.sp = lobbyData.paddlesData.speed;
         this.currSp = 0;
         this.col = lobbyData.playersData[i].color;
+        this.dashSp = 0;
+        this.dashFrameCounter = 0;
     }
 }
 
