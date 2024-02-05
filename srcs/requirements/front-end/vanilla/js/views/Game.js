@@ -2,6 +2,7 @@ import AbstractView from "./AbstractView";
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import io from 'socket.io-client';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { Texture } from 'three';
 
 class SpObject {
@@ -22,6 +23,7 @@ class BoxObject {
 export default class Game extends AbstractView {
 	constructor(element) {
 		super(element);
+		this.loader = new GLTFLoader();
 		
         // controls
         this.controls = null;
@@ -36,6 +38,7 @@ export default class Game extends AbstractView {
 
         // objects
         this.ball = null;
+		this.banana = null;
         this.paddles = [];
         this.walls = [];
 
@@ -168,6 +171,8 @@ export default class Game extends AbstractView {
 		// this.generateSkyBox(data);
 		this.drawAxes();
 
+		this.generateBanana(data);
+
 		// render scene
 		this.renderer.render(this.scene, this.camera);
 	};
@@ -204,6 +209,34 @@ export default class Game extends AbstractView {
 		this.scene.add(arrowZ);
 		this.scene.add(arrowY);
 	};
+
+	generateBanana(data) {
+		this.loader.load(
+			// resource URL
+			'../assets/banana/scene.gltf',
+			// called when the resource is loaded
+			function ( gltf ) {
+		
+				this.banana = gltf.scene;
+				this.banana.scale.set(5, 5, 5);
+		
+				this.scene.add(this.banana);
+		
+			},
+			// called while loading is progressing
+			function ( xhr ) {
+		
+				console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+		
+			},
+			// called when loading has errors
+			function ( error ) {
+		
+				console.log( 'An error happened while loading model' );
+		
+			}
+		);
+	}
 
 	generateBall(data) {
 		const ballGeometry = new THREE.SphereGeometry(data.ball.r, 24, 12);

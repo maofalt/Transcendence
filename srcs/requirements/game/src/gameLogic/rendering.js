@@ -169,6 +169,7 @@ function updateBall(data) {
 function updateData(data) {
     updatePaddles(data);
     updateBall(data);
+    // checkForScoring(data);
 }
 
 module.exports = { updateData };
