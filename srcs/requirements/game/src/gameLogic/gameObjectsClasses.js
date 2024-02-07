@@ -54,10 +54,11 @@ class Wall {
 // Player class
 class Player {
     constructor(lobbyData, i) {
-        this.accountID =lobbyData.playersData[i].accountID; // unique ID of the user account
+        // this.matchID = lobbyData.playtersData[i].matchID; // ?
+        this.accountID = lobbyData.playersData[i].accountID; // unique ID of the user account
         this.socketID = -1; // ID of the client/server socket
         this.ID = i; // position in the array of players in the lobby
-        this.login = lobbyData.playersData[i].login + `_${i}`; // user login
+        this.login = lobbyData.playersData[i].login; // user login
         this.connected = false; // connection status
         this.paddle = new Paddle(lobbyData, i); // creating paddle object for this player
         this.color = lobbyData.playersData[i].color;
@@ -113,6 +114,9 @@ class Ball {
 // Data class
 class Data {
     constructor(lobbyData) {
+        this.connectedPlayers = 0;
+        this.gameInterval = 0;
+
         // get the gamemode info from the lobby data;
         this.gamemode = new GameMode(lobbyData.gamemodeData);
 

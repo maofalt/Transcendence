@@ -33,8 +33,8 @@ export default class Game extends AbstractView {
         this.scene = null;
         this.camera = null;
 
-        this.clientId = null;
-        this.clientNbr = null;
+        this.playerID = null;
+		this.matchID = null;
 
         // objects
         this.ball = null;
@@ -104,6 +104,10 @@ export default class Game extends AbstractView {
 			transports: ['websocket']
 		});
 
+		this.socket.on('whoareyou', () => {
+			this.socket.emit('ID', this.playerID, this.matchID);
+		});
+
 		this.socket.on('generate', data => {
 			// Generate scene and update it
 			this.generateScene(data, this.socket);
@@ -115,12 +119,6 @@ export default class Game extends AbstractView {
 			console.log("Rendering Frame...");
 			this.updateScene(data);
 			this.renderer.render(this.scene, this.camera);
-		});
-
-		this.socket.on('clientId', (id, num) => {
-			this.clientNbr = num;
-			this.clientId = id;
-			console.log("Client connected with ID: " + this.clientId);
 		});
 	};
 
