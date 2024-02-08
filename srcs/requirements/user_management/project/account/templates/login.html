@@ -29,7 +29,7 @@
   <div id="forgotPasswordModal" style="display: none;">
     <span style="float: right; cursor: pointer;" onclick="closeForgotPasswordModal()">&times;</span>
   
-    <form id="forgotPasswordForm" onsubmit="submitForgotPasswordForm(); return false;">
+    <form id="forgotPasswordForm">
       {% csrf_token %}
       <input name="username_f" type="text" placeholder="Enter your username" style="width: 200px; margin-right: 5px;">
       <button type="button" onclick="sendUrlToEmail()">Send Password Reset Link</button>
@@ -97,6 +97,8 @@
         // closeLoginPopup();
         // window.location.href = '';
           $('#loginForm').hide();
+          $("#forgotPasswordLink").hide();
+          $('#signupLink').hide();
           $('#oneTimeCodeSection').show();
         } else {
           console.log('2FA not required');
@@ -180,4 +182,5 @@
   function displayErrorMessage(message) {
     $('#errorMessage').text(message).css('color', 'red');
 }
+
 </script>
