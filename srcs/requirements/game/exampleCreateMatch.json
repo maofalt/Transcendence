@@ -20,23 +20,23 @@
 	},
 	"playersData": [
 	  {
-		"username": "username",
+		"accountID": "yridgway",
 		"color": "0x0000ff"
 	  },
 	  {
-		"username": "username",
+		"accountID": "accountID",
 		"color": "0x0000ff"
 	  },
 	  {
-		"username": "username",
+		"accountID": "accountID",
 		"color": "0x0000ff"
 	  },
 	  {
-		"username": "username",
+		"accountID": "accountID",
 		"color": "0x0000ff"
 	  },
 	  {
-		"username": "username",
+		"accountID": "accountID",
 		"color": "0x0000ff"
 	  }
 	]

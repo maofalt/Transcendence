@@ -121,6 +121,7 @@ export default class Game extends AbstractView {
 
 		this.socket.on('render', data => {
 			console.log("Rendering Frame...");
+			// this.updateScene(JSON.parse(data));
 			this.updateScene(data);
 			this.renderer.render(this.scene, this.camera);
 		});

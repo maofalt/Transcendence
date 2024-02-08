@@ -5,6 +5,8 @@ const socketIo = require('socket.io');
 const jwt = require('jsonwebtoken');
 const SECRET_KEY = 'your_secret_key'; // secret key from jisu
 
+const util = require('util');
+
 // const fs = require('fs');
 
 // importing personal code :
@@ -70,6 +72,7 @@ let gameInterval = 0;
 
 function waitingLoop(data, matchId) {
     render.updateData(data);
+    // io.to(matchId).emit('render', JSON.stringify(data));
     io.to(matchId).emit('render', data);
     // console.log("sending render");
 }
@@ -111,8 +114,8 @@ function handleConnectionV2(client, playerID, matchID) {
 
 	// - check if match exists;
     let match = matches.get(matchID);
-	console.log("matches: ", matches);
-	console.log("MATCH: ", match, "MATCHID: ", matchID, "PLAYERID: ", playerID);
+	// console.log("matches: ", matches);
+	// console.log("MATCH: ", match, "MATCHID: ", matchID, "PLAYERID: ", playerID);
 	if (!match) {
 		// send err 404;
 		client.emit('error', 'Match not found');
@@ -128,26 +131,29 @@ function handleConnectionV2(client, playerID, matchID) {
         return;
     }
 
-    for (let i=0; match.gamemode.nbrOfPlayers; i++) {
+    for (let i=0; i<match.gamemode.nbrOfPlayers; i++) {
         if (match.players[i].accountID == playerID) {
             match.players[i].connected = true;
-            match.players[i].socketID = client;
+            // console.log("CLIENT: ", client);
+            match.players[i].socketID = client.id;
             match.connectedPlayers++;
         }
     }
 
     client.join(matchID);
+    // console.log('match: ', util.inspect(match, {depth: null}));
+    // client.emit('generate', JSON.stringify(match));
     client.emit('generate', match);
     
     if (match.connectedPlayers == 1) {
-        match.gameInterval = setInterval(waitingLoop, 20, match, matchId);
+        match.gameInterval = setInterval(waitingLoop, 20, match, matchID);
         match.ball.dir.y = -1;
     }
 
     console.log(`Player connected with ID: ${playerID}`);
 
     // client.emit('generate', data);
-    debugDisp.displayData(data);
+    debugDisp.displayData(match);
     return (match);
 }
 
@@ -231,11 +237,44 @@ io.on('connection', (client) => {
     });
 });
 
+function findRecursive(obj, visited = new WeakMap(), path = []) {
+    // Check if the current object is null or not an object.
+    if (obj === null || typeof obj !== 'object') {
+        return null;
+    }
+
+    // Check if we have already visited this object.
+    if (visited.has(obj)) {
+        // Return paths of the first and current encounters.
+        return { 
+            recursive: true, 
+            firstPath: visited.get(obj), // Path when the object was first visited.
+            currentPath: path // Current path where recursion was detected.
+        };
+    }
+
+    // Add the current object to the map of visited objects with its path.
+    visited.set(obj, path.slice());
+
+    // Recursively check all properties of the object.
+    for (const [key, value] of Object.entries(obj)) {
+        const result = findRecursive(value, visited, path.concat(key));
+        if (result) {
+            return result; // Found a recursive reference, return the result.
+        }
+    }
+
+    // If no recursive references were found.
+    return null;
+}
+
 // app.use(express.static('./public/remote/'));
 app.post('/createMatch', (req, res) => {
 	const gameSettings = req.body;
 	console.log("gameSettings: ", gameSettings);
 	const match = init.initLobby(gameSettings);  // implement match object
+    // console.log('match: ', util.inspect(match, {depth: null}));
+    // console.log('is recursive: ', findRecursive(match));
 	const matchId = "69"; //generateMatchId();
 	matches.set(matchId, match);
 	res.json({ matchId });
