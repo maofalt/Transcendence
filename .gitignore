@@ -11,3 +11,4 @@ node-proxy-server/
 __pycache__
 traefik.yml
 *.key
+react-app/

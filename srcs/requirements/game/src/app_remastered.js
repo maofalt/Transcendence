@@ -109,9 +109,24 @@ function handleConnectionV2(client, playerID, matchID) {
 
     console.log("CLIENT CONNECTED");
 
+	// - check if match exists;
     let match = matches.get(matchID);
-    // - check if match exists;
-    // - check if player is part of this match;
+	console.log("matches: ", matches);
+	console.log("MATCH: ", match, "MATCHID: ", matchID, "PLAYERID: ", playerID);
+	if (!match) {
+		// send err 404;
+		client.emit('error', 'Match not found');
+		client.disconnect();
+		return ;
+	}
+
+	// - check if player is part of this match;
+    if (!match.players.some(player => player.accountID == playerID)) {
+        // Player not part of the match, send error message to client
+        client.emit('error', 'Player not part of the match');
+        client.disconnect();
+        return;
+    }
 
     for (let i=0; match.gamemode.nbrOfPlayers; i++) {
         if (match.players[i].accountID == playerID) {
@@ -145,10 +160,9 @@ io.on('connection', (client) => {
         // playerId = decoded.username;
         // matchId = decoded.matchId;
 
-        playerId = client.handshake.headers.playerId;
-        matchId = client.handshake.headers.matchId;
-        
-        console.log("client headers: ", client.handshake.cookie);
+        playerId = client.handshake.query.playerId;
+        matchId = client.handshake.query.matchId;
+
         console.log("MATCHID: ", matchId);
         console.log("PLAYERID: ", playerId);
     } catch (error) {
@@ -219,9 +233,10 @@ io.on('connection', (client) => {
 
 // app.use(express.static('./public/remote/'));
 app.post('/createMatch', (req, res) => {
-    const gameSettings = req.body.gameSettings;
-    const match = init.initLobby(gameSettings);  // implement match object
-    const matchId = generateMatchId();
-    matches.set(matchId, match);
-    res.json({ matchId });
+	const gameSettings = req.body;
+	console.log("gameSettings: ", gameSettings);
+	const match = init.initLobby(gameSettings);  // implement match object
+	const matchId = "69"; //generateMatchId();
+	matches.set(matchId, match);
+	res.json({ matchId });
 });
