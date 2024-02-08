@@ -58,6 +58,9 @@ def get_token_for_user(user):
 
     return str(refresh.access_token)
 
+def privacy_policy_view(request):
+    return render(request, 'privacy_policy.html')
+
 def api_login_view(request):
     print("\n\n       URL:", request.build_absolute_uri())
 

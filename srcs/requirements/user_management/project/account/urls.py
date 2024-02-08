@@ -14,6 +14,7 @@ urlpatterns = [
     path("login", views.api_login_view, name="login"),
     path("logout", views.api_logout_view, name="logout"),
     path("signup", views.api_signup_view, name="signup"),
+    path('policy', views.privacy_policy_view, name='privacy_policy'),
     path("friend", views.friend_view, name="friend"),
     path("add_friend/<int:pk>", views.add_friend, name="add_friend"),
     path("remove_friend/<int:pk>", views.remove_friend, name="remove_friend"),
