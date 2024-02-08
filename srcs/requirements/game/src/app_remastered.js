@@ -140,10 +140,17 @@ function handleConnectionV2(client, playerID, matchID) {
 io.on('connection', (client) => {
     let token, decoded, playerId, matchId;
     try {
-        token = client.handshake.headers.cookie.replace('jwt=', ''); // Adjust based on your cookie format
-        decoded = jwt.verify(token, SECRET_KEY);
-        playerId = decoded.username;
-        matchId = decoded.matchId;
+        // token = client.handshake.headers.cookie.replace('jwt=', ''); // Adjust based on your cookie format
+        // decoded = jwt.verify(token, SECRET_KEY);
+        // playerId = decoded.username;
+        // matchId = decoded.matchId;
+
+        playerId = client.handshake.headers.playerId;
+        matchId = client.handshake.headers.matchId;
+        
+        console.log("client headers: ", client.handshake.cookie);
+        console.log("MATCHID: ", matchId);
+        console.log("PLAYERID: ", playerId);
     } catch (error) {
         console.log('JWT validation failed', error);
         // send err 401;
