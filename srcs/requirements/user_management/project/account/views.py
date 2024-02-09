@@ -1,16 +1,33 @@
-from django.contrib.auth import authenticate, login, logout, get_user_model
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
 from .models import User
-from django.contrib.auth.hashers import make_password, check_password
-from django.contrib.auth.decorators import login_required
+from django import forms
 from .forms import ProfileUpdateForm, PasswordUpdateForm
+from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
+from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView, PasswordResetDoneView
 from gameHistory_microservice.models import GameStats
 from django.db.utils import IntegrityError
-from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-from django.http import JsonResponse
+from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout, get_user_model
+from django.contrib.auth.hashers import make_password, check_password
+from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
+from django.http import JsonResponse, HttpResponseRedirect
+from django.shortcuts import render, redirect, get_object_or_404
+from django.db import transaction
+from django.urls import reverse, reverse_lazy
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_decode
+from django.views.generic.edit import FormView
+import secrets
+
+import logging
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+# from django.utils.encoding import force_bytes, force_str
+
 #JWT
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -29,6 +46,9 @@ from django.utils.crypto import get_random_string
 from django.contrib.sessions.models import Session
 from django.middleware.csrf import get_token
 
+logger = logging.getLogger(__name__)
+User = get_user_model()
+
 def home(request):
     return render(request, 'home.html')
 
@@ -37,6 +57,9 @@ def get_token_for_user(user):
     refresh['username'] = user.username
 
     return str(refresh.access_token)
+
+def privacy_policy_view(request):
+    return render(request, 'privacy_policy.html')
 
 def api_login_view(request):
     print("\n\n       URL:", request.build_absolute_uri())
@@ -115,10 +138,10 @@ def verify_one_time_code(request):
         print("code from User : ", submitted_code, '\n\n')
         pending_username = request.session.get('pending_username')
         if pending_username:
-            user = User.objects.get(username=pending_username)
             if submitted_code == stored_code:
                 del request.session['one_time_code']
                 if context == 'login':
+                    user = User.objects.get(username=pending_username)
                     login(request, user)
                     user.is_online = True
                     print(f"Is Online: {user.is_online}")
@@ -180,6 +203,7 @@ def api_signup_view(request):
             password=make_password(password),
             playername=playername,
         )
+        print("PASSWORD : ", password)
 
         try:
             user.save()
@@ -201,6 +225,26 @@ def api_signup_view(request):
         return JsonResponse({'success': True})
 
     return JsonResponse({'success': False, 'error_message': 'Invalid request method'}, status=400)
+
+@require_POST
+@login_required
+def delete_account(request):
+    user = request.user
+    try:
+        with transaction.atomic():
+            user.game_stats.all().delete()
+
+        user.is_online = False
+        user.save()
+        request.user.delete()
+
+        logger.info(f"User {user.username} deleted successfully.")
+        
+        return JsonResponse({'success': True, 'message': 'Account deleted successfully'})
+    except Exception as e:
+        logger.error(f"Error deleting account: {str(e)}")
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
 
 @login_required
 def friend_view(request):
@@ -267,6 +311,75 @@ def password_update_view(request):
     return render(request, 'password_update.html', {'form': form})
 
 
+class TokenGenerator(PasswordResetTokenGenerator):
+    def _make_hash_value(self, user, timestamp):
+        return (
+            str(user.pk) + str(timestamp) + str(user.is_active)
+        )
+
+token_generator = TokenGenerator()
+
+def send_password_reset_link(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        print("usernamen: ", username)
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'User not found'})
+
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = token_generator.make_token(user)
+
+        reset_url = request.build_absolute_uri(reverse_lazy('account:password_reset', kwargs={'uidb64': uid, 'token': token}))
+        print("reset_link: ", reset_url)
+
+        print("\n\nCHECK UNIQUE TOKEN: ", token)
+        subject = 'Pong Password Reset'
+        email_content = render_to_string('password_reset_email.html', {'reset_url': reset_url, 'user': user})
+        from_email = 'no-reply@student.42.fr' 
+        to_email = user.email
+        send_mail(subject, email_content, from_email, [to_email], fail_silently=False)
+
+        return JsonResponse({'success': True, 'message': 'Password reset link sent successfully'})
+
+    else:
+        return JsonResponse({'success': False, 'error_message': 'Invalid request method'})
+
+def password_reset_view(request, uidb64, token):
+    print("uidb64: ", uidb64, "token: ", token)
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+    print("user? : ", user.username)
+    if user is not None and token_generator.check_token(user, token):
+        if request.method == 'POST':
+            new_password1 = request.POST.get('new_password1')
+            new_password2 = request.POST.get('new_password2')
+            try:
+                validate_password(new_password1, user=User(username=user.username))
+            except ValidationError as e:
+                return JsonResponse({'success': False, 'error_message': e.messages[0]}, status=400)
+
+            if new_password1 == new_password2:
+                user.set_password(new_password1)
+                user.save()
+                user = authenticate(request, username=user.username, password=new_password1)
+                if user is not None:
+                    login(request, user)
+                return redirect('account:password_reset_done')
+            else:
+                return JsonResponse({'success': False, 'error_message': 'Passwords do not match'}, status=400)
+        else:
+            return render(request, 'password_reset.html', {'uidb64': uidb64, 'token': token, 'user': user})
+    else:
+        return HttpResponse('Invalid password reset link', status=400)
+
+def password_reset_done(request):
+    return render(request, 'password_reset_done.html')
+
 class UserAPIView(APIView):
     def get(self, request, *args, **kwargs):
         # queryset = User.objects.all()
@@ -280,3 +393,8 @@ class UserAPIView(APIView):
             return Response({"detail": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
 
+def print_all_user_data(request):
+    all_users = User.objects.all()
+    context = {'users': all_users}
+
+    return render(request, 'print_user_data.html', context)

@@ -16,6 +16,8 @@
     <input type="submit" value="Login">
   </form>
 
+  <a href="#" id="forgotPasswordLink">Forgot Password?</a>
+
   <div id="oneTimeCodeSection" style="display: none;">
     {% csrf_token %}
     <input name="one_time_code" type="text" placeholder="One-Time Code">
@@ -23,12 +25,27 @@
   </div>
 
   <a href="#" id="signupLink">Sign up</a>
+
+  <div id="forgotPasswordModal" style="display: none;">
+    <span style="float: right; cursor: pointer;" onclick="closeForgotPasswordModal()">&times;</span>
+  
+    <form id="forgotPasswordForm">
+      {% csrf_token %}
+      <input name="username_f" type="text" placeholder="Enter your username" style="width: 200px; margin-right: 5px;">
+      <button type="button" onclick="sendUrlToEmail()">Send Password Reset Link</button>
+    </form>
+  </div>
   {% include 'signup.html' %}
 
 
 <script>
   $(document).ready(function () {
     var signupClicked = false;
+
+    $("#forgotPasswordLink").click(function () {
+      $("#darkLayer").fadeIn();
+      $("#forgotPasswordModal").fadeIn();
+    });
 
     $("#signupLink").click(function (event) {
         event.stopPropagation()
@@ -51,6 +68,11 @@
     signupClicked = false; // Reset the flag after handling the click
   });
 });
+
+  function closeForgotPasswordModal() {
+      $("#darkLayer").fadeOut();
+      $("#forgotPasswordModal").fadeOut();
+    }
 
   function closeLoginPopup() {
       $("#darkLayer").fadeOut();
@@ -75,6 +97,8 @@
         // closeLoginPopup();
         // window.location.href = '';
           $('#loginForm').hide();
+          $("#forgotPasswordLink").hide();
+          $('#signupLink').hide();
           $('#oneTimeCodeSection').show();
         } else {
           console.log('2FA not required');
@@ -134,8 +158,29 @@
     });
   }
   
+  function sendUrlToEmail() {
+    var username = $('input[name="username_f"]').val();
+    $.ajax({
+      url: '{% url "account:send_resetLink" %}',
+      type: 'POST',
+      data: { 'username': username },
+      headers: { "X-CSRFToken": getCookie('csrftoken') },
+      success: function (data) {
+        console.log('Password reset link sent successfully:', data);
+        closeForgotPasswordModal();
+      },
+      error: function (xhr, textStatus, errorThrown) {
+        console.log('Error sending reset Link:', errorThrown);
+      },
+      complete: function (xhr, textStatus) {
+        console.log('Request complete. Status:', textStatus);
+      }
+    });
+    return false;
+  }
 
   function displayErrorMessage(message) {
     $('#errorMessage').text(message).css('color', 'red');
 }
+
 </script>

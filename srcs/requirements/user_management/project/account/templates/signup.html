@@ -7,6 +7,20 @@
         background-color: green !important;
         cursor: pointer !important;
     }
+    .popup-container {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #fff;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        z-index: 9999;
+        width: 300px;
+        max-height: 400px;
+        overflow-y: auto;
+    }
 </style>
 
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
@@ -42,7 +56,17 @@
             <button type="button" onclick="verifyCode('signup')">Verify Code</button>
             <span id="successMessage" style="color: green; margin-top: 5px;"></span>
         </p>
+        <button onclick="openPrivacyPolicyPopup()">Open Privacy Policy</button>
+
+        <div id="privacyPolicyPopup" class="popup-container">
+            <span style="float: right; cursor: pointer;" onclick="closePrivacyPolicyPopup()">&times;</span>
+        </div> 
+        I agree to the terms and conditions.
+        <label for="agreementCheckbox">
+            <input type="checkbox" id="agreementCheckbox" required >
+        </label><br><br>
         <input type="submit" value="Sign up" id="signupButton" disabled>
+        </form>
     </form>
 
 
@@ -128,6 +152,20 @@
             }
         });
     }
+    function openPrivacyPolicyPopup() {
+        $.get("{% url 'account:privacy_policy' %}", function(data) {
+            $("#privacyPolicyPopup").html(data);
+            $("#privacyPolicyPopup").fadeIn();
+        });
+    }
+    function closePrivacyPolicyPopup() {
+        $("#privacyPolicyPopup").fadeOut();
+    }
+    window.addEventListener("message", function(event) {
+        if (event.data.type === "checkboxStateChange") {
+            document.getElementById('agreementCheckbox').checked = event.data.checked;
+        }
+    }, false);
     function verifyCode(context) {
         var email = $("#signupEmail").val();
         var verificationCode = $("#verificationCode").val();
