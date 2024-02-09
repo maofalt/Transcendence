@@ -126,9 +126,13 @@ class Data {
         this.ball = new Ball(lobbyData.ballData);
 
         // create and fill the array of players
-        this.players = [];
+        this.players = {};
+
+		this.playersArray = [];
+
         for (let i=0; i<lobbyData.gamemodeData.nbrOfPlayers; i++) {
-            this.players.push(new Player(lobbyData, i));
+			let player = new Player(lobbyData, i);
+            this.players[player.accountID] = player;
         }
 
         // create walls & fill the array of walls

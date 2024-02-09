@@ -5,36 +5,11 @@ import io from 'socket.io-client';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { Texture } from 'three';
 
-function createCallTracker() {
-	let lastCallTime = 0; // Timestamp of the last call
-	let totalElapsedTime = 0; // Total elapsed time between calls
-	let callCount = 0; // Number of calls
-  
-	// This function is called every time you want to track a call
-	return function trackCall() {
-	  const now = Date.now(); // Get current timestamp in milliseconds
-  
-	  if (lastCallTime !== 0) { // Skip the first call since there's no previous call to compare
-		const elapsedTime = now - lastCallTime; // Time since last call
-		totalElapsedTime += elapsedTime; // Add to total
-	  }
-  
-	  lastCallTime = now; // Update last call time
-	  callCount++; // Increment call count
-  
-	  // Calculate and return the average time between calls, skipping the first call
-	  return callCount > 1 ? totalElapsedTime / (callCount - 1) : 0;
-	};
-  }
-
-// instance of the call tracker
-const trackMyFunctionCall = createCallTracker();
-
 class SpObject {
     constructor(objMesh, dirMesh) {
         this.mesh = objMesh;
         this.dirMesh = dirMesh;
-    }
+	}
 }
 
 class BoxObject {
@@ -144,18 +119,16 @@ export default class Game extends AbstractView {
 
 		this.socket.on('generate', data => {
 			// Generate scene and update it
-			data.playersArray = Object.values(data.players);
-			console.log("data : ", data);
+			console.log("DATA: ", data);
 			this.generateScene(data, this.socket);
 			this.updateScene(data, this.socket);
 			this.renderer.render(this.scene, this.camera);
 		});
-		
+
 		this.socket.on('render', data => {
-			data.playersArray = Object.values(data.players);
 			console.log("Rendering Frame...");
+			// this.updateScene(JSON.parse(data));
 			this.updateScene(data);
-			console.log(trackMyFunctionCall() + "ms");
 			this.renderer.render(this.scene, this.camera);
 		});
 	};
@@ -185,11 +158,14 @@ export default class Game extends AbstractView {
 		
 		this.camera.position.set(data.camera.pos.x, data.camera.pos.y, data.camera.pos.z);
 		this.camera.lookAt(new THREE.Vector3(data.camera.target.x, data.camera.target.y, data.camera.target.z));
-		for (let i=0; i<data.playersArray.length; i++) {
-			if (data.playersArray[i].socketID == socket.id) {
-				console.log(`socket : ${data.playersArray[i].socketID}, client : ${socket.id}, ${i}, angle = ${data.playersArray[i].paddle.angle}`);
+		let i = 0;
+		console.log("PLAYERS: ", data.players);
+		for (let player of data.players) {
+			if (player.socketID == socket.id) {
+				console.log(`socket : ${player.socketID}, client : ${socket.id}, ${i}, angle = ${player.paddle.angle}`);
 				this.camera.rotation.set(0, 0, 2 * Math.PI/data.gamemode.nbrOfPlayers * i);
 			}
+			i++;
 		}
 		// this.camera.rotation.set(0, 0, 90);
 		// for later : set cam rotation depending on which client this is so the player is always at the same place;
@@ -218,16 +194,18 @@ export default class Game extends AbstractView {
 		console.log("Updating Scene...");
 		this.ball.mesh.position.set(data.ball.pos.x, data.ball.pos.y, 0);
 		// this.ball.dirMesh.position.set(data.ball.pos.x, data.ball.pos.y, 0);
-		for (let i=0; i<data.playersArray.length; i++) {
-			this.paddles[i].mesh.position.set(data.playersArray[i].paddle.pos.x, data.playersArray[i].paddle.pos.y, data.playersArray[i].paddle.pos.z);
-			this.paddles[i].mesh.material.opacity = data.playersArray[i].connected ? 0.7 : 0.3;
-			// this.paddles[i].dir1Mesh.position.set(data.playersArray[i].paddle.pos.x, data.playersArray[i].paddle.pos.y, data.playersArray[i].paddle.pos.z);
-			// this.paddles[i].dir2Mesh.position.set(data.playersArray[i].paddle.pos.x, data.playersArray[i].paddle.pos.y, data.playersArray[i].paddle.pos.z);
-			// for (let i=0; i<data.playersArray.length; i++) {
-			// 	if (data.playersArray[i].socketID = socket.id) {
-			// 		this.camera.rotation.set(0, 0, data.playersArray[i].paddle.angle + Math.PI / 2);
+		let i = 0;
+		for (let player of data.players) {
+			this.paddles[i].mesh.position.set(player.paddle.pos.x, player.paddle.pos.y, player.paddle.pos.z);
+			this.paddles[i].mesh.material.opacity = player.connected ? 0.7 : 0.3;
+			// this.paddles[i].dir1Mesh.position.set(player.paddle.pos.x, player.paddle.pos.y, player.paddle.pos.z);
+			// this.paddles[i].dir2Mesh.position.set(player.paddle.pos.x, player.paddle.pos.y, player.paddle.pos.z);
+			// for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
+			// 	if (player.socketID = socket.id) {
+			// 		this.camera.rotation.set(0, 0, player.paddle.angle + Math.PI / 2);
 			// 	}
 			// }
+			i++;
 		}
 	}
 
@@ -295,7 +273,7 @@ export default class Game extends AbstractView {
 	generateWalls(data) {
 		const wallGeometry = new THREE.BoxGeometry(data.field.wallsSize, 1, 2);
 		const wallMaterial = new THREE.MeshPhongMaterial({ color: data.ball.col, transparent: true, opacity: 1, reflectivity: 0.5 });
-		console.log("number of players : ", data.gamemode.nbrOfPlayers);
+
 		for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
 			this.walls[i] = new THREE.Mesh(wallGeometry, wallMaterial); // create Material
 			this.scene.add(this.walls[i]); // add mesh to the scene
@@ -305,28 +283,29 @@ export default class Game extends AbstractView {
 	}
 
 	generatePaddles(data) {
-		for (let i=0; i<data.playersArray.length; i++) {
-			const paddleGeometry = new THREE.BoxGeometry(data.playersArray[i].paddle.h, 1, 2);
-			const paddleMaterial = new THREE.MeshPhongMaterial({ color: data.playersArray[i].color, transparent: true, opacity: 0.7, reflectivity: 0.5 });
+		for (let player of data.players) {
+			console.log("player color : ", player.color);
+			const paddleGeometry = new THREE.BoxGeometry(player.paddle.h, 1, 2);
+			const paddleMaterial = new THREE.MeshPhongMaterial({ color: player.color, transparent: true, opacity: 0.7, reflectivity: 0.5 });
 
 			const dir1 = new THREE.ArrowHelper(
-				new THREE.Vector3(data.playersArray[i].paddle.dirToCenter.x,
-								data.playersArray[i].paddle.dirToCenter.y,
-								data.playersArray[i].paddle.dirToCenter.z,),
-					data.playersArray[i].paddle.pos, 10, 0xff0000);
+				new THREE.Vector3(player.paddle.dirToCenter.x,
+								player.paddle.dirToCenter.y,
+								player.paddle.dirToCenter.z,),
+					player.paddle.pos, 10, 0xff0000);
 			const dir2 = new THREE.ArrowHelper(
-				new THREE.Vector3(data.playersArray[i].paddle.dirToTop.x,
-								data.playersArray[i].paddle.dirToTop.y,
-								data.playersArray[i].paddle.dirToTop.z,),
-					data.playersArray[i].paddle.pos, 10, 0x00ff00);
+				new THREE.Vector3(player.paddle.dirToTop.x,
+								player.paddle.dirToTop.y,
+								player.paddle.dirToTop.z,),
+					player.paddle.pos, 10, 0x00ff00);
 
             this.paddles[i] = new BoxObject(new THREE.Mesh(paddleGeometry, paddleMaterial), dir1, dir2);
 			this.scene.add(this.paddles[i].mesh); // add mesh to the scene
 			// this.scene.add(this.paddles[i].dir1Mesh);
 			// this.scene.add(this.paddles[i].dir2Mesh);
 
-			this.paddles[i].mesh.position.set(data.playersArray[i].paddle.pos.x, data.playersArray[i].paddle.pos.y, 0); // set the position
-			this.paddles[i].mesh.rotation.set(0, 0, data.playersArray[i].paddle.angle + Math.PI / 2); // set the rotation to the proper orientation (facing center)
+			this.paddles[i].mesh.position.set(player.paddle.pos.x, player.paddle.pos.y, 0); // set the position
+			this.paddles[i].mesh.rotation.set(0, 0, player.paddle.angle + Math.PI / 2); // set the rotation to the proper orientation (facing center)
 		}
 	}
 

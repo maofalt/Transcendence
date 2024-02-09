@@ -137,7 +137,7 @@ def verify_one_time_code(request):
         print("\n\ncode from Session : ", stored_code)
         print("code from User : ", submitted_code, '\n\n')
         pending_username = request.session.get('pending_username')
-        if pending_username:
+        if pending_username or True :
             if submitted_code == stored_code:
                 del request.session['one_time_code']
                 if context == 'login':

@@ -76,8 +76,8 @@ function ballHitsPaddle(data) {
     let ball, paddle;
 
     ball = data.ball;
-    for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
-        paddle = data.players[i].paddle;
+	for (let player of Object.values(data.players)) {
+        paddle = player.paddle;
         if (ball.pos.getDistFrom(paddle.pos) < ball.sp + ball.r + paddle.h / 2) {
             // if (ballHitsPaddleCenter(paddle, ball) ||
             //     ballHitsPaddleTop(paddle, ball) || 
@@ -129,8 +129,8 @@ function updatePaddles(data) {
     let currPaddle = 0;
 
     // console.log('test');
-    for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
-        currPaddle = data.players[i].paddle;
+	for (let player of Object.values(data.players)) {
+        currPaddle = player.paddle;
         let dir = 0;
         
         dir = (currPaddle.dashSp != 0) ? currPaddle.dirToTop.scale(currPaddle.dashSp) : currPaddle.dirToTop.scale(currPaddle.currSp);

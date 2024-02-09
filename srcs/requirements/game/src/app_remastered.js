@@ -124,17 +124,19 @@ function handleConnectionV2(client) {
 	}
 
 	// - check if player is part of this match;
-    if (!match.gameState.players.some(player => player.accountID == client.playerID)) {
+	let playerFound = false;
+	Object.values(match.gameState.players).forEach(player => {
+		if (player.accountID == client.playerID) {
+			player.connected = true;
+			player.socketID = client.id;
+			match.gameState.connectedPlayers++;
+			playerFound = true;
+		}
+	});
+
+	if (!playerFound) {
         // Player not part of the match, send error message to client
 		throw new Error(`Player ${client.playerID} not part of the match`);
-    }
-
-    for (let i=0; i<match.gameState.gamemode.nbrOfPlayers; i++) {
-        if (match.gameState.players[i].accountID == client.playerID) {
-            match.gameState.players[i].connected = true;
-            match.gameState.players[i].socketID = client.id;
-            match.gameState.connectedPlayers++;
-        }
     }
 
     client.join(client.matchID);
@@ -185,6 +187,7 @@ io.use((client, next) => {
 				next();
 			});
 		} else {
+			console.error('Authentication error: No token provided.');
 			next(new Error('Authentication error: No token provided.'));
 		}
 	} catch (error) {
@@ -204,42 +207,38 @@ io.on('connection', (client) => {
 		// player controls
 		client.on('moveUp', () => {
 			console.log(`client ${client.id} moving up`);
-			for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
-				if (data.players[i].socketID == client.id && !data.players[i].paddle.dashSp) {
-					data.players[i].paddle.currSp = data.players[i].paddle.sp;
-				}
+			let player = data.players[client.playerID];
+			if (!player.paddle.dashSp) {
+				player.paddle.currSp = player.paddle.sp;
 			}
 		});
 		
 		client.on('moveDown', () => {
 			console.log(`client ${client.id} moving down`);
-			for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
-				if (data.players[i].socketID == client.id && !data.players[i].paddle.dashSp) {
-					data.players[i].paddle.currSp = -data.players[i].paddle.sp;
-				}
+			let player = data.players[client.playerID];
+			if (!player.paddle.dashSp) {
+				player.paddle.currSp = -player.paddle.sp;
 			}
 		});
 		
 		client.on('dash', () => {
 			console.log(`client ${client.id} dashing`);
-			for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
-				if (data.players[i].socketID == client.id && !data.players[i].paddle.dashSp) {
-					if (data.players[i].paddle.currSp == 0) {
-						// do something for this err case
-						return ;
-					}
-					data.players[i].paddle.dashSp = data.players[i].paddle.currSp > 0 ? data.players[i].paddle.w * 1.5 : data.players[i].paddle.w * -1.5;
-					// data.players[i].paddle.dashSp = data.players[i].paddle.w * 1.5 * (data.players[i].paddle.currSp > 0);
+			let player = data.players[client.playerID];
+			if (!player.paddle.dashSp) {
+				if (player.paddle.currSp == 0) {
+					// do something for this err case
+					return ;
 				}
+				player.paddle.dashSp = player.paddle.currSp > 0 ? player.paddle.w * 1.5 : player.paddle.w * -1.5;
+				// player.paddle.dashSp = player.paddle.w * 1.5 * (player.paddle.currSp > 0);
 			}
 		});
 		
 		client.on('stop', () => {
 			console.log(`client ${client.id} stopping`);
-			for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
-				if (data.players[i].socketID == client.id && !data.players[i].paddle.dashing) {
-					data.players[i].paddle.currSp = 0;
-				}
+			let player = data.players[client.playerID];
+			if (!player.paddle.dashing) {
+				player.paddle.currSp = 0;
 			}
 		});
 		
@@ -247,13 +246,11 @@ io.on('connection', (client) => {
 		client.on('disconnect', () => {
 			client.leave("gameRoom");
 			data.connectedPlayers--;
-			for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
-				if (data.players[i].socketID == client.id)
-					data.players[i].connected = false;
-			}
+			let player = data.players[client.playerID];
+			player.connected = false;
 			if (data.connectedPlayers < 1) {
 				console.log("CLEARING INTERVAL");
-				data.clearInterval(match.gameInterval);
+				clearInterval(match.gameInterval);
 				matches.delete(client.matchID);
 				delete data;
 			}
