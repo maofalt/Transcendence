@@ -4,7 +4,7 @@ const http = require('http');
 const socketIo = require('socket.io');
 const jwt = require('jsonwebtoken');
 const cookie = require('cookie');
-const SECRET_KEY = 'secret_key'; // secret key from jisu
+const SECRET_KEY = 'django-insecure-q(kyo2-+=u8uat#&h59tddpvut0b^pyd#gihr&t8+$bza^_z%t'; // secret key from jisu
 
 const util = require('util');
 
@@ -116,25 +116,17 @@ function waitingLoop(matchID) {
 
 function handleConnectionV2(client) {
 
-    console.log("CLIENT CONNECTED");
+    console.log("\nCLIENT CONNECTED\n");
 
-	// - check if match exists;
     let match = matches.get(client.matchID);
-	// console.log("matches: ", matches);
-	// console.log("MATCH: ", match, "MATCHID: ", matchID, "PLAYERID: ", playerID);
 	if (!match) {
-		// send err 404;
-		client.emit('error', 'Match not found');
-		client.disconnect();
-		return ;
+		throw new Error('Match not found');
 	}
 
 	// - check if player is part of this match;
     if (!match.gameState.players.some(player => player.accountID == client.playerID)) {
         // Player not part of the match, send error message to client
-        client.emit('error', 'Player not part of the match');
-        client.disconnect();
-        return;
+		throw new Error(`Player ${client.playerID} not part of the match`);
     }
 
     for (let i=0; i<match.gameState.gamemode.nbrOfPlayers; i++) {
@@ -155,7 +147,7 @@ function handleConnectionV2(client) {
         match.gameState.ball.dir.y = -1;
     }
 
-    console.log(`Player connected with ID: ${playerID}`);
+    console.log(`Player connected with ID: ${client.playerID}`);
 
     // client.emit('generate', data);
     debugDisp.displayData(match.gameState);
@@ -165,7 +157,7 @@ function handleConnectionV2(client) {
 // authenticate user before establishing websocket connection
 io.use((client, next) => {
 	try {
-		console.log("query: ", client.handshake.query);
+		console.log("\nquery:\n", client.handshake.query);
 		client.matchID = client.handshake.query.matchID;
 		client.playerID = client.handshake.query.playerid;
 		if (!client.matchID) {
@@ -176,6 +168,8 @@ io.use((client, next) => {
 			// Parse the cookies from the handshake headers
 			const cookies = cookie.parse(client.handshake.headers.cookie);
 			const token = cookies.jwtToken;
+			console.log("\ntoken:\n", token);
+			console.log("\ncookies:\n", cookies);
 	
 			// Verify the token
 			jwt.verify(token, SECRET_KEY, function(err, decoded) {
@@ -184,8 +178,10 @@ io.use((client, next) => {
 					return next(new Error('Authentication error: Could not verify token.'));
 				}
 				client.decoded = decoded;
-				console.log("JWT: ", decoded);
+				client.playerID = decoded.username;
+				// console.log("JWT: ", decoded);
 				// client.username = decoded.replace('jwtToken=', '')
+				console.log("\ndecoded:\n", decoded);
 				next();
 			});
 		} else {
@@ -201,6 +197,7 @@ io.use((client, next) => {
 io.on('connection', (client) => {
 	try {
 		//handle client connection and match init + players status
+		console.log("\nclient:\n", client.decoded);
 		let match = handleConnectionV2(client);
 		let data = match.gameState;
 		
@@ -255,6 +252,7 @@ io.on('connection', (client) => {
 					data.players[i].connected = false;
 			}
 			if (data.connectedPlayers < 1) {
+				console.log("CLEARING INTERVAL");
 				data.clearInterval(match.gameInterval);
 				matches.delete(client.matchID);
 				delete data;
@@ -263,8 +261,8 @@ io.on('connection', (client) => {
 		});
 
 	} catch (error) {
-		console.error('Error handling websocket connection: ', error);
-		client.emit('error', 'Error handling websocket connection: ' + error);
+		console.error('Error: ', error);
+		client.emit('error', error.message);
 		client.disconnect();
 	}
 });
@@ -272,16 +270,13 @@ io.on('connection', (client) => {
 // app.use(express.static('./public/remote/'));
 app.post('/createMatch', (req, res) => {
 	const gameSettings = req.body;
-	console.log("gameSettings: ", gameSettings);
+	// console.log("gameSettings: ", gameSettings);
 	const gameState = init.initLobby(gameSettings);  // implement match object
     // console.log('match: ', util.inspect(match, {depth: null}));
     // console.log('is recursive: ', findRecursive(match));
-	const matchID = req.headers.matchID //generateMatchID();
-	console.log("headers: ", req.headers);
+	const matchID = '69' //generateMatchID();
+	// console.log("headers: ", req.headers);
+	console.log("\nMATCH CREATED\n");
 	matches.set(matchID, { gameState: gameState, gameInterval: 0 });
 	res.json({ matchID });
-});
-
-io.use((socket, next) => {
-    console.log(socket.handshake.headers);
 });
