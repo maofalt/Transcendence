@@ -4,7 +4,7 @@ const http = require('http');
 const socketIo = require('socket.io');
 const jwt = require('jsonwebtoken');
 const cookie = require('cookie');
-const SECRET_KEY = 'django-insecure-q(kyo2-+=u8uat#&h59tddpvut0b^pyd#gihr&t8+$bza^_z%t'; // secret key from jisu
+const SECRET_KEY = process.env.DJANGO_SECRET_KEY; // secret key from jisu
 
 const util = require('util');
 
