@@ -3,7 +3,8 @@ const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const jwt = require('jsonwebtoken');
-const SECRET_KEY = 'your_secret_key'; // secret key from jisu
+const cookie = require('cookie');
+const SECRET_KEY = 'secret_key'; // secret key from jisu
 
 const util = require('util');
 
@@ -160,6 +161,29 @@ function handleConnectionV2(client, playerID, matchID) {
     return (match);
 }
 
+// authenticate user before establishing websocket connection
+io.use((client, next) => {
+    console.log("hellooo")
+    console.log("query: ", client.handshake.query);
+    if (client.handshake.headers && client.handshake.headers.cookie) {
+      // Parse the cookies from the handshake headers
+      const cookies = cookie.parse(client.handshake.headers.cookie);
+      const token = cookies.jwtToken;
+  
+      // Verify the token
+      jwt.verify(token, SECRET_KEY, function(err, decoded) {
+        if (err) return next(new Error('Authentication error'));
+        client.decoded = decoded;
+        console.log("JWT: ", decoded);
+        // client.username = decoded.replace('jwtToken=', '')
+        next();
+      });
+    } else {
+      console.log("whattttt");
+      next(new Error('Authentication error'));
+    }
+});
+
 // Set up Socket.IO event handlers
 io.on('connection', (client) => {
     let token, decoded, playerId, matchId;
@@ -252,4 +276,8 @@ app.post('/createMatch', (req, res) => {
 	console.log("headers: ", req.headers);
 	matches.set(matchId, { match: match, gameInterval: 0 });
 	res.json({ matchId });
+});
+
+io.use((socket, next) => {
+    console.log(socket.handshake.headers);
 });
