@@ -109,6 +109,10 @@ export default class Game extends AbstractView {
 			console.error("Socket error: ", error);
 		});
 
+		this.socket.on('connect_error', (error) => {
+			console.error("Socket connection error: ", error);
+		});
+
 		this.socket.on('whoareyou', () => {
 			this.socket.emit('ID', this.playerID, this.matchID);
 		});
