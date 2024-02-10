@@ -61,7 +61,7 @@ class Player {
         this.login = lobbyData.playersData[i].login; // user login
         this.connected = false; // connection status
         this.paddle = new Paddle(lobbyData, i); // creating paddle object for this player
-        this.color = lobbyData.playersData[i].color;
+        this.color = parseInt(lobbyData.playersData[i].color, 16);
         this.score = 0;
     }
 }
@@ -83,7 +83,7 @@ class Paddle {
         this.h = lobbyData.paddlesData.height;
         this.sp = lobbyData.paddlesData.speed;
         this.currSp = 0;
-        this.col = lobbyData.playersData[i].color;
+        this.col = parseInt(lobbyData.playersData[i].color, 16);
         this.dashSp = 0;
         this.dashFrameCounter = 0;
     }
@@ -99,7 +99,7 @@ class Ball {
                            // the right player.
         this.r = ballData.radius;
         this.sp = ballData.speed;
-        this.col = ballData.color;
+        this.col = parseInt(ballData.color, 16);
     }
 }
 

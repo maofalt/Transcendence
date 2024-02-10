@@ -141,7 +141,7 @@ function updatePaddles(data) {
         handleDash(currPaddle);
 
         let vecToStart = currPaddle.pos.sub(currPaddle.startingPos);
-        let limitDist = (data.field.goalsSize - currPaddle.h - currPaddle.w) / 2;
+        let limitDist = (data.field.goalsSize - currPaddle.h - currPaddle.w) / 1;
 
         if (vecToStart.mag > limitDist) {
             vecToStart = vecToStart.normalize();
