@@ -85,6 +85,90 @@ Example response:
 
 This API allows you to connect to a matchm send paddle movements and receive game updates with `WebSocket Secure`.
 
-### WebSocket Connection
+### Establish WebSocket Connection using `wss://`
 
+```javascript
+path: '/game-logic/socket.io',
+query: 'matchID=${id}'
+secure: true,
+rejectUnauthorized: false,
+transports: ['websocket']
+```
+Example wss url:
 
+```plaintext
+wss://localhost:9443/game-logic/socket.io/?matchID=69
+```
+
+### WebSocket Events
+
+#### message: `generate`
+Game State is sent in object `data` once after initial connection.
+```javascript
+// Socket.io example:
+this.socket.on('generate', data => {
+    // Generate scene and update it
+});
+```
+
+#### message: `render`
+Game State is sent in object `data` every 20ms.
+```javascript
+// Socket.io example:
+this.socket.on('render', data => {
+    // Update scene
+});
+```
+
+#### message: `ping`
+Array of size 2 with `[timestamp, latency]` is sent. `timestamp` should be sent back with message: `pong`, `latency` can be displayed for monitoring of WebSocket server ping.
+```javascript
+// Socket.io example:
+this.socket.on('ping', ([timestamp, latency]) => {
+    this.socket.emit('pong', timestamp);
+    console.log(latency + 'ms');
+});
+```
+
+#### message: `connection_error`
+This is sent when there was an error with the initial connection. It is sent with `error` containing the error message.
+```javascript
+// Socket.io example:
+this.socket.on('connect_error', (error) => {
+    console.error("Socket connection error: ", error);
+});
+```
+
+#### message: `error`
+This is sent for all oher errors with `error` containing the error message.
+
+```javascript
+// Socket.io example:
+this.socket.on('error', (error) => {
+    console.error("Socket error: ", error);
+});
+```
+
+### WebSocket Broadcasts
+
+#### message: `moveUp`, `moveDown`, `dash`
+Example Usage:
+```javascript
+handleKeyPress(event) {
+    if (event.key == "w")
+        this.socket.emit('moveUp');
+    if (event.key == "s")
+        this.socket.emit('moveDown');
+    if (event.key == "d")
+        this.socket.emit('dash');
+};
+```
+
+#### message: `stop`
+Example Usage:
+```javascript
+handleKeyRelease(event) {
+    if (event.key == "w" || event.key == "s")
+        this.socket.emit('stop');
+};
+```
