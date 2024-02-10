@@ -15,7 +15,7 @@ function createCallTracker() {
   
 	  if (lastCallTime !== 0) { // Check if this is not the first call
 		elapsedTime = now - lastCallTime; // Calculate time since last call
-		console.log(`Time since last call: ${elapsedTime} ms`);
+		// console.log(`Time since last call: ${elapsedTime} ms`);
 	  }
   
 	  lastCallTime = now; // Update last call time to the current time for the next call
@@ -26,6 +26,8 @@ function createCallTracker() {
 
 // instance of the call tracker
 const callTracker = createCallTracker();
+
+let fps = 0;
 
 class SpObject {
     constructor(objMesh, dirMesh) {
@@ -135,6 +137,7 @@ export default class Game extends AbstractView {
 			console.error("Socket connection error: ", error);
 		});
 
+
 		this.socket.on('whoareyou', () => {
 			this.socket.emit('ID', this.playerID, this.matchID);
 		});
@@ -149,13 +152,21 @@ export default class Game extends AbstractView {
 		});
 		
 		this.socket.on('render', data => {
-			console.log("ping: ", Date.now() - data.timestamp)
 			data.playersArray = Object.values(data.players);
 			console.log("Rendering Frame...");
 			this.updateScene(data);
-			console.log("FPS: " + 1000 / callTracker() + "fps");
+			// console.log("FPS: " + 1000 / callTracker() + "fps");
+			fps = 1000 / callTracker();
 			this.renderer.render(this.scene, this.camera);
 		});
+
+		this.socket.on('ping', ([timestamp, latency]) => {
+			this.socket.emit('pong', timestamp);
+			let str = `Ping: ${latency}ms - FPS: ${fps.toFixed(1)}`;
+			document.title = str;
+			console.log(str);
+		});
+
 	};
 
 	destroy() {
@@ -213,7 +224,7 @@ export default class Game extends AbstractView {
 
 	// Other methods (generateScene, updateScene, etc.) here
 	updateScene(data, socket) {
-		console.log("Updating Scene...");
+		// console.log("Updating Scene...");
 		this.ball.mesh.position.set(data.ball.pos.x, data.ball.pos.y, 0);
 		// this.ball.dirMesh.position.set(data.ball.pos.x, data.ball.pos.y, 0);
 		for (let i=0; i<data.playersArray.length; i++) {

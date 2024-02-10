@@ -23,6 +23,8 @@ const render = require('./gameLogic/rendering');
 // let data = 0;
 let matches = new Map();
 
+let latency = 0;
+
 const app = express();
 app.use(express.json());
 // const server = http.createServer(app);
@@ -80,7 +82,6 @@ function waitingLoop(matchID) {
 		return ;
 	}
 	render.updateData(match.gameState);
-	match.gameState.timestamp = Date.now();
     io.to(matchID).emit('render', match.gameState);
 }
 
@@ -146,7 +147,7 @@ function handleConnectionV2(client) {
     client.emit('generate', match.gameState);
     
     if (match.gameState.connectedPlayers == 1) {
-        match.gameInterval = setInterval(waitingLoop, 20, client.matchID);
+        match.gameInterval = setInterval(waitingLoop, 10, client.matchID);
         match.gameState.ball.dir.y = -1;
     }
 
@@ -256,6 +257,19 @@ io.on('connection', (client) => {
 				// delete data;
 			}
 			console.log(`Client disconnected with ID: ${client.id} (num clients: ${io.engine.clientsCount})`);
+		});
+
+		setInterval(() => {
+			client.emit('ping', [Date.now(), latency]);
+		}, 1000);
+
+		client.on('pong', timestamp => {
+			latency = Date.now() - timestamp;
+
+			// process.stdout.clearLine(0);  // Clear current text
+			// process.stdout.cursorTo(0);   // Move cursor to beginning of line
+			// process.stdout.write(`${client.id} latency: ${latency}ms`); // Write new text
+			// console.log(`${client.id} latency: ${latency}ms`);
 		});
 
 	} catch (error) {
