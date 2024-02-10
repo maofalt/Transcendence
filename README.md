@@ -1,12 +1,12 @@
 # API DOCS
 
-## Game API
+## `HTTP` Game API
 
-The game api has RESTfull HTTP endpoints and WSS websocket endpoints 
+The game API is RESTfull and uses HTTP. It is used for creating matches and validating match settings. 
 
 ### Create Match
 
-This API creates a match with all the match settings including the players. Players are defined by their username (it must be the same username as defined by jisu when signing up). Create Match responds with the matchID to be used when connecting to the match websocket room.
+This endpoint creates a match with all the match settings including the players. Players are defined by their username (it must be the same username as defined by jisu when signing up). Create Match responds with the matchID to be used when connecting to the match websocket room.
 
 ```plaintext
 POST /game-logic/createMatch
@@ -79,3 +79,12 @@ Example response:
     "matchID": "69"
 }
 ```
+
+
+## `WSS` Game WebSocket API
+
+This API allows you to connect to a matchm send paddle movements and receive game updates with `WebSocket Secure`.
+
+### WebSocket Connection
+
+
