@@ -80,6 +80,7 @@ function waitingLoop(matchID) {
 		return ;
 	}
 	render.updateData(match.gameState);
+	match.gameState.timestamp = Date.now();
     io.to(matchID).emit('render', match.gameState);
 }
 
@@ -251,8 +252,8 @@ io.on('connection', (client) => {
 			if (data.connectedPlayers < 1) {
 				console.log("CLEARING INTERVAL");
 				clearInterval(match.gameInterval);
-				matches.delete(client.matchID);
-				delete data;
+				// matches.delete(client.matchID);
+				// delete data;
 			}
 			console.log(`Client disconnected with ID: ${client.id} (num clients: ${io.engine.clientsCount})`);
 		});

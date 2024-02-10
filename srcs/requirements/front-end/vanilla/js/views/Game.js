@@ -7,28 +7,25 @@ import { Texture } from 'three';
 
 function createCallTracker() {
 	let lastCallTime = 0; // Timestamp of the last call
-	let totalElapsedTime = 0; // Total elapsed time between calls
-	let callCount = 0; // Number of calls
   
 	// This function is called every time you want to track a call
 	return function trackCall() {
 	  const now = Date.now(); // Get current timestamp in milliseconds
+	  let elapsedTime = 0; // Initialize elapsed time
   
-	  if (lastCallTime !== 0) { // Skip the first call since there's no previous call to compare
-		const elapsedTime = now - lastCallTime; // Time since last call
-		totalElapsedTime += elapsedTime; // Add to total
+	  if (lastCallTime !== 0) { // Check if this is not the first call
+		elapsedTime = now - lastCallTime; // Calculate time since last call
+		console.log(`Time since last call: ${elapsedTime} ms`);
 	  }
   
-	  lastCallTime = now; // Update last call time
-	  callCount++; // Increment call count
+	  lastCallTime = now; // Update last call time to the current time for the next call
   
-	  // Calculate and return the average time between calls, skipping the first call
-	  return callCount > 1 ? totalElapsedTime / (callCount - 1) : 0;
+	  return elapsedTime; // Return the elapsed time between the last two calls
 	};
   }
 
 // instance of the call tracker
-const trackMyFunctionCall = createCallTracker();
+const callTracker = createCallTracker();
 
 class SpObject {
     constructor(objMesh, dirMesh) {
@@ -152,10 +149,11 @@ export default class Game extends AbstractView {
 		});
 		
 		this.socket.on('render', data => {
+			console.log("ping: ", Date.now() - data.timestamp)
 			data.playersArray = Object.values(data.players);
 			console.log("Rendering Frame...");
 			this.updateScene(data);
-			console.log(trackMyFunctionCall() + "ms");
+			console.log("FPS: " + 1000 / callTracker() + "fps");
 			this.renderer.render(this.scene, this.camera);
 		});
 	};
