@@ -166,10 +166,40 @@ function updateBall(data) {
         // console.log("COLLISION");
 }
 
+function checkForScoring(data) {
+    let potentialHitPoint, futureHitPos, hitScaler;
+    let ball, wall1, wall2, player;
+
+    ball = data.ball;
+    for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
+        wall1 = data.field.walls[i];
+        wall2 = data.field.walls[(i + 1) % data.gamemode.nbrOfPlayers];
+        player = data.field.players[i];
+        potentialHitPoint = ball.pos.add(player.paddle.dirToCenter.scale(ball.r));
+        futureHitPos = potentialHitPoint.add(ball.dir.scale(ball.sp));
+        hitScaler = vecs.segmentsIntersect(
+            potentialHitPoint,
+            futureHitPos,
+            wall1.top,
+            wall2.bottom
+        );
+        if (hitScaler > 0) {
+            // let ballPath = futureHitPos.getDirFrom(potentialHitPoint).normalize();
+            // ball.pos = futureHitPos.add(ballPath.scale(hitScaler)).add(wall.dirToCenter.scale(-ball.r));
+            // let dot = ball.dir.dotProduct(wall.dirToTop);
+            // let a = Math.acos(dot / ball.dir.mag * wall.dirToTop.mag);
+            // ball.dir = ball.dir.rotateAroundZ(2 * a);
+            ball.pos = new Vector(0, 0, 0);
+            return true;
+        }
+    }
+    return false;
+}
+
 function updateData(data) {
     updatePaddles(data);
     updateBall(data);
-    // checkForScoring(data);
+    checkForScoring(data);
 }
 
 module.exports = { updateData };

@@ -24,20 +24,24 @@
 		"color": "0x0000ff"
 	  },
 	  {
-		"accountID": "accountID",
-		"color": "0x0000ff"
-	  },
-	  {
-		"accountID": "accountID",
-		"color": "0x0000ff"
-	  },
-	  {
-		"accountID": "accountID",
-		"color": "0x0000ff"
-	  },
-	  {
-		"accountID": "accountID",
-		"color": "0x0000ff"
-	  }
+		"accountID": "banana",
+        "color": "0x00ff00"
+      },
+      {
+        "accountID": "player3",
+        "color": "0xff0000"
+      },
+      {
+        "accountID": "player4",
+        "color": "0xff00ff"
+      },
+      {
+        "accountID": "player5",
+        "color": "0x00ffff"
+      },
+      {
+        "accountID": "player6",
+        "color": "0xffff00"
+      }
 	]
 }
