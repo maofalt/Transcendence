@@ -10,6 +10,7 @@ class User(AbstractUser):
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True, default='default_avatar.jpeg')
     friends = models.ManyToManyField('self', symmetrical=False, blank=True)
     game_stats = models.OneToOneField('gameHistory_microservice.GameStats', on_delete=models.CASCADE, null=True, blank=True, related_name='user_game_stats')
+    # reset_token = models.CharField(max_length=100, blank=True, null=True)
 
     def add_friend(self, friend):
         self.friends.add(friend)

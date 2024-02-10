@@ -74,6 +74,8 @@ services:
       - DATABASE_URL=postgresql://user42:password@db:5432/mydatabase # <-- use value from .env
     depends_on:
       - game-db
+    env_file:
+      - .env
     networks:
       - transcendence
     volumes:
@@ -107,6 +109,8 @@ services:
       - ./requirements/user_management/project:/app
     depends_on:
       - user_management_db
+    env_file:
+      - .env
     networks:
       - transcendence
 

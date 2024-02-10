@@ -10,25 +10,23 @@ const   gamemodeSettings = {
 
 const   fieldSettings = {
     wallsFactor: 1, // by how much we multiply the goals size to get the walls size; from 0 to 2 (0 == no walls)
-    sizeOfGoals: 25, // arbitrary max, minumum needs to be calculated tho;
+    sizeOfGoals: 20, // arbitrary max, minumum needs to be calculated tho;
 }
 
 const paddlesSettings = {
     width: 2,
-    height: 10,
+    height: 12,
     speed: 0.5,
 }
 
 const ballSettings = {
     speed: 0.7,
-    radius: 2,
+    radius: 1,
     color: 0xffffff,
 }
 
 const playerSettings = {
-    login: "player",
-    ID: 0,
-    accountID: 0,
+    username: "username",
     color: 0x0000ff,
 }
 
