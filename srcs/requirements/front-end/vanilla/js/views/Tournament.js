@@ -9,6 +9,7 @@ export default class Tournament extends AbstractView {
 		this.data= [
 			{tournamentName: 'Tournament 1', host: 'Host 1', numberOfPlayers: '2/4', timeRemaining: '2:00', tournamentType: 'Single Elimination', registrationMode: 'Open', action: 'Join'},
 			{tournamentName: 'Tournament 2', host: 'Host 2', numberOfPlayers: '5/4', timeRemaining: '2:00', tournamentType: 'Single Elimination', registrationMode: 'Open', action: 'Join'},
+			{tournamentName: 'Tournament 2', host: 'Host 2', numberOfPlayers: '5/4', timeRemaining: '2:00', tournamentType: 'Single Elimination', registrationMode: 'Open', action: 'Join'},
 		];
 	}
 

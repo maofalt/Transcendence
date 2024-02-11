@@ -1,10 +1,4 @@
 /* DynamicTable.css - Comprehensive Styles */
-:root {
-    --primary-bg: #007bff; /* Primary button background */
-    --primary-text: #ffffff; /* Primary button text */
-    --secondary-bg: #6c757d; /* Secondary button background */
-    --info-bg: #17a2b8; /* Info badge background */
-}
 
 .table {
     width: 100%;
@@ -13,28 +7,18 @@
     border-collapse: collapse;
 }
 
-.table th, .table td {
-    padding: 0.75rem;
-    vertical-align: top;
-    border-top: 1px solid #dee2e6;
-}
-
 .table thead th {
-    vertical-align: bottom;
+    background-color: #dee2e6;
     border-bottom: 2px solid #dee2e6;
-    background-color: #ffffff;
+
     font-weight: bold;
 }
 
 .table tbody tr {
-    background-color: #ffffff;
+    background-color: #131212;
 }
 
-.table tbody tr:hover {
-    background-color: #f2f2f2;
-}
 
-/* Avatar styling */
 .avatar {
     vertical-align: middle;
     width: 30px;
@@ -42,7 +26,6 @@
     border-radius: 50%;
 }
 
-/* Badge styling */
 .badge {
     display: inline-block;
     padding: 0.25em 0.4em;
@@ -57,7 +40,7 @@
     color: var(--primary-text);
 }
 
-/* Button styling */
+
 .btn {
     display: inline-block;
     font-weight: 400;
