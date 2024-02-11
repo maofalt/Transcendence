@@ -119,11 +119,12 @@ export default class Game extends AbstractView {
 		// socket initialization and event handling logic
 		const hostname = window.location.hostname;
 		const protocol = 'wss';
-		const query = window.location.search;
-		const io_url = hostname.includes("github.dev") ? `${protocol}://${hostname}` : `${protocol}://${hostname}:9443${query}`;
+		const query = window.location.search.replace('?', '');
+		const io_url = hostname.includes("github.dev") ? `${protocol}://${hostname}` : `${protocol}://${hostname}:9443`;
 		console.log(`Connecting to ${io_url}`)
 		this.socket = io(`${io_url}`, {
 			path: '/game-logic/socket.io',
+			query: query,
 			secure: hostname !== 'localhost',
 			rejectUnauthorized: false,
 			transports: ['websocket']
@@ -131,12 +132,13 @@ export default class Game extends AbstractView {
 
 		this.socket.on('error', (error) => {
 			console.error("Socket error: ", error);
+			alert("Socket error: " + error);
 		});
 
 		this.socket.on('connect_error', (error) => {
 			console.error("Socket connection error: ", error);
+			alert("Socket connection error: " + error);
 		});
-
 
 		this.socket.on('whoareyou', () => {
 			this.socket.emit('ID', this.playerID, this.matchID);

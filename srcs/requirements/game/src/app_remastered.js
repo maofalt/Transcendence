@@ -102,9 +102,7 @@ function waitingLoop(matchID) {
 //     client.join("gameRoom");
     
 //     if (io.engine.clientsCount == 1) {
-//         data = init.initLobby(lobbySettings.lobbyData);
-//         gameInterval = setInterval(waitingLoop, 20);
-//         data.ball.dir.y = -1;
+//         data = init.initLobby(lobbySettings.lobbyData);create-and
 //     }
 //     setPlayerStatus(client);
 
@@ -224,7 +222,7 @@ io.on('connection', (client) => {
 		});
 		
 		client.on('dash', () => {
-			console.log(`client ${client.id} dashing`);
+			console.log(`client ${client.id} dashing`);create-and
 			let player = data.players[client.playerID];
 			if (!player.paddle.dashSp) {
 				if (player.paddle.currSp == 0) {
