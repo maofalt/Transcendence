@@ -1,6 +1,6 @@
 {
 	"gamemodeData": {
-	  "nbrOfPlayers": 5,
+	  "nbrOfPlayers": 6,
 	  "nbrOfRounds": 5,
 	  "timeLimit": 0
 	},
@@ -21,23 +21,27 @@
 	"playersData": [
 	  {
 		"accountID": "yridgway",
+		"color": "0xff0000"
+	  },
+	  {
+		"accountID": "green",
+		"color": "0x00ff00"
+	  },
+	  {
+		"accountID": "blue",
 		"color": "0x0000ff"
 	  },
 	  {
-		"accountID": "accountID",
-		"color": "0x0000ff"
+		"accountID": "yellow",
+		"color": "0xffff00"
 	  },
 	  {
-		"accountID": "accountID",
-		"color": "0x0000ff"
+		"accountID": "cyan",
+		"color": "0x00ffff"
 	  },
-	  {
-		"accountID": "accountID",
-		"color": "0x0000ff"
-	  },
-	  {
-		"accountID": "accountID",
-		"color": "0x0000ff"
-	  }
+      {
+		"accountID": "magenta",
+		"color": "0xff00ff"
+      }
 	]
 }
