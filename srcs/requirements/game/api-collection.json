@@ -1,0 +1,62 @@
+[
+  {
+    "v": 2,
+    "name": "transcendence-local",
+    "folders": [],
+    "requests": [
+      {
+        "v": "1",
+        "endpoint": "https://localhost:9443/game-logic/createMatch",
+        "name": "createMatch",
+        "params": [],
+        "headers": [],
+        "method": "POST",
+        "auth": {
+          "authType": "none",
+          "authActive": true
+        },
+        "preRequestScript": "",
+        "testScript": "",
+        "body": {
+          "contentType": "application/json",
+          "body": "{\n\t\"gamemodeData\": {\n\t  \"nbrOfPlayers\": 6,\n\t  \"nbrOfRounds\": 5,\n\t  \"timeLimit\": 0\n\t},\n\t\"fieldData\": {\n\t  \"wallsFactor\": 1,\n\t  \"sizeOfGoals\": 20\n\t},\n\t\"paddlesData\": {\n\t  \"width\": 2,\n\t  \"height\": 12,\n\t  \"speed\": 0.5\n\t},\n\t\"ballData\": {\n\t  \"speed\": 0.7,\n\t  \"radius\": 1,\n\t  \"color\": \"0xffffff\"\n\t},\n\t\"playersData\": [\n\t  {\n\t\t\"accountID\": \"yridgway\",\n\t\t\"color\": \"0xff0000\"\n\t  },\n\t  {\n\t\t\"accountID\": \"green\",\n\t\t\"color\": \"0x00ff00\"\n\t  },\n\t  {\n\t\t\"accountID\": \"blue\",\n\t\t\"color\": \"0x0000ff\"\n\t  },\n\t  {\n\t\t\"accountID\": \"yellow\",\n\t\t\"color\": \"0xffff00\"\n\t  },\n\t  {\n\t\t\"accountID\": \"cyan\",\n\t\t\"color\": \"0x00ffff\"\n\t  },\n      {\n\t\t\"accountID\": \"magenta\",\n\t\t\"color\": \"0xff00ff\"\n      }\n\t]\n}\n"
+        }
+      }
+    ],
+    "auth": {
+      "authType": "inherit",
+      "authActive": false
+    },
+    "headers": []
+  },
+  {
+    "v": 2,
+    "name": "transcendence.lol",
+    "folders": [],
+    "requests": [
+      {
+        "v": "1",
+        "endpoint": "https://transcendence.lol:9443/game-logic/createMatch",
+        "name": "createMatch",
+        "params": [],
+        "headers": [],
+        "method": "POST",
+        "auth": {
+          "authType": "none",
+          "authActive": true
+        },
+        "preRequestScript": "",
+        "testScript": "",
+        "body": {
+          "contentType": "application/json",
+          "body": "{\n\t\"gamemodeData\": {\n\t  \"nbrOfPlayers\": 6,\n\t  \"nbrOfRounds\": 5,\n\t  \"timeLimit\": 0\n\t},\n\t\"fieldData\": {\n\t  \"wallsFactor\": 1,\n\t  \"sizeOfGoals\": 20\n\t},\n\t\"paddlesData\": {\n\t  \"width\": 2,\n\t  \"height\": 12,\n\t  \"speed\": 0.5\n\t},\n\t\"ballData\": {\n\t  \"speed\": 0.7,\n\t  \"radius\": 1,\n\t  \"color\": \"0xffffff\"\n\t},\n\t\"playersData\": [\n\t  {\n\t\t\"accountID\": \"yridgway\",\n\t\t\"color\": \"0xff0000\"\n\t  },\n\t  {\n\t\t\"accountID\": \"green\",\n\t\t\"color\": \"0x00ff00\"\n\t  },\n\t  {\n\t\t\"accountID\": \"blue\",\n\t\t\"color\": \"0x0000ff\"\n\t  },\n\t  {\n\t\t\"accountID\": \"yellow\",\n\t\t\"color\": \"0xffff00\"\n\t  },\n\t  {\n\t\t\"accountID\": \"cyan\",\n\t\t\"color\": \"0x00ffff\"\n\t  },\n      {\n\t\t\"accountID\": \"magenta\",\n\t\t\"color\": \"0xff00ff\"\n      }\n\t]\n}\n"
+        }
+      }
+    ],
+    "auth": {
+      "authType": "inherit",
+      "authActive": false
+    },
+    "headers": []
+  }
+]
