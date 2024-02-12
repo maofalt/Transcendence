@@ -4,6 +4,7 @@ const http = require('http');
 const socketIo = require('socket.io');
 const jwt = require('jsonwebtoken');
 const cookie = require('cookie');
+const crypto = require('crypto');
 const SECRET_KEY = process.env.DJANGO_SECRET_KEY; // secret key from jisu
 
 const util = require('util');
@@ -82,6 +83,7 @@ function waitingLoop(matchID) {
 		return ;
 	}
 	render.updateData(match.gameState);
+	let string = JSON.stringify(match.gameState);
     io.to(matchID).emit('render', match.gameState);
 }
 
@@ -258,6 +260,7 @@ io.on('connection', (client) => {
 		});
 
 		setInterval(() => {
+			const big = Buffer.alloc(1024 * 1024);
 			client.emit('ping', [Date.now(), latency]);
 		}, 1000);
 
@@ -277,16 +280,29 @@ io.on('connection', (client) => {
 	}
 });
 
+function generateMatchID(gameSettings) {
+	// Convert request content to a string representation
+	const string = JSON.stringify(gameSettings);
+	// Use SHA-256 to hash the string
+	return crypto.createHash('sha256').update(string).digest('hex');
+}
+
 // app.use(express.static('./public/remote/'));
 app.post('/createMatch', (req, res) => {
 	const gameSettings = req.body;
-	// console.log("gameSettings: ", gameSettings);
-	const gameState = init.initLobby(gameSettings);  // implement match object
-    // console.log('match: ', util.inspect(match, {depth: null}));
-    // console.log('is recursive: ', findRecursive(match));
-	const matchID = '69' //generateMatchID();
-	// console.log("headers: ", req.headers);
+
+	const matchID = generateMatchID(gameSettings);
+	if (matches.has(matchID)) {
+		console.log("Match already exists");
+		res.json({ matchID });
+		return ;
+	}
+
+	// Convert game settings to game state
+	const gameState = init.initLobby(gameSettings);
+	
 	console.log("\nMATCH CREATED\n");
 	matches.set(matchID, { gameState: gameState, gameInterval: 0 });
+
 	res.json({ matchID });
 });
