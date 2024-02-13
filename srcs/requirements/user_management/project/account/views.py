@@ -227,19 +227,49 @@ def api_signup_view(request):
 
     return JsonResponse({'success': False, 'error_message': 'Invalid request method'}, status=400)
 
+
+
+def send_notification_to_microservices(username):
+    endpoint_url = "https://localhost:9443/api/tournament/delete_user"
+    payload = {'username': username}
+
+    try:
+        # HTTP POST 요청 보내기
+        response = requests.post(endpoint_url, json=payload)
+        if response.status_code == 200:
+            logger.info("다른 마이크로서비스에 사용자 데이터 삭제 요청을 보냈습니다.")
+        else:
+            logger.error("다른 마이크로서비스에 요청을 보내는 중 문제가 발생했습니다.")
+    except Exception as e:
+        logger.error(f"다른 마이크로서비스에 요청을 보내는 중 오류가 발생했습니다: {str(e)}")
+
 @require_POST
+@api_view(['POST'])
 @login_required
 def delete_account(request):
     user = request.user
     try:
+        game_stats = user.game_stats
         with transaction.atomic():
-            user.game_stats.all().delete()
+            user.game_stats.delete()
 
         user.is_online = False
-        user.save()
+        # user.save()
         request.user.delete()
 
         logger.info(f"User {user.username} deleted successfully.")
+
+        jwt_token = request.COOKIES.get('jwtToken')
+
+        if jwt_token:
+            try:
+                # Decode JWT token to retrieve username
+                signed_token = signing.loads(jwt_token)
+                username = signed_token.get('username')
+                send_notification_to_microservices(username)
+
+            except signing.BadSignature:
+                logger.error("Invalid JWT token")
         
         return JsonResponse({'success': True, 'message': 'Account deleted successfully'})
     except Exception as e:
