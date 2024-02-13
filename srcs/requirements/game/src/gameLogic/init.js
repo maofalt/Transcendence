@@ -18,8 +18,8 @@ function initLoop(data, wallDist, goalDist, angle) {
         mSin = Math.abs(mSin) < 0.000001 ? 0 : mSin;
 
         // set up the players paddles positions :
-        player.paddle.pos.x = (goalDist - player.paddle.w) * mCos;
-        player.paddle.pos.y = (goalDist - player.paddle.w) * mSin;
+        player.paddle.pos.x = (goalDist - player.paddle.w * 2) * mCos;
+        player.paddle.pos.y = (goalDist - player.paddle.w * 2) * mSin;
         player.paddle.startingPos = player.paddle.pos;
         
         // setup the players paddles vectors :
