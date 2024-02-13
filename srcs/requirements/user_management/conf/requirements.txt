@@ -7,3 +7,4 @@ pyjwt==2.8.0
 pika==1.1.0
 Pillow==8.3.2
 sendgrid==6.11.0
+requests==2.31.0

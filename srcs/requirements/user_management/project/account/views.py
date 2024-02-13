@@ -5,6 +5,7 @@ from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
 from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView, PasswordResetDoneView
 from gameHistory_microservice.models import GameStats
 from django.db.utils import IntegrityError
+from django.core import signing
 from django.core.exceptions import ValidationError
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, get_user_model
@@ -23,6 +24,7 @@ from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_decode
 from django.views.generic.edit import FormView
 import secrets
+import requests
 
 import logging
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -234,17 +236,16 @@ def send_notification_to_microservices(username):
     payload = {'username': username}
 
     try:
-        # HTTP POST 요청 보내기
+        # send POST request
         response = requests.post(endpoint_url, json=payload)
         if response.status_code == 200:
-            logger.info("다른 마이크로서비스에 사용자 데이터 삭제 요청을 보냈습니다.")
+            logger.info("successfully sent request to delete user from tournament")
         else:
-            logger.error("다른 마이크로서비스에 요청을 보내는 중 문제가 발생했습니다.")
+            logger.error("failed to send request to delete user from tournament")
     except Exception as e:
-        logger.error(f"다른 마이크로서비스에 요청을 보내는 중 오류가 발생했습니다: {str(e)}")
+        logger.error(f"Error sending POST request to tournament: {str(e)}")
 
 @require_POST
-@api_view(['POST'])
 @login_required
 def delete_account(request):
     user = request.user
@@ -260,16 +261,17 @@ def delete_account(request):
         logger.info(f"User {user.username} deleted successfully.")
 
         jwt_token = request.COOKIES.get('jwtToken')
+        secret_key = settings.SECRET_KEY
 
         if jwt_token:
             try:
-                # Decode JWT token to retrieve username
-                signed_token = signing.loads(jwt_token)
-                username = signed_token.get('username')
+                decoded_token = jwt.decode(jwt_token, secret_key, algorithms=["HS256"])
+                username = decoded_token.get('username')
                 send_notification_to_microservices(username)
-
-            except signing.BadSignature:
-                logger.error("Invalid JWT token")
+            except jwt.ExpiredSignatureError:
+                return JsonResponse({'error': 'Token has expired'}, status=400)
+            except jwt.InvalidTokenError:
+                return JsonResponse({'error': 'Invalid token'}, status=400)
         
         return JsonResponse({'success': True, 'message': 'Account deleted successfully'})
     except Exception as e:
@@ -398,8 +400,8 @@ def password_reset_view(request, uidb64, token):
                 user.set_password(new_password1)
                 user.save()
                 user = authenticate(request, username=user.username, password=new_password1)
-                if user is not None:
-                    login(request, user)
+                # if user is not None:
+                #     login(request, user)
                 return redirect('account:password_reset_done')
             else:
                 return JsonResponse({'success': False, 'error_message': 'Passwords do not match'}, status=400)
