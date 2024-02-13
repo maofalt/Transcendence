@@ -5,6 +5,7 @@ export default class Tournament extends AbstractView {
 
 	constructor() {
 		super();
+		this.caption = 'Active Tournaments';
 		this.headers = ['Tournament Name', 'Host', 'Number of Players', 'Time Remaining', 'Tournament Type', 'Registration Mode', 'Action'];
 		this.data= [
 			{tournamentName: 'Tournament 1', host: 'Host 1', numberOfPlayers: '2/4', timeRemaining: '2:00', tournamentType: 'Single Elimination', registrationMode: 'Open', action: 'Join'},
@@ -25,6 +26,7 @@ export default class Tournament extends AbstractView {
 
 	async init() {
 		const dynamicTable =  document.querySelector('dynamic-table');
+		dynamicTable.setAttribute('data-title', this.caption);
 		dynamicTable.setAttribute('data-headers', JSON.stringify(this.headers));
 		dynamicTable.setAttribute('data-rows', JSON.stringify(this.data));
 	}

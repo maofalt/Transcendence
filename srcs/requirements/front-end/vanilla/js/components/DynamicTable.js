@@ -1,6 +1,6 @@
 class DynamicTable extends HTMLElement {
     static get observedAttributes() {
-        return ['data-headers', 'data-rows'];
+        return ['data-title','data-headers', 'data-rows'];
     }
     
     constructor() {
@@ -10,22 +10,32 @@ class DynamicTable extends HTMLElement {
             <link rel="stylesheet" href="../../css/DynamicTable.css">
             <meta name="viewport" content="width=device-width, initial-scale=1">
             <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
-            <body>
-                <table class="table table-dark table-striped table-borderless table-hover rounded-20">
-                    <thead><tr id="table-headers"></tr></thead>
-                    <tbody id="table-body"></tbody>
-                </table>
+            <body>Tournament
+                <div class="table-responsive">
+                    <table class="table table-dark table-striped table-borderless bg-success table-hover caption-top">
+                        <caption id='table-title'></caption>
+                        <thead><tr id="table-headers"></tr></thead>
+                        <tbody id="table-body"></tbody>
+                    </table>
+                </div>
                 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
             </body>
         `;
     }
     
     attributeChangedCallback(name, oldValue, newValue) {
-        if (name === 'data-headers') {
+        if (name === 'data-title') {
+            this.buildCaption(newValue);
+        }else if (name === 'data-headers') {
             this.buildHeaders(JSON.parse(newValue));
         } else if (name === 'data-rows') {
             this.buildRows(JSON.parse(newValue));
         }
+    }
+
+    buildCaption(Title){
+        const tableTitle = this.shadowRoot.getElementById('table-title');
+        tableTitle.innerHTML = Title;
     }
 
     buildHeaders(headers) {

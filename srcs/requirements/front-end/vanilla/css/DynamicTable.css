@@ -3,14 +3,15 @@
 .table {
     width: 100%;
     margin-bottom: 1rem;
-    color: #124374;
-    border-collapse: collapse;
+    color: rgb(229 231 235);
+    border-radius: 9px;
+    overflow: hidden;
 }
 
 .table thead th {
-    background-color: #dee2e6;
     border-bottom: 2px solid #dee2e6;
-
+    font-size: 0.875rem;
+    line-height: 1.25rem;
     font-weight: bold;
 }
 
