@@ -335,7 +335,7 @@ export default class Game extends AbstractView {
 	generatePaddles(data) {
 		for (let i=0; i<data.playersArray.length; i++) {
 			const paddleGeometry = new THREE.BoxGeometry(data.playersArray[i].paddle.h, 1, 2);
-			const paddleMaterial = new THREE.MeshPhongMaterial({ color: data.playersArray[i].color, transparent: true, opacity: 0.7, reflectivity: 0.5 });
+			const paddleMaterial = new THREE.MeshPhongMaterial({ color: data.playersArray[i].color, transparent: true, opacity: 1, reflectivity: 0 });
 
 			const dir1 = new THREE.ArrowHelper(
 				new THREE.Vector3(data.playersArray[i].paddle.dirToCenter.x,
