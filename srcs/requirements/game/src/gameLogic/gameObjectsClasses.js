@@ -30,6 +30,7 @@ class Field {
         this.goalsSize = fieldData.sizeOfGoals;
         this.wallsSize = fieldData.sizeOfGoals * fieldData.wallsFactor;
         this.walls = [];
+        // this.goals = [];
     }
 }
 
@@ -50,6 +51,13 @@ class Wall {
         this.col = 0xffffff;
     }
 }
+
+// class Goal {
+//     constructor(top, bottom) {
+//         this.top = top.copy();
+//         this.bottom = bottom.copy();
+//     }
+// }
 
 // Player class
 class Player {
@@ -142,6 +150,12 @@ class Data {
         for (let i=0; i<lobbyData.gamemodeData.nbrOfPlayers; i++) {
             this.field.walls.push(new Wall(lobbyData, this.field.wallsSize));
         }
+
+        // // create goals & fill the array of goals
+        // for (let i=0; i<lobbyData.gamemodeData.nbrOfPlayers; i++) {
+        //     this.field.goals.push(new Goal(this.field.walls[i].top,
+        //     this.field.walls[(i + 1) % this.gamemode.nbrOfPlayers].bottom));
+        // }
     }
 }
 

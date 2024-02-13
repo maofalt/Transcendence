@@ -141,7 +141,7 @@ function updatePaddles(data) {
         handleDash(currPaddle);
 
         let vecToStart = currPaddle.pos.sub(currPaddle.startingPos);
-        let limitDist = (data.field.goalsSize - currPaddle.h - currPaddle.w) / 1;
+        let limitDist = (data.field.goalsSize - currPaddle.h - currPaddle.w) / 2;
 
         if (vecToStart.mag > limitDist) {
             vecToStart = vecToStart.normalize();
@@ -157,7 +157,7 @@ function updateBall(data) {
         // console.log("PAS COLLISION");
         data.ball.pos = data.ball.pos.add(data.ball.dir.scale(data.ball.sp));
     }
-    if (data.ball.pos.getDistFrom(new Vector(0, 0, 0)) > 70) {
+    if (data.ball.pos.getDistFrom(new Vector(0, 0, 0)) > 100) {
         data.ball.pos = new Vector(0, 0, 0);
         // data.ball.dir.x = data.ball.dir.x == 0 ? 1 : 0;
         // data.ball.dir.y = data.ball.dir.y == 0 ? 1 : 0;
@@ -175,7 +175,7 @@ function checkForScoring(data) {
         wall1 = data.field.walls[i];
         wall2 = data.field.walls[(i + 1) % data.gamemode.nbrOfPlayers];
         player = Object.values(data.players)[(i + 1) % data.gamemode.nbrOfPlayers];
-        potentialHitPoint = ball.pos.add(player.paddle.dirToCenter.scale(ball.r));
+        potentialHitPoint = ball.pos;
         futureHitPos = potentialHitPoint.add(ball.dir.scale(ball.sp));
         hitScaler = vecs.segmentsIntersect(
             potentialHitPoint,

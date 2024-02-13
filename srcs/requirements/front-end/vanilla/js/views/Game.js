@@ -65,6 +65,7 @@ export default class Game extends AbstractView {
 		this.banana = null;
         this.paddles = [];
         this.walls = [];
+		this.goals = [];
 
         // lights
         this.ambientLight = null;
@@ -213,6 +214,7 @@ export default class Game extends AbstractView {
 		this.generateBall(data);
 		this.generatePaddles(data);
 		this.generateWalls(data);
+		this.generateGoals(data);
 		// this.generateField(data);
 		this.generateLights(data);
 		// this.generateSkyBox(data);
@@ -306,12 +308,27 @@ export default class Game extends AbstractView {
 	generateWalls(data) {
 		const wallGeometry = new THREE.BoxGeometry(data.field.wallsSize, 1, 2);
 		const wallMaterial = new THREE.MeshPhongMaterial({ color: data.ball.col, transparent: true, opacity: 1, reflectivity: 0.5 });
-		console.log("number of players : ", data.gamemode.nbrOfPlayers);
+		// console.log("number of players : ", data.gamemode.nbrOfPlayers);
 		for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
 			this.walls[i] = new THREE.Mesh(wallGeometry, wallMaterial); // create Material
 			this.scene.add(this.walls[i]); // add mesh to the scene
 			this.walls[i].position.set(data.field.walls[i].pos.x, data.field.walls[i].pos.y, 0); // set the position
 			this.walls[i].rotation.set(0, 0, data.field.walls[i].angle + Math.PI / 2); // set the rotation to the proper orientation (facing center)
+		}
+	}
+
+	generateGoals(data) {
+		// console.log("number of players : ", data.gamemode.nbrOfPlayers);
+		for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
+			const top = data.field.walls[i].top;
+			const bottom = data.field.walls[(i + 1) % data.gamemode.nbrOfPlayers].bottom;
+			const points = [];
+			points.push(new THREE.Vector3( top.x, top.y, top.z ));
+			points.push(new THREE.Vector3( bottom.x, bottom.y, bottom.z ));
+			const goalGeometry = new THREE.BufferGeometry().setFromPoints( points );
+			const goalMaterial = new THREE.LineBasicMaterial( { color: data.playersArray[(i + 1) % data.gamemode.nbrOfPlayers].color } );
+			const goalLine = new THREE.Line( goalGeometry, goalMaterial );
+			this.scene.add(goalLine);
 		}
 	}
 
