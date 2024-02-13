@@ -174,7 +174,7 @@ function checkForScoring(data) {
     for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
         wall1 = data.field.walls[i];
         wall2 = data.field.walls[(i + 1) % data.gamemode.nbrOfPlayers];
-        player = data.field.players[i];
+        player = Object.values(data.players)[(i + 1) % data.gamemode.nbrOfPlayers];
         potentialHitPoint = ball.pos.add(player.paddle.dirToCenter.scale(ball.r));
         futureHitPos = potentialHitPoint.add(ball.dir.scale(ball.sp));
         hitScaler = vecs.segmentsIntersect(
@@ -189,6 +189,11 @@ function checkForScoring(data) {
             // let dot = ball.dir.dotProduct(wall.dirToTop);
             // let a = Math.acos(dot / ball.dir.mag * wall.dirToTop.mag);
             // ball.dir = ball.dir.rotateAroundZ(2 * a);
+            for (let otherPlayer of Object.values(data.players)) {
+                if (otherPlayer === player)
+                    continue ;
+                otherPlayer.score++;
+            }
             ball.pos = new Vector(0, 0, 0);
             return true;
         }
@@ -200,6 +205,10 @@ function updateData(data) {
     updatePaddles(data);
     updateBall(data);
     checkForScoring(data);
+    console.log(`score update\n`);
+    for (let player of Object.values(data.players)) {
+        console.log(`${player.accountID} [${player.score}]\n`);
+    }
 }
 
 module.exports = { updateData };

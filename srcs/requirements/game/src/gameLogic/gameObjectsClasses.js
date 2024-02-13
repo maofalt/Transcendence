@@ -63,6 +63,7 @@ class Player {
         this.paddle = new Paddle(lobbyData, i); // creating paddle object for this player
         this.color = parseInt(lobbyData.playersData[i].color, 16);
         this.score = 0;
+        this.health = -1;
     }
 }
 
@@ -94,9 +95,11 @@ class Ball {
     constructor(ballData) {
         this.pos = new vecs.Vector(0, 0, 0);
 		this.dir = new vecs.Vector(0, 0, 0); // direction in which the ball is moving
-        this.lastHit = -1; // ID of the last player who hit the ball
+        // this.lastHit = -1; // ID of the last player who hit the ball
                            // Will be useful in gamemodes with more than 2 players where we want to give points to
                            // the right player.
+        // this.previousLastHit = -1;
+        // this.lastScoredOn = -1;
         this.r = ballData.radius;
         this.sp = ballData.speed;
         this.col = parseInt(ballData.color, 16);
