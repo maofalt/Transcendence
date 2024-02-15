@@ -127,6 +127,7 @@ class Data {
     constructor(lobbyData) {
         this.connectedPlayers = 0;
         this.gameInterval = 0;
+        this.ongoing = false;
 
         // get the gamemode info from the lobby data;
         this.gamemode = new GameMode(lobbyData.gamemodeData);
@@ -150,12 +151,6 @@ class Data {
         for (let i=0; i<lobbyData.gamemodeData.nbrOfPlayers; i++) {
             this.field.walls.push(new Wall(lobbyData, this.field.wallsSize));
         }
-
-        // // create goals & fill the array of goals
-        // for (let i=0; i<lobbyData.gamemodeData.nbrOfPlayers; i++) {
-        //     this.field.goals.push(new Goal(this.field.walls[i].top,
-        //     this.field.walls[(i + 1) % this.gamemode.nbrOfPlayers].bottom));
-        // }
     }
 }
 
