@@ -1,5 +1,6 @@
 {
 	"gamemodeData": {
+	  "gameType": 1,
 	  "nbrOfPlayers": 5,
 	  "nbrOfRounds": 5,
 	  "timeLimit": 0

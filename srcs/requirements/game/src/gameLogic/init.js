@@ -107,10 +107,10 @@ function initLobby(lobbyData) {
         }
     }
 
-    debugDisp.displayData(data); // display the game data
+    // debugDisp.displayData(data); // display the game data
     initFieldShape(data); // init angles + positions of players and walls;
-    debugDisp.displayData(data); // display the game data
+    // debugDisp.displayData(data); // display the game data
     return data;
 }
 
-module.exports = { initLobby };
+module.exports = { initLobby, initFieldShape };

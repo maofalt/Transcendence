@@ -82,9 +82,21 @@ function waitingLoop(matchID) {
 		client.disconnect();
 		return ;
 	}
-	render.updateData(match.gameState);
 	let string = JSON.stringify(match.gameState);
-    io.to(matchID).emit('render', match.gameState);
+	let gameState = render.updateData(match.gameState);
+	if (gameState == 1) {
+		io.to(matchID).emit('destroy', match.gameState);
+		io.to(matchID).emit('refresh', match.gameState);
+	} else if (gameState == 0) {
+		io.to(matchID).emit('render', match.gameState);
+	} else if (gameState == -1) {
+		io.to(matchID).emit('destroy', match.gameState);
+		clearInterval(match.gameInterval);
+		// first, send the result of the match back;
+
+		// then delete the match;
+		matches.delete(matchID);
+	}
 }
 
 // gameInterval = setInterval(waitingLoop, 20);
@@ -149,12 +161,13 @@ function handleConnectionV2(client) {
     if (match.gameState.connectedPlayers == 1) {
         match.gameInterval = setInterval(waitingLoop, 10, client.matchID);
         match.gameState.ball.dir.y = -1;
+		match.gameState.ball.dir.x = 0.01;
     }
 
     console.log(`Player connected with ID: ${client.playerID}`);
 
     // client.emit('generate', data);
-    debugDisp.displayData(match.gameState);
+    // debugDisp.displayData(match.gameState);
     return (match);
 }
 
@@ -306,3 +319,5 @@ app.post('/createMatch', (req, res) => {
 
 	res.json({ matchID });
 });
+
+// module.exports = { io };

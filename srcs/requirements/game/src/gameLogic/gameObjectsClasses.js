@@ -15,6 +15,7 @@ class Camera {
 // Gamemode class
 class GameMode {
     constructor(gamemodeData) {
+        this.gameType = gamemodeData.gameType;
         this.nbrOfPlayers = gamemodeData.nbrOfPlayers;
         this.nbrOfRounds = gamemodeData.nbrOfRounds; // nbr of points needed to win
         this.timeLimit = gamemodeData.timeLimit; // in minutes. gamemode needs either a nbr of rounds or a time limit. if not, the game will be

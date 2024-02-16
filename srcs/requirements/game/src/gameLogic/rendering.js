@@ -1,5 +1,7 @@
 const { Vector } = require("./vectors");
 const vecs = require("./vectors");
+const init = require("./init");
+// const ioPointer = require("../app_remastered");
 
 function ballHitsWall(data) {
     let potentialHitPoint, futureHitPos, hitScaler;
@@ -144,6 +146,8 @@ function updateBall(data) {
 
 function endGame(data, winner) {
     // display scores + display winner's name
+    console.log("!!!!!!!!!!!!!!!!!!!!!! GAME OVER !!!!!!!!!!!!!!!!!!!");
+    console.log(`${winner.accountID} WON !`);
     // send result of the game back to tournament or some place else;
     // stop the interval
 
@@ -151,14 +155,22 @@ function endGame(data, winner) {
 }
 
 function eliminatePlayer(data, player) {
-    // get rid of this player in the map of players;
-    // update the nbrOfPlayers accordingly;
-    // call init() again to setup the field correctly;
-
     // important : send the info to the client to delete the corresponding player,
     // it should be the only required additional exchange since the client
     // receives everything else it needs to display properly the game in each
     // "render" socket emission
+
+    console.log("!!!!!!!!!!!!!!!!!!!!!! ELIMINATED !!!!!!!!!!!!!!!!!!!");
+    console.log(`${data.gamemode.nbrOfPlayers}`);
+    // get rid of this player in the map of players;
+    delete data.players[player.accountID];
+    data.field.walls.pop();
+    // update the nbrOfPlayers accordingly;
+    data.gamemode.nbrOfPlayers--;
+    // call init() again to setup the field correctly;
+    if (data.gamemode.nbrOfPlayers > 1) {
+        init.initFieldShape(data);
+    }
 }
 
 function handleScoring(data, player) {
@@ -168,20 +180,24 @@ function handleScoring(data, player) {
                 continue ;
             otherPlayer.score++;
             if (otherPlayer.score == data.gamemode.nbrOfRounds) {
-                // endGame(data, otherPlayer);
+                endGame(data, otherPlayer);
+                return -1;
             }
         }
     } else if (data.gamemode.gameType == 1) {
         player.score--;
         if (player.score == 0) {
-            // eliminatePlayer(data, player);
-        }
-        if (data.nbrOfPlayers == 1) {
-            // endGame(data, data.playersArray[0]);
+            eliminatePlayer(data, player);
+            data.ball.pos = new Vector(0, 0, 0);
+            if (data.gamemode.nbrOfPlayers == 1) {
+                endGame(data, Object.values(data.players)[0]);
+                return -1;
+            }
+            return 1;
         }
     }
-    ball.pos = new Vector(0, 0, 0);
-    return true;
+    data.ball.pos = new Vector(0, 0, 0);
+    return 0;
 }
 
 function checkForScoring(data) {
@@ -216,11 +232,12 @@ function updateData(data) {
 
     // when data.ongoing is true it will trigger the checking of scoring;
     // when game ends => put the ongoing status of the game back to false;
-    checkForScoring(data);
-    console.log(`score update\n`);
-    for (let player of Object.values(data.players)) {
-        console.log(`${player.accountID} [${player.score}]\n`);
-    }
+    let result = checkForScoring(data);
+    // console.log(`score update\n`);
+    // for (let player of Object.values(data.players)) {
+    //     console.log(`${player.accountID} [${player.score}]\n`);
+    // }
+    return result;
 }
 
 module.exports = { updateData };
