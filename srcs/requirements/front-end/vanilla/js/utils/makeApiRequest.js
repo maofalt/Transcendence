@@ -43,12 +43,15 @@ export async function makeApiRequest(url, method = 'GET', body = null, headers =
 
     } catch (error) {
         // Returning error details
+<<<<<<< HEAD
         if (response.status === 401) {
             // Redirect to the login page
             window.location.href = '/login';
             return Promise.reject('Unauthorized');
         }
     
+=======
+>>>>>>> 18e9b5ffa1150d3841e7ce8cb63b25498b2a5c6c
         return {
             status: 'Network Error',
             body: error
@@ -77,4 +80,8 @@ makeApiRequest('https://api.example.com/data', 'POST', { key: 'value' })
     .catch(error => {
         console.error('Request Failed:', error);
     });
+<<<<<<< HEAD
 */
+=======
+*/
+>>>>>>> 18e9b5ffa1150d3841e7ce8cb63b25498b2a5c6c
