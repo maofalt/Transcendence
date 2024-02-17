@@ -4,6 +4,9 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import io from 'socket.io-client';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { Texture } from 'three';
+import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+
 
 function createCallTracker() {
 	let lastCallTime = 0; // Timestamp of the last call
@@ -66,6 +69,7 @@ export default class Game extends AbstractView {
         this.paddles = [];
         this.walls = [];
 		this.goals = [];
+		this.scores = [];
 
         // lights
         this.ambientLight = null;
@@ -260,6 +264,8 @@ export default class Game extends AbstractView {
 
 		this.generateBanana(data);
 
+		this.generateText(data);
+
 		// render scene
 		this.renderer.render(this.scene, this.camera);
 	};
@@ -295,6 +301,52 @@ export default class Game extends AbstractView {
 		this.scene.add(arrowX);
 		this.scene.add(arrowZ);
 		this.scene.add(arrowY);
+	};
+
+	generateText(data) {
+
+		// create text geometry
+		var geometry;
+		// var geometry = new TextGeometry( text, {
+
+		// 	font: font,
+
+		// 	size: size,
+		// 	height: height,
+		// 	curveSegments: curveSegments,
+
+		// 	bevelThickness: bevelThickness,
+		// 	bevelSize: bevelSize,
+		// 	bevelEnabled: bevelEnabled
+
+		// } );
+
+		// const loader = new FontLoader();
+
+		// loader.load( 'fonts/helvetiker_regular.typeface.json', function ( font ) {
+
+		// 	geometry = new TextGeometry( 'Hello three.js!', {
+		// 		font: font,
+		// 		size: 80,
+		// 		height: 5,
+		// 		curveSegments: 12,
+		// 		bevelEnabled: true,
+		// 		bevelThickness: 10,
+		// 		bevelSize: 8,
+		// 		bevelOffset: 0,
+		// 		bevelSegments: 5
+		// 	} );
+		// } );
+
+		// // create material
+		// var material = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
+
+		// for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
+		// 	this.scores[i] = new THREE.Mesh( geometry, material );
+		// 	this.scene.add( this.scores[i] );
+		// 	this.scores[i].position.set(data.field.walls[i].pos.x, data.field.walls[i].pos.y, 10);
+		// }
+
 	};
 
 	generateBanana(data) {

@@ -156,6 +156,7 @@ function handleConnectionV2(client) {
     client.join(client.matchID);
     // console.log('match: ', util.inspect(match, {depth: null}));
     // client.emit('generate', JSON.stringify(match));
+	console.log('---DATA---\n', match.gameState, '\n---END---\n');
     client.emit('generate', match.gameState);
     
     if (match.gameState.connectedPlayers == 1) {
