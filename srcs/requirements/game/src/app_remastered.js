@@ -266,8 +266,8 @@ io.on('connection', (client) => {
 			if (data.connectedPlayers < 1) {
 				console.log("CLEARING INTERVAL");
 				clearInterval(match.gameInterval);
-				// matches.delete(client.matchID);
-				// delete data;
+				matches.delete(client.matchID);
+				delete data;
 			}
 			console.log(`Client disconnected with ID: ${client.id} (num clients: ${io.engine.clientsCount})`);
 		});

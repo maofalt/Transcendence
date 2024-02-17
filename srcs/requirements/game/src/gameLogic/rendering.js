@@ -15,8 +15,9 @@ function ballHitsWall(data) {
             futureHitPos = potentialHitPoint.add(ball.dir.scale(ball.sp));
             hitScaler = vecs.segmentsIntersect(potentialHitPoint, futureHitPos, wall.top, wall.bottom);
             if (hitScaler > 0) {
-                let ballPath = futureHitPos.getDirFrom(potentialHitPoint).normalize();
-                ball.pos = potentialHitPoint.add(ballPath.scale(hitScaler)).add(wall.dirToCenter.scale(ball.r));
+                let ballPath = futureHitPos.sub(potentialHitPoint);
+                console.log(`mag : ${ballPath.mag}`);
+                ball.pos = ball.pos.add(ballPath.scale(hitScaler));
 
                 let dot = ball.dir.dotProduct(wall.dirToTop);
                 let a = Math.acos(dot / ball.dir.mag * wall.dirToTop.mag);
@@ -57,8 +58,9 @@ function ballHitsPaddleSide (paddle, ball, segP1, segP2, scaledNormalVec) {
     futureHitPos = potentialHitPoint.add(ball.dir.scale(ball.sp));
     hitScaler = vecs.segmentsIntersect(potentialHitPoint, futureHitPos, segP1, segP2);
     if (hitScaler > 0) {
-        let ballPath = futureHitPos.getDirFrom(potentialHitPoint).normalize();
-        ball.pos = potentialHitPoint.add(ballPath.scale(hitScaler)).add(scaledNormalVec);
+        let ballPath = futureHitPos.sub(potentialHitPoint);
+        console.log(`mag : ${ballPath.mag}`);
+        ball.pos = ball.pos.add(ballPath.scale(hitScaler));
         ball.dir = ball.pos.getDirFrom(paddle.pos).normalize();
         return true;
     }
