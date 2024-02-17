@@ -223,7 +223,7 @@ io.on('connection', (client) => {
 		client.on('moveUp', () => {
 			console.log(`client ${client.id} moving up`);
 			let player = data.players[client.playerID];
-			if (!player.paddle.dashSp) {
+			if (player && player.paddle && !player.paddle.dashSp) {
 				player.paddle.currSp = player.paddle.sp;
 			}
 		});
@@ -231,7 +231,7 @@ io.on('connection', (client) => {
 		client.on('moveDown', () => {
 			console.log(`client ${client.id} moving down`);
 			let player = data.players[client.playerID];
-			if (!player.paddle.dashSp) {
+			if (player && player.paddle && !player.paddle.dashSp) {
 				player.paddle.currSp = -player.paddle.sp;
 			}
 		});
@@ -239,7 +239,7 @@ io.on('connection', (client) => {
 		client.on('dash', () => {
 			console.log(`client ${client.id} dashing`);
 			let player = data.players[client.playerID];
-			if (!player.paddle.dashSp) {
+			if (player && player.paddle && !player.paddle.dashSp) {
 				if (player.paddle.currSp == 0) {
 					// do something for this err case
 					return ;
@@ -252,7 +252,7 @@ io.on('connection', (client) => {
 		client.on('stop', () => {
 			console.log(`client ${client.id} stopping`);
 			let player = data.players[client.playerID];
-			if (!player.paddle.dashing) {
+			if (player && player.paddle && !player.paddle.dashing) {
 				player.paddle.currSp = 0;
 			}
 		});
