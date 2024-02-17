@@ -172,3 +172,45 @@ handleKeyRelease(event) {
         this.socket.emit('stop');
 };
 ```
+
+
+## `HTTP` Tournament API
+
+### Create Tournament
+
+This endpoint creates a tournament and returns `success` if it was created and adds it to the database
+
+```plaintext
+POST /api/tournament/create-and-list/
+```
+
+Example Body in ```JSON``` :
+
+```json
+{
+    "tournament_name": "best-tournament",
+    "nbr_of_player": 2,
+    "game_type": 1,
+    "tournament_type": 2,
+    "registration": 2,
+    "setting_id": 1,
+    "registration_period_min": 32,
+    "host_id": 2
+}
+```
+
+If successful, returns `200` status code and `success` in json
+
+Example request:
+
+```shell
+curl -X POST -H "Content-Type: application/json" -d '@path/to/tournamentSettings.json' https://localhost:9443/api/tournament/create-and-list
+```
+
+Example response:
+
+```json
+{
+    "succ"
+}
+```
