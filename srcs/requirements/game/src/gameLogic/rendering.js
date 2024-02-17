@@ -3,31 +3,31 @@ const vecs = require("./vectors");
 const init = require("./init");
 // const ioPointer = require("../app_remastered");
 
-function ballHitsWall(data) {
-    let potentialHitPoint, futureHitPos, hitScaler;
-    let ball, wall;
+// function ballHitsWall(data) {
+//     let potentialHitPoint, futureHitPos, hitScaler;
+//     let ball, wall;
 
-    ball = data.ball;
-    for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
-        wall = data.field.walls[i];
-        if (ball.pos.getDistFrom(wall.pos) < ball.sp + ball.r + wall.h / 2) {
-            potentialHitPoint = ball.pos.add(wall.dirToCenter.scale(-ball.r));
-            futureHitPos = potentialHitPoint.add(ball.dir.scale(ball.sp));
-            hitScaler = vecs.segmentsIntersect(potentialHitPoint, futureHitPos, wall.top, wall.bottom);
-            if (hitScaler > 0) {
-                let ballPath = futureHitPos.sub(potentialHitPoint);
-                console.log(`mag : ${ballPath.mag}`);
-                ball.pos = ball.pos.add(ballPath.scale(hitScaler));
+//     ball = data.ball;
+//     for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
+//         wall = data.field.walls[i];
+//         if (ball.pos.getDistFrom(wall.pos) < ball.sp + ball.r + wall.h / 2) {
+//             potentialHitPoint = ball.pos.add(wall.dirToCenter.scale(-ball.r));
+//             futureHitPos = potentialHitPoint.add(ball.dir.scale(ball.sp));
+//             hitScaler = vecs.segmentsIntersect(potentialHitPoint, futureHitPos, wall.top, wall.bottom);
+//             if (hitScaler > 0) {
+//                 let ballPath = futureHitPos.sub(potentialHitPoint);
+//                 console.log(`mag : ${ballPath.mag}`);
+//                 ball.pos = ball.pos.add(ballPath.scale(hitScaler));
 
-                let dot = ball.dir.dotProduct(wall.dirToTop);
-                let a = Math.acos(dot / ball.dir.mag * wall.dirToTop.mag);
-                ball.dir = ball.dir.rotateAroundZ(2 * a);
-                return true;
-            }
-        }
-    }
-    return false;
-}
+//                 let dot = ball.dir.dotProduct(wall.dirToTop);
+//                 let a = Math.acos(dot / ball.dir.mag * wall.dirToTop.mag);
+//                 ball.dir = ball.dir.rotateAroundZ(2 * a);
+//                 return true;
+//             }
+//         }
+//     }
+//     return false;
+// }
 
 function checkCorner(ball, corner, center) {
     let distToCorner, vecCornerDist, cornerHitPoint = 0;
@@ -51,6 +51,43 @@ function checkCorner(ball, corner, center) {
     return false;
 }
 
+function ballHitsWallSide (ball, segP1, segP2, perpVec, scaledNormalVec) {
+    let potentialHitPoint, futureHitPos, hitScaler;
+
+    potentialHitPoint = ball.pos.sub(scaledNormalVec);
+    futureHitPos = potentialHitPoint.add(ball.dir.scale(ball.sp));
+    hitScaler = vecs.segmentsIntersect(potentialHitPoint, futureHitPos, segP1, segP2);
+    if (hitScaler > 0) {
+        let ballPath = futureHitPos.sub(potentialHitPoint);
+        ball.pos = ball.pos.add(ballPath.scale(hitScaler));
+        let dot = ball.dir.dotProduct(perpVec);
+        let a = Math.acos(dot / ball.dir.mag * perpVec.mag);
+        ball.dir = ball.dir.rotateAroundZ(2 * a);
+        return true;
+    }
+}
+
+function ballHitsWallV2(data) {
+    let ball, wall;
+
+    ball = data.ball;
+	for (let wall of data.field.walls) {
+        if (ball.pos.getDistFrom(wall.pos) < ball.sp + ball.r + wall.h / 2) {
+            if (ballHitsWallSide(wall, ball, wall.top, wall.bottom, wall.dirToTop, wall.dirToCenter.scale(ball.r)) ||
+                ballHitsWallSide(wall, ball, wall.top, wall.topBack, wall.dirToCenter.scale(-1), wall.dirToTop.scale(ball.r)) ||
+                ballHitsWallSide(wall, ball, wall.bottom, wall.bottomBack, wall.dirToCenter, wall.dirToTop.scale(-ball.r))) {
+                return true;
+            }
+            if (checkCorner(ball, wall.top, wall.pos))
+                return true;
+            if (checkCorner(ball, wall.bottom, wall.pos))
+                return true;
+        }
+    }
+    return false;
+}
+
+
 function ballHitsPaddleSide (paddle, ball, segP1, segP2, scaledNormalVec) {
     let potentialHitPoint, futureHitPos, hitScaler;
 
@@ -59,7 +96,6 @@ function ballHitsPaddleSide (paddle, ball, segP1, segP2, scaledNormalVec) {
     hitScaler = vecs.segmentsIntersect(potentialHitPoint, futureHitPos, segP1, segP2);
     if (hitScaler > 0) {
         let ballPath = futureHitPos.sub(potentialHitPoint);
-        console.log(`mag : ${ballPath.mag}`);
         ball.pos = ball.pos.add(ballPath.scale(hitScaler));
         ball.dir = ball.pos.getDirFrom(paddle.pos).normalize();
         return true;
@@ -138,7 +174,7 @@ function updatePaddles(data) {
 }
 
 function updateBall(data) {
-    if (!ballHitsWall(data) && !ballHitsPaddle(data)) {
+    if (!ballHitsWallV2(data) && !ballHitsPaddle(data)) {
         data.ball.pos = data.ball.pos.add(data.ball.dir.scale(data.ball.sp));
     }
     if (data.ball.pos.getDistFrom(new Vector(0, 0, 0)) > 100) {
