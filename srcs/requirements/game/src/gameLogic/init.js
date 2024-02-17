@@ -98,10 +98,19 @@ function initFieldShape(data) {
 function initLobby(lobbyData) {
     let data = new objectsClasses.Data(lobbyData);
 
-    debugDisp.displayData(data); // display the game data
+    // if the game mode is battleroyale, score is decrementing, and
+    // when a player reaches 0 they're eliminated.
+    // duel mode : default mode, score starts at 0, when reaches the max score = wins (only for 2 players)
+    if (data.gamemode.gameType == 1) {
+        for (let player of Object.values(data.players)) {
+            player.score = data.gamemode.nbrOfRounds;
+        }
+    }
+
+    // debugDisp.displayData(data); // display the game data
     initFieldShape(data); // init angles + positions of players and walls;
-    debugDisp.displayData(data); // display the game data
+    // debugDisp.displayData(data); // display the game data
     return data;
 }
 
-module.exports = { initLobby };
+module.exports = { initLobby, initFieldShape };

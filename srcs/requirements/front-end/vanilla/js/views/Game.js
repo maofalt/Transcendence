@@ -65,6 +65,7 @@ export default class Game extends AbstractView {
 		this.banana = null;
         this.paddles = [];
         this.walls = [];
+		this.goals = [];
 
         // lights
         this.ambientLight = null;
@@ -162,6 +163,44 @@ export default class Game extends AbstractView {
 			this.renderer.render(this.scene, this.camera);
 		});
 
+		this.socket.on('destroy', data => {
+			this.scene.clear();
+			console.log("DESTROY SCENE");
+		})
+
+		this.socket.on('refresh', data => {
+			console.log("REFRESH SCENE");
+			data.playersArray = Object.values(data.players);
+			this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+			// this.renderer = new THREE.WebGLRenderer();
+			// this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+			// this.controls.target.set(0, 0, 0);
+			
+			this.camera.position.set(data.camera.pos.x, data.camera.pos.y, data.camera.pos.z);
+			this.camera.lookAt(new THREE.Vector3(data.camera.target.x, data.camera.target.y, data.camera.target.z));
+			for (let i=0; i<data.playersArray.length; i++) {
+				if (data.playersArray[i].socketID == this.socket.id) {
+					console.log(`socket : ${data.playersArray[i].socketID}, client : ${this.socket.id}, ${i}, angle = ${data.playersArray[i].paddle.angle}`);
+					this.camera.rotation.set(0, 0, 2 * Math.PI/data.gamemode.nbrOfPlayers * i);
+				}
+			}
+			// this.camera.rotation.set(0, 0, 90);
+			// for later : set cam rotation depending on which client this is so the player is always at the same place;
+			
+			// this.renderer.setSize(window.innerWidth, window.innerHeight);
+			this.container.appendChild(this.renderer.domElement);
+
+			// generate objects
+			this.generateBall(data);
+			this.generatePaddles(data);
+			this.generateWalls(data);
+			this.generateGoals(data);
+			// this.generateField(data);
+			this.generateLights(data);
+			// this.generateSkyBox(data);
+			this.drawAxes();
+		})
+
 		this.socket.on('ping', ([timestamp, latency]) => {
 			this.socket.emit('pong', timestamp);
 			let str = `Ping: ${latency}ms - FPS: ${fps.toFixed(1)}`;
@@ -213,6 +252,7 @@ export default class Game extends AbstractView {
 		this.generateBall(data);
 		this.generatePaddles(data);
 		this.generateWalls(data);
+		this.generateGoals(data);
 		// this.generateField(data);
 		this.generateLights(data);
 		// this.generateSkyBox(data);
@@ -306,7 +346,7 @@ export default class Game extends AbstractView {
 	generateWalls(data) {
 		const wallGeometry = new THREE.BoxGeometry(data.field.wallsSize, 1, 2);
 		const wallMaterial = new THREE.MeshPhongMaterial({ color: data.ball.col, transparent: true, opacity: 1, reflectivity: 0.5 });
-		console.log("number of players : ", data.gamemode.nbrOfPlayers);
+		// console.log("number of players : ", data.gamemode.nbrOfPlayers);
 		for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
 			this.walls[i] = new THREE.Mesh(wallGeometry, wallMaterial); // create Material
 			this.scene.add(this.walls[i]); // add mesh to the scene
@@ -315,10 +355,39 @@ export default class Game extends AbstractView {
 		}
 	}
 
+	generateGoals(data) {
+		// console.log("number of players : ", data.gamemode.nbrOfPlayers);
+		for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
+			const top = data.field.walls[i].top;
+			const bottom = data.field.walls[(i + 1) % data.gamemode.nbrOfPlayers].bottom;
+			const points = [];
+			points.push(new THREE.Vector3( top.x, top.y, top.z ));
+			points.push(new THREE.Vector3( bottom.x, bottom.y, bottom.z ));
+			const goalGeometry = new THREE.BufferGeometry().setFromPoints( points );
+			const goalMaterial = new THREE.LineBasicMaterial( { color: data.playersArray[(i + 1) % data.gamemode.nbrOfPlayers].color } );
+			const goalLine = new THREE.Line( goalGeometry, goalMaterial );
+			this.scene.add(goalLine);
+		}
+	}
+
+	// deleteGoals(data) {
+	// 	for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
+	// 		const top = data.field.walls[i].top;
+	// 		const bottom = data.field.walls[(i + 1) % data.gamemode.nbrOfPlayers].bottom;
+	// 		const points = [];
+	// 		points.push(new THREE.Vector3( top.x, top.y, top.z ));
+	// 		points.push(new THREE.Vector3( bottom.x, bottom.y, bottom.z ));
+	// 		const goalGeometry = new THREE.BufferGeometry().setFromPoints( points );
+	// 		const goalMaterial = new THREE.LineBasicMaterial( { color: data.playersArray[(i + 1) % data.gamemode.nbrOfPlayers].color } );
+	// 		const goalLine = new THREE.Line( goalGeometry, goalMaterial );
+	// 		this.scene.add(goalLine);
+	// 	}
+	// }
+
 	generatePaddles(data) {
 		for (let i=0; i<data.playersArray.length; i++) {
 			const paddleGeometry = new THREE.BoxGeometry(data.playersArray[i].paddle.h, 1, 2);
-			const paddleMaterial = new THREE.MeshPhongMaterial({ color: data.playersArray[i].color, transparent: true, opacity: 0.7, reflectivity: 0.5 });
+			const paddleMaterial = new THREE.MeshPhongMaterial({ color: data.playersArray[i].color, transparent: true, opacity: 1, reflectivity: 0 });
 
 			const dir1 = new THREE.ArrowHelper(
 				new THREE.Vector3(data.playersArray[i].paddle.dirToCenter.x,
@@ -338,6 +407,14 @@ export default class Game extends AbstractView {
 
 			this.paddles[i].mesh.position.set(data.playersArray[i].paddle.pos.x, data.playersArray[i].paddle.pos.y, 0); // set the position
 			this.paddles[i].mesh.rotation.set(0, 0, data.playersArray[i].paddle.angle + Math.PI / 2); // set the rotation to the proper orientation (facing center)
+			// this.deletePaddles(data);
+		}
+	}
+
+	deletePaddles(data) {
+		for (let i=0; i<data.playersArray.length; i++) {
+			this.paddles[i].mesh.paddleGeometry.dispose();
+			this.paddles[i].mesh.paddleMaterial.dispose();
 		}
 	}
 
@@ -350,6 +427,11 @@ export default class Game extends AbstractView {
 		// add to scene
 		this.scene.add(this.directionalLight);
 		this.scene.add(this.ambientLight);
+	}
+
+	deleteLights() {
+		this.directionalLight.dispose();
+		this.ambientLight.dispose();
 	}
 
 	// generateSkyBox(data) {
