@@ -13,14 +13,14 @@ from .serializers import PlayerSerializer, MatchParticipantsSerializer
 class TournamentListCreate(generics.ListCreateAPIView):
     queryset = Tournament.objects.all()
     serializer_class = TournamentSerializer
-    #renderer_classes = [JSONRenderer]  # Force the response to be rendered in JSON
+    renderer_classes = [JSONRenderer]  # Force the response to be rendered in JSON
 
     # permission_classes = [permissions.IsAuthenticated] #add more permissions if is necessary
     
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         if not queryset.exists():
-            return Response({"message": "NO tournament was found."}, status=status.HTTP_204_NO_CONTENT)
+            return Response({"message": "NO tournament was found."}, status=status.HTTP_404_NOT_FOUND)
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
