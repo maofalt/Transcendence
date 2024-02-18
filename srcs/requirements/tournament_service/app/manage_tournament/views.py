@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
+from rest_framework.renderers import JSONRenderer
 from .models import Tournament, TournamentMatch, MatchSetting, GameType, TournamentType, RegistrationType, TournamentPlayer, Player, MatchParticipants
 from .serializers import TournamentSerializer, TournamentMatchSerializer, MatchSettingSerializer, GameTypeSerializer
 from .serializers import TournamentTypeSerializer, RegistrationTypeSerializer, TournamentPlayerSerializer
@@ -12,12 +13,14 @@ from .serializers import PlayerSerializer, MatchParticipantsSerializer
 class TournamentListCreate(generics.ListCreateAPIView):
     queryset = Tournament.objects.all()
     serializer_class = TournamentSerializer
+    renderer_classes = [JSONRenderer]  # Force the response to be rendered in JSON
+
     # permission_classes = [permissions.IsAuthenticated] #add more permissions if is necessary
     
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         if not queryset.exists():
-            return Response({"message": "Any tournament was found."}, status=status.HTTP_204_NO_CONTENT)
+            return Response({"message": "NO tournament was found."}, status=status.HTTP_404_NOT_FOUND)
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)

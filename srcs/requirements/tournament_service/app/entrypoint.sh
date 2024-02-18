@@ -5,6 +5,8 @@ while ! nc -z tournament_db 5432; do
 done
 
 # Apply database migrations
+python manage.py flush --no-input
+python manage.py makemigrations
 python manage.py migrate
 
 # Start your Django app

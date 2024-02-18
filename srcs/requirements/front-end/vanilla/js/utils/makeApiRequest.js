@@ -77,4 +77,8 @@ makeApiRequest('https://api.example.com/data', 'POST', { key: 'value' })
     .catch(error => {
         console.error('Request Failed:', error);
     });
+<<<<<<< HEAD
 */
+=======
+*/
+>>>>>>> main
