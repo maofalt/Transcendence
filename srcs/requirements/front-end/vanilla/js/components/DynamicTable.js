@@ -1,6 +1,6 @@
 class DynamicTable extends HTMLElement {
     static get observedAttributes() {
-        return ['data-title','data-headers', 'data-rows'];
+        return ['data-title','data-headers', 'data-rows', 'data-style'];
     }
     
     constructor() {
@@ -21,17 +21,41 @@ class DynamicTable extends HTMLElement {
                 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
             </body>
         `;
+        this.columnStyles = {};
     }
     
+    styleToString(styleObj){
+        return Object.entries(styleObj)
+            .map(([key, value]) => `${key}:${value};`)
+            .join(' ');
+    }
+
     attributeChangedCallback(name, oldValue, newValue) {
-        if (name === 'data-title') {
-            this.buildCaption(newValue);
-        }else if (name === 'data-headers') {
-            this.buildHeaders(JSON.parse(newValue));
-        } else if (name === 'data-rows') {
-            this.buildRows(JSON.parse(newValue));
+        switch(name){
+            case 'data-title':
+                this.buildCaption(newValue);
+                break;
+            case 'data-headers':
+                this.buildHeaders(JSON.parse(newValue));
+                break;
+            case 'data-rows':
+                this.buildRows(JSON.parse(newValue));
+                break;
+            case 'data-style':
+                this.applyColumnStyles(JSON.parse(newValue));
+                break;
         }
     }
+
+    handleComplexCellType(cellValue) {
+        // Example handling for an object representing an image
+        if (cellValue.type === 'image') {
+            return `<img src="${cellValue.src}" alt="${cellValue.alt}" style="${this.styleToString(cellValue.style)}">`;
+        }
+        // Handle other types as needed
+        return cellValue; // Fallback for unknown types
+    }
+    
 
     buildCaption(Title){
         const tableTitle = this.shadowRoot.getElementById('table-title');
@@ -43,24 +67,23 @@ class DynamicTable extends HTMLElement {
         headersRow.innerHTML = headers.map(header => `<th class="align-top">${header}</th>`).join('');
     }
 
+    applyColumnStyles(styles) {
+        this.columnStyles = styles;
+    }
+
     buildRows(dataRows) {
         const tbody = this.shadowRoot.querySelector('#table-body');
         tbody.innerHTML = dataRows.map(row => {
-            // Assuming row is an object with keys matching headers
-            const rowHTML = Object.values(row).map(value => {
-                // Check for special types like avatars or badges
-                if (typeof value === 'object' && value.type === 'avatar') {
-                    return `<td><img src="${value.src}" class="rounded-circle" width="30" height="30"></td>`;
-                } else if (typeof value === 'object' && value.type === 'badge') {
-                    return `<td><span class="badge badge-${value.variant}">${value.text}</span></td>`;
-                } else if (typeof value === 'object' && value.type === 'button') {
-                    return `<td><button class="btn btn-${value.variant}">${value.text}</button></td>`;
-                }
-                return `<td>${value}</td>`;
-            }).join('');
-            return `<tr>${rowHTML}</tr>`;
+            return `<tr>${
+                Object.entries(row).map(([columnName, cellValue]) => {
+                    const style = this.columnStyles[columnName] ? this.styleToString(this.columnStyles[columnName]) : '';
+                    let content = typeof cellValue === 'object' ? this.handleComplexCellType(cellValue) : cellValue;
+                    return `<td style="${style}">${content}</td>`;
+                }).join('')
+            }</tr>`;
         }).join('');
     }
+    
 }
 
 customElements.define('dynamic-table', DynamicTable);

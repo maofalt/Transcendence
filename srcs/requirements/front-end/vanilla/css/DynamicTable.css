@@ -11,6 +11,7 @@
     margin-bottom: 1rem;
     color: hsl(240 3.8% 46.1);
     border-radius: 9px;
+    border-spacing: 2px;
     overflow: hidden;
 }
 

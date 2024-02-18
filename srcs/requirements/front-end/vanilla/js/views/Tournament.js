@@ -7,6 +7,22 @@ export default class Tournament extends AbstractView {
 		super();
 		this.caption = 'Active Tournaments';
 		this.headers = ['Tournament Name', 'Host', 'Number of Players', 'Time Remaining', 'Tournament Type', 'Registration Mode', 'Action'];
+		this.columnStyles = {
+			tournamentName: { 
+				'font-weight': '700',
+			 	'vertical-align': 'middle;',
+				'padding': '1rem'
+			},
+			host: {
+				'color': 'blue',
+				'display': 'flex',
+				'align-items': 'center'
+			},
+			action: {
+				'text-align': 'center',
+				'cursor': 'pointer'
+			}
+		};
 		this.data= [
 			{	
 				tournamentName: 'Tournament 1',
@@ -51,6 +67,7 @@ export default class Tournament extends AbstractView {
 		const dynamicTable =  document.querySelector('dynamic-table');
 		dynamicTable.setAttribute('data-title', this.caption);
 		dynamicTable.setAttribute('data-headers', JSON.stringify(this.headers));
+		dynamicTable.setAttribute('data-style', JSON.stringify(this.columnStyles));
 		dynamicTable.setAttribute('data-rows', JSON.stringify(this.data));
 	}
 }
