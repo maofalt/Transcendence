@@ -74,6 +74,14 @@ export default class Game extends AbstractView {
         // lights
         this.ambientLight = null;
         this.directionalLight = null;
+
+		// text
+		this.textSettings = {
+			font: {},
+			size: 2,
+			height: 0.2,
+			curveSegments: 12,
+		}
 	};
 
 	async getHtml() {
@@ -188,10 +196,11 @@ export default class Game extends AbstractView {
 					this.camera.rotation.set(0, 0, 2 * Math.PI/data.gamemode.nbrOfPlayers * i);
 				}
 			}
+
 			// this.camera.rotation.set(0, 0, 90);
 			// for later : set cam rotation depending on which client this is so the player is always at the same place;
 			
-			// this.renderer.setSize(window.innerWidth, window.innerHeight);
+			this.renderer.setSize(window.innerWidth, window.innerHeight);
 			this.container.appendChild(this.renderer.domElement);
 
 			// generate objects
@@ -199,9 +208,8 @@ export default class Game extends AbstractView {
 			this.generatePaddles(data);
 			this.generateWalls(data);
 			this.generateGoals(data);
-			// this.generateField(data);
 			this.generateLights(data);
-			// this.generateSkyBox(data);
+			this.generateScores(data);
 			this.drawAxes();
 		})
 
@@ -251,23 +259,14 @@ export default class Game extends AbstractView {
 		this.renderer.setSize(window.innerWidth, window.innerHeight);
 		this.container.appendChild(this.renderer.domElement);
 		
-
 		// generate objects
 		this.generateBall(data);
 		this.generatePaddles(data);
 		this.generateWalls(data);
 		this.generateGoals(data);
-		// this.generateField(data);
 		this.generateLights(data);
-		// this.generateSkyBox(data);
+		this.generateScores(data);
 		this.drawAxes();
-
-		this.generateBanana(data);
-
-		this.generateText(data);
-
-		// render scene
-		this.renderer.render(this.scene, this.camera);
 	};
 
 	// Other methods (generateScene, updateScene, etc.) here
@@ -281,10 +280,27 @@ export default class Game extends AbstractView {
 			// this.paddles[i].dir1Mesh.position.set(data.playersArray[i].paddle.pos.x, data.playersArray[i].paddle.pos.y, data.playersArray[i].paddle.pos.z);
 			// this.paddles[i].dir2Mesh.position.set(data.playersArray[i].paddle.pos.x, data.playersArray[i].paddle.pos.y, data.playersArray[i].paddle.pos.z);
 			// for (let i=0; i<data.playersArray.length; i++) {
-			// 	if (data.playersArray[i].socketID = socket.id) {
-			// 		this.camera.rotation.set(0, 0, data.playersArray[i].paddle.angle + Math.PI / 2);
-			// 	}
-			// }
+				// 	if (data.playersArray[i].socketID = socket.id) {
+					// 		this.camera.rotation.set(0, 0, data.playersArray[i].paddle.angle + Math.PI / 2);
+					// 	}
+					// }
+		}
+				
+		// update scores
+		for (let i=0; i<data.playersArray.length; i++) {
+			// create new textgeo with current score
+			const newGeometry = new TextGeometry(data.playersArray[i].score.toString(), this.textSettings);
+			newGeometry.computeBoundingBox(); // get bounding box for centring of the scores
+
+			this.scores[i].geometry.dispose(); // dispose of the old geometry to free up resources
+			this.scores[i].geometry = newGeometry; // assign the new geometry to the mesh
+
+			// centre the scores
+			const scoreWidth = this.scores[i].geometry.boundingBox.max.x - this.scores[i].geometry.boundingBox.min.x;
+			const scoreHeight = this.scores[i].geometry.boundingBox.max.y - this.scores[i].geometry.boundingBox.min.y;
+			const centerX = data.playersArray[i].paddle.pos.x - scoreWidth / 2;
+			const centerY = data.playersArray[i].paddle.pos.y - scoreHeight / 2;
+			this.scores[i].position.set(centerX, centerY, 1);
 		}
 	}
 
@@ -303,49 +319,33 @@ export default class Game extends AbstractView {
 		this.scene.add(arrowY);
 	};
 
-	generateText(data) {
-
-		// create text geometry
-		// var geometry = new TextGeometry( text, {
-
-		// 	font: font,
-
-		// 	size: size,
-		// 	height: height,
-		// 	curveSegments: curveSegments,
-
-		// 	bevelThickness: bevelThickness,
-		// 	bevelSize: bevelSize,
-		// 	bevelEnabled: bevelEnabled
-
-		// } );
-
-		// const ballGeometry = new THREE.SphereGeometry(10, 24, 12);
-		
+	generateScores(data) {
 		const loader = new FontLoader();
 
+		// load font with async function
 		loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', ( font ) => {
-			const geometry = new TextGeometry( 'Hello three.js!', {
-				font: font,
-				size: 1,
-				height: 1,
-				curveSegments: 12,
-				// bevelEnabled: true,
-				// bevelThickness: 10,
-				// bevelSize: 8,
-				// bevelOffset: 0,
-				// bevelSegments: 5
-			} );
+			
+			// load font into text settings
+			this.textSettings.font = font;
+
+			// initialize threejs text geo with text settings
+			const geometry = new TextGeometry( 'Hello three.js!', this.textSettings );
 
 			var material = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
-	
+
+			let dir; // used for rotating text
+
+			// create a mesh for each score and add it to the scene (get dir of current client)
 			for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
-				console.log('adding text...', i);
 				this.scores[i] = new THREE.Mesh( geometry, material );
 				this.scene.add( this.scores[i] );
-				this.scores[i].position.set(data.field.walls[i].pos.x, data.field.walls[i].pos.y, 0);
-				// this.scores[i].position.set(0, 0, 0);
+				if (data.playersArray[i].socketID == this.socket.id)
+					dir = i;
 			}
+
+			// rotate scores to face client
+			for (let i=0; i<data.gamemode.nbrOfPlayers; i++)
+				this.scores[i].rotation.set(0, 0, 2 * Math.PI/data.gamemode.nbrOfPlayers * dir);
 		});
 	};
 

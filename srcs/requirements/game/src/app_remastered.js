@@ -78,8 +78,8 @@ function waitingLoop(matchID) {
 	let match = matches.get(matchID);
 	if (!match) {
 		console.log("Match not found");
-		client.emit('error', 'Match not found');
-		client.disconnect();
+		// client.emit('error', 'Match not found');
+		// client.disconnect();
 		return ;
 	}
 	let string = JSON.stringify(match.gameState);
@@ -265,7 +265,7 @@ io.on('connection', (client) => {
 			let player = data.players[client.playerID];
 			if (player)
 				player.connected = false;
-			if (data.connectedPlayers < -1) {
+			if (data.connectedPlayers < 1) {
 				console.log("CLEARING INTERVAL");
 				clearInterval(match.gameInterval);
 				matches.delete(client.matchID);
