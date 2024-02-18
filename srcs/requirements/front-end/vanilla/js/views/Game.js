@@ -177,8 +177,8 @@ export default class Game extends AbstractView {
 			data.playersArray = Object.values(data.players);
 			this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 			// this.renderer = new THREE.WebGLRenderer();
-			// this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-			// this.controls.target.set(0, 0, 0);
+			this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+			this.controls.target.set(0, 0, 0);
 			
 			this.camera.position.set(data.camera.pos.x, data.camera.pos.y, data.camera.pos.z);
 			this.camera.lookAt(new THREE.Vector3(data.camera.target.x, data.camera.target.y, data.camera.target.z));
@@ -234,8 +234,8 @@ export default class Game extends AbstractView {
 		this.scene = new THREE.Scene();
 		this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 		this.renderer = new THREE.WebGLRenderer();
-		// this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-		// this.controls.target.set(0, 0, 0);
+		this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+		this.controls.target.set(0, 0, 0);
 		
 		this.camera.position.set(data.camera.pos.x, data.camera.pos.y, data.camera.pos.z);
 		this.camera.lookAt(new THREE.Vector3(data.camera.target.x, data.camera.target.y, data.camera.target.z));
@@ -306,7 +306,6 @@ export default class Game extends AbstractView {
 	generateText(data) {
 
 		// create text geometry
-		var geometry;
 		// var geometry = new TextGeometry( text, {
 
 		// 	font: font,
@@ -321,32 +320,33 @@ export default class Game extends AbstractView {
 
 		// } );
 
-		// const loader = new FontLoader();
+		// const ballGeometry = new THREE.SphereGeometry(10, 24, 12);
+		
+		const loader = new FontLoader();
 
-		// loader.load( 'fonts/helvetiker_regular.typeface.json', function ( font ) {
+		loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', ( font ) => {
+			const geometry = new TextGeometry( 'Hello three.js!', {
+				font: font,
+				size: 1,
+				height: 1,
+				curveSegments: 12,
+				// bevelEnabled: true,
+				// bevelThickness: 10,
+				// bevelSize: 8,
+				// bevelOffset: 0,
+				// bevelSegments: 5
+			} );
 
-		// 	geometry = new TextGeometry( 'Hello three.js!', {
-		// 		font: font,
-		// 		size: 80,
-		// 		height: 5,
-		// 		curveSegments: 12,
-		// 		bevelEnabled: true,
-		// 		bevelThickness: 10,
-		// 		bevelSize: 8,
-		// 		bevelOffset: 0,
-		// 		bevelSegments: 5
-		// 	} );
-		// } );
-
-		// // create material
-		// var material = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
-
-		// for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
-		// 	this.scores[i] = new THREE.Mesh( geometry, material );
-		// 	this.scene.add( this.scores[i] );
-		// 	this.scores[i].position.set(data.field.walls[i].pos.x, data.field.walls[i].pos.y, 10);
-		// }
-
+			var material = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
+	
+			for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
+				console.log('adding text...', i);
+				this.scores[i] = new THREE.Mesh( geometry, material );
+				this.scene.add( this.scores[i] );
+				this.scores[i].position.set(data.field.walls[i].pos.x, data.field.walls[i].pos.y, 0);
+				// this.scores[i].position.set(0, 0, 0);
+			}
+		});
 	};
 
 	generateBanana(data) {

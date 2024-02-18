@@ -263,8 +263,9 @@ io.on('connection', (client) => {
 			client.leave("gameRoom");
 			data.connectedPlayers--;
 			let player = data.players[client.playerID];
-			player.connected = false;
-			if (data.connectedPlayers < 1) {
+			if (player)
+				player.connected = false;
+			if (data.connectedPlayers < -1) {
 				console.log("CLEARING INTERVAL");
 				clearInterval(match.gameInterval);
 				matches.delete(client.matchID);
