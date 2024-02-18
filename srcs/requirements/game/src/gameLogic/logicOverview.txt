@@ -25,6 +25,7 @@ at the creation of the lobby we have to :
     - set up each player position :
         - calculate each position according to the size of goals/walls + nbr of remaining players.................[ DONE ]
     - do the same for the walls...................................................................................[ DONE ]
+    - calculate every property of the walls because they're gonna fixed for the duration of each round or game....[ DONE ]
 
 we have to then wait for the start of the game :
     - lobby waiting loop : should have a time limit, at which the room time outs and the game is canceled
@@ -36,9 +37,9 @@ we have to then wait for the start of the game :
         - BONUS : the ball is launched from the center like in a game ?...........................................[  ]
 
 at the start of each round we have to :
-    - set up each player position  :
     - calculate each position according to the size of goals/walls + nbr of remaining players;
-    - set their positions to the calculated ones;
+    - calculate walls properties and paddles properties (most of those are going to be calculated at each frame because
+    the paddles obviously move unlike the walls)
     - put the ball back to the center;
     - put the speeds back to default ones;
 

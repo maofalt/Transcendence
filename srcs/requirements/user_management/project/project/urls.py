@@ -21,6 +21,8 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 import account.views
+from django.contrib.auth import views as auth_views
+
 
 account_base_path = "api/user_management/"
 
@@ -32,8 +34,12 @@ urlpatterns = [
     path(account_base_path + 'auth/', include("account.urls")),
     path('auth/', include("account.urls")),
     path('gameHistory_microservice/', include('gameHistory_microservice.urls')),
-
+    # path('password_reset_confirm/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
 ]
+
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

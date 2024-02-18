@@ -54,9 +54,9 @@ Data :
 
 ======== players : =========================================================`);
 
-    for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
-        displayPlayer(data.players[i]);
-    }
+	Object.values(data.players).forEach((player) => {
+		displayPlayer(player);
+	});
 
 	console.log("======== walls : ==========================================================");
 

@@ -2,6 +2,12 @@
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
+const jwt = require('jsonwebtoken');
+const cookie = require('cookie');
+const SECRET_KEY = process.env.DJANGO_SECRET_KEY; // secret key from jisu
+
+const util = require('util');
+
 // const fs = require('fs');
 
 // importing personal code :
@@ -13,9 +19,14 @@ const render = require('./gameLogic/rendering');
 // const game = require('./gameLogic/gameLogic');
 // const objectsClasses = require('./gameLogic/gameObjectsClasses');
 
-const data = init.initLobby(lobbySettings.lobbyData);
+// const data = init.initLobby(lobbySettings.lobbyData);
+// let data = 0;
+let matches = new Map();
+
+let latency = 0;
 
 const app = express();
+app.use(express.json());
 // const server = http.createServer(app);
 
 const expressPort = process.env.PORT || 3000;
@@ -60,85 +71,224 @@ server.listen(expressPort, () => {
 //======================================== LOBBY LOOPS ========================================//
 
 // global vars
-let gameInterval = 0;
+// let gameInterval = 0;
 
-function waitingLoop() {
-    render.updateData(data);
-    io.to("gameRoom").emit('render', data);
-    // console.log("sending render");
+function waitingLoop(matchID) {
+	let match = matches.get(matchID);
+	if (!match) {
+		console.log("Match not found");
+		client.emit('error', 'Match not found');
+		client.disconnect();
+		return ;
+	}
+	render.updateData(match.gameState);
+    io.to(matchID).emit('render', match.gameState);
 }
 
-gameInterval = setInterval(waitingLoop, 20);
+// gameInterval = setInterval(waitingLoop, 20);
 
 //====================================== SOCKET HANDLING ======================================//
 
-function setPlayerStatus(client) {
-    if (io.engine.clientsCount <= data.gamemode.nbrOfPlayers) {
-        data.players[io.engine.clientsCount - 1].socketID = client.id;
-        data.players[io.engine.clientsCount - 1].connected = true;
+// function setPlayerStatus(client) {
+//     if (io.engine.clientsCount <= data.gamemode.nbrOfPlayers) {
+//         data.players[io.engine.clientsCount - 1].socketID = client.id;
+//         data.players[io.engine.clientsCount - 1].connected = true;
+//     }
+// }
+
+// function handleConnection(client) {
+
+//     console.log("CLIENT CONNECTED");
+//     client.join("gameRoom");
+    
+//     if (io.engine.clientsCount == 1) {
+//         data = init.initLobby(lobbySettings.lobbyData);
+//         gameInterval = setInterval(waitingLoop, 20);
+//         data.ball.dir.y = -1;
+//     }
+//     setPlayerStatus(client);
+
+
+//     console.log(`Client connected with ID: ${client.id}`);
+//     console.log(`Number of connected clients: ${io.engine.clientsCount}`);
+
+//     client.emit('generate', data);
+//     debugDisp.displayData(data);
+// }
+
+function handleConnectionV2(client) {
+
+    console.log("\nCLIENT CONNECTED\n");
+
+    let match = matches.get(client.matchID);
+	if (!match) {
+		throw new Error('Match not found');
+	}
+
+	// - check if player is part of this match;
+	let playerFound = false;
+	Object.values(match.gameState.players).forEach(player => {
+		if (player.accountID == client.playerID) {
+			player.connected = true;
+			player.socketID = client.id;
+			match.gameState.connectedPlayers++;
+			playerFound = true;
+		}
+	});
+
+	if (!playerFound) {
+        // Player not part of the match, send error message to client
+		throw new Error(`Player ${client.playerID} not part of the match`);
     }
+
+    client.join(client.matchID);
+    // console.log('match: ', util.inspect(match, {depth: null}));
+    // client.emit('generate', JSON.stringify(match));
+    client.emit('generate', match.gameState);
+    
+    if (match.gameState.connectedPlayers == 1) {
+        match.gameInterval = setInterval(waitingLoop, 10, client.matchID);
+        match.gameState.ball.dir.y = -1;
+    }
+
+    console.log(`Player connected with ID: ${client.playerID}`);
+
+    // client.emit('generate', data);
+    debugDisp.displayData(match.gameState);
+    return (match);
 }
 
-function handleConnection(client) {
-
-    console.log("CLIENT CONNECTED");
-    client.join("gameRoom");
-
-    setPlayerStatus(client);
-
-    console.log(`Client connected with ID: ${client.id}`);
-    console.log(`Number of connected clients: ${io.engine.clientsCount}`);
-
-    client.emit('generate', data);
-
-    debugDisp.displayData(data);
-}
+// authenticate user before establishing websocket connection
+io.use((client, next) => {
+	try {
+		console.log("\nquery:\n", client.handshake.query);
+		client.matchID = client.handshake.query.matchID;
+		client.playerID = client.handshake.query.playerid;
+		if (!client.matchID) {
+			console.error('Authentication error: Missing matchID');
+			next(new Error('Authentication error: Missing matchID.'));
+		}
+		if (client.handshake.headers && client.handshake.headers.cookie) {
+			// Parse the cookies from the handshake headers
+			const cookies = cookie.parse(client.handshake.headers.cookie);
+			const token = cookies.jwtToken;
+			console.log("\ntoken:\n", token);
+			console.log("\ncookies:\n", cookies);
+	
+			// Verify the token
+			jwt.verify(token, SECRET_KEY, function(err, decoded) {
+				if (err) {
+					console.error('Authentication error: Could not verify token.', err);
+					return next(new Error('Authentication error: Could not verify token.'));
+				}
+				client.decoded = decoded;
+				client.playerID = decoded.username;
+				// console.log("JWT: ", decoded);
+				// client.username = decoded.replace('jwtToken=', '')
+				console.log("\ndecoded:\n", decoded);
+				next();
+			});
+		} else {
+			console.error('Authentication error: No token provided.');
+			next(new Error('Authentication error: No token provided.'));
+		}
+	} catch (error) {
+		console.error('Error connecting websocket: ', error);
+		next(new Error('Authentication error: ' + error));
+	}
+});
 
 // Set up Socket.IO event handlers
 io.on('connection', (client) => {
-    handleConnection(client);
+	try {
+		//handle client connection and match init + players status
+		console.log("\nclient:\n", client.decoded);
+		let match = handleConnectionV2(client);
+		let data = match.gameState;
+		
+		// player controls
+		client.on('moveUp', () => {
+			console.log(`client ${client.id} moving up`);
+			let player = data.players[client.playerID];
+			if (!player.paddle.dashSp) {
+				player.paddle.currSp = player.paddle.sp;
+			}
+		});
+		
+		client.on('moveDown', () => {
+			console.log(`client ${client.id} moving down`);
+			let player = data.players[client.playerID];
+			if (!player.paddle.dashSp) {
+				player.paddle.currSp = -player.paddle.sp;
+			}
+		});
+		
+		client.on('dash', () => {
+			console.log(`client ${client.id} dashing`);
+			let player = data.players[client.playerID];
+			if (!player.paddle.dashSp) {
+				if (player.paddle.currSp == 0) {
+					// do something for this err case
+					return ;
+				}
+				player.paddle.dashSp = player.paddle.currSp > 0 ? player.paddle.w * 1.5 : player.paddle.w * -1.5;
+				// player.paddle.dashSp = player.paddle.w * 1.5 * (player.paddle.currSp > 0);
+			}
+		});
+		
+		client.on('stop', () => {
+			console.log(`client ${client.id} stopping`);
+			let player = data.players[client.playerID];
+			if (!player.paddle.dashing) {
+				player.paddle.currSp = 0;
+			}
+		});
+		
+		// disconnect event
+		client.on('disconnect', () => {
+			client.leave("gameRoom");
+			data.connectedPlayers--;
+			let player = data.players[client.playerID];
+			player.connected = false;
+			if (data.connectedPlayers < 1) {
+				console.log("CLEARING INTERVAL");
+				clearInterval(match.gameInterval);
+				// matches.delete(client.matchID);
+				// delete data;
+			}
+			console.log(`Client disconnected with ID: ${client.id} (num clients: ${io.engine.clientsCount})`);
+		});
 
-    // player controls
-    client.on('moveUp', () => {
-        console.log(`client ${client.id} moving up`);
-        for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
-            if (data.players[i].socketID == client.id) {
-                data.players[i].paddle.dir = data.players[i].paddle.dirToTop.copy();
-            }
-        }
-    });
+		setInterval(() => {
+			client.emit('ping', [Date.now(), latency]);
+		}, 1000);
 
-    client.on('moveDown', () => {
-        console.log(`client ${client.id} moving down`);
-        for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
-            if (data.players[i].socketID == client.id) {
-                data.players[i].paddle.dir = data.players[i].paddle.dirToTop.scale(-1);
-            }
-        }
-    });
+		client.on('pong', timestamp => {
+			latency = Date.now() - timestamp;
 
-    client.on('stop', () => {
-        console.log(`client ${client.id} stopping`);
-        for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
-            if (data.players[i].socketID == client.id) {
-                data.players[i].paddle.dir.x = 0;
-                data.players[i].paddle.dir.y = 0;
-            }
-        }
-    });
+			// process.stdout.clearLine(0);  // Clear current text
+			// process.stdout.cursorTo(0);   // Move cursor to beginning of line
+			// process.stdout.write(`${client.id} latency: ${latency}ms`); // Write new text
+			// console.log(`${client.id} latency: ${latency}ms`);
+		});
 
-    // disconnect event
-    client.on('disconnect', () => {
-        client.leave("gameRoom");
-        for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
-            if (data.players[i].socketID == client.id)
-                data.players[i].connected = false;
-        }
-        // data.gamemode.nbrOfPlayers--; ?
-        // if (gameInterval)
-        //     clearInterval(gameInterval);
-        console.log(`Client disconnected with ID: ${client.id} (num clients: ${io.engine.clientsCount})`);
-    });
+	} catch (error) {
+		console.error('Error: ', error);
+		client.emit('error', error.message);
+		client.disconnect();
+	}
 });
 
 // app.use(express.static('./public/remote/'));
+app.post('/createMatch', (req, res) => {
+	const gameSettings = req.body;
+	// console.log("gameSettings: ", gameSettings);
+	const gameState = init.initLobby(gameSettings);  // implement match object
+    // console.log('match: ', util.inspect(match, {depth: null}));
+    // console.log('is recursive: ', findRecursive(match));
+	const matchID = '69' //generateMatchID();
+	// console.log("headers: ", req.headers);
+	console.log("\nMATCH CREATED\n");
+	matches.set(matchID, { gameState: gameState, gameInterval: 0 });
+	res.json({ matchID });
+});

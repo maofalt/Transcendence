@@ -62,22 +62,6 @@ services:
       - .env
     networks:
       - transcendence
-    #Necessary labels if we want dynamic routing based on the local ip of the machine
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.js-dev.rule=Host(`${LOCAL_IP}`)"
-      # Router for local IP
-      - "traefik.http.routers.js-dev-local.rule=Host(`${LOCAL_IP}`)"
-      - "traefik.http.routers.js-dev-local.entrypoints=websecure"
-      - "traefik.http.routers.js-dev-local.service=jsDevServiceLocal"
-      - "traefik.http.routers.js-dev-local.tls.certresolver=myresolver"
-      - "traefik.http.services.jsDevServiceLocal.loadbalancer.server.port=8033"
-      # Router for codespace URL
-      - "traefik.http.routers.js-dev-codespace.rule=Host(`${CODESPACE_URL}-9443.app.github.dev`)"
-      - "traefik.http.routers.js-dev-codespace.entrypoints=websecure"
-      - "traefik.http.routers.js-dev-codespace.service=jsDevServiceCodespace"
-      - "traefik.http.routers.js-dev-codespace.tls.certresolver=myresolver"
-      - "traefik.http.services.jsDevServiceCodespace.loadbalancer.server.port=9443"
 
 #BACKEND GAME SERVICES
   game:
@@ -90,20 +74,13 @@ services:
       - DATABASE_URL=postgresql://user42:password@db:5432/mydatabase # <-- use value from .env
     depends_on:
       - game-db
+    env_file:
+      - .env
     networks:
       - transcendence
     volumes:
       - ./requirements/traefik/config/ssl/:/etc/game/ssl/
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.game.rule=Host(`${LOCAL_IP}`) && PathPrefix(`/game-logic`)"
-      - "traefik.http.routers.game.entrypoints=websecure"
-      - "traefik.http.routers.game.middlewares=strip-game-logic@docker"
-      - "traefik.http.middlewares.strip-game-logic.stripprefix.prefixes=/game-logic"
-      - "traefik.http.services.game.loadbalancer.server.port=3000"
-      - "traefik.http.routers.game.service=game"
-      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto = https"
-      - "traefik.http.routers.game.tls.certresolver=myresolver"
+      - ./requirements/game/:/app/
 
   game-db:
     container_name: game-db
@@ -119,15 +96,6 @@ services:
       - game_db:/var/lib/postgresql/data
     networks:
       - transcendence
-  # pgadmin:
-  #   image: dpage/pgadmin4
-  #   environment:
-  #     PGADMIN_DEFAULT_EMAIL: "admin@admin.com"
-  #     PGADMIN_DEFAULT_PASSWORD: "admin"
-  #   depends_on:
-  #     - db
-    # ports:
-    #   - "5050:80"
 
   user_management:
     container_name: user_management
@@ -141,20 +109,10 @@ services:
       - ./requirements/user_management/project:/app
     depends_on:
       - user_management_db
+    env_file:
+      - .env
     networks:
       - transcendence
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.user_management.rule=Host(`${LOCAL_IP}`) && PathPrefix(`/api/user_management`)"
-      - "traefik.http.routers.user_management.entrypoints=websecure"
-      #- "traefik.http.routers.user_management.middlewares=strip-user_management@docker"
-      #- "traefik.http.middlewares.strip-user_management.stripprefix.prefixes=/api/user_management"
-      - "traefik.http.services.user_management.loadbalancer.server.port=8000"
-      - "traefik.http.routers.user_management.service=user_management"
-      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto = https"
-      - "traefik.http.routers.user_management.tls.certresolver=myresolver"
-      - "traefik.http.middlewares.tournament-headers.headers.customresponseheaders.X-Forwarded-Prefix=/api/tournament"
-      - "traefik.http.routers.tournament.middlewares=tournament-headers"
 
   user_management_db:
     container_name: user_management_db
@@ -183,20 +141,7 @@ services:
         - ./requirements/tournament_service/app:/app
       #ports:
       #  - 8034:8000
-      labels:
-#tournament local ip
-      - "traefik.enable=true"
-      - "traefik.http.routers.tournament.rule=Host(`${LOCAL_IP}`) && PathPrefix(`/api/tournament`)"
-      - "traefik.http.routers.tournament.entrypoints=websecure"
-      - "traefik.http.routers.tournament.middlewares=strip-tournament@docker"
-      - "traefik.http.middlewares.strip-tournament.stripprefix.prefixes=/api/tournament"
-      - "traefik.http.services.tournament.loadbalancer.server.port=8001"
-      - "traefik.http.routers.tournament.service=tournament"
-      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto = https"
-      - "traefik.http.routers.tournament.tls.certresolver=myresolver"
-      # - "traefik.http.middlewares.tournament-headers.headers.customresponseheaders.X-Forwarded-Prefix=/api/tournament"
-      # - "traefik.http.routers.tournament.middlewares=tournament-headers"
-      
+
   tournament_db:
     container_name: tournament_db
     build:
@@ -232,32 +177,3 @@ networks:
   transcendence:
     name: transcendence
     driver: bridge
-
-  # # react with vite and HMR for development
-  # react-dev:
-  #   container_name: react-dev
-  #   build:
-  #     context: ./requirements/front-end/
-  #     dockerfile: Dockerfile.dev
-  #   volumes:
-  #     - ./requirements/front-end/react-app/:/app/src # Mount the source code
-  #   env_file:
-  #     - .env
-  #   networks:
-  #     - transcendence
-  #   #Necessary labels if we want dynamic routing based on the local ip of the machine
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.http.routers.react-dev.rule=Host(`${LOCAL_IP}`)"
-  #     # Router for local IP
-  #     - "traefik.http.routers.react-dev-local.rule=Host(`${LOCAL_IP}`)"
-  #     - "traefik.http.routers.react-dev-local.entrypoints=websecure"
-  #     - "traefik.http.routers.react-dev-local.service=reactDevServiceLocal"
-  #     - "traefik.http.routers.react-dev-local.tls.certresolver=myresolver"
-  #     - "traefik.http.services.reactDevServiceLocal.loadbalancer.server.port=8033"
-  #     # Router for codespace URL
-  #     - "traefik.http.routers.react-dev-codespace.rule=Host(`${CODESPACE_URL}-9443.app.github.dev`)"
-  #     - "traefik.http.routers.react-dev-codespace.entrypoints=websecure"
-  #     - "traefik.http.routers.react-dev-codespace.service=reactDevServiceCodespace"
-  #     - "traefik.http.routers.react-dev-codespace.tls.certresolver=myresolver"
-  #     - "traefik.http.services.reactDevServiceCodespace.loadbalancer.server.port=9443"
