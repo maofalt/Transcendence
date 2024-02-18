@@ -12,8 +12,8 @@ class DynamicTable extends HTMLElement {
             <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
             <body>Tournament
                 <div class="table-responsive">
-                    <table class="table table-dark table-striped table-borderless bg-success table-hover caption-top">
-                        <caption id='table-title'></caption>
+                    <h1 id='table-title'></h1>
+                    <table class="table table-dark table-striped table-borderless bg-success table-hover caption-top">                
                         <thead><tr id="table-headers"></tr></thead>
                         <tbody id="table-body"></tbody>
                     </table>
