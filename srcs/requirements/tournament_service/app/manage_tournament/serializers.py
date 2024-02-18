@@ -6,7 +6,7 @@ from .models import RegistrationType, TournamentPlayer, Player, MatchParticipant
 class TournamentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tournament
-        fields = ['tournament_name', 'nbr_of_player', 'game_type', 'tournament_type', 'registration', 'setting_id', 'registration_period_min', 'host_id' ]
+        fields = ['tournament_name', 'nbr_of_player', 'game_type', 'tournament_type', 'registration', 'setting', 'registration_period_min', 'host_id' ]
 
 class GameTypeSerializer(serializers.ModelSerializer):
     class Meta:

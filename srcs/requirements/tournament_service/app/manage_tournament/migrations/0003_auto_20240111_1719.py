@@ -12,7 +12,7 @@ def add_game_types(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('manage_tournament', '0002_auto_20240110_2131'),
+        ('manage_tournament', '0001_initial'),
     ]
 
     operations = [

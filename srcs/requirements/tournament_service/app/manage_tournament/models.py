@@ -8,7 +8,7 @@ class Tournament(models.Model):
     nbr_of_player = models.IntegerField(default=2)
     tournament_type = models.ForeignKey('TournamentType', on_delete=models.PROTECT, null=False, to_field='type_id', default=1)
     registration = models.ForeignKey('RegistrationType', on_delete=models.PROTECT, null=False, to_field='type_id', default=1)
-    setting_id = models.ForeignKey('MatchSetting', on_delete=models.PROTECT, null=False, to_field='setting_id', default=1)
+    setting = models.ForeignKey('MatchSetting', on_delete=models.PROTECT, null=False, to_field='setting_id', default=0)
     registration_period_min = models.IntegerField(default=15)
     host_id = models.IntegerField()
 
