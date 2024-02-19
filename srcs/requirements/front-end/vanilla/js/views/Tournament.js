@@ -6,7 +6,9 @@ export default class Tournament extends AbstractView {
 	constructor() {
 		super();
 		this.caption = 'Active Tournaments';
+		
 		this.headers = ['Tournament Name', 'Host', 'Number of Players', 'Time Remaining', 'Tournament Type', 'Registration Mode', 'Action'];
+		
 		this.columnStyles = {
 			tournamentName: { 
 				'font-weight': '700',
@@ -14,19 +16,34 @@ export default class Tournament extends AbstractView {
 				'padding': '1rem'
 			},
 			host: {
-				'color': 'blue',
-				'display': 'flex',
-				'align-items': 'center'
+				container: {
+					'display': 'flex',
+					'align-items': 'center'
+				},
+				name: {
+					'color': 'blue',
+					'margin-left': '1rem'
+				},
+				imageUrl: {
+					'witdh': '50px',
+					'height': '50px',
+					'border-radius': '50%'
+				}
 			},
 			action: {
+				'vertical-align': 'middle;',
 				'text-align': 'center',
 				'cursor': 'pointer'
 			}
 		};
+		
 		this.data= [
 			{	
 				tournamentName: 'Tournament 1',
-				host: 'Host 1',
+				host: {
+					name: "<a href='https://profile.intra.42.fr/users/motero' class='host-link'>Host 1 Name</a>",
+					imageUrl: "<a href='https://cdn.intra.42.fr/users/f49a1258c4dc41d9f9e02192cc9c5e63/motero.JPG' class='host-image'>"
+				},
 				numberOfPlayers: '2/4',
 				timeRemaining: '2:00',
 				tournamentType: 'Single Elimination',
@@ -55,7 +72,7 @@ export default class Tournament extends AbstractView {
 	}
 
 	async getHtml() {
-		await new Promise(resolve => setTimeout(resolve, 500)); // Wait for 3 seconds
+		//makeawait new Promise(resolve => setTimeout(resolve, 100)); // Wait for 3 seconds
 		return `
 			<div class="card">
 				<dynamic-table></dynamic-table>
