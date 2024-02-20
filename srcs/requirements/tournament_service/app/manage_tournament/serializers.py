@@ -2,8 +2,13 @@ from rest_framework import serializers
 from .models import Tournament, TournamentMatch, MatchSetting, GameType, TournamentType
 from .models import RegistrationType, TournamentPlayer, Player, MatchParticipants
 
+class MatchSettingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MatchSetting
+        fields = fields = '__all__'
 
 class TournamentSerializer(serializers.ModelSerializer):
+    setting = MatchSettingSerializer()
     class Meta:
         model = Tournament
         fields = ['tournament_name', 'nbr_of_player', 'game_type', 'tournament_type', 'registration', 'setting', 'registration_period_min', 'host_id' ]
@@ -24,11 +29,6 @@ class TournamentMatchSerializer(serializers.ModelSerializer):
         model = TournamentMatch
         fields = ['match_id', 'tournament_id', 'round_number', 'match_time', 'match_result']
 
-
-class MatchSettingSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = MatchSetting
-        fields = fields = '__all__'
 
 class TournamentTypeSerializer(serializers.ModelSerializer):
     class Meta:
