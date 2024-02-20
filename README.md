@@ -183,7 +183,7 @@ POST /api/user_management/auth/login
 ```
 Body needs to be in `JSON` format. Alos `cookies` need to contain `csrftoken` given on get request to endpoint. See: `GET` login endpoint.
 
-POST body must be in `multipart/form-data` containing:
+POST body must be in `application/x-www-form-urlencoded` containing:
 
 ```
 csrfmiddlewaretoken: HE0RAsToQcfYzvU98c0bGCQoV0pMxCPRKFGFgbt4ngcYNRlK7OmJFDmfwy6B62F5
@@ -202,7 +202,7 @@ If successful, returns `200` with success message and sets `jwt` in cookies
 Example request: (note that it wont work with curl because of `csrf`)
 
 ```shell
-curl -X POST -H "Content-Type: multipart/form-data" -d 'username=player1&password=Passw0rd1' https://localhost:9443/api/user_management
+curl -X POST -H "Content-Type: application/x-www-form-urlencoded" -d 'username=player1&password=Passw0rd1' https://localhost:9443/api/user_management
 ```
 
 Example Response Body:
