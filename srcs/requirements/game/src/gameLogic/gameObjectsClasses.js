@@ -72,7 +72,6 @@ class Player {
         this.paddle = new Paddle(lobbyData, i); // creating paddle object for this player
         this.color = parseInt(lobbyData.playersData[i].color, 16);
         this.score = 0;
-        this.health = -1;
     }
 }
 

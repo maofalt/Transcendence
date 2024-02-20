@@ -71,6 +71,8 @@ export default class Game extends AbstractView {
 		this.goals = [];
 		this.scores = [];
 
+		this.starSphere = null;
+
         // lights
         this.ambientLight = null;
         this.directionalLight = null;
@@ -78,7 +80,7 @@ export default class Game extends AbstractView {
 		// text
 		this.textSettings = {
 			font: {},
-			size: 2,
+			size: 3,
 			height: 0.2,
 			curveSegments: 12,
 		}
@@ -266,7 +268,10 @@ export default class Game extends AbstractView {
 		this.generateGoals(data);
 		this.generateLights(data);
 		this.generateScores(data);
-		this.drawAxes();
+
+		// this.generateSkyBox(data);
+
+		// this.drawAxes();
 	};
 
 	// Other methods (generateScene, updateScene, etc.) here
@@ -331,7 +336,7 @@ export default class Game extends AbstractView {
 			// initialize threejs text geo with text settings
 			const geometry = new TextGeometry( 'Hello three.js!', this.textSettings );
 
-			var material = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
+			var material = new THREE.MeshBasicMaterial( { color: 0xffffff } );
 
 			let dir; // used for rotating text
 
@@ -486,24 +491,24 @@ export default class Game extends AbstractView {
 		this.ambientLight.dispose();
 	}
 
-	// generateSkyBox(data) {
-	// 	// Charger la texture de ciel étoilé
-	// 	const starTexture = new THREE.TextureLoader().load('../../assets/banana.jpg'); // Remplacez par le chemin de votre texture
-	// 	// Créer la géométrie de la sphère
-	// 	starTexture.colorSpace = THREE.SRGBColorSpace;
-	// 	const starGeometry = new THREE.SphereGeometry(300, 64, 64); // Rayon, segmentsWidth, segmentsHeight
-	// 	// starTexture.offset.set(0.5, 0); // Shifts the texture halfway across its width
+	generateSkyBox(data) {
+		// Charger la texture de ciel étoilé
+		const starTexture = new THREE.TextureLoader().load('../assets/banana/textures/Banana_baseColor.png'); // Remplacez par le chemin de votre texture
+		// Créer la géométrie de la sphère
+		// starTexture.colorSpace = THREE.SRGBColorSpace;
+		const starGeometry = new THREE.SphereGeometry(100, 64, 64); // Rayon, segmentsWidth, segmentsHeight
+		// starTexture.offset.set(0.5, 0); // Shifts the texture halfway across its width
 
-	// 	// Créer le matériau avec la texture
-	// 	const starMaterial = new THREE.MeshBasicMaterial({
-    // 		map: starTexture,
-    // 		side: THREE.BackSide
-	// 	});
+		// Créer le matériau avec la texture
+		const starMaterial = new THREE.MeshPhongMaterial({
+    		map: starTexture,
+    		side: THREE.BackSide
+		});
 
-	// 	// Créer le mesh de la sphère
-	// 	const starSphere = new THREE.Mesh(starGeometry, starMaterial);
+		// Créer le mesh de la sphère
+		this.starSphere = new THREE.Mesh(starGeometry, starMaterial);
 
-	// 	// Ajouter la sphère étoilée à la scène
-	// 	this.scene.add(starSphere);
-	// };
+		// Ajouter la sphère étoilée à la scène
+		this.scene.add(this.starSphere);
+	};
 }
