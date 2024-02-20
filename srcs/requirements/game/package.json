@@ -12,6 +12,7 @@
     "@seregpie/three.text-sprite": "^3.2.0",
     "@seregpie/three.text-texture": "^3.2.1",
     "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
     "nodemon": "^3.0.3",
     "pg": "^8.11.3",
     "socket.io": "^4.7.2",

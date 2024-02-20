@@ -15,6 +15,7 @@ class Camera {
 // Gamemode class
 class GameMode {
     constructor(gamemodeData) {
+        this.gameType = gamemodeData.gameType;
         this.nbrOfPlayers = gamemodeData.nbrOfPlayers;
         this.nbrOfRounds = gamemodeData.nbrOfRounds; // nbr of points needed to win
         this.timeLimit = gamemodeData.timeLimit; // in minutes. gamemode needs either a nbr of rounds or a time limit. if not, the game will be
@@ -30,6 +31,7 @@ class Field {
         this.goalsSize = fieldData.sizeOfGoals;
         this.wallsSize = fieldData.sizeOfGoals * fieldData.wallsFactor;
         this.walls = [];
+        // this.goals = [];
     }
 }
 
@@ -40,6 +42,10 @@ class Wall {
 		this.dirToCenter = new vecs.Vector(0, 0, 0); // direction from the center of the object to the center of the field;
         this.dirToTop = new vecs.Vector(0, 0, 0); // direction from the center of the object to the top side of the object
                                              // (perpendicular to dirToCenter, on the x,y plane); (*)
+        this.top = new vecs.Vector(0, 0, 0);
+        this.bottom = new vecs.Vector(0, 0, 0);
+        this.topBack = new vecs.Vector(0, 0, 0);
+        this.bottomBack = new vecs.Vector(0, 0, 0);
         this.angle = 0;
         this.w = lobbyData.paddlesData.width;
         this.h = wallSize;
@@ -47,17 +53,26 @@ class Wall {
     }
 }
 
+// class Goal {
+//     constructor(top, bottom) {
+//         this.top = top.copy();
+//         this.bottom = bottom.copy();
+//     }
+// }
+
 // Player class
 class Player {
     constructor(lobbyData, i) {
-        this.accountID =lobbyData.playersData[i].accountID; // unique ID of the user account
+        // this.matchID = lobbyData.playtersData[i].matchID; // ?
+        this.accountID = lobbyData.playersData[i].accountID; // unique ID of the user account
         this.socketID = -1; // ID of the client/server socket
         this.ID = i; // position in the array of players in the lobby
-        this.login = lobbyData.playersData[i].login + `_${i}`; // user login
+        this.login = lobbyData.playersData[i].login; // user login
         this.connected = false; // connection status
         this.paddle = new Paddle(lobbyData, i); // creating paddle object for this player
-        this.color = lobbyData.playersData[i].color;
+        this.color = parseInt(lobbyData.playersData[i].color, 16);
         this.score = 0;
+        this.health = -1;
     }
 }
 
@@ -65,14 +80,22 @@ class Player {
 class Paddle {
     constructor(lobbyData, i) {
 		this.pos = new vecs.Vector(0, 0, 0);
+        this.startingPos = new vecs.Vector(0, 0, 0);
         this.dir = new vecs.Vector(0, 0, 0);
 		this.dirToCenter = new vecs.Vector(0, 0, 0); // dirToCenter and dirToTop = same def as in Wall Class (*)
         this.dirToTop = new vecs.Vector(1, 0, 0);
+        this.top = new vecs.Vector(0, 0, 0);
+        this.bottom = new vecs.Vector(0, 0, 0);
+        this.topBack = new vecs.Vector(0, 0, 0);
+        this.bottomBack = new vecs.Vector(0, 0, 0);
         this.angle = 0;
         this.w = lobbyData.paddlesData.width;
         this.h = lobbyData.paddlesData.height;
         this.sp = lobbyData.paddlesData.speed;
-        this.col = lobbyData.playersData[i].color;
+        this.currSp = 0;
+        this.col = parseInt(lobbyData.playersData[i].color, 16);
+        this.dashSp = 0;
+        this.dashFrameCounter = 0;
     }
 }
 
@@ -81,12 +104,14 @@ class Ball {
     constructor(ballData) {
         this.pos = new vecs.Vector(0, 0, 0);
 		this.dir = new vecs.Vector(0, 0, 0); // direction in which the ball is moving
-        this.lastHit = -1; // ID of the last player who hit the ball
+        // this.lastHit = -1; // ID of the last player who hit the ball
                            // Will be useful in gamemodes with more than 2 players where we want to give points to
                            // the right player.
+        // this.previousLastHit = -1;
+        // this.lastScoredOn = -1;
         this.r = ballData.radius;
         this.sp = ballData.speed;
-        this.col = ballData.color;
+        this.col = parseInt(ballData.color, 16);
     }
 }
 
@@ -101,6 +126,10 @@ class Ball {
 // Data class
 class Data {
     constructor(lobbyData) {
+        this.connectedPlayers = 0;
+        this.gameInterval = 0;
+        this.ongoing = false;
+
         // get the gamemode info from the lobby data;
         this.gamemode = new GameMode(lobbyData.gamemodeData);
 
@@ -110,9 +139,13 @@ class Data {
         this.ball = new Ball(lobbyData.ballData);
 
         // create and fill the array of players
-        this.players = [];
+        this.players = {};
+
+		this.playersArray = [];
+
         for (let i=0; i<lobbyData.gamemodeData.nbrOfPlayers; i++) {
-            this.players.push(new Player(lobbyData, i));
+			let player = new Player(lobbyData, i);
+            this.players[player.accountID] = player;
         }
 
         // create walls & fill the array of walls

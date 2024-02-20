@@ -1,5 +1,6 @@
+import '@css/tournament.css'
 import AbstractView from "./AbstractView";
-import DynamicTable from "../components/DynamicTable";
+import { makeApiRequest } from '@utils/makeApiRequest.js';
 
 export default class Tournament extends AbstractView {
 
