@@ -8,6 +8,12 @@ class TournamentSerializer(serializers.ModelSerializer):
         model = Tournament
         fields = ['tournament_name', 'nbr_of_player', 'game_type', 'tournament_type', 'registration', 'setting', 'registration_period_min', 'host_id' ]
 
+    def create(self, validated_data):
+        setting_data = validated_data.pop('setting')  # Extrait les données de setting
+        setting = MatchSetting.objects.create(**setting_data)  # Crée un nouvel objet MatchSetting
+        tournament = Tournament.objects.create(setting=setting, **validated_data)  # Crée un nouvel objet Tournament avec le MatchSetting créé
+        return tournament
+
 class GameTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = GameType
