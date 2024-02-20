@@ -4,6 +4,7 @@ const http = require('http');
 const socketIo = require('socket.io');
 const jwt = require('jsonwebtoken');
 const cookie = require('cookie');
+const crypto = require('crypto');
 const SECRET_KEY = process.env.DJANGO_SECRET_KEY; // secret key from jisu
 
 const util = require('util');
@@ -77,12 +78,25 @@ function waitingLoop(matchID) {
 	let match = matches.get(matchID);
 	if (!match) {
 		console.log("Match not found");
-		client.emit('error', 'Match not found');
-		client.disconnect();
+		// client.emit('error', 'Match not found');
+		// client.disconnect();
 		return ;
 	}
-	render.updateData(match.gameState);
-    io.to(matchID).emit('render', match.gameState);
+	let string = JSON.stringify(match.gameState);
+	let gameState = render.updateData(match.gameState);
+	if (gameState == 1) {
+		io.to(matchID).emit('destroy', match.gameState);
+		io.to(matchID).emit('refresh', match.gameState);
+	} else if (gameState == 0) {
+		io.to(matchID).emit('render', match.gameState);
+	} else if (gameState == -1) {
+		io.to(matchID).emit('destroy', match.gameState);
+		clearInterval(match.gameInterval);
+		// first, send the result of the match back;
+
+		// then delete the match;
+		matches.delete(matchID);
+	}
 }
 
 // gameInterval = setInterval(waitingLoop, 20);
@@ -103,8 +117,6 @@ function waitingLoop(matchID) {
     
 //     if (io.engine.clientsCount == 1) {
 //         data = init.initLobby(lobbySettings.lobbyData);
-//         gameInterval = setInterval(waitingLoop, 20);
-//         data.ball.dir.y = -1;
 //     }
 //     setPlayerStatus(client);
 
@@ -144,17 +156,19 @@ function handleConnectionV2(client) {
     client.join(client.matchID);
     // console.log('match: ', util.inspect(match, {depth: null}));
     // client.emit('generate', JSON.stringify(match));
+	console.log('---DATA---\n', match.gameState, '\n---END---\n');
     client.emit('generate', match.gameState);
     
     if (match.gameState.connectedPlayers == 1) {
         match.gameInterval = setInterval(waitingLoop, 10, client.matchID);
         match.gameState.ball.dir.y = -1;
+		match.gameState.ball.dir.x = 0.01;
     }
 
     console.log(`Player connected with ID: ${client.playerID}`);
 
     // client.emit('generate', data);
-    debugDisp.displayData(match.gameState);
+    // debugDisp.displayData(match.gameState);
     return (match);
 }
 
@@ -210,7 +224,7 @@ io.on('connection', (client) => {
 		client.on('moveUp', () => {
 			console.log(`client ${client.id} moving up`);
 			let player = data.players[client.playerID];
-			if (!player.paddle.dashSp) {
+			if (player && player.paddle && !player.paddle.dashSp) {
 				player.paddle.currSp = player.paddle.sp;
 			}
 		});
@@ -218,7 +232,7 @@ io.on('connection', (client) => {
 		client.on('moveDown', () => {
 			console.log(`client ${client.id} moving down`);
 			let player = data.players[client.playerID];
-			if (!player.paddle.dashSp) {
+			if (player && player.paddle && !player.paddle.dashSp) {
 				player.paddle.currSp = -player.paddle.sp;
 			}
 		});
@@ -226,7 +240,7 @@ io.on('connection', (client) => {
 		client.on('dash', () => {
 			console.log(`client ${client.id} dashing`);
 			let player = data.players[client.playerID];
-			if (!player.paddle.dashSp) {
+			if (player && player.paddle && !player.paddle.dashSp) {
 				if (player.paddle.currSp == 0) {
 					// do something for this err case
 					return ;
@@ -239,7 +253,7 @@ io.on('connection', (client) => {
 		client.on('stop', () => {
 			console.log(`client ${client.id} stopping`);
 			let player = data.players[client.playerID];
-			if (!player.paddle.dashing) {
+			if (player && player.paddle && !player.paddle.dashing) {
 				player.paddle.currSp = 0;
 			}
 		});
@@ -249,17 +263,19 @@ io.on('connection', (client) => {
 			client.leave("gameRoom");
 			data.connectedPlayers--;
 			let player = data.players[client.playerID];
-			player.connected = false;
+			if (player)
+				player.connected = false;
 			if (data.connectedPlayers < 1) {
 				console.log("CLEARING INTERVAL");
 				clearInterval(match.gameInterval);
-				// matches.delete(client.matchID);
-				// delete data;
+				matches.delete(client.matchID);
+				delete data;
 			}
 			console.log(`Client disconnected with ID: ${client.id} (num clients: ${io.engine.clientsCount})`);
 		});
 
 		setInterval(() => {
+			const big = Buffer.alloc(1024 * 1024);
 			client.emit('ping', [Date.now(), latency]);
 		}, 1000);
 
@@ -279,16 +295,31 @@ io.on('connection', (client) => {
 	}
 });
 
+function generateMatchID(gameSettings) {
+	// Convert request content to a string representation
+	const string = JSON.stringify(gameSettings);
+	// Use SHA-256 to hash the string
+	return crypto.createHash('sha256').update(string).digest('hex');
+}
+
 // app.use(express.static('./public/remote/'));
 app.post('/createMatch', (req, res) => {
 	const gameSettings = req.body;
-	// console.log("gameSettings: ", gameSettings);
-	const gameState = init.initLobby(gameSettings);  // implement match object
-    // console.log('match: ', util.inspect(match, {depth: null}));
-    // console.log('is recursive: ', findRecursive(match));
-	const matchID = '69' //generateMatchID();
-	// console.log("headers: ", req.headers);
+
+	const matchID = generateMatchID(gameSettings);
+	if (matches.has(matchID)) {
+		console.log("Match already exists");
+		res.json({ matchID });
+		return ;
+	}
+
+	// Convert game settings to game state
+	const gameState = init.initLobby(gameSettings);
+	
 	console.log("\nMATCH CREATED\n");
 	matches.set(matchID, { gameState: gameState, gameInterval: 0 });
+
 	res.json({ matchID });
 });
+
+// module.exports = { io };

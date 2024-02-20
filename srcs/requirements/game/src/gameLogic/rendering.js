@@ -1,34 +1,33 @@
 const { Vector } = require("./vectors");
 const vecs = require("./vectors");
+const init = require("./init");
+// const ioPointer = require("../app_remastered");
 
-function ballHitsWall(data) {
-    let potentialHitPoint, futureHitPos, hitScaler;
-    let ball, wall;
+// function ballHitsWall(data) {
+//     let potentialHitPoint, futureHitPos, hitScaler;
+//     let ball, wall;
 
-    ball = data.ball;
-    for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
-        wall = data.field.walls[i];
-        if (ball.pos.getDistFrom(wall.pos) < ball.sp + ball.r + wall.h / 2) {
-            potentialHitPoint = ball.pos.add(wall.dirToCenter.scale(-ball.r));
-            futureHitPos = potentialHitPoint.add(ball.dir.scale(ball.sp));
-            hitScaler = vecs.segmentsIntersect(
-                potentialHitPoint,
-                futureHitPos,
-                wall.top,
-                wall.bottom
-            );
-            if (hitScaler > 0) {
-                let ballPath = futureHitPos.getDirFrom(potentialHitPoint).normalize();
-                // ball.pos = futureHitPos.add(ballPath.scale(hitScaler)).add(wall.dirToCenter.scale(-ball.r));
-                let dot = ball.dir.dotProduct(wall.dirToTop);
-                let a = Math.acos(dot / ball.dir.mag * wall.dirToTop.mag);
-                ball.dir = ball.dir.rotateAroundZ(2 * a);
-                return true;
-            }
-        }
-    }
-    return false;
-}
+//     ball = data.ball;
+//     for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
+//         wall = data.field.walls[i];
+//         if (ball.pos.getDistFrom(wall.pos) < ball.sp + ball.r + wall.h / 2) {
+//             potentialHitPoint = ball.pos.add(wall.dirToCenter.scale(-ball.r));
+//             futureHitPos = potentialHitPoint.add(ball.dir.scale(ball.sp));
+//             hitScaler = vecs.segmentsIntersect(potentialHitPoint, futureHitPos, wall.top, wall.bottom);
+//             if (hitScaler > 0) {
+//                 let ballPath = futureHitPos.sub(potentialHitPoint);
+//                 console.log(`mag : ${ballPath.mag}`);
+//                 ball.pos = ball.pos.add(ballPath.scale(hitScaler));
+
+//                 let dot = ball.dir.dotProduct(wall.dirToTop);
+//                 let a = Math.acos(dot / ball.dir.mag * wall.dirToTop.mag);
+//                 ball.dir = ball.dir.rotateAroundZ(2 * a);
+//                 return true;
+//             }
+//         }
+//     }
+//     return false;
+// }
 
 function checkCorner(ball, corner, center) {
     let distToCorner, vecCornerDist, cornerHitPoint = 0;
@@ -52,38 +51,64 @@ function checkCorner(ball, corner, center) {
     return false;
 }
 
+function ballHitsWallSide (ball, segP1, segP2, perpVec, scaledNormalVec) {
+    let potentialHitPoint, futureHitPos, hitScaler;
+
+    potentialHitPoint = ball.pos.sub(scaledNormalVec);
+    futureHitPos = potentialHitPoint.add(ball.dir.scale(ball.sp));
+    hitScaler = vecs.segmentsIntersect(potentialHitPoint, futureHitPos, segP1, segP2);
+    if (hitScaler > 0) {
+        let ballPath = futureHitPos.sub(potentialHitPoint);
+        ball.pos = ball.pos.add(ballPath.scale(hitScaler));
+        let dot = ball.dir.dotProduct(perpVec);
+        let a = Math.acos(dot / ball.dir.mag * perpVec.mag);
+        ball.dir = ball.dir.rotateAroundZ(2 * a);
+        return true;
+    }
+}
+
+function ballHitsWallV2(data) {
+    let ball, wall;
+
+    ball = data.ball;
+	for (let wall of data.field.walls) {
+        if (ball.pos.getDistFrom(wall.pos) < ball.sp + ball.r + wall.h / 2) {
+            if (ballHitsWallSide(ball, wall.top, wall.bottom, wall.dirToTop, wall.dirToCenter.scale(ball.r)) ||
+                ballHitsWallSide(ball, wall.top, wall.topBack, wall.dirToCenter.scale(-1), wall.dirToTop.scale(ball.r)) ||
+                ballHitsWallSide(ball, wall.bottom, wall.bottomBack, wall.dirToCenter, wall.dirToTop.scale(-ball.r))) {
+                return true;
+            }
+            if (checkCorner(ball, wall.top, wall.pos))
+                return true;
+            if (checkCorner(ball, wall.bottom, wall.pos))
+                return true;
+        }
+    }
+    return false;
+}
+
+
 function ballHitsPaddleSide (paddle, ball, segP1, segP2, scaledNormalVec) {
     let potentialHitPoint, futureHitPos, hitScaler;
 
     potentialHitPoint = ball.pos.sub(scaledNormalVec);
     futureHitPos = potentialHitPoint.add(ball.dir.scale(ball.sp));
-    hitScaler = vecs.segmentsIntersect(
-        potentialHitPoint,
-        futureHitPos,
-        segP1,
-        segP2
-    );
+    hitScaler = vecs.segmentsIntersect(potentialHitPoint, futureHitPos, segP1, segP2);
     if (hitScaler > 0) {
-        let ballPath = futureHitPos.getDirFrom(potentialHitPoint).normalize();
-        ball.pos = potentialHitPoint.add(ballPath.scale(hitScaler)).add(scaledNormalVec);
+        let ballPath = futureHitPos.sub(potentialHitPoint);
+        ball.pos = ball.pos.add(ballPath.scale(hitScaler));
         ball.dir = ball.pos.getDirFrom(paddle.pos).normalize();
         return true;
     }
 }
 
 function ballHitsPaddle(data) {
-    // let potentialHitPoint, futureHitPos, hitScaler;
     let ball, paddle;
 
     ball = data.ball;
 	for (let player of Object.values(data.players)) {
         paddle = player.paddle;
         if (ball.pos.getDistFrom(paddle.pos) < ball.sp + ball.r + paddle.h / 2) {
-            // if (ballHitsPaddleCenter(paddle, ball) ||
-            //     ballHitsPaddleTop(paddle, ball) || 
-            //     ballHitsPaddleBottom(paddle, ball)) {
-            //     return true;
-            // }
             if (ballHitsPaddleSide(paddle, ball, paddle.top, paddle.bottom, paddle.dirToCenter.scale(ball.r)) ||
                 ballHitsPaddleSide(paddle, ball, paddle.top, paddle.topBack, paddle.dirToTop.scale(ball.r)) ||
                 ballHitsPaddleSide(paddle, ball, paddle.bottom, paddle.bottomBack, paddle.dirToTop.scale(-ball.r))) {
@@ -128,20 +153,16 @@ function handleDash(currPaddle) {
 function updatePaddles(data) {
     let currPaddle = 0;
 
-    // console.log('test');
 	for (let player of Object.values(data.players)) {
         currPaddle = player.paddle;
         let dir = 0;
         
         dir = (currPaddle.dashSp != 0) ? currPaddle.dirToTop.scale(currPaddle.dashSp) : currPaddle.dirToTop.scale(currPaddle.currSp);
-        // console.log(`
-        // curr pad speed ${currPaddle.sp}
-        // curr pad dir to top ${currPaddle.dir.scale(currPaddle.sp).x}, ${currPaddle.dir.scale(currPaddle.sp).y}`);
         updatePaddlesPoints(currPaddle, dir);
         handleDash(currPaddle);
 
         let vecToStart = currPaddle.pos.sub(currPaddle.startingPos);
-        let limitDist = (data.field.goalsSize - currPaddle.h - currPaddle.w) / 1;
+        let limitDist = (data.field.goalsSize - currPaddle.h - currPaddle.w) / 2;
 
         if (vecToStart.mag > limitDist) {
             vecToStart = vecToStart.normalize();
@@ -153,23 +174,108 @@ function updatePaddles(data) {
 }
 
 function updateBall(data) {
-    if (!ballHitsWall(data) && !ballHitsPaddle(data)) {
-        // console.log("PAS COLLISION");
+    if (!ballHitsWallV2(data) && !ballHitsPaddle(data)) {
         data.ball.pos = data.ball.pos.add(data.ball.dir.scale(data.ball.sp));
     }
-    if (data.ball.pos.getDistFrom(new Vector(0, 0, 0)) > 70) {
+    if (data.ball.pos.getDistFrom(new Vector(0, 0, 0)) > 100) {
         data.ball.pos = new Vector(0, 0, 0);
-        // data.ball.dir.x = data.ball.dir.x == 0 ? 1 : 0;
-        // data.ball.dir.y = data.ball.dir.y == 0 ? 1 : 0;
     }
-    // else
-        // console.log("COLLISION");
+}
+
+function endGame(data, winner) {
+    // display scores + display winner's name
+    console.log("!!!!!!!!!!!!!!!!!!!!!! GAME OVER !!!!!!!!!!!!!!!!!!!");
+    console.log(`${winner.accountID} WON !`);
+    // send result of the game back to tournament or some place else;
+    // stop the interval
+
+    // disconnect everyone ? need to think about this
+}
+
+function eliminatePlayer(data, player) {
+    // important : send the info to the client to delete the corresponding player,
+    // it should be the only required additional exchange since the client
+    // receives everything else it needs to display properly the game in each
+    // "render" socket emission
+
+    console.log("!!!!!!!!!!!!!!!!!!!!!! ELIMINATED !!!!!!!!!!!!!!!!!!!");
+    console.log(`${data.gamemode.nbrOfPlayers}`);
+    // get rid of this player in the map of players;
+    delete data.players[player.accountID];
+    data.field.walls.pop();
+    // update the nbrOfPlayers accordingly;
+    data.gamemode.nbrOfPlayers--;
+    // call init() again to setup the field correctly;
+    if (data.gamemode.nbrOfPlayers > 1) {
+        init.initFieldShape(data);
+    }
+}
+
+function handleScoring(data, player) {
+    if (data.gamemode.gameType == 0) {
+        for (let otherPlayer of Object.values(data.players)) {
+            if (otherPlayer === player)
+                continue ;
+            otherPlayer.score++;
+            if (otherPlayer.score == data.gamemode.nbrOfRounds) {
+                endGame(data, otherPlayer);
+                return -1;
+            }
+        }
+    } else if (data.gamemode.gameType == 1) {
+        player.score--;
+        if (player.score == 0) {
+            eliminatePlayer(data, player);
+            data.ball.pos = new Vector(0, 0, 0);
+            if (data.gamemode.nbrOfPlayers == 1) {
+                endGame(data, Object.values(data.players)[0]);
+                return -1;
+            }
+            return 1;
+        }
+    }
+    data.ball.pos = new Vector(0, 0, 0);
+    return 0;
+}
+
+function checkForScoring(data) {
+    let potentialHitPoint, futureHitPos, hitScaler;
+    let ball, wall1, wall2, player;
+
+    ball = data.ball;
+    for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
+        wall1 = data.field.walls[i];
+        wall2 = data.field.walls[(i + 1) % data.gamemode.nbrOfPlayers];
+        player = Object.values(data.players)[(i + 1) % data.gamemode.nbrOfPlayers];
+        potentialHitPoint = ball.pos;
+        futureHitPos = potentialHitPoint.add(ball.dir.scale(ball.sp));
+        hitScaler = vecs.segmentsIntersect(potentialHitPoint, futureHitPos, wall1.top, wall2.bottom);
+        if (hitScaler > 0) {
+            return handleScoring(data, player);
+        }
+    }
+    return false;
 }
 
 function updateData(data) {
     updatePaddles(data);
     updateBall(data);
-    // checkForScoring(data);
+    // wait for all players to be connected;
+    // in the mean time, just play the game with no scoring and
+    // no eliminations in order to make the waiting more fun.
+    // so check if all players are connected.
+
+    // when its the case => set the game ongoing status to true;
+    // and set the players position back to the starting position;
+
+    // when data.ongoing is true it will trigger the checking of scoring;
+    // when game ends => put the ongoing status of the game back to false;
+    let result = checkForScoring(data);
+    // console.log(`score update\n`);
+    // for (let player of Object.values(data.players)) {
+    //     console.log(`${player.accountID} [${player.score}]\n`);
+    // }
+    return result;
 }
 
 module.exports = { updateData };

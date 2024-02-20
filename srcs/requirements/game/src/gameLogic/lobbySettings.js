@@ -1,7 +1,8 @@
 // Lobby Settings, used to initialize the lobby, and to reset objects at the start of each round;
 
 const   gamemodeSettings = {
-    nbrOfPlayers: 5, // from 2 to 8 - 10 ?
+    gameType: 1,
+    nbrOfPlayers: 2, // from 2 to 8 - 10 ?
     nbrOfRounds: 5, // from 1 to 10
     timeLimit: 0, // in minutes, from 1 to 30. anything under 1 == no time limit;
     // IMPORTANT : game needs either a time limit or a nbr of rounds; if none = invalid setup.
