@@ -185,7 +185,7 @@ This is the endpoint to login
 ```plaintext
 POST /api/user_management/auth/login
 ```
-`cookies` need to contain `csrftoken` given on get request to endpoint. See: `GET` login endpoint.
+`cookies` need to contain `csrftoken` given on get request to endpoint.
 
 POST body must be in `application/x-www-form-urlencoded` containing:
 
@@ -248,7 +248,7 @@ This is the endpoint to logout
 ```plaintext
 POST /api/user_management/auth/logout
 ```
-`cookies` need to contain `csrftoken` given on get request to endpoint. See: `GET` login endpoint.
+`cookies` need to contain `csrftoken` given on get request to endpoint.
 
 POST body must be in `application/x-www-form-urlencoded` containing:
 
@@ -278,7 +278,7 @@ This is the endpoint to sond the 2fa code to the email
 ```plaintext
 POST /api/user_management/auth/access_code
 ```
-`cookies` need to contain `csrftoken` given on get request to endpoint. See: `GET` login endpoint.
+`cookies` need to contain `csrftoken` given on get request to endpoint.
 
 POST body must be in `application/x-www-form-urlencoded` containing:
 ```
@@ -292,7 +292,87 @@ Example request: (note that it wont work with curl because of `csrf`)
 ```shell
 curl -X POST -H "Content-Type: application/x-www-form-urlencoded" -d 'email=player@gmail.com' https://localhost:9443/api/user_management/auth/access_code
 ```
-The response will have a set-cookie with `sessionid`
+The response will have a set-cookie with the `sessionid` and the `csrftoken` 
+
+Example response:
+
+```json
+{"success": true}
+```
+
+
+### Verify Access Code
+
+This is the endpoint that will verify the access code
+
+```plaintext
+POST /api/user_management/auth/verify_code
+```
+`cookies` need to contain `csrftoken` given on get request to endpoint.
+
+POST body must be in `application/x-www-form-urlencoded` containing:
+```
+email: player@gmail.com
+one_time_code: 960029
+context: signup
+```
+
+raw:
+```
+email=yoelridgway%40gmail.com&one_time_code=960029&context=signup
+```
+returns `200` OK with message and `csrf_token`
+
+Example request: (note that it wont work with curl because of `csrf`)
+
+```shell
+curl -X POST -H "Content-Type: application/x-www-form-urlencoded" -d 'email=yoelridgway%40gmail.com&one_time_code=960029&context=signup' https://localhost:9443/api/user_management/auth/verify_code
+```
+The response will have a set-cookie with the `sessionid` and the `csrftoken` 
+
+Example response:
+
+```json
+{
+    "success": true,
+    "message": "One-time code verification successful",
+    "csrf_token": "dWx8xM6A6OJW5o6ngq71kdZ4uSd45UIZEywlIGTvOMn1wifY2UvCiyZ2XWDvm5zt"
+}
+```
+
+
+### Signup
+
+This is the endpoint that will verify the access code
+
+```plaintext
+POST 3/api/user_management/auth/signup
+```
+`cookies` need to contain `csrftoken` and `sessionid` given on get request to login endpoint.
+
+POST body must be in `application/x-www-form-urlencoded` containing:
+```
+csrfmiddlewaretoken: BElrVdZWVMe739faEBIRobmbaZ9sNc6Q2gkE67MRDKScu3oLq56smwm9D3zT4nXk
+username: player1
+password: Passw0rd1
+confirm_password: Passw0rd1
+playername: Player1
+signupEmail: player@gmail.com
+access_code: 960029
+```
+
+raw:
+```
+csrfmiddlewaretoken=BElrVdZWVMe739faEBIRobmbaZ9sNc6Q2gkE67MRDKScu3oLq56smwm9D3zT4nXk&username=player1&password=pass7890&confirm_password=pass7890&playername=Player1&signupEmail=yoelridgway%40gmail.com&access_code=960029
+```
+returns `200` OK with message and `csrf_token`
+
+Example request: (note that it wont work with curl because of `csrf`)
+
+```shell
+curl -X POST -H "Content-Type: application/x-www-form-urlencoded" -d 'csrfmiddlewaretoken=BElrVdZWVMe739faEBIRobmbaZ9sNc6Q2gkE67MRDKScu3oLq56smwm9D3zT4nXk&username=player1&password=pass7890&confirm_password=pass7890&playername=Player1&signupEmail=yoelridgway%40gmail.com&access_code=960029
+p' https://localhost:9443/api/user_management/auth/verify_code
+```
 
 Example response:
 
