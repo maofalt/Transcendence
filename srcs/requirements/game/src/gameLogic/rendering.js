@@ -73,9 +73,9 @@ function ballHitsWallV2(data) {
     ball = data.ball;
 	for (let wall of data.field.walls) {
         if (ball.pos.getDistFrom(wall.pos) < ball.sp + ball.r + wall.h / 2) {
-            if (ballHitsWallSide(wall, ball, wall.top, wall.bottom, wall.dirToTop, wall.dirToCenter.scale(ball.r)) ||
-                ballHitsWallSide(wall, ball, wall.top, wall.topBack, wall.dirToCenter.scale(-1), wall.dirToTop.scale(ball.r)) ||
-                ballHitsWallSide(wall, ball, wall.bottom, wall.bottomBack, wall.dirToCenter, wall.dirToTop.scale(-ball.r))) {
+            if (ballHitsWallSide(ball, wall.top, wall.bottom, wall.dirToTop, wall.dirToCenter.scale(ball.r)) ||
+                ballHitsWallSide(ball, wall.top, wall.topBack, wall.dirToCenter.scale(-1), wall.dirToTop.scale(ball.r)) ||
+                ballHitsWallSide(ball, wall.bottom, wall.bottomBack, wall.dirToCenter, wall.dirToTop.scale(-ball.r))) {
                 return true;
             }
             if (checkCorner(ball, wall.top, wall.pos))

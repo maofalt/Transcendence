@@ -78,8 +78,8 @@ function waitingLoop(matchID) {
 	let match = matches.get(matchID);
 	if (!match) {
 		console.log("Match not found");
-		client.emit('error', 'Match not found');
-		client.disconnect();
+		// client.emit('error', 'Match not found');
+		// client.disconnect();
 		return ;
 	}
 	let string = JSON.stringify(match.gameState);
@@ -156,6 +156,7 @@ function handleConnectionV2(client) {
     client.join(client.matchID);
     // console.log('match: ', util.inspect(match, {depth: null}));
     // client.emit('generate', JSON.stringify(match));
+	console.log('---DATA---\n', match.gameState, '\n---END---\n');
     client.emit('generate', match.gameState);
     
     if (match.gameState.connectedPlayers == 1) {
@@ -223,7 +224,7 @@ io.on('connection', (client) => {
 		client.on('moveUp', () => {
 			console.log(`client ${client.id} moving up`);
 			let player = data.players[client.playerID];
-			if (!player.paddle.dashSp) {
+			if (player && player.paddle && !player.paddle.dashSp) {
 				player.paddle.currSp = player.paddle.sp;
 			}
 		});
@@ -231,7 +232,7 @@ io.on('connection', (client) => {
 		client.on('moveDown', () => {
 			console.log(`client ${client.id} moving down`);
 			let player = data.players[client.playerID];
-			if (!player.paddle.dashSp) {
+			if (player && player.paddle && !player.paddle.dashSp) {
 				player.paddle.currSp = -player.paddle.sp;
 			}
 		});
@@ -239,7 +240,7 @@ io.on('connection', (client) => {
 		client.on('dash', () => {
 			console.log(`client ${client.id} dashing`);
 			let player = data.players[client.playerID];
-			if (!player.paddle.dashSp) {
+			if (player && player.paddle && !player.paddle.dashSp) {
 				if (player.paddle.currSp == 0) {
 					// do something for this err case
 					return ;
@@ -252,7 +253,7 @@ io.on('connection', (client) => {
 		client.on('stop', () => {
 			console.log(`client ${client.id} stopping`);
 			let player = data.players[client.playerID];
-			if (!player.paddle.dashing) {
+			if (player && player.paddle && !player.paddle.dashing) {
 				player.paddle.currSp = 0;
 			}
 		});
@@ -262,7 +263,8 @@ io.on('connection', (client) => {
 			client.leave("gameRoom");
 			data.connectedPlayers--;
 			let player = data.players[client.playerID];
-			player.connected = false;
+			if (player)
+				player.connected = false;
 			if (data.connectedPlayers < 1) {
 				console.log("CLEARING INTERVAL");
 				clearInterval(match.gameInterval);
