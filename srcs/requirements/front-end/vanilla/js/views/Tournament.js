@@ -1,5 +1,7 @@
 import '@css/tournament.css'
 import AbstractView from "./AbstractView";
+import DynamicTable from "../components/DynamicTable";
+import ActionButton from "../components/ActionButton";
 import { makeApiRequest } from '@utils/makeApiRequest.js';
 
 export default class Tournament extends AbstractView {
@@ -73,10 +75,15 @@ export default class Tournament extends AbstractView {
 	}
 
 	async getHtml() {
-		//makeawait new Promise(resolve => setTimeout(resolve, 100)); // Wait for 3 seconds
+		//await new Promise(resolve => setTimeout(resolve, 100)); // Wait for 3 seconds
 		return `
 			<div class="card">
-				<dynamic-table></dynamic-table>
+			    <action-button 
+                    data-text="Play Now" 
+                    data-action="console.log('Button clicked!')"
+                    class="my-custom-button">
+                </action-button>
+                <dynamic-table></dynamic-table>
 			</div>
 		`;
 	}
