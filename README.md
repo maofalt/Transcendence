@@ -81,6 +81,7 @@ Example response:
 ```
 
 
+
 ## `WSS` Game WebSocket API
 
 This API allows you to connect to a matchm send paddle movements and receive game updates with `WebSocket Secure`.
@@ -172,6 +173,9 @@ handleKeyRelease(event) {
         this.socket.emit('stop');
 };
 ```
+
+
+
 ## `HTTP` User Management API
 
 ### Login:
@@ -181,7 +185,7 @@ This is the endpoint to login
 ```plaintext
 POST /api/user_management/auth/login
 ```
-Body needs to be in `JSON` format. Alos `cookies` need to contain `csrftoken` given on get request to endpoint. See: `GET` login endpoint.
+`cookies` need to contain `csrftoken` given on get request to endpoint. See: `GET` login endpoint.
 
 POST body must be in `application/x-www-form-urlencoded` containing:
 
@@ -235,6 +239,67 @@ Example Response Body:
     "requires_2fa": true
 }
 ```
+
+
+### Logout
+
+This is the endpoint to logout
+
+```plaintext
+POST /api/user_management/auth/logout
+```
+`cookies` need to contain `csrftoken` given on get request to endpoint. See: `GET` login endpoint.
+
+POST body must be in `application/x-www-form-urlencoded` containing:
+
+```
+csrfmiddlewaretoken: U9SEahDeRpZQ2EHK25pVRxRdgnaNOG4ulLRRlbq9znDVtyQlOzNwPSRbJrAe5RVY
+```
+
+Example Request Body:
+
+```
+csrfmiddlewaretoken=U9SEahDeRpZQ2EHK25pVRxRdgnaNOG4ulLRRlbq9znDVtyQlOzNwPSRbJrAe5RVY
+```
+
+returns `302` 
+
+Example request: (note that it wont work with curl because of `csrf`)
+
+```shell
+curl -X POST -H "Content-Type: application/x-www-form-urlencoded" -d 'username=player1&password=Passw0rd1' https://localhost:9443/api/user_management
+```
+
+
+### Get Access Code
+
+This is the endpoint to sond the 2fa code to the email
+
+```plaintext
+POST /api/user_management/auth/access_code
+```
+`cookies` need to contain `csrftoken` given on get request to endpoint. See: `GET` login endpoint.
+
+POST body must be in `application/x-www-form-urlencoded` containing:
+```
+email=player@gmail.com
+```
+
+returns `200` OK  
+
+Example request: (note that it wont work with curl because of `csrf`)
+
+```shell
+curl -X POST -H "Content-Type: application/x-www-form-urlencoded" -d 'email=player@gmail.com' https://localhost:9443/api/user_management/auth/access_code
+```
+The response will have a set-cookie with `sessionid`
+
+Example response:
+
+```json
+{"success": true}
+```
+
 
 ## `HTTP` Tournament API
 
