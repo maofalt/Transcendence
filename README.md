@@ -172,7 +172,69 @@ handleKeyRelease(event) {
         this.socket.emit('stop');
 };
 ```
+## `HTTP` User Management API
 
+### Login:
+
+This is the endpoint to login
+
+```plaintext
+POST /api/user_management/auth/login
+```
+Body needs to be in `JSON` format. Alos `cookies` need to contain `csrftoken` given on get request to endpoint. See: `GET` login endpoint.
+
+POST body must be in `multipart/form-data` containing:
+
+```
+csrfmiddlewaretoken: HE0RAsToQcfYzvU98c0bGCQoV0pMxCPRKFGFgbt4ngcYNRlK7OmJFDmfwy6B62F5
+username: player1
+password: Passw0rd1
+```
+
+Example Request Body:
+
+```
+csrfmiddlewaretoken=HE0RAsToQcfYzvU98c0bGCQoV0pMxCPRKFGFgbt4ngcYNRlK7OmJFDmfwy6B62F5&username=player1&password=Passw0rd1
+```
+
+If successful, returns `200` with success message and sets `jwt` in cookies
+
+Example request: (note that it wont work with curl because of `csrf`)
+
+```shell
+curl -X POST -H "Content-Type: multipart/form-data" -d 'username=player1&password=Passw0rd1' https://localhost:9443/api/user_management
+```
+
+Example Response Body:
+
+```json
+{
+    "message": "Password Authentication successful",
+    "user": {
+        "id": 1,
+        "password": "pbkdf2_sha256$720000$bGzLrHowwIKtEAZw6tMLX6$Rx7dH9th1qmhZUL2ZLoVpSyP+/p7lstZP/8FtqQ3jnE=",
+        "last_login": "2024-02-20T16:38:58.447909Z",
+        "is_superuser": false,
+        "username": "player1",
+        "first_name": "",
+        "last_name": "",
+        "email": "player1@gmail.com",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2024-02-20T16:38:41.515835Z",
+        "token": null,
+        "playername": "PlayerOne",
+        "is_online": false,
+        "avatar": "/media/default_avatar.jpeg",
+        "game_stats": 1,
+        "groups": [],
+        "user_permissions": [],
+        "friends": []
+    },
+    "redirect_url": "/api/user_management/",
+    "requires_2fa": true
+}
+```
 
 ## `HTTP` Tournament API
 
