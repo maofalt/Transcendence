@@ -1,6 +1,7 @@
 import { makeApiRequest } from "../utils/makeApiRequest";
 import AbstractView from "./AbstractView";
 import { getCookie } from "@utils/getCookie";
+import { createElement } from "@utils/createElement";
 
 export default class Login extends AbstractView {
 	constructor(element) {
@@ -29,10 +30,21 @@ export default class Login extends AbstractView {
 			console.error('Request Failed:', error);
 		}
 
-		this.container = document.createElement('loginContainer');
-		let banana = document.createElement('a');
-		banana.textContent = 'small-textytoo banana nanana';
-		this.container.appendChild(banana);
+		let signUpForm = `
+		<form id="sign-up-form">
+			<input type="text" id="username" name="username" placeholder="Username">
+			<input type="password" id="password" name="password" placeholder="Password">
+			<button type="submit">Submit</button>
+		</form>
+		`;
+
+		this.container = createElement('div', { id: 'loginContainer' });
+		let formContainer = createElement('div', { id: 'form-container' }, signUpForm);
+		this.container.appendChild(formContainer);
+
+		// let banana = document.createElement('a');
+		// banana.textContent = 'small-textytoo banana nanana';
+		// this.container.appendChild(banana);
 
 		const htmlContent = this.container.innerHTML;
 
