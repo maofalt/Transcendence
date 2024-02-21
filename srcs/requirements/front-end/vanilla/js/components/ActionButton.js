@@ -1,6 +1,6 @@
 class ActionButton extends HTMLElement {
     static get observedAttributes() {
-        return ['data-style', 'data-action-config', 'data-text'];
+        return ['data-text'];
     }
 
     constructor() {
@@ -16,12 +16,6 @@ class ActionButton extends HTMLElement {
         `;
     }
 
-    connectedCallback() {
-        this.shadowRoot.querySelector(`.action-button`).addEventListener('click', () => {
-            this.performAction();
-        });
-    }
-
     attributeChangedCallback(name, oldValue, newValue) {
         if (name === 'data-text') {
             this.updateButtonText(newValue);
@@ -32,30 +26,7 @@ class ActionButton extends HTMLElement {
         const buttonText = text || 'Default Text';
         this.shadowRoot.querySelector('.action-button').textContent = buttonText;
     }
-
-    performAction() {
-        const actionConfig = this.getAttribute(-data-action-config);
-        if (!actionConfig)
-            return;
-        
-        const config = JSON.parse(actionConfig);
-        
-        if (config.url) {
-            fetch(config.url,{
-                method: config.method || 'GET',
-                headers: config.headers || {},
-                body: config.body ? JSON.stringify(config.body) : null,
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-        }
-            
-    }
+     
 }
 
 customElements.define('action-button', ActionButton);

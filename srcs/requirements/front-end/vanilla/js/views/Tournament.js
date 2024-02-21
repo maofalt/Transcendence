@@ -8,6 +8,8 @@ export default class Tournament extends AbstractView {
 
 	constructor() {
 		super();
+
+		this.createMatch = this.createMatch.bind(this);
 		this.caption = 'Active Tournaments';
 		
 		this.headers = ['Tournament Name', 'Host', 'Number of Players', 'Time Remaining', 'Tournament Type', 'Registration Mode', 'Action'];
@@ -79,9 +81,8 @@ export default class Tournament extends AbstractView {
 		return `
 			<div class="card">
 			    <action-button 
-                    data-text="Play Now" 
-                    data-action="console.log('Button clicked!')"
-                    class="my-custom-button">
+                    data-text="Play Now"
+					id="createMatchButton">
                 </action-button>
                 <dynamic-table></dynamic-table>
 			</div>
@@ -94,5 +95,69 @@ export default class Tournament extends AbstractView {
 		dynamicTable.setAttribute('data-headers', JSON.stringify(this.headers));
 		dynamicTable.setAttribute('data-style', JSON.stringify(this.columnStyles));
 		dynamicTable.setAttribute('data-rows', JSON.stringify(this.data));
+
+		const createMatchButton = document.getElementById('createMatchButton');
+		createMatchButton.addEventListener('click', this.createMatch);
+	}
+
+	async createMatch() {
+		console.log('Create Match');
+		const gameSettings = this.getGameSettings();
+		try {
+			const response = await makeApiRequest('https://localhost:9443/game-logic/createMatch','POST',gameSettings);
+			console.log('Match created:', response.body);
+		} catch (error) {
+			console.error('Failed to create match:', error);
+		}
+	}
+
+	getGameSettings() {
+		return {
+			"gamemodeData": {
+			  "nbrOfPlayers": 6,
+			  "nbrOfRounds": 5,
+			  "timeLimit": 0
+			},
+			"fieldData": {
+			  "wallsFactor": 1,
+			  "sizeOfGoals": 20
+			},
+			"paddlesData": {
+			  "width": 2,
+			  "height": 12,
+			  "speed": 0.5
+			},
+			"ballData": {
+			  "speed": 0.7,
+			  "radius": 1,
+			  "color": "0xffffff"
+			},
+			"playersData": [
+			  {
+				"accountID": "player1",
+				"color": "0x0000ff"
+			  },
+			  {
+				"accountID": "player2",
+				"color": "0x00ff00"
+			  },
+			  {
+				"accountID": "player3",
+				"color": "0xff0000"
+			  },
+			  {
+				"accountID": "player4",
+				"color": "0xff00ff"
+			  },
+			  {
+				"accountID": "player5",
+				"color": "0x00ffff"
+			  },
+			  {
+				"accountID": "player6",
+				"color": "0xffff00"
+			  }
+			]
+		};
 	}
 }
