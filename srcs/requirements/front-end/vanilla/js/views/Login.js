@@ -41,11 +41,12 @@ export default class Login extends AbstractView {
 		this.container = createElement('div', { id: 'loginContainer' });
 		let formContainer = createElement('div', { id: 'form-container' }, signUpForm);
 		this.container.appendChild(formContainer);
-
+		
+		
 		// let banana = document.createElement('a');
 		// banana.textContent = 'small-textytoo banana nanana';
 		// this.container.appendChild(banana);
-
+		
 		const htmlContent = this.container.innerHTML;
 		return htmlContent;
 	}
@@ -65,6 +66,7 @@ export default class Login extends AbstractView {
 		}
 
 		submitBtn.addEventListener('click', async () => {
+			submitBtn.textContent = 'SUBMITING...';
 			// event.preventDefault(); // Prevent form from submitting traditionally
 
 			// validate the form data
