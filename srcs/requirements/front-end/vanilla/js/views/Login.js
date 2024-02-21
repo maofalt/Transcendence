@@ -31,11 +31,11 @@ export default class Login extends AbstractView {
 		// }
 
 		let signUpForm = `
-		<form id="sign-up-form">
+		<form class="sign-up-form">
 			<input type="text" id="username" name="username" placeholder="Username">
 			<input type="password" id="password" name="password" placeholder="Password">
 		</form>
-		<button id="submitBtn">Submit</button>
+		<button class="sign-up-form">Submit</button>
 		`;
 
 		this.container = createElement('div', { id: 'loginContainer' });
@@ -51,41 +51,43 @@ export default class Login extends AbstractView {
 	}
 	
 	async init() {
-		this.setupFormListener();
+		this.setupFormListener('sign-up-form', '/api/user_management/auth/login', 'application/x-www-form-urlencoded');
 	}
 
-	async setupFormListener() {
-		const submitBtn = document.getElementById('submitBtn');
+	// Generalized setup form listener method
+	async setupFormListener(formClass, apiEndpoint, contentType) {
+		const form = document.querySelector(`.${formClass}`);
+		const submitBtn = document.querySelector(`button.${formClass}`); // button must have the same class
+
+		if (!submitBtn) {
+			console.log("form button not found");
+			return ;
+		}
+
 		submitBtn.addEventListener('click', async () => {
-			const form = document.getElementById('sign-up-form');
-			
-			// Optional: Manual Validation
-			if (!form.checkValidity()) {
-				form.reportValidity(); // This will show validation messages if any field is invalid
-				return; // Prevent form submission if validation fails
-			}
-			
-			// Prepare the form data manually
-			const formData = {
-				username: document.getElementById('username').value,
-				password: document.getElementById('password').value
-			};
-	
-			// Call your async function to handle the submission logic
+			// event.preventDefault(); // Prevent form from submitting traditionally
+
+			// validate the form data
+			// if (!form.checkValidity()) {
+			//     form.reportValidity();
+			//     return;
+			// }
+
+			// construct formData object dynamically from form fields
+			const formData = {};
+			new FormData(form).forEach((value, key) => {
+				formData[key] = value;
+			});
+
 			try {
-				await this.submitForm(formData);
-				// Optionally, call form.submit() if you need to submit the form to a server-side endpoint
-				// form.submit();
+				const response = await makeApiRequest(apiEndpoint, 'POST', formData, {
+					'Content-Type': contentType || 'application/json',
+					'X-CSRFToken': getCookie('csrftoken'),
+				});
+				console.log('API Call Response:', response);
 			} catch (error) {
-				console.error('Error during form submission:', error);
+				console.error('API Call Failed:', error);
 			}
 		});
 	}
-
-	async submitForm(formData) {
-		// Handle API call or other async actions here
-		console.log('Form Data:', formData);
-		// Replace this log with your actual submission logic
-	}
-
 }

@@ -1,5 +1,7 @@
 
 export async function makeApiRequest(url, method = 'GET', body = null, headers = {}) {
+	let response;
+	
 	try {
 		// Setting up headers dynamically based on Content-Type
 		if (headers['Content-Type'] != 'application/x-www-form-urlencoded')
@@ -27,7 +29,7 @@ export async function makeApiRequest(url, method = 'GET', body = null, headers =
 		}
 
 		// Making the fetch call
-		const response = await fetch(url, options);
+		response = await fetch(url, options);
 
 		// Check if response is OK
 		if (!response.ok) {
@@ -51,15 +53,22 @@ export async function makeApiRequest(url, method = 'GET', body = null, headers =
 
 	} catch (error) {
 		// Returning error details
-		// Note: response might not be defined if the error occurs before fetching, so check if response exists
+		const body = await response.json();
 		if (response && response.status === 401) {
 			// Redirect to the login page
 			window.location.href = '/login';
 			return Promise.reject('Unauthorized');
 		}
 	
+		if (response) {
+			return {
+				status: response.status,
+				body: body
+			}
+		}
+
 		return {
-			status: 'Network Error',
+			status: 'No Response',
 			body: error.message || error
 		};
 	}
