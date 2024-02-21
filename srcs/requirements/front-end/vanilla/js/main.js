@@ -10,6 +10,7 @@ import Options from '@views/Options.js';
 import Game from '@views/Game.js';
 import Login from '@views/Login.js';
 import NotFound from '@views/NotFound.js';
+import { createElement } from './utils/createElement';
 
 const routes = {
 	'/': {
@@ -82,7 +83,7 @@ const router = async () => {
 	
 	// if the view has an init function, call it
 	if (view.init)
-		view.init();
+		await view.init();
 
 	// document.querySelector('#counter').innerHTML = path;
 };
@@ -104,8 +105,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Create a parent element
 const parentElement = document.querySelector('#app');
+const navContainer = createElement('div', { id: 'nav-container' });
+parentElement.insertBefore(navContainer, parentElement.querySelector('#view'));
 
-const elems = [];
+const navElems = [];
 
 const validRoutes = ['/', '/play', '/tournament', '/options', '/login'];
 Object.entries(routes).forEach(([route, view]) => {
@@ -115,11 +118,11 @@ Object.entries(routes).forEach(([route, view]) => {
 		link.classList.add('nav-link');
 		link.setAttribute('nav-link', '');
 		link.textContent = view.buttonText;
-		elems.push(link);
+		navElems.push(link);
 	}
 });
 
-elems.forEach(elem => parentElement.insertBefore(elem, parentElement.querySelector('#view')));
+navElems.forEach(elem => navContainer.appendChild(elem));
 
 
 // elems.push(document.querySelector('#counter'));

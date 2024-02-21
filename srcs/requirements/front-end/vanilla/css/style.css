@@ -31,8 +31,8 @@ body {
 }
 
 h1 {
-font-size: 3.2em;
-line-height: 1.1;
+	font-size: 3.2em;
+	line-height: 1.1;
 }
 
 #app {
@@ -69,8 +69,18 @@ line-height: 1.1;
 	color: #888;
 }
 
+/* Style for the nav container (add a class or ID as appropriate) */
+#nav-container {
+	display: flex;
+	justify-content: center; /* Center children horizontally */
+	align-items: center;
+	width: 100%; /* Full width */
+	position: absolute; /* Position it absolutely relative to its positioned parent */
+	top: 0; /* Align to the top */
+	left: 0; /* Align to the left */
+}
+
 .nav-link {
-	/* display: none; */
 	margin: 0 0.5em;
 	padding: 0.5em 1em;
 	border-radius: 8px;
