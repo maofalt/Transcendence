@@ -1,8 +1,9 @@
 import '@css/tournament.css'
 import AbstractView from "./AbstractView";
-import DynamicTable from "../components/DynamicTable";
-import ActionButton from "../components/ActionButton";
+import DynamicTable from "@components/DynamicTable";
+import ActionButton from "@components/ActionButton";
 import { makeApiRequest } from '@utils/makeApiRequest.js';
+import { navigateTo } from '@utils/Router.js';
 
 export default class Tournament extends AbstractView {
 
@@ -79,10 +80,11 @@ export default class Tournament extends AbstractView {
 	async getHtml() {
 		//await new Promise(resolve => setTimeout(resolve, 100)); // Wait for 3 seconds
 		return `
-			<div class="card">
+			<div class="tournament">
 			    <action-button 
-                    data-text="Play Now"
-					id="createMatchButton">
+                    data-text=" ⚡ Play Now"
+					id="createMatchButton"
+					>
                 </action-button>
                 <dynamic-table></dynamic-table>
 			</div>
@@ -106,6 +108,8 @@ export default class Tournament extends AbstractView {
 		try {
 			const response = await makeApiRequest('https://localhost:9443/game-logic/createMatch','POST',gameSettings);
 			console.log('Match created:', response.body);
+			//window.location.href = '/play?matchID=' + response.body.matchID;
+			window.globalActions.navigateTo('/play?matchID=' + response.body.matchID);
 		} catch (error) {
 			console.error('Failed to create match:', error);
 		}
@@ -114,8 +118,8 @@ export default class Tournament extends AbstractView {
 	getGameSettings() {
 		return {
 			"gamemodeData": {
-			  "nbrOfPlayers": 6,
-			  "nbrOfRounds": 5,
+			  "nbrOfPlayers": 3,
+			  "nbrOfRounds": 1,
 			  "timeLimit": 0
 			},
 			"fieldData": {
@@ -134,29 +138,17 @@ export default class Tournament extends AbstractView {
 			},
 			"playersData": [
 			  {
-				"accountID": "player1",
+				"accountID": "tata",
 				"color": "0x0000ff"
 			  },
 			  {
-				"accountID": "player2",
+				"accountID": "tata2",
 				"color": "0x00ff00"
 			  },
 			  {
-				"accountID": "player3",
-				"color": "0xff0000"
+				"accountID": "tata3",
+				"color": "0x00ff00"
 			  },
-			  {
-				"accountID": "player4",
-				"color": "0xff00ff"
-			  },
-			  {
-				"accountID": "player5",
-				"color": "0x00ffff"
-			  },
-			  {
-				"accountID": "player6",
-				"color": "0xffff00"
-			  }
 			]
 		};
 	}

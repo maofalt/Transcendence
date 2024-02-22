@@ -1,12 +1,15 @@
 //globalActions.js
+import { setupNavigation} from '@utils/Navigation.js';
+import { navigateTo } from './utils/Router.js';
+
 
 window.globalActions = {
-    navigateTo: (path)  => {
-        history.pushState(null, null, path);
-        router();
-    }
+	navigateTo,
+    setupNavigation,
 }
 
-function redirectTo(url) {
-    window.Geolocation
-}
+window.globalActions.setupNavigation();
+
+window.globalActions.navigateTo(window.location.pathname);
+
+export default window.globalActions;

@@ -1,3 +1,10 @@
-table, th, td {
-    border: 1px solid white;
+.tournament{
+    display: grid;
+    margin: 2em;
+    text-align: center;
+}
+
+action-button{
+    margin-top: 4rem;
+    margin-bottom: 5rem;
 }
