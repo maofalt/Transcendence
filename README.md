@@ -414,10 +414,4 @@ Example request:
 curl -X POST -H "Content-Type: application/json" -d '@path/to/tournamentSettings.json' https://localhost:9443/api/tournament/create-and-list
 ```
 
-Example response:
-
-```json
-{
-    "succ"
-}
-```
+Responds with the same body that was sent
