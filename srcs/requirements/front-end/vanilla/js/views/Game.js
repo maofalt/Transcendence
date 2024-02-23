@@ -81,6 +81,8 @@ export default class Game extends AbstractView {
 			height: 0.2,
 			curveSegments: 12,
 		}
+		this.prevScores = [];
+		this.dir = 0;
 	};
 
 	async getHtml() {
@@ -254,7 +256,7 @@ export default class Game extends AbstractView {
 		}
 		// this.camera.rotation.set(0, 0, 90);
 		// for later : set cam rotation depending on which client this is so the player is always at the same place;
-		
+
 		this.renderer.setSize(window.innerWidth, window.innerHeight);
 		this.container.appendChild(this.renderer.domElement);
 		
@@ -305,9 +307,19 @@ export default class Game extends AbstractView {
 	};
 
 
-	generateScores() {
+	generateScores(data) {
 
 		const loader = new FontLoader();
+
+		// get previous scores for comparison when updating score text meshes
+		this.prevScores = data.playersArray.map(player => -1);
+
+		// get the direction of the client to rotate the scores to face the client
+		for (let i = 0; i < data.playersArray.length; i++) {
+			if (data.playersArray[i].socketID === this.socket.id) {
+				this.dir = i;
+			}
+		}
 
 		if (!loader)
 			return console.error("FontLoader not found");
@@ -316,7 +328,7 @@ export default class Game extends AbstractView {
 
 			this.textSettings.font = response;
 
-			this.refreshScores();
+			this.refreshScores(data);
 
 			console.log("Font loaded");
 
@@ -335,90 +347,57 @@ export default class Game extends AbstractView {
 		// bevelEnabled: bevelEnabled
 
 	
-	createScores(data) {
+	createScore(data, player, i) {
 
 		let dir = 0; // used to rotate scores to face client
 
 		// generate scores for each player
-		data.playersArray.forEach((player, i) => {
-			const scoreText = player.score.toString();
+		const scoreText = player.score.toString();
+		console.log("Creating score: " + scoreText + " for player " + i + " with dir: " + this.dir);
 
-			const geometry = new TextGeometry(scoreText, this.textSettings);
+		const geometry = new TextGeometry(scoreText, this.textSettings);
 
-			var material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-			this.scores[i] = new THREE.Mesh(geometry, material);
+		var material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+		this.scores[i] = new THREE.Mesh(geometry, material);
 
-			// calculate bounds of score
-			geometry.computeBoundingBox();
-			const scoreWidth = this.scores[i].geometry.boundingBox.max.x - this.scores[i].geometry.boundingBox.min.x;
-			const scoreHeight = this.scores[i].geometry.boundingBox.max.y - this.scores[i].geometry.boundingBox.min.y;
-			const scoreThickness = this.scores[i].geometry.boundingBox.max.z - this.scores[i].geometry.boundingBox.min.z;
+		// calculate bounds of score
+		geometry.computeBoundingBox();
+		const scoreWidth = this.scores[i].geometry.boundingBox.max.x - this.scores[i].geometry.boundingBox.min.x;
+		const scoreHeight = this.scores[i].geometry.boundingBox.max.y - this.scores[i].geometry.boundingBox.min.y;
+		const scoreThickness = this.scores[i].geometry.boundingBox.max.z - this.scores[i].geometry.boundingBox.min.z;
 
-			// set center of score to center of paddle
-			const centerX = data.playersArray[i].paddle.pos.x - scoreWidth / 2;
-			const centerY = data.playersArray[i].paddle.pos.y - scoreHeight / 2;
-			const centerZ = data.playersArray[i].paddle.pos.z - scoreThickness / 2;
+		// set center of score to center of paddle
+		const centerX = data.playersArray[i].paddle.pos.x - scoreWidth / 2;
+		const centerY = data.playersArray[i].paddle.pos.y - scoreHeight / 2;
+		const centerZ = data.playersArray[i].paddle.pos.z - scoreThickness / 2;
 
-			this.scores[i].position.set(centerX, centerY, centerZ);
+		this.scores[i].position.set(centerX, centerY, centerZ);
 
-			// set direction of score
-			if (data.playersArray[i].socketID == this.socket.id)
-				dir = i;
+		this.scene.add(this.scores[i]);
 
-			this.scene.add(this.scores[i]);
-		});
-
-		// rotate scores to face client
-		for (let i=0; i<data.gamemode.nbrOfPlayers; i++)
-			this.scores[i].rotation.set(0, 0, 2 * Math.PI/data.gamemode.nbrOfPlayers * dir);
+		// rotate the score to face client
+		this.scores[i].rotation.set(0, 0, 2 * Math.PI/data.gamemode.nbrOfPlayers * this.dir);
 		
 	}
 
 	refreshScores(data) {
 
-		if (!data || !data.playersArray)
-			return ;
+		if (!data || !data.playersArray || !this.textSettings || !this.textSettings.font)
+			return console.error("Data or font not found");
 
-		data.playersArray.forEach((player, index) => this.scene.remove( this.scores[index] ));
+		data.playersArray.forEach((player, index) => {
 
-		this.createScores(data);
+			if (this.prevScores[index] != player.score) {
+				console.log("Refreshing score: " + player.score + " for player " + index);
+				this.scene.remove( this.scores[index] );
+				this.createScore(data, player, index);
+			}
+		
+		});
+
+		this.prevScores = data.playersArray.map(player => player.score);
 
 	}
-
-	// generateScores(data) {
-	// 	const loader = new FontLoader();
-	// 	loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
-	// 		// Ensure the font is a THREE.Font instance
-	// 		if (!(font instanceof THREE.F)) {
-	// 			console.error('Loaded font is not a THREE.Font instance', font);
-	// 			return;
-	// 		}
-
-	// 		console.log('Font loaded:', font);
-	
-	// 		// Now we're sure the font is correctly loaded and structured
-	// 		this.textSettings.font = font;
-	
-	// 		data.playersArray.forEach((player, index) => {
-	// 			const scoreText = player.score.toString();
-	// 			const geometry = new TextGeometry(scoreText, {
-	// 				font: font,
-	// 				size: this.textSettings.size,
-	// 				height: this.textSettings.height,
-	// 				curveSegments: this.textSettings.curveSegments,
-	// 			});
-	
-	// 			var material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-	// 			this.scores[index] = new THREE.Mesh(geometry, material);
-	
-	// 			// Add additional setup here as needed
-	// 			this.scene.add(this.scores[index]);
-	// 		});
-	// 	}, undefined, (error) => {
-	// 		console.error('An error happened during font loading', error);
-	// 	});
-	// }
-	
 
 	generateBanana(data) {
 		this.loader.load(
