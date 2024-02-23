@@ -2,10 +2,13 @@ import { makeApiRequest } from "../utils/makeApiRequest";
 import AbstractView from "./AbstractView";
 import { getCookie } from "@utils/getCookie";
 import { createElement } from "@utils/createElement";
+import { htmlToElement } from "@utils/htmlToElement";
 
 export default class Login extends AbstractView {
 	constructor(element) {
 		super(element);
+		const jwt = getCookie('jwtToken')
+		console.log('JWT: ', jwt);
 		this.state = {
 			
 		};
@@ -20,7 +23,9 @@ export default class Login extends AbstractView {
 		const testy = await makeApiRequest('/api/user_management/', 'GET');
 
 		const csrftoken = getCookie('csrftoken');
+		// const jwtToken = getCookie('jwtToken');
 		console.log("CSRF: " + csrftoken);
+		// console.log("JWT: " + jwtToken);
 
 		// try {
 		// 	const response = await makeApiRequest(
@@ -34,23 +39,23 @@ export default class Login extends AbstractView {
 		// }
 
 
-		let signUpForm = createElement('form', { class: 'sign-up-form' });
-		signUpForm.appendChild('input', { type: 'text', id: 'username', name: 'username', placeholder: 'Username' });
-		signUpForm.appendChild('input', { type: 'password', id: 'username', name: 'password', placeholder: 'Password' });
-		signUpForm.appendChild('input', { type: 'confirm_password', id: 'onfirm_passwordd', name: 'confirm_password', placeholder: 'Confirm Password' });
-		signUpForm.appendChild('input', { type: 'playername', id: 'playername', name: 'playername', placeholder: 'Name' });
-		signUpForm.appendChild('input', { type: 'signupEmail', id: 'signupEmail', name: 'signupEmail', placeholder: 'Email' });
+		// let signUpForm = createElement('form', { class: 'sign-up-form' });
+		// signUpForm.appendChild('input', { type: 'text', id: 'username', name: 'username', placeholder: 'Username' });
+		// signUpForm.appendChild('input', { type: 'password', id: 'username', name: 'password', placeholder: 'Password' });
+		// signUpForm.appendChild('input', { type: 'confirm_password', id: 'onfirm_passwordd', name: 'confirm_password', placeholder: 'Confirm Password' });
+		// signUpForm.appendChild('input', { type: 'playername', id: 'playername', name: 'playername', placeholder: 'Name' });
+		// signUpForm.appendChild('input', { type: 'signupEmail', id: 'signupEmail', name: 'signupEmail', placeholder: 'Email' });
 
-		// let signUpForm = `
-		// <form class="sign-up-form">
-		// 	<input type="text" id="username" name="username" placeholder="Username">
-		// 	<input type="password" id="password" name="password" placeholder="Password">
-		// 	<input type="confirm_password" id="confirm_password" name="confirm_password" placeholder="Confirm Password">
-		// 	<input type="playername" id="playername" name="playername" placeholder="Name">
-		// 	<input type="signupEmail" id="signupEmail" name="signupEmail" placeholder="Email Address">
-		// </form>
-		// <button class="sign-up-form">Sign Up</button>
-		// `;
+		let signUpForm = htmlToElement(`
+		<form class="sign-up-form">
+			<input type="text" id="username" name="username" placeholder="Username">
+			<input type="password" id="password" name="password" placeholder="Password">
+			<input type="confirm_password" id="confirm_password" name="confirm_password" placeholder="Confirm Password">
+			<input type="playername" id="playername" name="playername" placeholder="Name">
+			<input type="signupEmail" id="signupEmail" name="signupEmail" placeholder="Email Address">
+		</form>
+		<button class="sign-up-form">Sign Up</button>
+		`);
 
 		// csrfmiddlewaretoken: BElrVdZWVMe739faEBIRobmbaZ9sNc6Q2gkE67MRDKScu3oLq56smwm9D3zT4nXk
 		// username: player1
@@ -60,20 +65,22 @@ export default class Login extends AbstractView {
 		// signupEmail: player@gmail.com
 		// access_code: 960029
 
-		let loginForm = `
-		<form class="login-form">
+		let loginForm = htmlToElement(
+		`<form class="login-form">
+			<h3>LOGIN</h3>
 			<input type="text" id="username" name="username" placeholder="Username">
 			<input type="password" id="password" name="password" placeholder="Password">
+			<button class="login-form">Submit</button>
 		</form>
-		<button class="login-form">Submit</button>
-		`;
+		`);
 
+		// loginForm.appendChild(createElement('div', { id: 'test' }));
+		
 		this.container = createElement('div', { id: 'loginContainer' });
 		let formContainer = createElement('div', { id: 'form-container' });
+		formContainer.appendChild(loginForm);
 		this.container.appendChild(formContainer);
-
-		this.formContainer.appendChild(signUpForm);
-		this.formContainer.appendChild(loginForm);
+		// this.formContainer.appendChild(signUpForm);
 		
 		
 		// let banana = document.createElement('a');

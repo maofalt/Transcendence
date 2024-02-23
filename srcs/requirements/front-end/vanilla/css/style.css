@@ -49,12 +49,12 @@ h1 {
 	justify-content: center;
 }
 
-.sign-up-form input {
+.sign-up-form, .login-form input {
 	display: block; /* Makes each input field take up the full width */
 	margin-bottom: 10px; /* Adds some space between the fields */
 }
 
-.sign-up-form button {
+.sign-up-form, .login-form button {
 	display: block; /* Optional: Ensures the button is also on its own line */
 }
 
@@ -124,18 +124,6 @@ h1 {
 	transition: border-color 0.25s;
 }
 
-button {
-	/* min-height: 1000px; */
-	border-radius: 8px;
-	border: 1px solid transparent;
-	padding: 0.6em 1.2em;
-	font-size: 1em;
-	font-weight: 500;
-	font-family: inherit;
-	background-color: #1a1a1a;
-	cursor: pointer;
-	transition: border-color 0.25s;
-}
 
 button:hover {
 	border-color: #646cff;
