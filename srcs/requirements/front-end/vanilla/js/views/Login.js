@@ -14,6 +14,43 @@ export default class Login extends AbstractView {
 		this.state = {
 			
 		};
+
+		this.accessCodeForm = htmlToElement(
+		`<form class="access-code-form">
+			<h3>ACCESS CODE</h3>
+			<input type="text" name="access_code" placeholder="Access Code">
+			<button class="access-code-form">Submit</button>
+		</form>
+		`);
+		
+		this.verifyCodeForm = htmlToElement(
+		`<form class="verify-code-form">
+			<h3>VERIFY CODE</h3>
+			<input type="text" name="one_time_code" placeholder="Access Code">
+			<button class="verify-code-form">Submit</button>
+		</form>
+		`);
+
+		this.signUpForm = htmlToElement(
+		`<form class="sign-up-form">
+			<h3>SIGNUP</h3>
+			<input type="text" name="username" placeholder="Username">
+			<input type="password" name="password" placeholder="Password">
+			<input type="confirm_password" name="confirm_password" placeholder="Confirm Password">
+			<input type="playername" name="playername" placeholder="Name">
+			<input type="signupEmail" name="signupEmail" placeholder="Email Address">
+			<button class="sign-up-form">Sign Up</button>
+		</form>
+		`);
+
+		this.loginForm = htmlToElement(
+			`<form class="login-form">
+				<h3>LOGIN</h3>
+				<input type="text" name="username" placeholder="Username">
+				<input type="password" name="password" placeholder="Password">
+				<button class="login-form">Submit</button>
+			</form>
+			`);
 	}
 
 	async getHtml() {
@@ -43,26 +80,6 @@ export default class Login extends AbstractView {
 		// signUpForm.appendChild('input', { type: 'playername', id: 'playername', name: 'playername', placeholder: 'Name' });
 		// signUpForm.appendChild('input', { type: 'signupEmail', id: 'signupEmail', name: 'signupEmail', placeholder: 'Email' });
 
-		this.accessCodeForm = htmlToElement(
-		`<form class="access-code-form">
-			<h3>ACCESS CODE</h3>
-			<input type="text" name="access_code" placeholder="Access Code">
-			<button class="access-code-form">Submit</button>
-		</form>
-		`);
-
-		let signUpForm = htmlToElement(
-		`<form class="sign-up-form">
-			<h3>SIGNUP</h3>
-			<input type="text" name="username" placeholder="Username">
-			<input type="password" name="password" placeholder="Password">
-			<input type="confirm_password" name="confirm_password" placeholder="Confirm Password">
-			<input type="playername" name="playername" placeholder="Name">
-			<input type="signupEmail" name="signupEmail" placeholder="Email Address">
-			<button class="sign-up-form">Sign Up</button>
-		</form>
-		`);
-
 		// csrfmiddlewaretoken: BElrVdZWVMe739faEBIRobmbaZ9sNc6Q2gkE67MRDKScu3oLq56smwm9D3zT4nXk
 		// username: player1
 		// password: Passw0rd1
@@ -71,22 +88,15 @@ export default class Login extends AbstractView {
 		// signupEmail: player@gmail.com
 		// access_code: 960029
 
-		let loginForm = htmlToElement(
-		`<form class="login-form">
-			<h3>LOGIN</h3>
-			<input type="text" name="username" placeholder="Username">
-			<input type="password" name="password" placeholder="Password">
-			<button class="login-form">Submit</button>
-		</form>
-		`);
 
 		// loginForm.appendChild(createElement('div', { id: 'test' }));
 		
 		this.container = createElement('div', { id: 'loginContainer' });
 		let formContainer = createElement('div', { id: 'form-container' });
-		formContainer.appendChild(loginForm);
-		formContainer.appendChild(signUpForm);
+		formContainer.appendChild(this.loginForm);
+		formContainer.appendChild(this.signUpForm);
 		formContainer.appendChild(this.accessCodeForm);
+		// formContainer.appendChild(this.verifyCodeForm);
 		this.container.appendChild(formContainer);
 		// this.formContainer.appendChild(signUpForm);
 		
@@ -112,6 +122,10 @@ export default class Login extends AbstractView {
 								'/api/user_management/auth/access_code',
 								'application/x-www-form-urlencoded',
 								this.accessCodeAction);
+		// this.setupFormListener('verify-code-form',
+		// 						'/api/user_management/auth/verify_code',
+		// 						'application/x-www-form-urlencoded',
+		// 						this.verifyCodeAction);
 	}
 
 	async accessCodeAction(apiEndpoint, contentType, formData, form) {
@@ -128,7 +142,21 @@ export default class Login extends AbstractView {
 		}
 	}
 
-	async loginAction(apiEndpoint, contentType, formData, form) {
+	async verifyCodeAction(apiEndpoint, contentType, formData, form) {
+		try {
+			const response = await makeApiRequest(apiEndpoint, 'POST', formData, {
+				'Content-Type': contentType || 'application/json',
+				'X-CSRFToken': getCookie('csrftoken'),
+			});
+			if (response && response.status === 200) {
+				console.log('Verify Code API Response:', response);
+			}
+		} catch (error) {
+			console.error('Verify Code API Call Failed:', error);
+		}
+	}
+
+	loginAction = async (apiEndpoint, contentType, formData, form) => {
 		try {
 			const response = await makeApiRequest(apiEndpoint, 'POST', formData, {
 				'Content-Type': contentType || 'application/json',
@@ -137,8 +165,14 @@ export default class Login extends AbstractView {
 			if (response && response.status === 200) {
 				if (response.body && response.body.requires_2fa == true) {
 					console.log('Login API Call Response:', response);
-					form.appendChild(createElement('input', { type: 'text', id: 'access_code', name: 'access_code', placeholder: 'Access Code' }));
-					form.outerHTML = this.AccesCodeForm.outerHTML;
+					// console.log('verifycodefor: ', this.verifyCodeForm);
+					document.querySelector('#form-container').appendChild(this.verifyCodeForm);
+					this.setupFormListener('verify-code-form',
+											'/api/user_management/auth/verify_code',
+											'application/x-www-form-urlencoded',
+											this.verifyCodeAction);
+					// form.appendChild(createElement('input', { type: 'text', id: 'access_code', name: 'access_code', placeholder: 'Access Code' }));
+					// form.outerHTML = this.AccesCodeForm.outerHTML;
 				}
 			}
 		} catch (error) {
