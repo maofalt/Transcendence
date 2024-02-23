@@ -72,6 +72,9 @@ export default class Game extends AbstractView {
 		this.scores = [];
 
 		this.starSphere = null;
+		this.starTexture = null;
+		this.starGeometry = null;
+		this.starMaterial = null;
 
         // lights
         this.ambientLight = null;
@@ -184,9 +187,10 @@ export default class Game extends AbstractView {
 
 		this.socket.on('refresh', data => {
 			console.log("REFRESH SCENE");
+
+			delete data.playersArray;
 			data.playersArray = Object.values(data.players);
 			this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-			// this.renderer = new THREE.WebGLRenderer();
 			this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 			this.controls.target.set(0, 0, 0);
 			
@@ -206,13 +210,15 @@ export default class Game extends AbstractView {
 			this.container.appendChild(this.renderer.domElement);
 
 			// generate objects
+			this.generateSkyBox(data);
 			this.generateBall(data);
 			this.generatePaddles(data);
 			this.generateWalls(data);
 			this.generateGoals(data);
 			this.generateLights(data);
 			this.generateScores(data);
-			this.drawAxes();
+
+			// this.drawAxes();
 		})
 
 		this.socket.on('ping', ([timestamp, latency]) => {
@@ -242,8 +248,10 @@ export default class Game extends AbstractView {
 		console.log("Generating Scene...");
 
 		this.scene = new THREE.Scene();
+		this.scene.background = new THREE.TextureLoader().load('./js/assets/purpleSpace.jpg');
 		this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-		this.renderer = new THREE.WebGLRenderer();
+		this.renderer = new THREE.WebGLRenderer({ alpha: true });
+		// this.renderer.setClearColor(new THREE.Color(0x110000));
 		this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 		this.controls.target.set(0, 0, 0);
 		
@@ -262,6 +270,7 @@ export default class Game extends AbstractView {
 		this.container.appendChild(this.renderer.domElement);
 		
 		// generate objects
+		this.generateSkyBox(data);
 		this.generateBall(data);
 		this.generatePaddles(data);
 		this.generateWalls(data);
@@ -269,7 +278,6 @@ export default class Game extends AbstractView {
 		this.generateLights(data);
 		this.generateScores(data);
 
-		// this.generateSkyBox(data);
 
 		// this.drawAxes();
 	};
@@ -281,7 +289,7 @@ export default class Game extends AbstractView {
 		// this.ball.dirMesh.position.set(data.ball.pos.x, data.ball.pos.y, 0);
 		for (let i=0; i<data.playersArray.length; i++) {
 			this.paddles[i].mesh.position.set(data.playersArray[i].paddle.pos.x, data.playersArray[i].paddle.pos.y, data.playersArray[i].paddle.pos.z);
-			this.paddles[i].mesh.material.opacity = data.playersArray[i].connected ? 0.7 : 0.3;
+			this.paddles[i].mesh.material.opacity = data.playersArray[i].connected ? 1.0 : 0.3;
 			// this.paddles[i].dir1Mesh.position.set(data.playersArray[i].paddle.pos.x, data.playersArray[i].paddle.pos.y, data.playersArray[i].paddle.pos.z);
 			// this.paddles[i].dir2Mesh.position.set(data.playersArray[i].paddle.pos.x, data.playersArray[i].paddle.pos.y, data.playersArray[i].paddle.pos.z);
 			// for (let i=0; i<data.playersArray.length; i++) {
@@ -303,8 +311,8 @@ export default class Game extends AbstractView {
 			// centre the scores
 			const scoreWidth = this.scores[i].geometry.boundingBox.max.x - this.scores[i].geometry.boundingBox.min.x;
 			const scoreHeight = this.scores[i].geometry.boundingBox.max.y - this.scores[i].geometry.boundingBox.min.y;
-			const centerX = data.playersArray[i].paddle.pos.x - scoreWidth / 2;
-			const centerY = data.playersArray[i].paddle.pos.y - scoreHeight / 2;
+			const centerX = data.playersArray[i].scorePos.x - scoreWidth / 2;
+			const centerY = data.playersArray[i].scorePos.y - scoreHeight / 2;
 			this.scores[i].position.set(centerX, centerY, 1);
 		}
 	}
@@ -493,22 +501,56 @@ export default class Game extends AbstractView {
 
 	generateSkyBox(data) {
 		// Charger la texture de ciel étoilé
-		const starTexture = new THREE.TextureLoader().load('../assets/banana/textures/Banana_baseColor.png'); // Remplacez par le chemin de votre texture
+		// this.starTexture = new THREE.TextureLoader().load('./js/assets/blueSpace.jpg');
+		// const starTexture1 = new THREE.TextureLoader().load('./js/assets/PurpleLayer1.png');
+		// const starTexture2 = new THREE.TextureLoader().load('./js/assets/PurpleLayer2.png');
+		// const starTexture3 = new THREE.TextureLoader().load('./js/assets/PurpleLayer3.png');
+		const starTextureBase = new THREE.TextureLoader().load('./js/assets/purpleSpace.jpg');
+		// this.starTexture = new THREE.TextureLoader().load('./js/assets/redSpace.jpg');
+
 		// Créer la géométrie de la sphère
 		// starTexture.colorSpace = THREE.SRGBColorSpace;
-		const starGeometry = new THREE.SphereGeometry(100, 64, 64); // Rayon, segmentsWidth, segmentsHeight
-		// starTexture.offset.set(0.5, 0); // Shifts the texture halfway across its width
+		// const starGeometry1 = new THREE.SphereGeometry(180, 32, 32);
+		// const starGeometry2 = new THREE.SphereGeometry(200, 32, 32);
+		// const starGeometry3 = new THREE.SphereGeometry(220, 32, 32);
+		const starGeometryBase = new THREE.SphereGeometry(120, 32, 32);
 
 		// Créer le matériau avec la texture
-		const starMaterial = new THREE.MeshPhongMaterial({
-    		map: starTexture,
-    		side: THREE.BackSide
+		// const starMaterial1 = new THREE.MeshBasicMaterial({
+		// 	map: starTexture1,
+		// 	side: THREE.BackSide,
+		// 	transparent: true,
+		// 	blending: THREE.AlphaBlending, // Use AlphaBlending for transparency
+		// });
+		// const starMaterial2 = new THREE.MeshBasicMaterial({
+		// 	map: starTexture2,
+		// 	side: THREE.BackSide,
+		// 	transparent: true,
+		// 	blending: THREE.AlphaBlending,
+		// });
+		// const starMaterial3 = new THREE.MeshBasicMaterial({
+		// 	map: starTexture3,
+		// 	side: THREE.BackSide,
+		// 	transparent: true,
+		// 	blending: THREE.AlphaBlending,
+		// });
+		const starMaterialBase = new THREE.MeshBasicMaterial({
+			map: starTextureBase,
+			side: THREE.BackSide,
+			// transparent: true,
+			// blending: THREE.AlphaBlending,
 		});
 
 		// Créer le mesh de la sphère
-		this.starSphere = new THREE.Mesh(starGeometry, starMaterial);
+		// const starSphere1 = new THREE.Mesh(starGeometry1, starMaterial1);
+		// const starSphere2 = new THREE.Mesh(starGeometry2, starMaterial2);
+		// const starSphere3 = new THREE.Mesh(starGeometry3, starMaterial3);
+		const starSphereBase = new THREE.Mesh(starGeometryBase, starMaterialBase);
 
 		// Ajouter la sphère étoilée à la scène
-		this.scene.add(this.starSphere);
+		// this.scene.add(starSphere1);
+		// this.scene.add(starSphere2);
+		// this.scene.add(starSphere3);
+		this.scene.add(starSphereBase);
 	};
 }
