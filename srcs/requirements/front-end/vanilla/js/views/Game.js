@@ -77,7 +77,6 @@ export default class Game extends AbstractView {
 
 		// text
 		this.textSettings = {
-			font: {},
 			size: 2,
 			height: 0.2,
 			curveSegments: 12,
@@ -287,21 +286,7 @@ export default class Game extends AbstractView {
 		}
 				
 		// update scores
-		for (let i=0; i<data.playersArray.length; i++) {
-			// create new textgeo with current score
-			const newGeometry = new TextGeometry(data.playersArray[i].score.toString(), this.textSettings);
-			newGeometry.computeBoundingBox(); // get bounding box for centring of the scores
-
-			this.scores[i].geometry.dispose(); // dispose of the old geometry to free up resources
-			this.scores[i].geometry = newGeometry; // assign the new geometry to the mesh
-
-			// centre the scores
-			const scoreWidth = this.scores[i].geometry.boundingBox.max.x - this.scores[i].geometry.boundingBox.min.x;
-			const scoreHeight = this.scores[i].geometry.boundingBox.max.y - this.scores[i].geometry.boundingBox.min.y;
-			const centerX = data.playersArray[i].paddle.pos.x - scoreWidth / 2;
-			const centerY = data.playersArray[i].paddle.pos.y - scoreHeight / 2;
-			this.scores[i].position.set(centerX, centerY, 1);
-		}
+		this.refreshScores(data);
 	}
 
 	drawAxes() {
@@ -319,35 +304,99 @@ export default class Game extends AbstractView {
 		this.scene.add(arrowY);
 	};
 
-	generateScores(data) {
+
+	generateScores() {
+
 		const loader = new FontLoader();
+		loader.load( 'https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', ( response ) => {
 
-		// load font with async function
-		loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', ( font ) => {
-			
-			// load font into text settings
-			this.textSettings.font = font;
+			this.textSettings.font = response;
 
-			// initialize threejs text geo with text settings
-			const geometry = new TextGeometry( 'Hello three.js!', this.textSettings );
+			this.refreshScores();
 
-			var material = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
+		} );
 
-			let dir; // used for rotating text
+	}
 
-			// create a mesh for each score and add it to the scene (get dir of current client)
-			for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
-				this.scores[i] = new THREE.Mesh( geometry, material );
-				this.scene.add( this.scores[i] );
-				if (data.playersArray[i].socketID == this.socket.id)
-					dir = i;
-			}
+		// font: font,
 
-			// rotate scores to face client
-			for (let i=0; i<data.gamemode.nbrOfPlayers; i++)
-				this.scores[i].rotation.set(0, 0, 2 * Math.PI/data.gamemode.nbrOfPlayers * dir);
+		// size: size,
+		// height: height,
+		// curveSegments: curveSegments,
+
+		// bevelThickness: bevelThickness,
+		// bevelSize: bevelSize,
+		// bevelEnabled: bevelEnabled
+
+	
+	createScores(data) {
+
+		data.playersArray.forEach((player, i) => {
+			const scoreText = player.score.toString();
+			const geometry = new TextGeometry(scoreText, this.textSettings);
+
+			var material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+			this.scores[i] = new THREE.Mesh(geometry, material);
+
+			geometry.computeBoundingBox();
+	
+			const scoreWidth = this.scores[i].geometry.boundingBox.max.x - this.scores[i].geometry.boundingBox.min.x;
+			const scoreHeight = this.scores[i].geometry.boundingBox.max.y - this.scores[i].geometry.boundingBox.min.y;
+			const scoreThickness = this.scores[i].geometry.boundingBox.max.z - this.scores[i].geometry.boundingBox.min.z;
+
+			const centerX = data.playersArray[i].paddle.pos.x - scoreWidth / 2;
+			const centerY = data.playersArray[i].paddle.pos.y - scoreHeight / 2;
+			const centerZ = data.playersArray[i].paddle.pos.z - scoreThickness / 2;
+
+			this.scores[i].position.set(centerX, centerY, centerZ);
+	
+			this.scene.add(this.scores[i]);
 		});
-	};
+		
+	}
+
+	refreshScores(data) {
+
+		data.playersArray.forEach((player, index) => this.scene.remove( this.scores[index] ));
+
+		this.createScores(data);
+
+	}
+
+	// generateScores(data) {
+	// 	const loader = new FontLoader();
+	// 	loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
+	// 		// Ensure the font is a THREE.Font instance
+	// 		if (!(font instanceof THREE.F)) {
+	// 			console.error('Loaded font is not a THREE.Font instance', font);
+	// 			return;
+	// 		}
+
+	// 		console.log('Font loaded:', font);
+	
+	// 		// Now we're sure the font is correctly loaded and structured
+	// 		this.textSettings.font = font;
+	
+	// 		data.playersArray.forEach((player, index) => {
+	// 			const scoreText = player.score.toString();
+	// 			const geometry = new TextGeometry(scoreText, {
+	// 				font: font,
+	// 				size: this.textSettings.size,
+	// 				height: this.textSettings.height,
+	// 				curveSegments: this.textSettings.curveSegments,
+	// 			});
+	
+	// 			var material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+	// 			this.scores[index] = new THREE.Mesh(geometry, material);
+	
+	// 			// Add additional setup here as needed
+	// 			this.scene.add(this.scores[index]);
+	// 		});
+	// 	}, undefined, (error) => {
+	// 		console.error('An error happened during font loading', error);
+	// 	});
+	// }
+	
 
 	generateBanana(data) {
 		this.loader.load(
