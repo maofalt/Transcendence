@@ -87,8 +87,6 @@ function waitingLoop(matchID) {
 	if (gameState == 1) {
 		io.to(matchID).emit('destroy', match.gameState);
 		io.to(matchID).emit('refresh', match.gameState);
-	} else if (gameState == 0) {
-		io.to(matchID).emit('render', match.gameState);
 	} else if (gameState == -1) {
 		io.to(matchID).emit('destroy', match.gameState);
 		clearInterval(match.gameInterval);
@@ -96,7 +94,10 @@ function waitingLoop(matchID) {
 
 		// then delete the match;
 		matches.delete(matchID);
+		return ;
 	}
+	// else if (gameState == 0) {
+	io.to(matchID).emit('render', match.gameState);
 }
 
 // gameInterval = setInterval(waitingLoop, 20);
