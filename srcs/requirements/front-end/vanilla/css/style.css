@@ -25,7 +25,7 @@ a:hover {
 body {
 	margin: 0;
 	display: flex;
-	place-items: center;
+	/* place-items: center; */
 	min-width: 320px;
 	/* min-height: 100vh; */
 }
@@ -38,7 +38,7 @@ h1 {
 #app {
 	display: flex;
 	justify-content: center;
-	align-items: center;
+	/* align-items: center; */
 	height: 100vh; /* Make sure the parent covers the entire height of the viewport */
 	width: 100vw;
 }
@@ -49,12 +49,14 @@ h1 {
 	justify-content: center;
 }
 
-.sign-up-form, .login-form input {
+.sign-up-form	input,
+.login-form		input {
 	display: block; /* Makes each input field take up the full width */
 	margin-bottom: 10px; /* Adds some space between the fields */
 }
 
-.sign-up-form, .login-form button {
+.sign-up-form	button,
+.login-form		button {
 	display: block; /* Optional: Ensures the button is also on its own line */
 }
 
@@ -62,7 +64,7 @@ h1 {
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
-	align-items: center;
+	/* align-items: center; */
 }
 
 .logo {
@@ -92,7 +94,7 @@ h1 {
 #nav-container {
 	display: flex;
 	justify-content: center; /* Center children horizontally */
-	align-items: center;
+	/* align-items: center; */
 	width: 100%; /* Full width */
 	position: absolute; /* Position it absolutely relative to its positioned parent */
 	top: 0; /* Align to the top */

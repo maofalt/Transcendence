@@ -7,8 +7,10 @@ import { htmlToElement } from "@utils/htmlToElement";
 export default class Login extends AbstractView {
 	constructor(element) {
 		super(element);
-		const jwt = getCookie('jwtToken')
-		console.log('JWT: ', jwt);
+		const jwt = getCookie('jwtToken');
+		const sess = getCookie('sessionid');
+		const csrf = getCookie('csrftoken');
+		console.log('tokenys: ', sess, jwt, csrf);
 		this.state = {
 			
 		};
@@ -21,11 +23,6 @@ export default class Login extends AbstractView {
 		// let html = fetch(document.location.origin + '/api/user_managemen');
 
 		const testy = await makeApiRequest('/api/user_management/', 'GET');
-
-		const csrftoken = getCookie('csrftoken');
-		// const jwtToken = getCookie('jwtToken');
-		console.log("CSRF: " + csrftoken);
-		// console.log("JWT: " + jwtToken);
 
 		// try {
 		// 	const response = await makeApiRequest(
@@ -46,15 +43,24 @@ export default class Login extends AbstractView {
 		// signUpForm.appendChild('input', { type: 'playername', id: 'playername', name: 'playername', placeholder: 'Name' });
 		// signUpForm.appendChild('input', { type: 'signupEmail', id: 'signupEmail', name: 'signupEmail', placeholder: 'Email' });
 
-		let signUpForm = htmlToElement(`
-		<form class="sign-up-form">
-			<input type="text" id="username" name="username" placeholder="Username">
-			<input type="password" id="password" name="password" placeholder="Password">
-			<input type="confirm_password" id="confirm_password" name="confirm_password" placeholder="Confirm Password">
-			<input type="playername" id="playername" name="playername" placeholder="Name">
-			<input type="signupEmail" id="signupEmail" name="signupEmail" placeholder="Email Address">
+		this.accessCodeForm = htmlToElement(
+		`<form class="access-code-form">
+			<h3>ACCESS CODE</h3>
+			<input type="text" name="access_code" placeholder="Access Code">
+			<button class="access-code-form">Submit</button>
 		</form>
-		<button class="sign-up-form">Sign Up</button>
+		`);
+
+		let signUpForm = htmlToElement(
+		`<form class="sign-up-form">
+			<h3>SIGNUP</h3>
+			<input type="text" name="username" placeholder="Username">
+			<input type="password" name="password" placeholder="Password">
+			<input type="confirm_password" name="confirm_password" placeholder="Confirm Password">
+			<input type="playername" name="playername" placeholder="Name">
+			<input type="signupEmail" name="signupEmail" placeholder="Email Address">
+			<button class="sign-up-form">Sign Up</button>
+		</form>
 		`);
 
 		// csrfmiddlewaretoken: BElrVdZWVMe739faEBIRobmbaZ9sNc6Q2gkE67MRDKScu3oLq56smwm9D3zT4nXk
@@ -68,8 +74,8 @@ export default class Login extends AbstractView {
 		let loginForm = htmlToElement(
 		`<form class="login-form">
 			<h3>LOGIN</h3>
-			<input type="text" id="username" name="username" placeholder="Username">
-			<input type="password" id="password" name="password" placeholder="Password">
+			<input type="text" name="username" placeholder="Username">
+			<input type="password" name="password" placeholder="Password">
 			<button class="login-form">Submit</button>
 		</form>
 		`);
@@ -79,6 +85,8 @@ export default class Login extends AbstractView {
 		this.container = createElement('div', { id: 'loginContainer' });
 		let formContainer = createElement('div', { id: 'form-container' });
 		formContainer.appendChild(loginForm);
+		formContainer.appendChild(signUpForm);
+		formContainer.appendChild(this.accessCodeForm);
 		this.container.appendChild(formContainer);
 		// this.formContainer.appendChild(signUpForm);
 		
@@ -92,9 +100,65 @@ export default class Login extends AbstractView {
 	}
 	
 	async init() {
-		this.setupFormListener('sign-up-form', '/api/user_management/auth/login', 'application/x-www-form-urlencoded');
+		this.setupFormListener('login-form', 
+								'/api/user_management/auth/login', 
+								'application/x-www-form-urlencoded',
+								this.loginAction);
+		this.setupFormListener('sign-up-form',
+								'/api/user_management/auth/signup',
+								'application/x-www-form-urlencoded',
+								this.signupAction);
+		this.setupFormListener('access-code-form',
+								'/api/user_management/auth/access_code',
+								'application/x-www-form-urlencoded',
+								this.accessCodeAction);
 	}
 
+	async accessCodeAction(apiEndpoint, contentType, formData, form) {
+		try {
+			const response = await makeApiRequest(apiEndpoint, 'POST', formData, {
+				'Content-Type': contentType || 'application/json',
+				'X-CSRFToken': getCookie('csrftoken'),
+			});
+			if (response && response.status === 200) {
+				console.log('Access Code API Response:', response);
+			}
+		} catch (error) {
+			console.error('Access Code API Call Failed:', error);
+		}
+	}
+
+	async loginAction(apiEndpoint, contentType, formData, form) {
+		try {
+			const response = await makeApiRequest(apiEndpoint, 'POST', formData, {
+				'Content-Type': contentType || 'application/json',
+				'X-CSRFToken': getCookie('csrftoken'),
+			});
+			if (response && response.status === 200) {
+				if (response.body && response.body.requires_2fa == true) {
+					console.log('Login API Call Response:', response);
+					form.appendChild(createElement('input', { type: 'text', id: 'access_code', name: 'access_code', placeholder: 'Access Code' }));
+					form.outerHTML = this.AccesCodeForm.outerHTML;
+				}
+			}
+		} catch (error) {
+			console.error('Login API Call Failed:', error);
+		}
+	}
+
+	async signupAction(apiEndpoint, contentType, formData, form) {
+		try {
+			const response = await makeApiRequest(apiEndpoint, 'POST', formData, {
+				'Content-Type': contentType || 'application/json',
+				'X-CSRFToken': getCookie('csrftoken'),
+			});
+				// window.location.href
+			console.log('Signup API Call Response:', response);
+		} catch (error) {
+			console.error('Signup API Call Failed:', error);
+		}
+	}
+	
 	destroy() {
 		// Check if the submit button exists and if handleSubmit is bound
 		if (this.submitBtn && this.handleSubmit) {
@@ -103,7 +167,7 @@ export default class Login extends AbstractView {
 	}
 
 	// Generalized setup form listener method
-	async setupFormListener(formClass, apiEndpoint, contentType) {
+	async setupFormListener(formClass, apiEndpoint, contentType, action) {
 		const form = document.querySelector(`.${formClass}`);
 		const submitBtn = document.querySelector(`button.${formClass}`); // button must have the same class
 
@@ -112,9 +176,9 @@ export default class Login extends AbstractView {
 			return ;
 		}
 
-		submitBtn.addEventListener('click', async () => {
+		submitBtn.addEventListener('click', async (e) => {
 			submitBtn.textContent = 'SUBMITING...';
-			// event.preventDefault(); // Prevent form from submitting traditionally
+			e.preventDefault(); // Prevent form from submitting traditionally
 
 			// validate the form data
 			// if (!form.checkValidity()) {
@@ -128,15 +192,8 @@ export default class Login extends AbstractView {
 				formData[key] = value;
 			});
 
-			try {
-				const response = await makeApiRequest(apiEndpoint, 'POST', formData, {
-					'Content-Type': contentType || 'application/json',
-					'X-CSRFToken': getCookie('csrftoken'),
-				});
-				console.log('API Call Response:', response);
-			} catch (error) {
-				console.error('API Call Failed:', error);
-			}
+			// make the api request
+			action(apiEndpoint, contentType, formData, form);
 		});
 	}
 }
