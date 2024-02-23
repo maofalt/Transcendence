@@ -308,11 +308,17 @@ export default class Game extends AbstractView {
 	generateScores() {
 
 		const loader = new FontLoader();
+
+		if (!loader)
+			return console.error("FontLoader not found");
+
 		loader.load( 'https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', ( response ) => {
 
 			this.textSettings.font = response;
 
 			this.refreshScores();
+
+			console.log("Font loaded");
 
 		} );
 
@@ -331,31 +337,47 @@ export default class Game extends AbstractView {
 	
 	createScores(data) {
 
+		let dir = 0; // used to rotate scores to face client
+
+		// generate scores for each player
 		data.playersArray.forEach((player, i) => {
 			const scoreText = player.score.toString();
+
 			const geometry = new TextGeometry(scoreText, this.textSettings);
 
 			var material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
 			this.scores[i] = new THREE.Mesh(geometry, material);
 
+			// calculate bounds of score
 			geometry.computeBoundingBox();
-	
 			const scoreWidth = this.scores[i].geometry.boundingBox.max.x - this.scores[i].geometry.boundingBox.min.x;
 			const scoreHeight = this.scores[i].geometry.boundingBox.max.y - this.scores[i].geometry.boundingBox.min.y;
 			const scoreThickness = this.scores[i].geometry.boundingBox.max.z - this.scores[i].geometry.boundingBox.min.z;
 
+			// set center of score to center of paddle
 			const centerX = data.playersArray[i].paddle.pos.x - scoreWidth / 2;
 			const centerY = data.playersArray[i].paddle.pos.y - scoreHeight / 2;
 			const centerZ = data.playersArray[i].paddle.pos.z - scoreThickness / 2;
 
 			this.scores[i].position.set(centerX, centerY, centerZ);
-	
+
+			// set direction of score
+			if (data.playersArray[i].socketID == this.socket.id)
+				dir = i;
+
 			this.scene.add(this.scores[i]);
 		});
+
+		// rotate scores to face client
+		for (let i=0; i<data.gamemode.nbrOfPlayers; i++)
+			this.scores[i].rotation.set(0, 0, 2 * Math.PI/data.gamemode.nbrOfPlayers * dir);
 		
 	}
 
 	refreshScores(data) {
+
+		if (!data || !data.playersArray)
+			return ;
 
 		data.playersArray.forEach((player, index) => this.scene.remove( this.scores[index] ));
 
