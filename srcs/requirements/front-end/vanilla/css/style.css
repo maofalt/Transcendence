@@ -40,12 +40,29 @@ h1 {
 	justify-content: center;
 	align-items: center;
 	height: 100vh; /* Make sure the parent covers the entire height of the viewport */
+	width: 100vw;
 }
 
 #view {
-	/* Define width and height for the #view element if necessary */
-	width: 50%; /* Example width */
-	height: 50%; /* Example height */
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+
+.sign-up-form input {
+	display: block; /* Makes each input field take up the full width */
+	margin-bottom: 10px; /* Adds some space between the fields */
+}
+
+.sign-up-form button {
+	display: block; /* Optional: Ensures the button is also on its own line */
+}
+
+#form-container {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
 }
 
 .logo {
@@ -54,9 +71,11 @@ h1 {
 	will-change: filter;
 	transition: filter 300ms;
 }
+
 .logo:hover {
 	filter: drop-shadow(0 0 2em #646cffaa);
 }
+
 .logo.vanilla:hover {
 	filter: drop-shadow(0 0 2em #f7df1eaa);
 }
