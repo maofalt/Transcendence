@@ -20,7 +20,7 @@ class TournamentListCreate(generics.ListCreateAPIView):
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         if not queryset.exists():
-            return Response({"message": "NO tournament was found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"message": "NO tournament was found."}, status=status.HTTP_204_NO_CONTENT)
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)

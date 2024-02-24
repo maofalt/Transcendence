@@ -6,5 +6,5 @@ import router from '@utils/Router.js'; // Auto initializes the router
 
 document.addEventListener('DOMContentLoaded', () => {
   setupNavigation(); // Setup navigation links
-  router(); // Initialize the router
+  //router(); // Initialize the router
 });
