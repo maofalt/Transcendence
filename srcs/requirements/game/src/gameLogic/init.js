@@ -27,6 +27,8 @@ function initLoop(data, wallDist, goalDist, angle) {
         player.paddle.dirToTop = player.paddle.dirToCenter.rotateAroundZ(-Math.PI / 2);
         // player.paddle.dirToCenter = something; // need to add the other direction vector but will check out best formula for this
 
+        player.scorePos = player.paddle.startingPos.sub(player.paddle.dirToCenter.scale(5));
+
         /*--------------------------------------------------------------------------------------------*/
 
         data.field.walls[i].angle = startingAngle + angle / 2 + angle * i; // wall current angle
@@ -88,7 +90,7 @@ function initFieldShape(data) {
     let wallDist = gs / Math.sin(a) + ws / Math.tan(a); // pythagore to find the dist the walls have to be from the center
     let goalDist = gs / Math.tan(a) + ws / Math.sin(a); // same but for goals;
 
-    data.camera.pos.z = wallDist < goalDist ? (goalDist * 3) : (wallDist * 3);
+    data.camera.pos.z = wallDist < (goalDist + 5) ? ((goalDist + 5) * 3) : (wallDist * 3);
 
     initLoop(data, wallDist, goalDist, angle); // looping through the players array and the walls array to init their pos and dir;
     initWalls(data);
@@ -98,10 +100,19 @@ function initFieldShape(data) {
 function initLobby(lobbyData) {
     let data = new objectsClasses.Data(lobbyData);
 
-    debugDisp.displayData(data); // display the game data
+    // if the game mode is battleroyale, score is decrementing, and
+    // when a player reaches 0 they're eliminated.
+    // duel mode : default mode, score starts at 0, when reaches the max score = wins (only for 2 players)
+    if (data.gamemode.gameType == 1) {
+        for (let player of Object.values(data.players)) {
+            player.score = data.gamemode.nbrOfRounds;
+        }
+    }
+
+    // debugDisp.displayData(data); // display the game data
     initFieldShape(data); // init angles + positions of players and walls;
-    debugDisp.displayData(data); // display the game data
+    // debugDisp.displayData(data); // display the game data
     return data;
 }
 
-module.exports = { initLobby };
+module.exports = { initLobby, initFieldShape };

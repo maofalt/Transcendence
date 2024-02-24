@@ -16,43 +16,43 @@ const routes = {
 		path: '/',
 		view: Home,
 		title: 'Pongiverse',
-		link: 'Home'
+		buttonText: 'Home'
 	},
 	'/play': {
 		path: '/play',
 		view: Game,
 		title: 'Game',
-		link: 'Play'
+		buttonText: 'Play'
 	},
 	'/game': {
 		path: '/game',
 		view: Game,
 		title: 'Game',
-		link: 'Play'
+		buttonText: 'Play'
 	},
 	'/tournament': {
 		path: '/tournament',
 		view: Tournament,
 		title: 'Tournament',
-		link: 'Tournament'
+		buttonText: 'Tournament'
 	},
 	'/options': {
 		path: '/options',
 		view: Options,
 		title: 'Options',
-		link: 'Options'
+		buttonText: 'Options'
 	},
 	'/login': {
 		path: '/login',
 		view: Login,
 		title: 'Login',
-		link: 'Login'
+		buttonText: 'Login'
 	},
 	'/404': {
 		path: '/404',
 		view: NotFound,
 		title: '404 Not Found',
-		link: 'Not Found Page'
+		buttonText: 'Not Found Page'
 	}
 };
 
@@ -111,10 +111,10 @@ const validRoutes = ['/', '/play', '/tournament', '/options', '/login'];
 Object.entries(routes).forEach(([route, view]) => {
 	if (validRoutes.includes(route)) {
 		const link = document.createElement('a');
-		link.href = route;
+		link.href = view.path;
 		link.classList.add('nav-link');
 		link.setAttribute('nav-link', '');
-		link.textContent = view.link;
+		link.textContent = view.buttonText;
 		elems.push(link);
 	}
 });

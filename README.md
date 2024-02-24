@@ -81,6 +81,7 @@ Example response:
 ```
 
 
+
 ## `WSS` Game WebSocket API
 
 This API allows you to connect to a matchm send paddle movements and receive game updates with `WebSocket Secure`.
@@ -174,6 +175,212 @@ handleKeyRelease(event) {
 ```
 
 
+
+## `HTTP` User Management API
+
+### Login:
+
+This is the endpoint to login
+
+```plaintext
+POST /api/user_management/auth/login
+```
+`cookies` need to contain `csrftoken` given on get request to endpoint.
+
+POST body must be in `application/x-www-form-urlencoded` containing:
+
+```
+csrfmiddlewaretoken: HE0RAsToQcfYzvU98c0bGCQoV0pMxCPRKFGFgbt4ngcYNRlK7OmJFDmfwy6B62F5
+username: player1
+password: Passw0rd1
+```
+
+Example Request Body:
+
+```
+csrfmiddlewaretoken=HE0RAsToQcfYzvU98c0bGCQoV0pMxCPRKFGFgbt4ngcYNRlK7OmJFDmfwy6B62F5&username=player1&password=Passw0rd1
+```
+
+If successful, returns `200` with success message and sets `jwt` in cookies
+
+Example request: (note that it wont work with curl because of `csrf`)
+
+```shell
+curl -X POST -H "Content-Type: application/x-www-form-urlencoded" -d 'username=player1&password=Passw0rd1' https://localhost:9443/api/user_management
+```
+
+Example Response Body:
+
+```json
+{
+    "message": "Password Authentication successful",
+    "user": {
+        "id": 1,
+        "password": "pbkdf2_sha256$720000$bGzLrHowwIKtEAZw6tMLX6$Rx7dH9th1qmhZUL2ZLoVpSyP+/p7lstZP/8FtqQ3jnE=",
+        "last_login": "2024-02-20T16:38:58.447909Z",
+        "is_superuser": false,
+        "username": "player1",
+        "first_name": "",
+        "last_name": "",
+        "email": "player1@gmail.com",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2024-02-20T16:38:41.515835Z",
+        "token": null,
+        "playername": "PlayerOne",
+        "is_online": false,
+        "avatar": "/media/default_avatar.jpeg",
+        "game_stats": 1,
+        "groups": [],
+        "user_permissions": [],
+        "friends": []
+    },
+    "redirect_url": "/api/user_management/",
+    "requires_2fa": true
+}
+```
+
+
+### Logout
+
+This is the endpoint to logout
+
+```plaintext
+POST /api/user_management/auth/logout
+```
+`cookies` need to contain `csrftoken` given on get request to endpoint.
+
+POST body must be in `application/x-www-form-urlencoded` containing:
+
+```
+csrfmiddlewaretoken: U9SEahDeRpZQ2EHK25pVRxRdgnaNOG4ulLRRlbq9znDVtyQlOzNwPSRbJrAe5RVY
+```
+
+Example Request Body:
+
+```
+csrfmiddlewaretoken=U9SEahDeRpZQ2EHK25pVRxRdgnaNOG4ulLRRlbq9znDVtyQlOzNwPSRbJrAe5RVY
+```
+
+returns `302` 
+
+Example request: (note that it wont work with curl because of `csrf`)
+
+```shell
+curl -X POST -H "Content-Type: application/x-www-form-urlencoded" -d 'username=player1&password=Passw0rd1' https://localhost:9443/api/user_management
+```
+
+
+### Get Access Code
+
+This is the endpoint to sond the 2fa code to the email
+
+```plaintext
+POST /api/user_management/auth/access_code
+```
+`cookies` need to contain `csrftoken` given on get request to endpoint.
+
+POST body must be in `application/x-www-form-urlencoded` containing:
+```
+email=player@gmail.com
+```
+
+returns `200` OK  
+
+Example request: (note that it wont work with curl because of `csrf`)
+
+```shell
+curl -X POST -H "Content-Type: application/x-www-form-urlencoded" -d 'email=player@gmail.com' https://localhost:9443/api/user_management/auth/access_code
+```
+The response will have a set-cookie with the `sessionid` and the `csrftoken` 
+
+Example response:
+
+```json
+{"success": true}
+```
+
+
+### Verify Access Code
+
+This is the endpoint that will verify the access code
+
+```plaintext
+POST /api/user_management/auth/verify_code
+```
+`cookies` need to contain `csrftoken` given on get request to endpoint.
+
+POST body must be in `application/x-www-form-urlencoded` containing:
+```
+email: player@gmail.com
+one_time_code: 960029
+context: signup
+```
+
+raw:
+```
+email=yoelridgway%40gmail.com&one_time_code=960029&context=signup
+```
+returns `200` OK with message and `csrf_token`
+
+Example request: (note that it wont work with curl because of `csrf`)
+
+```shell
+curl -X POST -H "Content-Type: application/x-www-form-urlencoded" -d 'email=yoelridgway%40gmail.com&one_time_code=960029&context=signup' https://localhost:9443/api/user_management/auth/verify_code
+```
+The response will have a set-cookie with the `sessionid` and the `csrftoken` 
+
+Example response:
+
+```json
+{
+    "success": true,
+    "message": "One-time code verification successful",
+    "csrf_token": "dWx8xM6A6OJW5o6ngq71kdZ4uSd45UIZEywlIGTvOMn1wifY2UvCiyZ2XWDvm5zt"
+}
+```
+
+
+### Signup
+
+This is the endpoint that will verify the access code
+
+```plaintext
+POST 3/api/user_management/auth/signup
+```
+`cookies` need to contain `csrftoken` and `sessionid` given on get request to login endpoint.
+
+POST body must be in `application/x-www-form-urlencoded` containing:
+```
+csrfmiddlewaretoken: BElrVdZWVMe739faEBIRobmbaZ9sNc6Q2gkE67MRDKScu3oLq56smwm9D3zT4nXk
+username: player1
+password: Passw0rd1
+confirm_password: Passw0rd1
+playername: Player1
+signupEmail: player@gmail.com
+access_code: 960029
+```
+
+raw:
+```
+csrfmiddlewaretoken=BElrVdZWVMe739faEBIRobmbaZ9sNc6Q2gkE67MRDKScu3oLq56smwm9D3zT4nXk&username=player1&password=pass7890&confirm_password=pass7890&playername=Player1&signupEmail=yoelridgway%40gmail.com&access_code=960029
+```
+returns `200` OK with message and `csrf_token`
+
+Example request: (note that it wont work with curl because of `csrf`)
+
+```shell
+curl -X POST -H "Content-Type: application/x-www-form-urlencoded" -d 'csrfmiddlewaretoken=BElrVdZWVMe739faEBIRobmbaZ9sNc6Q2gkE67MRDKScu3oLq56smwm9D3zT4nXk&username=player1&password=pass7890&confirm_password=pass7890&playername=Player1&signupEmail=yoelridgway%40gmail.com&access_code=960029
+p' https://localhost:9443/api/user_management/auth/verify_code
+```
+
+Example response:
+
+```json
+{"success": true}
+```
+
+
 ## `HTTP` Tournament API
 
 ### Create Tournament
@@ -207,10 +414,4 @@ Example request:
 curl -X POST -H "Content-Type: application/json" -d '@path/to/tournamentSettings.json' https://localhost:9443/api/tournament/create-and-list
 ```
 
-Example response:
-
-```json
-{
-    "succ"
-}
-```
+Responds with the same body that was sent

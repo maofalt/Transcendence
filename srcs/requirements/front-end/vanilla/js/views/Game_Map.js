@@ -271,7 +271,7 @@ export default class Game extends AbstractView {
 	}
 
 	generateWalls(data) {
-		const wallGeometry = new THREE.BoxGeometry(data.field.wallsSize, 1, 2);
+		const wallGeometry = new THREE.BoxGeometry(data.field.wallsSize, 2, 1);
 		const wallMaterial = new THREE.MeshPhongMaterial({ color: data.ball.col, transparent: true, opacity: 1, reflectivity: 0.5 });
 
 		for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {

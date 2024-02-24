@@ -4,6 +4,9 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import io from 'socket.io-client';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { Texture } from 'three';
+import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+
 
 function createCallTracker() {
 	let lastCallTime = 0; // Timestamp of the last call
@@ -65,10 +68,26 @@ export default class Game extends AbstractView {
 		this.banana = null;
         this.paddles = [];
         this.walls = [];
+		this.goals = [];
+		this.scores = [];
+
+		this.starSphere = null;
+		this.starTexture = null;
+		this.starGeometry = null;
+		this.starMaterial = null;
 
         // lights
         this.ambientLight = null;
         this.directionalLight = null;
+
+		// text
+		this.textSettings = {
+			size: 2,
+			height: 0.2,
+			curveSegments: 12,
+		}
+		this.prevScores = [];
+		this.dir = 0;
 	};
 
 	async getHtml() {
@@ -119,11 +138,12 @@ export default class Game extends AbstractView {
 		// socket initialization and event handling logic
 		const hostname = window.location.hostname;
 		const protocol = 'wss';
-		const query = window.location.search;
-		const io_url = hostname.includes("github.dev") ? `${protocol}://${hostname}` : `${protocol}://${hostname}:9443${query}`;
+		const query = window.location.search.replace('?', '');
+		const io_url = hostname.includes("github.dev") ? `${protocol}://${hostname}` : `${protocol}://${hostname}:9443`;
 		console.log(`Connecting to ${io_url}`)
 		this.socket = io(`${io_url}`, {
 			path: '/game-logic/socket.io',
+			query: query,
 			secure: hostname !== 'localhost',
 			rejectUnauthorized: false,
 			transports: ['websocket']
@@ -131,12 +151,13 @@ export default class Game extends AbstractView {
 
 		this.socket.on('error', (error) => {
 			console.error("Socket error: ", error);
+			alert("Socket error: " + error);
 		});
 
 		this.socket.on('connect_error', (error) => {
 			console.error("Socket connection error: ", error);
+			alert("Socket connection error: " + error);
 		});
-
 
 		this.socket.on('whoareyou', () => {
 			this.socket.emit('ID', this.playerID, this.matchID);
@@ -159,6 +180,47 @@ export default class Game extends AbstractView {
 			fps = 1000 / callTracker();
 			this.renderer.render(this.scene, this.camera);
 		});
+
+		this.socket.on('destroy', data => {
+			this.scene.clear();
+			console.log("DESTROY SCENE");
+		})
+
+		this.socket.on('refresh', data => {
+			console.log("REFRESH SCENE");
+
+			delete data.playersArray;
+			data.playersArray = Object.values(data.players);
+			this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+			this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+			this.controls.target.set(0, 0, 0);
+			
+			this.camera.position.set(data.camera.pos.x, data.camera.pos.y, data.camera.pos.z);
+			this.camera.lookAt(new THREE.Vector3(data.camera.target.x, data.camera.target.y, data.camera.target.z));
+			for (let i=0; i<data.playersArray.length; i++) {
+				if (data.playersArray[i].socketID == this.socket.id) {
+					console.log(`socket : ${data.playersArray[i].socketID}, client : ${this.socket.id}, ${i}, angle = ${data.playersArray[i].paddle.angle}`);
+					this.camera.rotation.set(0, 0, 2 * Math.PI/data.gamemode.nbrOfPlayers * i);
+				}
+			}
+
+			// this.camera.rotation.set(0, 0, 90);
+			// for later : set cam rotation depending on which client this is so the player is always at the same place;
+			
+			this.renderer.setSize(window.innerWidth, window.innerHeight);
+			this.container.appendChild(this.renderer.domElement);
+
+			// generate objects
+			this.generateSkyBox(data);
+			this.generateBall(data);
+			this.generatePaddles(data);
+			this.generateWalls(data);
+			this.generateGoals(data);
+			this.generateLights(data);
+			this.generateScores(data);
+
+			// this.drawAxes();
+		})
 
 		this.socket.on('ping', ([timestamp, latency]) => {
 			this.socket.emit('pong', timestamp);
@@ -187,10 +249,12 @@ export default class Game extends AbstractView {
 		console.log("Generating Scene...");
 
 		this.scene = new THREE.Scene();
+		this.scene.background = new THREE.TextureLoader().load('./js/assets/purpleSpace.jpg');
 		this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-		this.renderer = new THREE.WebGLRenderer();
-		// this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-		// this.controls.target.set(0, 0, 0);
+		this.renderer = new THREE.WebGLRenderer({ alpha: true });
+		// this.renderer.setClearColor(new THREE.Color(0x110000));
+		this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+		this.controls.target.set(0, 0, 0);
 		
 		this.camera.position.set(data.camera.pos.x, data.camera.pos.y, data.camera.pos.z);
 		this.camera.lookAt(new THREE.Vector3(data.camera.target.x, data.camera.target.y, data.camera.target.z));
@@ -202,24 +266,21 @@ export default class Game extends AbstractView {
 		}
 		// this.camera.rotation.set(0, 0, 90);
 		// for later : set cam rotation depending on which client this is so the player is always at the same place;
-		
+
 		this.renderer.setSize(window.innerWidth, window.innerHeight);
 		this.container.appendChild(this.renderer.domElement);
 		
-
 		// generate objects
+		this.generateSkyBox(data);
 		this.generateBall(data);
 		this.generatePaddles(data);
 		this.generateWalls(data);
-		// this.generateField(data);
+		this.generateGoals(data);
 		this.generateLights(data);
-		// this.generateSkyBox(data);
-		this.drawAxes();
+		this.generateScores(data);
 
-		this.generateBanana(data);
 
-		// render scene
-		this.renderer.render(this.scene, this.camera);
+		// this.drawAxes();
 	};
 
 	// Other methods (generateScene, updateScene, etc.) here
@@ -229,15 +290,18 @@ export default class Game extends AbstractView {
 		// this.ball.dirMesh.position.set(data.ball.pos.x, data.ball.pos.y, 0);
 		for (let i=0; i<data.playersArray.length; i++) {
 			this.paddles[i].mesh.position.set(data.playersArray[i].paddle.pos.x, data.playersArray[i].paddle.pos.y, data.playersArray[i].paddle.pos.z);
-			this.paddles[i].mesh.material.opacity = data.playersArray[i].connected ? 0.7 : 0.3;
+			this.paddles[i].mesh.material.opacity = data.playersArray[i].connected ? 1.0 : 0.3;
 			// this.paddles[i].dir1Mesh.position.set(data.playersArray[i].paddle.pos.x, data.playersArray[i].paddle.pos.y, data.playersArray[i].paddle.pos.z);
 			// this.paddles[i].dir2Mesh.position.set(data.playersArray[i].paddle.pos.x, data.playersArray[i].paddle.pos.y, data.playersArray[i].paddle.pos.z);
 			// for (let i=0; i<data.playersArray.length; i++) {
-			// 	if (data.playersArray[i].socketID = socket.id) {
-			// 		this.camera.rotation.set(0, 0, data.playersArray[i].paddle.angle + Math.PI / 2);
-			// 	}
-			// }
+				// 	if (data.playersArray[i].socketID = socket.id) {
+					// 		this.camera.rotation.set(0, 0, data.playersArray[i].paddle.angle + Math.PI / 2);
+					// 	}
+					// }
 		}
+				
+		// update scores
+		this.refreshScores(data);
 	}
 
 	drawAxes() {
@@ -254,6 +318,99 @@ export default class Game extends AbstractView {
 		this.scene.add(arrowZ);
 		this.scene.add(arrowY);
 	};
+
+
+	generateScores(data) {
+
+		const loader = new FontLoader();
+
+		// get previous scores for comparison when updating score text meshes
+		this.prevScores = data.playersArray.map(player => -1);
+
+		// get the direction of the client to rotate the scores to face the client
+		for (let i = 0; i < data.playersArray.length; i++) {
+			if (data.playersArray[i].socketID === this.socket.id) {
+				this.dir = i;
+			}
+		}
+
+		if (!loader)
+			return console.error("FontLoader not found");
+
+		loader.load( 'https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', ( response ) => {
+
+			this.textSettings.font = response;
+
+			this.refreshScores(data);
+
+			console.log("Font loaded");
+
+		} );
+
+	}
+
+		// font: font,
+
+		// size: size,
+		// height: height,
+		// curveSegments: curveSegments,
+
+		// bevelThickness: bevelThickness,
+		// bevelSize: bevelSize,
+		// bevelEnabled: bevelEnabled
+
+	
+	createScore(data, player, i) {
+
+		let dir = 0; // used to rotate scores to face client
+
+		// generate scores for each player
+		const scoreText = player.score.toString();
+		console.log("Creating score: " + scoreText + " for player " + i + " with dir: " + this.dir);
+
+		const geometry = new TextGeometry(scoreText, this.textSettings);
+
+		var material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+		this.scores[i] = new THREE.Mesh(geometry, material);
+
+		// calculate bounds of score
+		geometry.computeBoundingBox();
+		const scoreWidth = this.scores[i].geometry.boundingBox.max.x - this.scores[i].geometry.boundingBox.min.x;
+		const scoreHeight = this.scores[i].geometry.boundingBox.max.y - this.scores[i].geometry.boundingBox.min.y;
+		const scoreThickness = this.scores[i].geometry.boundingBox.max.z - this.scores[i].geometry.boundingBox.min.z;
+
+		// set center of score to center of paddle
+		const centerX = data.playersArray[i].scorePos.x - scoreWidth / 2;
+		const centerY = data.playersArray[i].scorePos.y - scoreHeight / 2;
+		const centerZ = data.playersArray[i].scorePos.z - scoreThickness / 2;
+
+		this.scores[i].position.set(centerX, centerY, centerZ);
+
+		this.scene.add(this.scores[i]);
+
+		// rotate the score to face client
+		this.scores[i].rotation.set(0, 0, 2 * Math.PI/data.gamemode.nbrOfPlayers * this.dir);
+		
+	}
+
+	refreshScores(data) {
+
+		if (!data || !data.playersArray || !this.textSettings || !this.textSettings.font)
+			return console.error("Data or font not found");
+
+		data.playersArray.forEach((player, index) => {
+
+			if (this.prevScores[index] != player.score) {
+				console.log("Refreshing score: " + player.score + " for player " + index);
+				this.scene.remove( this.scores[index] );
+				this.createScore(data, player, index);
+			}
+		
+		});
+
+		this.prevScores = data.playersArray.map(player => player.score);
+
+	}
 
 	generateBanana(data) {
 		this.loader.load(
@@ -304,7 +461,7 @@ export default class Game extends AbstractView {
 	generateWalls(data) {
 		const wallGeometry = new THREE.BoxGeometry(data.field.wallsSize, 1, 2);
 		const wallMaterial = new THREE.MeshPhongMaterial({ color: data.ball.col, transparent: true, opacity: 1, reflectivity: 0.5 });
-		console.log("number of players : ", data.gamemode.nbrOfPlayers);
+		// console.log("number of players : ", data.gamemode.nbrOfPlayers);
 		for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
 			this.walls[i] = new THREE.Mesh(wallGeometry, wallMaterial); // create Material
 			this.scene.add(this.walls[i]); // add mesh to the scene
@@ -313,10 +470,39 @@ export default class Game extends AbstractView {
 		}
 	}
 
+	generateGoals(data) {
+		// console.log("number of players : ", data.gamemode.nbrOfPlayers);
+		for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
+			const top = data.field.walls[i].top;
+			const bottom = data.field.walls[(i + 1) % data.gamemode.nbrOfPlayers].bottom;
+			const points = [];
+			points.push(new THREE.Vector3( top.x, top.y, top.z ));
+			points.push(new THREE.Vector3( bottom.x, bottom.y, bottom.z ));
+			const goalGeometry = new THREE.BufferGeometry().setFromPoints( points );
+			const goalMaterial = new THREE.LineBasicMaterial( { color: data.playersArray[(i + 1) % data.gamemode.nbrOfPlayers].color } );
+			const goalLine = new THREE.Line( goalGeometry, goalMaterial );
+			this.scene.add(goalLine);
+		}
+	}
+
+	// deleteGoals(data) {
+	// 	for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
+	// 		const top = data.field.walls[i].top;
+	// 		const bottom = data.field.walls[(i + 1) % data.gamemode.nbrOfPlayers].bottom;
+	// 		const points = [];
+	// 		points.push(new THREE.Vector3( top.x, top.y, top.z ));
+	// 		points.push(new THREE.Vector3( bottom.x, bottom.y, bottom.z ));
+	// 		const goalGeometry = new THREE.BufferGeometry().setFromPoints( points );
+	// 		const goalMaterial = new THREE.LineBasicMaterial( { color: data.playersArray[(i + 1) % data.gamemode.nbrOfPlayers].color } );
+	// 		const goalLine = new THREE.Line( goalGeometry, goalMaterial );
+	// 		this.scene.add(goalLine);
+	// 	}
+	// }
+
 	generatePaddles(data) {
 		for (let i=0; i<data.playersArray.length; i++) {
 			const paddleGeometry = new THREE.BoxGeometry(data.playersArray[i].paddle.h, 1, 2);
-			const paddleMaterial = new THREE.MeshPhongMaterial({ color: data.playersArray[i].color, transparent: true, opacity: 0.7, reflectivity: 0.5 });
+			const paddleMaterial = new THREE.MeshPhongMaterial({ color: data.playersArray[i].color, transparent: true, opacity: 1, reflectivity: 0 });
 
 			const dir1 = new THREE.ArrowHelper(
 				new THREE.Vector3(data.playersArray[i].paddle.dirToCenter.x,
@@ -336,6 +522,14 @@ export default class Game extends AbstractView {
 
 			this.paddles[i].mesh.position.set(data.playersArray[i].paddle.pos.x, data.playersArray[i].paddle.pos.y, 0); // set the position
 			this.paddles[i].mesh.rotation.set(0, 0, data.playersArray[i].paddle.angle + Math.PI / 2); // set the rotation to the proper orientation (facing center)
+			// this.deletePaddles(data);
+		}
+	}
+
+	deletePaddles(data) {
+		for (let i=0; i<data.playersArray.length; i++) {
+			this.paddles[i].mesh.paddleGeometry.dispose();
+			this.paddles[i].mesh.paddleMaterial.dispose();
 		}
 	}
 
@@ -350,24 +544,63 @@ export default class Game extends AbstractView {
 		this.scene.add(this.ambientLight);
 	}
 
-	// generateSkyBox(data) {
-	// 	// Charger la texture de ciel étoilé
-	// 	const starTexture = new THREE.TextureLoader().load('../../assets/banana.jpg'); // Remplacez par le chemin de votre texture
-	// 	// Créer la géométrie de la sphère
-	// 	starTexture.colorSpace = THREE.SRGBColorSpace;
-	// 	const starGeometry = new THREE.SphereGeometry(300, 64, 64); // Rayon, segmentsWidth, segmentsHeight
-	// 	// starTexture.offset.set(0.5, 0); // Shifts the texture halfway across its width
+	deleteLights() {
+		this.directionalLight.dispose();
+		this.ambientLight.dispose();
+	}
 
-	// 	// Créer le matériau avec la texture
-	// 	const starMaterial = new THREE.MeshBasicMaterial({
-    // 		map: starTexture,
-    // 		side: THREE.BackSide
-	// 	});
+	generateSkyBox(data) {
+		// Charger la texture de ciel étoilé
+		// this.starTexture = new THREE.TextureLoader().load('./js/assets/blueSpace.jpg');
+		// const starTexture1 = new THREE.TextureLoader().load('./js/assets/PurpleLayer1.png');
+		// const starTexture2 = new THREE.TextureLoader().load('./js/assets/PurpleLayer2.png');
+		// const starTexture3 = new THREE.TextureLoader().load('./js/assets/PurpleLayer3.png');
+		const starTextureBase = new THREE.TextureLoader().load('./js/assets/purpleSpace.jpg');
+		// this.starTexture = new THREE.TextureLoader().load('./js/assets/redSpace.jpg');
 
-	// 	// Créer le mesh de la sphère
-	// 	const starSphere = new THREE.Mesh(starGeometry, starMaterial);
+		// Créer la géométrie de la sphère
+		// starTexture.colorSpace = THREE.SRGBColorSpace;
+		// const starGeometry1 = new THREE.SphereGeometry(180, 32, 32);
+		// const starGeometry2 = new THREE.SphereGeometry(200, 32, 32);
+		// const starGeometry3 = new THREE.SphereGeometry(220, 32, 32);
+		const starGeometryBase = new THREE.SphereGeometry(120, 32, 32);
 
-	// 	// Ajouter la sphère étoilée à la scène
-	// 	this.scene.add(starSphere);
-	// };
+		// Créer le matériau avec la texture
+		// const starMaterial1 = new THREE.MeshBasicMaterial({
+		// 	map: starTexture1,
+		// 	side: THREE.BackSide,
+		// 	transparent: true,
+		// 	blending: THREE.AlphaBlending, // Use AlphaBlending for transparency
+		// });
+		// const starMaterial2 = new THREE.MeshBasicMaterial({
+		// 	map: starTexture2,
+		// 	side: THREE.BackSide,
+		// 	transparent: true,
+		// 	blending: THREE.AlphaBlending,
+		// });
+		// const starMaterial3 = new THREE.MeshBasicMaterial({
+		// 	map: starTexture3,
+		// 	side: THREE.BackSide,
+		// 	transparent: true,
+		// 	blending: THREE.AlphaBlending,
+		// });
+		const starMaterialBase = new THREE.MeshBasicMaterial({
+			map: starTextureBase,
+			side: THREE.BackSide,
+			// transparent: true,
+			// blending: THREE.AlphaBlending,
+		});
+
+		// Créer le mesh de la sphère
+		// const starSphere1 = new THREE.Mesh(starGeometry1, starMaterial1);
+		// const starSphere2 = new THREE.Mesh(starGeometry2, starMaterial2);
+		// const starSphere3 = new THREE.Mesh(starGeometry3, starMaterial3);
+		const starSphereBase = new THREE.Mesh(starGeometryBase, starMaterialBase);
+
+		// Ajouter la sphère étoilée à la scène
+		// this.scene.add(starSphere1);
+		// this.scene.add(starSphere2);
+		// this.scene.add(starSphere3);
+		this.scene.add(starSphereBase);
+	};
 }

@@ -15,6 +15,7 @@ class Camera {
 // Gamemode class
 class GameMode {
     constructor(gamemodeData) {
+        this.gameType = gamemodeData.gameType;
         this.nbrOfPlayers = gamemodeData.nbrOfPlayers;
         this.nbrOfRounds = gamemodeData.nbrOfRounds; // nbr of points needed to win
         this.timeLimit = gamemodeData.timeLimit; // in minutes. gamemode needs either a nbr of rounds or a time limit. if not, the game will be
@@ -30,6 +31,7 @@ class Field {
         this.goalsSize = fieldData.sizeOfGoals;
         this.wallsSize = fieldData.sizeOfGoals * fieldData.wallsFactor;
         this.walls = [];
+        // this.goals = [];
     }
 }
 
@@ -51,6 +53,13 @@ class Wall {
     }
 }
 
+// class Goal {
+//     constructor(top, bottom) {
+//         this.top = top.copy();
+//         this.bottom = bottom.copy();
+//     }
+// }
+
 // Player class
 class Player {
     constructor(lobbyData, i) {
@@ -63,6 +72,7 @@ class Player {
         this.paddle = new Paddle(lobbyData, i); // creating paddle object for this player
         this.color = parseInt(lobbyData.playersData[i].color, 16);
         this.score = 0;
+        this.scorePos = new vecs.Vector(0, 0, 0);
     }
 }
 
@@ -94,9 +104,11 @@ class Ball {
     constructor(ballData) {
         this.pos = new vecs.Vector(0, 0, 0);
 		this.dir = new vecs.Vector(0, 0, 0); // direction in which the ball is moving
-        this.lastHit = -1; // ID of the last player who hit the ball
+        // this.lastHit = -1; // ID of the last player who hit the ball
                            // Will be useful in gamemodes with more than 2 players where we want to give points to
                            // the right player.
+        // this.previousLastHit = -1;
+        // this.lastScoredOn = -1;
         this.r = ballData.radius;
         this.sp = ballData.speed;
         this.col = parseInt(ballData.color, 16);
@@ -116,6 +128,7 @@ class Data {
     constructor(lobbyData) {
         this.connectedPlayers = 0;
         this.gameInterval = 0;
+        this.ongoing = false;
 
         // get the gamemode info from the lobby data;
         this.gamemode = new GameMode(lobbyData.gamemodeData);
