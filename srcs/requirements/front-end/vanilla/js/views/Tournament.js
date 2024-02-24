@@ -109,7 +109,7 @@ export default class Tournament extends AbstractView {
 			const response = await makeApiRequest('https://localhost:9443/game-logic/createMatch','POST',gameSettings);
 			console.log('Match created:', response.body);
 			//window.location.href = '/play?matchID=' + response.body.matchID;
-			window.globalActions.navigateTo('/play?matchID=' + response.body.matchID);
+			navigateTo('/play?matchID=' + response.body.matchID);
 		} catch (error) {
 			console.error('Failed to create match:', error);
 		}
