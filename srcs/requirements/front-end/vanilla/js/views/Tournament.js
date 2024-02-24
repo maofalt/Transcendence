@@ -2,6 +2,7 @@ import '@css/tournament.css'
 import AbstractView from "./AbstractView";
 import DynamicTable from "@components/DynamicTable";
 import ActionButton from "@components/ActionButton";
+import NormalButton from '@components/NormalButton';
 import { makeApiRequest } from '@utils/makeApiRequest.js';
 import { navigateTo } from '@utils/Router.js';
 
@@ -43,6 +44,7 @@ export default class Tournament extends AbstractView {
 			}
 		};
 		
+		this.getTournamentList();
 		this.data= [
 			{	
 				tournamentName: 'Tournament 1',
@@ -86,6 +88,16 @@ export default class Tournament extends AbstractView {
 					id="createMatchButton"
 					>
                 </action-button>
+				<start-btn
+					data-text="CREATE"
+					id="createTournamentButton"
+					>
+				</start-btn>
+				<start-btn
+					data-text="MANAGE"
+					id="createTournamentButton"
+					>
+				</start-btn>
                 <dynamic-table></dynamic-table>
 			</div>
 		`;
@@ -100,6 +112,18 @@ export default class Tournament extends AbstractView {
 
 		const createMatchButton = document.getElementById('createMatchButton');
 		createMatchButton.addEventListener('click', this.createMatch);
+	}
+
+	async getTournamentList() {
+
+		console.log("Get Tournament List");
+			  
+		try {
+			const response = await makeApiRequest('https://localhost:9443/api/tournament/create-and-list/','GET', {});
+			console.log('Tournament list:', response.body);
+		} catch (error) {
+			console.error('Failed to get tournament list:', error);
+		}
 	}
 
 	async createMatch() {

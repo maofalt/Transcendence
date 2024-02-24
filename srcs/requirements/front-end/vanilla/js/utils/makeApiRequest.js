@@ -36,6 +36,12 @@ export async function makeApiRequest(url, method = 'GET', body = null, headers =
 			throw new Error(`HTTP error! Status: ${response.status}`);
 		}
 
+        if (response.headers.get("content-length") === "0") {
+            return {
+                status: response.status,
+                body: null
+            };
+        }
 		// Check if response is JSON
 		const contentType = response.headers.get("content-type");
 		if (contentType && contentType.includes("application/json")) {
@@ -53,7 +59,7 @@ export async function makeApiRequest(url, method = 'GET', body = null, headers =
 
 	} catch (error) {
 		// Returning error details
-		const body = await response.json();
+		//const body = await response.json();
 		if (response && response.status === 401) {
 			// Redirect to the login page
 			window.location.href = '/login';
@@ -61,7 +67,7 @@ export async function makeApiRequest(url, method = 'GET', body = null, headers =
 		}
 	
 		if (response) {
-			return {
+            return {
 				status: response.status,
 				body: body
 			}

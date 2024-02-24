@@ -188,38 +188,8 @@ export default class Game extends AbstractView {
 
 		this.socket.on('refresh', data => {
 			console.log("REFRESH SCENE");
-
-			delete data.playersArray;
 			data.playersArray = Object.values(data.players);
-			this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-			this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-			this.controls.target.set(0, 0, 0);
-			
-			this.camera.position.set(data.camera.pos.x, data.camera.pos.y, data.camera.pos.z);
-			this.camera.lookAt(new THREE.Vector3(data.camera.target.x, data.camera.target.y, data.camera.target.z));
-			for (let i=0; i<data.playersArray.length; i++) {
-				if (data.playersArray[i].socketID == this.socket.id) {
-					console.log(`socket : ${data.playersArray[i].socketID}, client : ${this.socket.id}, ${i}, angle = ${data.playersArray[i].paddle.angle}`);
-					this.camera.rotation.set(0, 0, 2 * Math.PI/data.gamemode.nbrOfPlayers * i);
-				}
-			}
-
-			// this.camera.rotation.set(0, 0, 90);
-			// for later : set cam rotation depending on which client this is so the player is always at the same place;
-			
-			this.renderer.setSize(window.innerWidth, window.innerHeight);
-			this.container.appendChild(this.renderer.domElement);
-
-			// generate objects
-			this.generateSkyBox(data);
-			this.generateBall(data);
-			this.generatePaddles(data);
-			this.generateWalls(data);
-			this.generateGoals(data);
-			this.generateLights(data);
-			this.generateScores(data);
-
-			// this.drawAxes();
+			this.refreshScene(data);
 		})
 
 		this.socket.on('ping', ([timestamp, latency]) => {
@@ -245,29 +215,15 @@ export default class Game extends AbstractView {
 		// Additional cleanup (disposing Three.js objects, etc.)
 	};
 
-	generateScene(data, socket) {
-		console.log("Generating Scene...");
 
+	refreshScene(data) {
 		this.scene = new THREE.Scene();
-		this.scene.background = new THREE.TextureLoader().load('./js/assets/purpleSpace.jpg');
-		this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-		this.renderer = new THREE.WebGLRenderer({ alpha: true });
-		// this.renderer.setClearColor(new THREE.Color(0x110000));
-		this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-		this.controls.target.set(0, 0, 0);
+		const back = new THREE.TextureLoader().load('./js/assets/moon.jpg');
+		back.colorSpace = THREE.SRGBColorSpace;
+		this.scene.background = back;
 		
-		this.camera.position.set(data.camera.pos.x, data.camera.pos.y, data.camera.pos.z);
-		this.camera.lookAt(new THREE.Vector3(data.camera.target.x, data.camera.target.y, data.camera.target.z));
-		for (let i=0; i<data.playersArray.length; i++) {
-			if (data.playersArray[i].socketID == socket.id) {
-				console.log(`socket : ${data.playersArray[i].socketID}, client : ${socket.id}, ${i}, angle = ${data.playersArray[i].paddle.angle}`);
-				this.camera.rotation.set(0, 0, 2 * Math.PI/data.gamemode.nbrOfPlayers * i);
-			}
-		}
-		// this.camera.rotation.set(0, 0, 90);
-		// for later : set cam rotation depending on which client this is so the player is always at the same place;
-
 		this.renderer.setSize(window.innerWidth, window.innerHeight);
+		
 		this.container.appendChild(this.renderer.domElement);
 		
 		// generate objects
@@ -278,9 +234,36 @@ export default class Game extends AbstractView {
 		this.generateGoals(data);
 		this.generateLights(data);
 		this.generateScores(data);
-
+		
+		// rotate the scene relative to the current client (so the paddle is at the bottom)
+		this.scene.rotateZ(-2 * Math.PI/data.gamemode.nbrOfPlayers * this.dir)
 
 		// this.drawAxes();
+	}
+
+	generateScene(data, socket) {
+		console.log("Generating Scene...");
+
+		this.renderer = new THREE.WebGLRenderer({ alpha: true });
+
+		// set the camera and set it to look at the center of the match
+		this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+		this.camera.position.set(data.camera.pos.x, data.camera.pos.y, data.camera.pos.z);
+		this.camera.lookAt(new THREE.Vector3(data.camera.target.x, data.camera.target.y, data.camera.target.z));
+		
+		// set controls to orbit around the center of the match with the mouse
+		this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+		this.controls.target.set(0, 0, 0);
+
+		// get the direction to later rotate the scene relative to the current client
+		for (let i=0; i<data.playersArray.length; i++) {
+			if (data.playersArray[i].socketID == socket.id) {
+				console.log(`socket : ${data.playersArray[i].socketID}, client : ${socket.id}, ${i}, angle = ${data.playersArray[i].paddle.angle}`);
+				this.dir = i
+			}
+		}
+
+		this.refreshScene(data);
 	};
 
 	// Other methods (generateScene, updateScene, etc.) here
@@ -396,7 +379,7 @@ export default class Game extends AbstractView {
 	refreshScores(data) {
 
 		if (!data || !data.playersArray || !this.textSettings || !this.textSettings.font)
-			return console.error("Data or font not found");
+			return console.log("Data or font not found");
 
 		data.playersArray.forEach((player, index) => {
 
@@ -584,6 +567,7 @@ export default class Game extends AbstractView {
 		// 	transparent: true,
 		// 	blending: THREE.AlphaBlending,
 		// });
+		// starTextureBase.colorSpace = THREE.SRGBColorSpace;
 		const starMaterialBase = new THREE.MeshBasicMaterial({
 			map: starTextureBase,
 			side: THREE.BackSide,
