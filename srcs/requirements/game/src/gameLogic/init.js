@@ -27,6 +27,8 @@ function initLoop(data, wallDist, goalDist, angle) {
         player.paddle.dirToTop = player.paddle.dirToCenter.rotateAroundZ(-Math.PI / 2);
         // player.paddle.dirToCenter = something; // need to add the other direction vector but will check out best formula for this
 
+        player.scorePos = player.paddle.startingPos.sub(player.paddle.dirToCenter.scale(5));
+
         /*--------------------------------------------------------------------------------------------*/
 
         data.field.walls[i].angle = startingAngle + angle / 2 + angle * i; // wall current angle
@@ -88,7 +90,7 @@ function initFieldShape(data) {
     let wallDist = gs / Math.sin(a) + ws / Math.tan(a); // pythagore to find the dist the walls have to be from the center
     let goalDist = gs / Math.tan(a) + ws / Math.sin(a); // same but for goals;
 
-    data.camera.pos.z = wallDist < goalDist ? (goalDist * 3) : (wallDist * 3);
+    data.camera.pos.z = wallDist < (goalDist + 5) ? ((goalDist + 5) * 3) : (wallDist * 3);
 
     initLoop(data, wallDist, goalDist, angle); // looping through the players array and the walls array to init their pos and dir;
     initWalls(data);
