@@ -16,6 +16,14 @@ class TournamentListCreate(generics.ListCreateAPIView):
     renderer_classes = [JSONRenderer]  # Force the response to be rendered in JSON
 
     # permission_classes = [permissions.IsAuthenticated] #add more permissions if is necessary
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            # If the data is not valid, return a 400 response with the error details
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()

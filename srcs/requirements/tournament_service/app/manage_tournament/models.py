@@ -23,7 +23,7 @@ class TournamentMatch(models.Model):
 class MatchSetting(models.Model):
     setting_id = models.AutoField(primary_key=True)
     duration_sec = models.IntegerField(default=210)
-    max_score = models. IntegerField(default=5)
+    max_score = models. IntegerField(default=5, validators=[MinValueValidator(1), MaxValueValidator(10)])
     nbr_of_sets = models.IntegerField(default=1)
     paddle_speed = models.IntegerField(default=10)
     ball_speed = models.IntegerField(default=10)
