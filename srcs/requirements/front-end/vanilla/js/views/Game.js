@@ -234,6 +234,7 @@ export default class Game extends AbstractView {
 		this.generateGoals(data);
 		this.generateLights(data);
 		this.generateScores(data);
+		this.generateBanana(data);
 		
 		// rotate the scene relative to the current client (so the paddle is at the bottom)
 		this.scene.rotateZ(-2 * Math.PI/data.gamemode.nbrOfPlayers * this.dir)
@@ -244,7 +245,7 @@ export default class Game extends AbstractView {
 	generateScene(data, socket) {
 		console.log("Generating Scene...");
 
-		this.renderer = new THREE.WebGLRenderer({ alpha: true });
+		this.renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
 
 		// set the camera and set it to look at the center of the match
 		this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -270,6 +271,13 @@ export default class Game extends AbstractView {
 	updateScene(data, socket) {
 		// console.log("Updating Scene...");
 		this.ball.mesh.position.set(data.ball.pos.x, data.ball.pos.y, 0);
+		if (this.banana) {
+			this.banana.position.set(data.ball.pos.x, data.ball.pos.y, 0);
+			// this.banana.rotateX(-Math.PI / 70);
+			this.banana.rotateZ(Math.PI / 36);
+			// this.banana.rotateY(Math.PI / 64);
+		}
+
 		// this.ball.dirMesh.position.set(data.ball.pos.x, data.ball.pos.y, 0);
 		for (let i=0; i<data.playersArray.length; i++) {
 			this.paddles[i].mesh.position.set(data.playersArray[i].paddle.pos.x, data.playersArray[i].paddle.pos.y, data.playersArray[i].paddle.pos.z);
@@ -396,31 +404,35 @@ export default class Game extends AbstractView {
 	}
 
 	generateBanana(data) {
-		this.loader.load(
-			// resource URL
-			'../assets/banana/scene.gltf',
-			// called when the resource is loaded
-			function ( gltf ) {
-		
-				this.banana = gltf.scene;
-				this.banana.scale.set(5, 5, 5);
-		
-				this.scene.add(this.banana);
-		
-			},
+		// loader.load( 'https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', ( response ) => {
+
+		// 	this.textSettings.font = response;
+
+		// 	this.refreshScores(data);
+
+		// 	console.log("Font loaded");
+
+		// } );
+		this.loader.load('./js/assets/banana/scene.gltf', ( gltf ) => {
+			this.banana = gltf.scene;
+			this.banana.scale.set(0.025, 0.025, 0.025);
+			// this.banana.rotation.set(Math.PI / 2.5, 0.5, 0);
+			// this.banana.position.set(0, -0.5, 0);
+			this.scene.add(this.banana);
+		});
 			// called while loading is progressing
-			function ( xhr ) {
+		// 	function ( xhr ) {
 		
-				console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+		// 		console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
 		
-			},
-			// called when loading has errors
-			function ( error ) {
+		// 	},
+		// 	// called when loading has errors
+		// 	function ( error ) {
 		
-				console.log( 'An error happened while loading model' );
+		// 		console.log( 'An error happened while loading model' );
 		
-			}
-		);
+		// 	}
+		// );
 	}
 
 	generateBall(data) {

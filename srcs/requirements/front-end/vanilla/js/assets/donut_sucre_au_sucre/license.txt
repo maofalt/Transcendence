@@ -1,0 +1,11 @@
+Model Information:
+* title:	Pink Donut (seamless texture)
+* source:	https://sketchfab.com/3d-models/pink-donut-seamless-texture-2bdb746afbe0489aa2b8931d07f403f5
+* author:	Pratibha (https://sketchfab.com/Camay)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Pink Donut (seamless texture)" (https://sketchfab.com/3d-models/pink-donut-seamless-texture-2bdb746afbe0489aa2b8931d07f403f5) by Pratibha (https://sketchfab.com/Camay) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
