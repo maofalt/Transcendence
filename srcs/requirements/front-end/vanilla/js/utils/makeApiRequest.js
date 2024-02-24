@@ -42,6 +42,7 @@ export async function makeApiRequest(url, method = 'GET', body = null, headers =
                 body: null
             };
         }
+
 		// Check if response is JSON
 		const contentType = response.headers.get("content-type");
 		if (contentType && contentType.includes("application/json")) {

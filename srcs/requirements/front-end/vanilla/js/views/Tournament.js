@@ -83,22 +83,26 @@ export default class Tournament extends AbstractView {
 		//await new Promise(resolve => setTimeout(resolve, 100)); // Wait for 3 seconds
 		return `
 			<div class="tournament">
-			    <action-button 
-                    data-text=" ⚡ Play Now"
-					id="createMatchButton"
-					>
-                </action-button>
-				<start-btn
-					data-text="CREATE"
-					id="createTournamentButton"
-					>
-				</start-btn>
-				<start-btn
-					data-text="MANAGE"
-					id="createTournamentButton"
-					>
-				</start-btn>
-                <dynamic-table></dynamic-table>
+				<div>    
+					<action-button 
+            		    data-text=" ⚡ Play Now"
+						id="createMatchButton"
+						>
+            		</action-button>
+				</div>
+				<div class="help">
+					<start-btn
+						data-text="CREATE"
+						id="createTournamentButton"
+						>
+					</start-btn>
+					<start-btn
+						data-text="MANAGE"
+						id="manageTournamentButton"
+						>
+					</start-btn>
+				</div>
+	                <dynamic-table></dynamic-table>
 			</div>
 		`;
 	}
@@ -142,7 +146,7 @@ export default class Tournament extends AbstractView {
 	getGameSettings() {
 		return {
 			"gamemodeData": {
-			  "nbrOfPlayers": 3,
+			  "nbrOfPlayers": 7,
 			  "nbrOfRounds": 1,
 			  "timeLimit": 0
 			},
@@ -171,6 +175,22 @@ export default class Tournament extends AbstractView {
 			  },
 			  {
 				"accountID": "tata3",
+				"color": "0x00ff00"
+			  },
+			  {
+				"accountID": "tata4",
+				"color": "0x0000ff"
+			  },
+			  {
+				"accountID": "tata5",
+				"color": "0x00ff00"
+			  },
+			  {
+				"accountID": "tata6",
+				"color": "0x00ff00"
+			  },
+			  {
+				"accountID": "tata7",
 				"color": "0x00ff00"
 			  },
 			]

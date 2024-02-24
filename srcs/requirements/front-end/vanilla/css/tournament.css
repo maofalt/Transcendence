@@ -1,9 +1,13 @@
 .tournament{
     display: grid;
-    margin: 2em;
+    margin: 2rem;
     text-align: center;
 }
 
+.help{
+    display:flex;
+    
+}
 action-button{
     margin-top: 4rem;
     margin-bottom: 5rem;
