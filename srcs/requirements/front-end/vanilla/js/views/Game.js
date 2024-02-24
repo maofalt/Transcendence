@@ -197,19 +197,13 @@ export default class Game extends AbstractView {
 			
 			this.camera.position.set(data.camera.pos.x, data.camera.pos.y, data.camera.pos.z);
 			this.camera.lookAt(new THREE.Vector3(data.camera.target.x, data.camera.target.y, data.camera.target.z));
-			for (let i=0; i<data.playersArray.length; i++) {
-				if (data.playersArray[i].socketID == this.socket.id) {
-					console.log(`socket : ${data.playersArray[i].socketID}, client : ${this.socket.id}, ${i}, angle = ${data.playersArray[i].paddle.angle}`);
-					this.camera.rotation.set(0, 0, 2 * Math.PI/data.gamemode.nbrOfPlayers * i);
-				}
-			}
 
 			// this.camera.rotation.set(0, 0, 90);
 			// for later : set cam rotation depending on which client this is so the player is always at the same place;
 			
 			this.renderer.setSize(window.innerWidth, window.innerHeight);
 			this.container.appendChild(this.renderer.domElement);
-
+			
 			// generate objects
 			this.generateSkyBox(data);
 			this.generateBall(data);
@@ -218,6 +212,14 @@ export default class Game extends AbstractView {
 			this.generateGoals(data);
 			this.generateLights(data);
 			this.generateScores(data);
+			
+			for (let i=0; i<data.playersArray.length; i++) {
+				if (data.playersArray[i].socketID == this.socket.id) {
+					console.log(`socket : ${data.playersArray[i].socketID}, client : ${socket.id}, ${i}, angle = ${data.playersArray[i].paddle.angle}`);
+					// this.camera.rotation.set(0, 0, 2 * Math.PI/data.gamemode.nbrOfPlayers * i);
+					this.scene.rotateZ(-2 * Math.PI/data.gamemode.nbrOfPlayers * i)
+				}
+			}
 
 			// this.drawAxes();
 		})
@@ -258,15 +260,9 @@ export default class Game extends AbstractView {
 		
 		this.camera.position.set(data.camera.pos.x, data.camera.pos.y, data.camera.pos.z);
 		this.camera.lookAt(new THREE.Vector3(data.camera.target.x, data.camera.target.y, data.camera.target.z));
-		for (let i=0; i<data.playersArray.length; i++) {
-			if (data.playersArray[i].socketID == socket.id) {
-				console.log(`socket : ${data.playersArray[i].socketID}, client : ${socket.id}, ${i}, angle = ${data.playersArray[i].paddle.angle}`);
-				this.camera.rotation.set(0, 0, 2 * Math.PI/data.gamemode.nbrOfPlayers * i);
-			}
-		}
 		// this.camera.rotation.set(0, 0, 90);
 		// for later : set cam rotation depending on which client this is so the player is always at the same place;
-
+		
 		this.renderer.setSize(window.innerWidth, window.innerHeight);
 		this.container.appendChild(this.renderer.domElement);
 		
@@ -278,8 +274,15 @@ export default class Game extends AbstractView {
 		this.generateGoals(data);
 		this.generateLights(data);
 		this.generateScores(data);
-
-
+		
+		for (let i=0; i<data.playersArray.length; i++) {
+			if (data.playersArray[i].socketID == socket.id) {
+				console.log(`socket : ${data.playersArray[i].socketID}, client : ${socket.id}, ${i}, angle = ${data.playersArray[i].paddle.angle}`);
+				// this.camera.rotation.set(0, 0, 2 * Math.PI/data.gamemode.nbrOfPlayers * i);
+				this.scene.rotateZ(-2 * Math.PI/data.gamemode.nbrOfPlayers * i)
+			}
+		}
+		
 		// this.drawAxes();
 	};
 
