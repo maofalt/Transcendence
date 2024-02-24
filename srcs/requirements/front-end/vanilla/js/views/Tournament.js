@@ -1,11 +1,16 @@
 import '@css/tournament.css'
 import AbstractView from "./AbstractView";
+import DynamicTable from "@components/DynamicTable";
+import ActionButton from "@components/ActionButton";
 import { makeApiRequest } from '@utils/makeApiRequest.js';
+import { navigateTo } from '@utils/Router.js';
 
 export default class Tournament extends AbstractView {
 
 	constructor() {
 		super();
+
+		this.createMatch = this.createMatch.bind(this);
 		this.caption = 'Active Tournaments';
 		
 		this.headers = ['Tournament Name', 'Host', 'Number of Players', 'Time Remaining', 'Tournament Type', 'Registration Mode', 'Action'];
@@ -73,10 +78,15 @@ export default class Tournament extends AbstractView {
 	}
 
 	async getHtml() {
-		//makeawait new Promise(resolve => setTimeout(resolve, 100)); // Wait for 3 seconds
+		//await new Promise(resolve => setTimeout(resolve, 100)); // Wait for 3 seconds
 		return `
-			<div class="card">
-				<dynamic-table></dynamic-table>
+			<div class="tournament">
+			    <action-button 
+                    data-text=" ⚡ Play Now"
+					id="createMatchButton"
+					>
+                </action-button>
+                <dynamic-table></dynamic-table>
 			</div>
 		`;
 	}
@@ -87,5 +97,59 @@ export default class Tournament extends AbstractView {
 		dynamicTable.setAttribute('data-headers', JSON.stringify(this.headers));
 		dynamicTable.setAttribute('data-style', JSON.stringify(this.columnStyles));
 		dynamicTable.setAttribute('data-rows', JSON.stringify(this.data));
+
+		const createMatchButton = document.getElementById('createMatchButton');
+		createMatchButton.addEventListener('click', this.createMatch);
+	}
+
+	async createMatch() {
+		console.log('Create Match');
+		const gameSettings = this.getGameSettings();
+		try {
+			const response = await makeApiRequest('https://localhost:9443/game-logic/createMatch','POST',gameSettings);
+			console.log('Match created:', response.body);
+			//window.location.href = '/play?matchID=' + response.body.matchID;
+			navigateTo('/play?matchID=' + response.body.matchID);
+		} catch (error) {
+			console.error('Failed to create match:', error);
+		}
+	}
+
+	getGameSettings() {
+		return {
+			"gamemodeData": {
+			  "nbrOfPlayers": 3,
+			  "nbrOfRounds": 1,
+			  "timeLimit": 0
+			},
+			"fieldData": {
+			  "wallsFactor": 1,
+			  "sizeOfGoals": 20
+			},
+			"paddlesData": {
+			  "width": 2,
+			  "height": 12,
+			  "speed": 0.5
+			},
+			"ballData": {
+			  "speed": 0.7,
+			  "radius": 1,
+			  "color": "0xffffff"
+			},
+			"playersData": [
+			  {
+				"accountID": "tata",
+				"color": "0x0000ff"
+			  },
+			  {
+				"accountID": "tata2",
+				"color": "0x00ff00"
+			  },
+			  {
+				"accountID": "tata3",
+				"color": "0x00ff00"
+			  },
+			]
+		};
 	}
 }
