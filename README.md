@@ -395,15 +395,23 @@ Example Body in ```JSON``` :
 
 ```json
 {
-    "tournament_name": "best-tournament",
-    "nbr_of_player": 2,
-    "game_type": 1,
-    "tournament_type": 2,
-    "registration": 2,
-    "setting_id": 1,
-    "registration_period_min": 32,
-    "host_id": 2
+  "tournament_name": "Example Tournament",
+  "nbr_of_player": 4,
+  "game_type": 1,
+  "tournament_type": 1,
+  "registration": 1,
+  "registration_period_min": 30,
+  "host_id": 1,
+  "setting": {
+    "duration_sec": 300,
+    "max_score": 10,
+    "nbr_of_sets": 2,
+    "paddle_speed": 15,
+    "ball_speed": 20,
+    "nbr_of_players": 4
+  }
 }
+
 ```
 
 If successful, returns `200` status code and `success` in json
@@ -414,10 +422,4 @@ Example request:
 curl -X POST -H "Content-Type: application/json" -d '@path/to/tournamentSettings.json' https://localhost:9443/api/tournament/create-and-list
 ```
 
-Example response:
-
-```json
-{
-    "succ"
-}
-```
+Responds with the same body that was sent

@@ -206,9 +206,6 @@ function eliminatePlayer(data, player) {
     // update the nbrOfPlayers accordingly;
     data.gamemode.nbrOfPlayers--;
     // call init() again to setup the field correctly;
-    if (data.gamemode.nbrOfPlayers > 1) {
-        init.initFieldShape(data);
-    }
 }
 
 function handleScoring(data, player) {
@@ -231,6 +228,13 @@ function handleScoring(data, player) {
                 endGame(data, Object.values(data.players)[0]);
                 return -1;
             }
+            if (data.gamemode.nbrOfPlayers == 2 && data.field.wallsSize < data.field.goalsSize * 1.5) {
+                data.field.wallsSize = data.field.goalsSize * 1.5;
+                for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
+                    data.field.walls[i].h = data.field.wallsSize;
+                }
+            }
+            init.initFieldShape(data);
             return 1;
         }
     }
