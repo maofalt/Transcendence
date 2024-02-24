@@ -1,3 +1,4 @@
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
 class Tournament(models.Model):
@@ -5,7 +6,7 @@ class Tournament(models.Model):
     tournament_name = models.CharField(max_length=255, unique=True)
     game_type = models.ForeignKey('GameType', on_delete=models.PROTECT, null=False, to_field='type_id', default=1)
     created_at = models.DateTimeField(auto_now_add=True)
-    nbr_of_player = models.IntegerField(default=2)
+    nbr_of_player = models.IntegerField(default=2, validators=[MinValueValidator(2), MaxValueValidator(8)])
     tournament_type = models.ForeignKey('TournamentType', on_delete=models.PROTECT, null=False, to_field='type_id', default=1)
     registration = models.ForeignKey('RegistrationType', on_delete=models.PROTECT, null=False, to_field='type_id', default=1)
     setting = models.ForeignKey('MatchSetting', on_delete=models.PROTECT, null=False, to_field='setting_id', default=0)
@@ -22,7 +23,7 @@ class TournamentMatch(models.Model):
 class MatchSetting(models.Model):
     setting_id = models.AutoField(primary_key=True)
     duration_sec = models.IntegerField(default=210)
-    max_score = models.IntegerField(default=5)
+    max_score = models. IntegerField(default=5)
     nbr_of_sets = models.IntegerField(default=1)
     paddle_speed = models.IntegerField(default=10)
     ball_speed = models.IntegerField(default=10)
