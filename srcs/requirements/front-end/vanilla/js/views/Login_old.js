@@ -3,7 +3,6 @@ import AbstractView from "./AbstractView";
 import { getCookie } from "@utils/getCookie";
 import { createElement } from "@utils/createElement";
 import { htmlToElement } from "@utils/htmlToElement";
-import '@css/login.css';
 
 export default class Login extends AbstractView {
 	constructor(element) {
