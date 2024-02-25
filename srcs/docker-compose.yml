@@ -21,6 +21,12 @@ services:
     restart: unless-stopped
     depends_on:
       - game
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+        max-file: "3"
+
 
 ##CONTAINER MANAGER
   portainer:
@@ -39,16 +45,28 @@ services:
       - portainer-data:/data
     networks:
       - transcendence
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+        max-file: "3"
+
 
 #FRONT END SERVICES
   # production ready front-end served by nginx built with vite
   front-end:
-      container_name: front-end
-      build:
-        context: ./requirements/front-end/
-        dockerfile: Dockerfile
-      networks:
-        - transcendence
+    container_name: front-end
+    build:
+      context: ./requirements/front-end/
+      dockerfile: Dockerfile
+    networks:
+      - transcendence
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+        max-file: "3"
+
 
   # react with vite and HMR for development
   js-dev:
@@ -62,6 +80,12 @@ services:
       - .env
     networks:
       - transcendence
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+        max-file: "3"
+
 
 #BACKEND GAME SERVICES
   game:
@@ -81,6 +105,12 @@ services:
     volumes:
       - ./requirements/traefik/config/ssl/:/etc/game/ssl/
       - ./requirements/game/:/app/
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+        max-file: "3"
+
 
   game-db:
     container_name: game-db
@@ -96,6 +126,12 @@ services:
       - game_db:/var/lib/postgresql/data
     networks:
       - transcendence
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+        max-file: "3"
+
 
   user_management:
     container_name: user_management
@@ -113,6 +149,12 @@ services:
       - .env
     networks:
       - transcendence
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+        max-file: "3"
+
 
   user_management_db:
     container_name: user_management_db
@@ -129,18 +171,30 @@ services:
       - user-management-db:/var/lib/postgresql/data
     networks:
         - transcendence
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+        max-file: "3"
+
 
   tournament:
-      container_name: tournament
-      build:
-        context: ./requirements/tournament_service/
-        dockerfile: Dockerfile
-      networks:
-        - transcendence
-      volumes:
-        - ./requirements/tournament_service/app:/app
-      #ports:
-      #  - 8034:8000
+    container_name: tournament
+    build:
+      context: ./requirements/tournament_service/
+      dockerfile: Dockerfile
+    networks:
+      - transcendence
+    volumes:
+      - ./requirements/tournament_service/app:/app
+    #ports:
+    #  - 8034:8000
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+        max-file: "3"
+
 
   tournament_db:
     container_name: tournament_db
@@ -158,6 +212,12 @@ services:
     #   - 55432:5432
     networks:
       - transcendence
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+        max-file: "3"
+
 
 #VOLUMES
 volumes:
