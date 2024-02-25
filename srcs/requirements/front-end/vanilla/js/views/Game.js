@@ -65,7 +65,7 @@ export default class Game extends AbstractView {
 
         // objects
         this.ball = null;
-		this.banana = null;
+		this.ballModel = null;
         this.paddles = [];
         this.walls = [];
 		this.goals = [];
@@ -174,8 +174,10 @@ export default class Game extends AbstractView {
 		
 		this.socket.on('render', data => {
 			data.playersArray = Object.values(data.players);
-			console.log("Rendering Frame...");
-			this.updateScene(data);
+			if (data.ball.model && this.ballModel) {
+				console.log("Rendering Frame...");
+				this.updateScene(data);
+			}
 			// console.log("FPS: " + 1000 / callTracker() + "fps");
 			fps = 1000 / callTracker();
 			this.renderer.render(this.scene, this.camera);
@@ -234,7 +236,6 @@ export default class Game extends AbstractView {
 		this.generateGoals(data);
 		this.generateLights(data);
 		this.generateScores(data);
-		this.generateBanana(data);
 		
 		// rotate the scene relative to the current client (so the paddle is at the bottom)
 		this.scene.rotateZ(-2 * Math.PI/data.gamemode.nbrOfPlayers * this.dir)
@@ -270,25 +271,18 @@ export default class Game extends AbstractView {
 	// Other methods (generateScene, updateScene, etc.) here
 	updateScene(data, socket) {
 		// console.log("Updating Scene...");
-		this.ball.mesh.position.set(data.ball.pos.x, data.ball.pos.y, 0);
-		if (this.banana) {
-			this.banana.position.set(data.ball.pos.x, data.ball.pos.y, 0);
-			// this.banana.rotateX(-Math.PI / 70);
-			this.banana.rotateZ(Math.PI / 36);
-			// this.banana.rotateY(Math.PI / 64);
+		if (data.ball.model) {
+			this.ballModel.position.set(data.ball.pos.x, data.ball.pos.y, 0);
+			this.ballModel.rotateX(-Math.PI / 42);
+			this.ballModel.rotateZ(Math.PI / 36);
+			// this.ballModel.rotateY(Math.PI / 64);
+		} else {
+			this.ball.mesh.position.set(data.ball.pos.x, data.ball.pos.y, 0);
 		}
 
-		// this.ball.dirMesh.position.set(data.ball.pos.x, data.ball.pos.y, 0);
 		for (let i=0; i<data.playersArray.length; i++) {
 			this.paddles[i].mesh.position.set(data.playersArray[i].paddle.pos.x, data.playersArray[i].paddle.pos.y, data.playersArray[i].paddle.pos.z);
 			this.paddles[i].mesh.material.opacity = data.playersArray[i].connected ? 1.0 : 0.3;
-			// this.paddles[i].dir1Mesh.position.set(data.playersArray[i].paddle.pos.x, data.playersArray[i].paddle.pos.y, data.playersArray[i].paddle.pos.z);
-			// this.paddles[i].dir2Mesh.position.set(data.playersArray[i].paddle.pos.x, data.playersArray[i].paddle.pos.y, data.playersArray[i].paddle.pos.z);
-			// for (let i=0; i<data.playersArray.length; i++) {
-				// 	if (data.playersArray[i].socketID = socket.id) {
-					// 		this.camera.rotation.set(0, 0, data.playersArray[i].paddle.angle + Math.PI / 2);
-					// 	}
-					// }
 		}
 				
 		// update scores
@@ -385,7 +379,6 @@ export default class Game extends AbstractView {
 	}
 
 	refreshScores(data) {
-
 		if (!data || !data.playersArray || !this.textSettings || !this.textSettings.font)
 			return console.log("Data or font not found");
 
@@ -400,42 +393,70 @@ export default class Game extends AbstractView {
 		});
 
 		this.prevScores = data.playersArray.map(player => player.score);
+	};
 
-	}
-
-	generateBanana(data) {
-		// loader.load( 'https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', ( response ) => {
-
-		// 	this.textSettings.font = response;
-
-		// 	this.refreshScores(data);
-
-		// 	console.log("Font loaded");
-
-		// } );
-		this.loader.load('./js/assets/banana/scene.gltf', ( gltf ) => {
-			this.banana = gltf.scene;
-			this.banana.scale.set(0.025, 0.025, 0.025);
-			// this.banana.rotation.set(Math.PI / 2.5, 0.5, 0);
-			// this.banana.position.set(0, -0.5, 0);
-			this.scene.add(this.banana);
+	async loadModel(path) {
+		return new Promise((resolve, reject) => {
+			this.loader.load(
+				// Model URL
+				path,
+				// onLoad callback
+				(gltf) => {
+					resolve(gltf.scene);
+				},
+				// onProgress callback (optional)
+				undefined,
+				// onError callback (optional)
+				(error) => reject(error)
+			);
 		});
-			// called while loading is progressing
-		// 	function ( xhr ) {
-		
-		// 		console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-		
-		// 	},
-		// 	// called when loading has errors
-		// 	function ( error ) {
-		
-		// 		console.log( 'An error happened while loading model' );
-		
-		// 	}
-		// );
+	};
+
+	async loadBallModel(data) {
+		// Load the model
+		this.loadModel(`./js/assets/${data.ball.model}/scene.gltf`).then((model) => {
+			console.log("MODEL LOADED", model);
+
+			// Assign the loaded model to this.ballModel
+			this.ballModel = model;
+
+			let boundingBox = new THREE.Box3().setFromObject(this.ballModel);
+			let size = boundingBox.getSize(new THREE.Vector3()); // Returns Vector3
+			let len = size.x > size.y ? size.x : size.y;
+			let scale = data.ball.r / (len / 2);
+			this.ballModel.scale.set(scale, scale, scale);
+	
+			// Add the model to the scene
+			this.scene.add(this.ballModel);
+	
+			// Continue with other setup or rendering logic
+		}).catch((error) => {
+			console.error("Error loading model: ", error);
+		});
 	}
+
+	// loadBallModel(model) {
+	// 	this.loader.load("./js/assets/" + model + "/scene.gltf", ( gltf ) => {
+	// 		this.ballModel = gltf.scene;
+	// 		this.scene.add(this.ballModel);
+	// 	});
+		
+	// }
+
+	// scaleBallModel(data) {
+	// 	this.loadBallModel(data.ball.model);
+	// 	let boundingBox = new THREE.Box3().setFromObject(this.ballModel);
+	// 	let size = boundingBox.getSize(); // Returns Vector3
+	// 	let len = size.x > size.y ? size.x : size.y;
+	// 	let scale = len / data.ball.r;
+	// 	this.ballModel.scale.set(scale, scale, scale);
+	// }
 
 	generateBall(data) {
+		if (data.ball.model) {
+			this.loadBallModel(data);
+			return ;
+		}
 		const ballGeometry = new THREE.SphereGeometry(data.ball.r, 24, 12);
 		const ballMaterial = new THREE.MeshPhongMaterial({ color: data.ball.col, transparent: false, opacity: 0.7 });
 		const dir1 = new THREE.ArrowHelper(

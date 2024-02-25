@@ -112,6 +112,7 @@ class Ball {
         this.r = ballData.radius;
         this.sp = ballData.speed;
         this.col = parseInt(ballData.color, 16);
+        this.model = ballData.model;
     }
 }
 
