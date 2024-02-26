@@ -19,20 +19,20 @@ COMPOSE_FILE = -f srcs/docker-compose.yml
 all: build up logs
 
 build: set-ip set-codeespace-url set-permissions decrypt-mama replace
-	docker compose $(COMPOSE_FILE) build
+	docker-compose $(COMPOSE_FILE) build
 
 up:
-	docker compose $(COMPOSE_FILE) up -d
+	docker-compose $(COMPOSE_FILE) up -d
 
 down:
-	docker compose $(COMPOSE_FILE) down
+	docker-compose $(COMPOSE_FILE) down
 
 logs:
-	docker compose $(COMPOSE_FILE) logs -f
+	docker-compose $(COMPOSE_FILE) logs -f
 
 #erase all images and volumes USE WITH CAUTION!!!
 clean:
-	docker compose $(COMPOSE_FILE) down --rmi all --volumes --remove-orphans
+	docker-compose $(COMPOSE_FILE) down --rmi all --volumes --remove-orphans
 	docker system prune -f
 
 fclean: clean
