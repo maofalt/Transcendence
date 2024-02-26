@@ -36,10 +36,20 @@ class MatchSetting(models.Model):
         MaxValueValidator(10, message="Max score cannot exceed 10.")
         ]
     )
-    nbr_of_sets = models.IntegerField(default=1)
+    # nbr_of_sets = models.IntegerField(default=1)
+    walls_factor = models.IntegerField(default=0,
+        validators=[MinValueValidator(0, message="Walls factor must be at least 0."), 
+        MaxValueValidator(2, message="Walls factor cannot exceed 2.")
+        ]
+    )
+    size_of_goal = models.IntegerField(default=15, 
+        validators=[MinValueValidator(15, message="Size of goal must be at least 10."),
+        MaxValueValidator(30, message="Size of goal cannot exceed 30.")
+        ]
+    )
     paddle_speed = models.IntegerField(default=10)
     ball_speed = models.IntegerField(default=10)
-    nbr_of_players = models.IntegerField(default=2)
+    # nbr_of_players = models.IntegerField(default=2)
 
 class GameType(models.Model):
     type_id = models.AutoField(primary_key=True)
