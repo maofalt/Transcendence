@@ -2,6 +2,8 @@ import '@css/CreateTournament.css'
 import AbstractView from "./AbstractView";
 import { makeApiRequest } from '@utils/makeApiRequest.js';
 import { navigateTo } from '@utils/Router.js';
+import Game from '@views/Game.js';
+import { htmlToElement } from '@utils/htmlToElement';
 
 
 export default class CreateTournament extends AbstractView {
@@ -10,10 +12,31 @@ export default class CreateTournament extends AbstractView {
         super();
         //this.createTournament = this.createTournament.bind(this);
         //this.createSettings = this.createSettings.bind(this);
+        this.createGame = this.createGame.bind(this);
+        this.game = new Game();
+    }
+    
+    async init() {
+        let matchID = await this.createGame();
+        console.log('Match ID:', matchID);
+        this.game = new Game(matchID, 500, 830);
+        this.game.init();
     }
 
+    async createGame() {
+		console.log('Create Game');
+		const gameSettings = this.getGameSettings();
+		try {
+			const response = await makeApiRequest('https://localhost:9443/game-logic/createMatch','POST',gameSettings);
+			console.log('Match created:', response.body);
+            return response.body.matchID;
+		} catch (error) {
+			console.error('Failed to create match:', error);
+            return '';
+		}
+	}
     async getHtml() {
-        return `
+        let htmlstuff = `
             <section class="create-tournament">
                 <button type="submit">Create Tournament</button>
                 <div 
@@ -70,7 +93,7 @@ export default class CreateTournament extends AbstractView {
                       <label class="switch">
                         <input type="checkbox" id="game_type">
                         <span class="slider round"></span>
-                      </label>
+                      </label>View
 
                       <label for="nbr_of_players">Number of Players (2-8):</label>
                       <input type="range" id="nbr_of_players" name="nbr_of_players" min="2" max="8" value="5">
@@ -91,7 +114,7 @@ export default class CreateTournament extends AbstractView {
                       <h3>Paddles Data</h3>
                       <label for="paddle_height">Paddle Height (1-12):</label>
                       <input type="range" id="paddle_height" name="paddle_height" min="1" max="12" value="10">
-
+                      View
                       <h3>Ball Data</h3>
                       <label for="ball_speed">Ball Speed:</label>
                       <input type="number" id="ball_speed" name="ball_speed" step="0.1" value="0.7">
@@ -106,6 +129,49 @@ export default class CreateTournament extends AbstractView {
                 </div>                
             </section>
         `;
+        var tempDiv = document.createElement('div');
+        tempDiv.innerHTML = htmlstuff;
+        let htmlElement = tempDiv;
+        htmlElement.querySelector('.game-showcase').innerHTML = await this.game.getHtml();
+        return htmlElement.innerHTML;
     }
+
+    getGameSettings() {
+		return {
+			"gamemodeData": {
+			  "nbrOfPlayers": 3,
+			  "nbrOfRounds": 1,
+			  "timeLimit": 0
+			},
+			"fieldData": {
+			  "wallsFactor": 1,
+			  "sizeOfGoals": 20
+			},
+			"paddlesData": {
+			  "width": 0,
+			  "height": 12,
+			  "speed": 0.5
+			},
+			"ballData": {
+			  "speed": 5,
+			  "radius": 100,
+			  "color": "0xf00fff"
+			},
+			"playersData": [
+			  {
+				"accountID": "motero",
+				"color": "0x0000ff"
+			  },
+			  {
+				"accountID": "tata2",
+				"color": "0x00ff00"
+			  },
+			  {
+				"accountID": "tata3",
+				"color": "0x00ff00"
+			  }
+			]
+		};
+	}
 
 }

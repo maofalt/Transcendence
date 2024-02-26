@@ -48,9 +48,11 @@ class BoxObject {
 }
 
 export default class Game extends AbstractView {
-	constructor(element) {
-		super(element);
+	constructor(query='', screenWidth, screenHeight) {
+		super();
 		this.loader = new GLTFLoader();
+
+		this.query = 'matchID=' + query;
 		
         // controls
         this.controls = null;
@@ -88,6 +90,10 @@ export default class Game extends AbstractView {
 		}
 		this.prevScores = [];
 		this.dir = 0;
+
+		this.screenWidth = screenWidth || window.innerWidth;
+		this.screenHeight = screenHeight || window.innerHeight;
+		console.log("Screen size: ", this.screenWidth, this.screenHeight);
 	};
 
 	async getHtml() {
@@ -114,9 +120,9 @@ export default class Game extends AbstractView {
 	};
 
 	onWindowResize() {
-		this.camera.aspect = window.innerWidth / window.innerHeight;
+		this.camera.aspect = this.screenWidth / this.screenHeight;
 		this.camera.updateProjectionMatrix();
-		this.renderer.setSize(window.innerWidth, window.innerHeight);
+		this.renderer.setSize(this.screenWidth, this.screenHeight);
 	};
 
 	handleKeyPress(event) {
@@ -138,7 +144,8 @@ export default class Game extends AbstractView {
 		// socket initialization and event handling logic
 		const hostname = window.location.hostname;
 		const protocol = 'wss';
-		const query = window.location.search.replace('?', '');
+		const query = window.location.search.replace('?', '') || this.query;
+		console.log("Query: ", query);
 		const io_url = hostname.includes("github.dev") ? `${protocol}://${hostname}` : `${protocol}://${hostname}:9443`;
 		console.log(`Connecting to ${io_url}`)
 		this.socket = io(`${io_url}`, {
@@ -222,7 +229,7 @@ export default class Game extends AbstractView {
 		back.colorSpace = THREE.SRGBColorSpace;
 		this.scene.background = back;
 		
-		this.renderer.setSize(window.innerWidth, window.innerHeight);
+		this.renderer.setSize(this.screenWidth, this.screenHeight);
 		
 		this.container.appendChild(this.renderer.domElement);
 		
@@ -247,7 +254,7 @@ export default class Game extends AbstractView {
 		this.renderer = new THREE.WebGLRenderer({ alpha: true });
 
 		// set the camera and set it to look at the center of the match
-		this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+		this.camera = new THREE.PerspectiveCamera(45, this.screenWidth / this.screenHeight, 0.1, 1000);
 		this.camera.position.set(data.camera.pos.x, data.camera.pos.y, data.camera.pos.z);
 		this.camera.lookAt(new THREE.Vector3(data.camera.target.x, data.camera.target.y, data.camera.target.z));
 		
