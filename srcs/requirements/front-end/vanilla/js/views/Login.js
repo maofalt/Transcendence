@@ -40,10 +40,12 @@ export default class Login extends AbstractView {
 
 	setupEventListeners() {
 		updateSignupButtonStatus();
-		$("#signupButton").toggleClass("enabled", false);
+		toggleClass("#signupButton", "enabled", false);
 	
-		$("#signupForm input").on("input", function() {
-			updateSignupButtonStatus();
+		document.querySelectorAll("#signupForm input").forEach(input => {
+			input.addEventListener("input", function() {
+				updateSignupButtonStatus();
+			});
 		});
 
 		$('#devDbButton').on('click', function () {
@@ -91,42 +93,42 @@ export default class Login extends AbstractView {
 	}
 
 	checkPasswordMatch() {
-		var password = $("#signupForm input[name='password']").val();
-		var confirmPassword = $("#confirmPassword").val();
+		var password = document.querySelector("#signupForm input[name='password']").value;
+		var confirmPassword = document.querySelector("#confirmPassword").value;
 
 		if (password !== confirmPassword) {
-			$("#confirmPasswordError").text("Passwords do not match");
+			document.querySelector("#confirmPasswordError").textContent = "Passwords do not match";
 		} else {
-			$("#confirmPasswordError").text("");
+			document.querySelector("#confirmPasswordError").textContent = "";
 		}
 	}
 
 	updateSignupButtonStatus() {
 		console.log('updateSignupButtonStatus() called\n\n');
 
-		var form = $("#signupForm")[0];
+		var form = document.querySelector("#signupForm");
 		var allFieldsFilled = Array.from(form.elements).every(function(element) {
 			return element.checkValidity();
 		});
 
-		var password = $("#signupForm input[name='password']").val();
-		var confirmPassword = $("#confirmPassword").val();
+		var password = document.querySelector("#signupForm input[name='password']").value;
+		var confirmPassword = document.querySelector("#confirmPassword").value;
 		var isPasswordMatch = password === confirmPassword;
 
-		var isCodeVerified = $("#successMessage").text() === "Verified successfully";
+		var isCodeVerified = document.querySelector("#successMessage").textContent === "Verified successfully";
 
 		if (allFieldsFilled && isPasswordMatch && isCodeVerified) {
-			$("#signupButton").prop("disabled", false);
+			prop("#signupButton", "disabled", false);
 			console.log('BUTTON: need to be enable\n\n');
-
+			
 		} else {
-			$("#signupButton").prop("disabled", true);
+			prop("#signupButton", "disabled", true);
 		}
-		$("#signupButton").toggleClass("enabled", allFieldsFilled && isPasswordMatch && isCodeVerified);
+		toggleClass("#signupButton", "enabled", allFieldsFilled && isPasswordMatch && isCodeVerified);
 	}
 
 	sendVerificationCode() {
-		var email = $("#signupEmail").val();
+		var email = document.querySelector("#signupEmail").value;
 
 		$.ajax({
 			url: '/api/user_management/auth/access_code',
@@ -154,34 +156,35 @@ export default class Login extends AbstractView {
 	}
 	
 	closePrivacyPolicyPopup() {
-		$("#privacyPolicyPopup").fadeOut();
+		fadeOut("#privacyPolicyPopup");
 	}
 
 	closeForgotPasswordModal() {
-		$("#darkLayer").fadeOut();
-		$("#forgotPasswordModal").fadeOut();
+		fadeOut("#darkLayer");
+		fadeOut("#forgotPasswordModal");
 	}
 	
 	closeSignupPopup() {
 		// $("#darkLayer").fadeOut();
-		$("#signupPopup").fadeOut();
+		fadeOut("#signupPopup");
 		console.log('closeSignupPopup() called\n\n');
 	}
 
 	closeLoginPopup() {
-		$("#darkLayer").fadeOut();
-		$("#loginPopup").fadeOut();
+		fadeOut("#darkLayer");
+		fadeOut("#loginPopup");
 		console.log('closeLoginPopup() called\n\n');
 	}
 
 	closeSignupPopup() {
 		// $("#darkLayer").fadeOut();
-		$("#signupPopup").fadeOut();
+		fadeOut("#signupPopup");
 		console.log('closeSignupPopup() called\n\n');
 	}
 
 	displayErrorMessage(message) {
-		$('#errorMessage').text(message).css('color', 'red');
+		document.getElementById('errorMessage').textContent = message;
+		document.getElementById('errorMessage').style.color = 'red';
 	}
 
 	// window.addEventListener("message", (event) => {
@@ -191,8 +194,8 @@ export default class Login extends AbstractView {
 	// }, false);
 	
 	verifyCode(context) {
-		var email = $("#signupEmail").val();
-		var verificationCode = $("#verificationCode").val();
+		var email = document.querySelector("#signupEmail").value;
+		var verificationCode = document.querySelector("#verificationCode").value;
 
 		$.ajax({
 			url: '/api/user_management/auth/verify_code',
@@ -245,12 +248,12 @@ export default class Login extends AbstractView {
 			success: function (data) {
 			console.log('Login successful:', data);
 			if (data.requires_2fa) {
-			// closeLoginPopup();
-			// window.location.href = '';
-				$('#loginForm').hide();
-				$("#forgotPasswordLink").hide();
-				$('#signupLink').hide();
-				$('#oneTimeCodeSection').show();
+				// closeLoginPopup();
+				// window.location.href = '';
+				document.querySelector('#loginForm').style.display = 'none'; // hide
+				document.querySelector('#forgotPasswordLink').style.display = 'none'; // hide
+				document.querySelector('#signupLink').style.display = 'none'; // hide
+				document.querySelector('#oneTimeCodeSection').style.display = 'block'; // show
 			} else {
 				console.log('2FA not required');
 			}
@@ -268,7 +271,7 @@ export default class Login extends AbstractView {
 	}
 
 	submitOneTimeCode(context) {
-		var oneTimeCode = $('input[name="one_time_code"]').val();
+		var oneTimeCode = document.querySelector('input[name="one_time_code"]').value;
 		console.log('submitOneTimeCode submit');
 		$.ajax({
 			url: '/api/user_management/auth/verify_code',
@@ -297,7 +300,7 @@ export default class Login extends AbstractView {
 	}
 	
 	sendUrlToEmail() {
-		var username = $('input[name="username_f"]').val();
+		var username = document.querySelector('input[name="username_f"]').value;
 		$.ajax({
 			url: '/api/user_management/auth/sendResetLink',
 			type: 'POST',
