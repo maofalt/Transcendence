@@ -273,51 +273,49 @@ export default class Login extends AbstractView {
 	submitOneTimeCode(context) {
 		var oneTimeCode = document.querySelector('input[name="one_time_code"]').value;
 		console.log('submitOneTimeCode submit');
-		$.ajax({
-			url: '/api/user_management/auth/verify_code',
-			type: 'POST',
-			data: { 'one_time_code': oneTimeCode, 'context': context },
-			headers: { "X-CSRFToken": getCookie('csrftoken') },
-			success: function (data) {
-			console.log('One-time code verification successful:', data);
+		makeApiRequest('/api/user_management/auth/verify_code', 'POST', { 'X-CSRFToken': getCookie('csrftoken') })
+		fetch('/api/user_management/auth/verify_code', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-CSRFToken': getCookie('csrftoken')
+			},
+			body: JSON.stringify({ 'one_time_code': oneTimeCode, 'context': context })
+		})
+		.then(response => {
+			console.log('One-time code verification successful:', response);
 			closeLoginPopup();
 			window.location.href = '';
-			},
-			error: function (xhr, textStatus, errorThrown) {
+		})
+		.catch(error => {
 			console.log('One-time code verification failed.');
-			var response;
-			try {
-				response = JSON.parse(xhr.responseText);
-			} catch (e) {
-				response = { error: 'An error occurred while processing your request.' };
-			}
-			displayErrorMessage(response.error);
-			},
-			complete: function (xhr, textStatus) {
-			console.log('Request complete. Status:', textStatus);
-			}
+			console.error(error);
+			displayErrorMessage('An error occurred while processing your request.');
+		})
+		.finally(() => {
+			console.log('Request complete.');
 		});
 	}
 	
 	sendUrlToEmail() {
 		var username = document.querySelector('input[name="username_f"]').value;
-		$.ajax({
-			url: '/api/user_management/auth/sendResetLink',
-			type: 'POST',
-			data: { 'username': username },
-			headers: { "X-CSRFToken": getCookie('csrftoken') },
-			success: function (data) {
-			console.log('Password reset link sent successfully:', data);
-			closeForgotPasswordModal();
-			},
-			error: function (xhr, textStatus, errorThrown) {
-			console.log('Error sending reset Link:', errorThrown);
-			},
-			complete: function (xhr, textStatus) {
-			console.log('Request complete. Status:', textStatus);
+		makeApiRequest('/api/user_management/auth/sendResetLink', 
+					'POST', 
+					{ 'username': username }, 
+					{ 'X-CSRFToken': getCookie('csrftoken') })
+		.then(response => {
+			console.log('Status Code:', response.status);
+			console.log('Response Body:', response.body);
+			if (response.ok) {
+				console.log('Password reset link sent successfully:', response);
+				closeForgotPasswordModal();
+			} else {
+				console.log('Error sending reset Link:', response.statusText);
 			}
+		})
+		.catch(error => {
+			console.log('Error sending reset Link:', error);
 		});
 		return false;
 	}
-
 }
