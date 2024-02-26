@@ -6,7 +6,7 @@
     cursor: pointer; /* Cursor changes to pointer on hover */
     border: none; /* No border */
     display: inline-block; /* Allows setting margins */
-    margin: 5px; /* Some space around the button */
+    margin: auto; /* Center the button */
     width: 200px;
 
     font-size: 1rem;

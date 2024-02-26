@@ -6,8 +6,10 @@ done
 
 # Apply database migrations
 python manage.py flush --no-input
+python manage.py migrate --fake sessions zero
 python manage.py makemigrations
-python manage.py migrate --run-syncdb
+python manage.py migrate --fake-initial
+
 
 # Start your Django app
 python manage.py runserver 0.0.0.0:8001

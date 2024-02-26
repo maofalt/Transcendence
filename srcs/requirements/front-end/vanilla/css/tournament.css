@@ -1,14 +1,18 @@
 .tournament{
-    display: grid;
-    margin: 2rem;
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    margin: auto;
+    
 }
 
 .help{
     display:flex;
-    
+    justify-content: flex-end;
+
 }
-action-button{
-    margin-top: 4rem;
-    margin-bottom: 5rem;
+
+.action-button{
+    margin: auto;
+    margin-top: 5rem;
+    margin-bottom: 2rem;
 }

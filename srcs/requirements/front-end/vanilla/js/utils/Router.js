@@ -5,6 +5,7 @@ import Options from '@views/Options.js';
 import Game from '@views/Game.js';
 import Login from '@views/Login.js';
 import NotFound from '@views/NotFound.js';
+import CreateTournament from '@views/CreateTournament.js';
 
 
 export const routes = {
@@ -31,6 +32,12 @@ export const routes = {
 		view: Tournament,
 		title: 'Tournament',
 		buttonText: 'Tournament'
+	},
+	'/create-tournament': {
+		path: '/create-tournament',
+		view: CreateTournament,
+		title: 'Tournament Creation',
+		buttonText: 'Create Tournament'
 	},
 	'/options': {
 		path: '/options',

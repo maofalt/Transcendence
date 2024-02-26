@@ -12,6 +12,7 @@ export default class Tournament extends AbstractView {
 		super();
 
 		this.createMatch = this.createMatch.bind(this);
+		this.createTournament = this.createTournament.bind(this);
 		this.caption = 'Active Tournaments';
 		
 		this.headers = ['Tournament Name', 'Host', 'Number of Players', 'Time Remaining', 'Tournament Type', 'Registration Mode', 'Action'];
@@ -80,10 +81,9 @@ export default class Tournament extends AbstractView {
 	}
 
 	async getHtml() {
-		//await new Promise(resolve => setTimeout(resolve, 100)); // Wait for 3 seconds
 		return `
 			<div class="tournament">
-				<div>    
+				<div class="action-button">    
 					<action-button 
             		    data-text=" ⚡ Play Now"
 						id="createMatchButton"
@@ -116,6 +116,10 @@ export default class Tournament extends AbstractView {
 
 		const createMatchButton = document.getElementById('createMatchButton');
 		createMatchButton.addEventListener('click', this.createMatch);
+
+		const createTournamentButton = document.getElementById('createTournamentButton');
+		createTournamentButton.addEventListener('click', this.createTournament);
+		
 	}
 
 	async getTournamentList() {
@@ -143,6 +147,11 @@ export default class Tournament extends AbstractView {
 		}
 	}
 
+	async createTournament() {
+		navigateTo('/create-tournament');
+	}
+
+
 	getGameSettings() {
 		return {
 			"gamemodeData": {
@@ -166,7 +175,7 @@ export default class Tournament extends AbstractView {
 			},
 			"playersData": [
 			  {
-				"accountID": "tata",
+				"accountID": "motero",
 				"color": "0x0000ff"
 			  },
 			  {
