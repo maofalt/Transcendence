@@ -1,3 +1,5 @@
+
+export default `
 <div id="darkLayer"></div>
 
 <h1>Login</h1>
@@ -85,3 +87,4 @@
 		</form>
 	</div>
 </div>
+`;

@@ -1,43 +1,5 @@
-import { makeApiRequest } from "../utils/makeApiRequest";
-import AbstractView from "./AbstractView";
-import { getCookie } from "@utils/getCookie";
-import { createElement } from "@utils/createElement";
-import { htmlToElement } from "@utils/htmlToElement";
-import '@css/login.css';
-import loginPageSource from "@views/loginPageSource";
-import { toggleClass, prop } from "@utils/jqueryUtils";
-
-export default class Login extends AbstractView {
-	constructor(element) {
-		super(element);
-		const jwt = getCookie('jwtToken');
-		const sess = getCookie('sessionid');
-		const csrf = getCookie('csrftoken');
-		console.log('tokenys: ', sess, jwt, csrf);
-		this.state = {
-			
-		};
-		this.loginForm = htmlToElement(loginPageSource);
-	}
-
-	async init() {
-
-	}
-
-	destroy() {
-	}
-
-	async getHtml() {
-		console.log("path: ", document.location.origin);
-		// history.replaceState(null, null, document.location.origin + '/api/user_management');
-		// window.location.href = document.location.origin + '/api/user_management';
-		// let html = fetch(document.location.origin + '/api/user_managemen');
-
-		const testy = await makeApiRequest('/api/user_management/', 'GET');
-		
-		return loginPageSource;
-	}
-
+	
+	<script>
 		$(document).ready(function () {
 		updateSignupButtonStatus();
 		$("#signupButton").toggleClass("enabled", false);
@@ -324,7 +286,9 @@ export default class Login extends AbstractView {
 		$('#errorMessage').text(message).css('color', 'red');
 	}
 	
+	</script>
 	
+	<script>
 	  $(document).ready(function () {
 		  $('#devDbButton').on('click', function () {
 			  $.ajax({
@@ -340,4 +304,4 @@ export default class Login extends AbstractView {
 			  });
 		  });
 	  });
-}
+	</script>
