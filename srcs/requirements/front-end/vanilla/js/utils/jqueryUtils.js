@@ -1,4 +1,5 @@
 
+// add or remove a class from all elements matching the selector
 function toggleClass(selector, className, state) {
 	const elements = document.querySelectorAll(selector);
 	elements.forEach((element) => {
@@ -16,6 +17,7 @@ function toggleClass(selector, className, state) {
 	});
 }
 
+// set property value for all elements matching the selector
 function prop(selector, property, value) {
 	const elements = document.querySelectorAll(selector);
 	elements.forEach((element) => {
@@ -23,4 +25,17 @@ function prop(selector, property, value) {
 	});
 }
 
-export { toggleClass, prop };
+// add '.in' class after 10ms
+function fadeIn(element) {
+	element.classList.add('fade');
+	setTimeout(() => element.classList.add('in'), 10); // 10ms delay to allow the DOM to update
+}
+
+// remove '.fade' class after the transition is done
+function fadeOut(element) {
+	element.classList.remove('in');
+	setTimeout(() => element.classList.remove('fade'), 500); // 500ms delay to allow the transition to finish (adjust to match the transition duration in the CSS file)
+}
+
+
+export { toggleClass, prop, fadeIn, fadeOut };
