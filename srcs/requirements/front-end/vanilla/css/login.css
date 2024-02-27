@@ -52,10 +52,12 @@
 	background-color: grey !important;
 	cursor: not-allowed !important;
 }
+
 #signupButton:enabled {
 	background-color: green !important;
 	cursor: pointer !important;
 }
+
 .popup-container {
 	display: none;
 	position: fixed;

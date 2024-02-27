@@ -3,10 +3,10 @@ import AbstractView from "./AbstractView";
 import { getCookie } from "@utils/getCookie";
 import { createElement } from "@utils/createElement";
 import { htmlToElement } from "@utils/htmlToElement";
-import '@css/login.css';
+// import '@css/login.css';
 import loginPageSource from "@views/loginPageSource";
-import { toggleClass, prop, fadeIn, fadeOut } from "@utils/jqueryUtils";
-import LoginPage from "./LoginShaddow";
+// import { toggleClass, prop, fadeIn, fadeOut } from "@utils/jqueryUtils";
+import LoginPage from "./LoginShadow";
 
 export default class Login extends AbstractView {
 	constructor(element) {
@@ -30,8 +30,10 @@ export default class Login extends AbstractView {
 		// window.location.href = document.location.origin + '/api/user_management';
 		// let html = fetch(document.location.origin + '/api/user_managemen');
 
-		let shadowEl = document.createElement('login-page');
-		console.log("inner shadow", shadowEl.innerHTML);
-		return shadowEl.innerHTML;
+		let logincontainer = document.createElement('div');
+		logincontainer.appendChild(document.createElement('login-page'));
+		// document.querySelector('#app').appendChild(shadowEl);
+		// console.log("inner shadow", shadowEl.innerHTML);
+		return logincontainer.innerHTML;
 	}
 }
