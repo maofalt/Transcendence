@@ -16,7 +16,7 @@ export default `
 
 	<div id="errorMessage" style="color: red;"></div> <!-- This is where the error message will be displayed -->
 
-	<form id="loginForm" action="" method="POST" onsubmit="submitLoginForm(); return false;">
+	<form id="loginForm" action="" method="POST" onsubmit="console.log('submitLoginForm(); return false;')">
 		<input type="hidden" name="csrfmiddlewaretoken" value="f9voPDsD3hLuGcC1mEqvtbk5w4rbVQ2sskwaEr3aenihelt2PGyq3XS2gI8Svsyy">
 		<input name="username" type="text">
 		<input name="password" type="password">
@@ -49,7 +49,7 @@ export default `
 
 		<div id="signupPopupError" style="color: red;"></div> <!-- Add this line -->
 
-		<form id="signupForm" action="" method="POST" onsubmit="submitSignupForm(); return false;">
+		<form id="signupForm" action="" method="POST" onsubmit="console.log('submitSignupForm()'); return false;">
 			<input type="hidden" name="csrfmiddlewaretoken" value="f9voPDsD3hLuGcC1mEqvtbk5w4rbVQ2sskwaEr3aenihelt2PGyq3XS2gI8Svsyy">
 			<p>ID</p>
 			<input name="username" type="text" required="">

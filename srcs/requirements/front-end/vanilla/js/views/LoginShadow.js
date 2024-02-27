@@ -56,6 +56,16 @@ export default class LoginPage extends HTMLElement {
 			'#closePrivacyPolicyPopup': this.closePrivacyPolicyPopup,
 		};
 
+		let submitableElems = {
+			'#signupForm': this.submitSignupForm,
+			'#loginForm': this.submitLoginForm
+		}
+
+		// add all 'submit' event listeners to all forms
+		Object.entries(submitableElems).forEach(([selector, action]) => {
+			this.addTrackedListener(this.shadowRoot.querySelector(selector), "submit", action)
+		});
+
 		// add 'click' event listeners to each clickable element with corresponding function
 		Object.entries(clickableElems).forEach(([selector, action]) => {
 			this.addTrackedListener(this.shadowRoot.querySelector(selector), "click", action);
@@ -251,7 +261,7 @@ export default class LoginPage extends HTMLElement {
 	}
 
 	submitSignupForm = () => {
-		formData = new FormData(this.shadowRoot.querySelector('#signupForm'));
+		let formData = new FormData(this.shadowRoot.querySelector('#signupForm'));
 		fetch('/api/user_management/auth/signup', {
 			method: 'POST',
 			headers: {
@@ -266,6 +276,7 @@ export default class LoginPage extends HTMLElement {
 					console.log('signed up success\n\n');
 					closeSignupPopup();
 				} else {
+					console.log('bad signup: ', data.error_message)
 					this.shadowRoot.querySelector('#signupPopupError').textContent = data.error_message;
 				}
 			})
