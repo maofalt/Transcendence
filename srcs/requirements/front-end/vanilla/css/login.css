@@ -1,5 +1,5 @@
 /* css file for login page */
-<style>
+
 #loginPopup {
 	display: none;
 	position: fixed;
@@ -47,9 +47,7 @@
 	  background: rgba(0, 0, 0, 0.3);
 	  z-index: 9998;
   }
-</style>
 
-<style>
 #signupButton:disabled {
 	background-color: grey !important;
 	cursor: not-allowed !important;
@@ -72,4 +70,3 @@
 	max-height: 400px;
 	overflow-y: auto;
 }
-</style>

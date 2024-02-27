@@ -5,7 +5,7 @@ import { createElement } from "@utils/createElement";
 import { htmlToElement } from "@utils/htmlToElement";
 import '@css/login.css';
 import loginPageSource from "@views/loginPageSource";
-import { toggleClass, prop } from "@utils/jqueryUtils";
+import { toggleClass, prop, fadeIn, fadeOut } from "@utils/jqueryUtils";
 
 export default class Login extends AbstractView {
 	constructor(element) {
@@ -18,10 +18,12 @@ export default class Login extends AbstractView {
 			
 		};
 		this.loginForm = htmlToElement(loginPageSource);
+		// console.log('loginForm: ', this.loginForm);
+		// this.loginForm.classList.add('loginForm');
 	}
 
 	async init() {
-		setupEventListeners();
+		this.setupEventListeners();
 	}
 
 	destroy() {
@@ -39,16 +41,16 @@ export default class Login extends AbstractView {
 	}
 
 	setupEventListeners() {
-		updateSignupButtonStatus();
+		this.updateSignupButtonStatus();
 		toggleClass("#signupButton", "enabled", false);
 	
 		document.querySelectorAll("#signupForm input").forEach(input => {
-			input.addEventListener("input", function() {
-				updateSignupButtonStatus();
+			input.addEventListener("input", () => {
+				this.updateSignupButtonStatus();
 			});
 		});
 
-		document.querySelector('#devDbButton').addEventListener("click", function() {
+		document.querySelector('#devDbButton').addEventListener("click", () => {
 			makeApiRequest('/api/user_management/auth/developer_setting', 'GET')
 			.then(response => {
 				if (response.ok) {
@@ -65,13 +67,12 @@ export default class Login extends AbstractView {
 
 		var signupClicked = false;
 
-		document.querySelector("#forgotPasswordLink").addEventListener("click", function() {
-			click(function () {
+		document.querySelector("#forgotPasswordLink").addEventListener("click", () => {
 			fadeIn("#darkLayer");
 			fadeIn("#forgotPasswordModal");
 		});
 	
-		document.querySelector("#signupLink").addEventListener("click", function(event) {
+		document.querySelector("#signupLink").addEventListener("click", (event) => {
 			event.stopPropagation()
 			signupClicked = true;
 			console.log('close login popup');
@@ -81,7 +82,7 @@ export default class Login extends AbstractView {
 			console.log('fade in signup popup\n\n');
 		});
 
-		document.querySelector("#loginLink").addEventListener("click", function() {
+		document.querySelector("#loginLink").addEventListener("click", () => {
 			console.log('log in link clicked');
 			if (!signupClicked) {
 				fadeIn("#darkLayer");
@@ -108,7 +109,7 @@ export default class Login extends AbstractView {
 		console.log('updateSignupButtonStatus() called\n\n');
 
 		var form = document.querySelector("#signupForm");
-		var allFieldsFilled = Array.from(form.elements).every(function(element) {
+		var allFieldsFilled = Array.from(form.elements).every((element) => {
 			return element.checkValidity();
 		});
 
