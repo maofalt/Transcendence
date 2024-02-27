@@ -42,12 +42,21 @@ class MatchSetting(models.Model):
         MaxValueValidator(2, message="Walls factor cannot exceed 2.")
         ]
     )
-    size_of_goal = models.IntegerField(default=15, 
+    size_of_goals = models.IntegerField(default=15, 
         validators=[MinValueValidator(15, message="Size of goal must be at least 10."),
         MaxValueValidator(30, message="Size of goal cannot exceed 30.")
         ]
     )
-    paddle_speed = models.IntegerField(default=10)
+    paddle_height = models.IntegerField(default=10, 
+        validators=[MinValueValidator(1, message="Paddle height must be at least 1."),
+        MaxValueValidator(12, message="Paddle height cannot exceed 12.")
+        ]
+    )
+    paddle_speed = models.IntegerField(default=0.5, 
+        validators=[MinValueValidator(0.1, message="Paddle speed must be at least 0.1."),
+        MaxValueValidator(2, message="Paddle speed cannot exceed 2.")
+        ]
+    )
     ball_speed = models.IntegerField(default=10)
     # nbr_of_players = models.IntegerField(default=2)
 
