@@ -12,7 +12,7 @@ export default class LoginPage extends HTMLElement {
 	constructor(element) {
 		super(element);
 
-		this.eventListeners = {} // garbage bin for my event listeners
+		this.eventListeners = [] // garbage bin for my event listeners
 
 		this.attachShadow({ mode: 'open' });
 		
@@ -37,12 +37,13 @@ export default class LoginPage extends HTMLElement {
 	}
 
 	// garbage collection for my event listeners
-	addTrackedListener(target, type, listener, options) {
+	addTrackedListener = (target, type, listener, options) => {
 		target.addEventListener(type, listener, options);
 		this.eventListeners.push({ target, type, listener }); // Store the listener details
 	}
 
-	setupEventListeners() {
+	setupEventListeners = () => {
+		// get all the clickable elements in the page
 		let clickableElems = {
 			'#closeLoginPopup': this.closeLoginPopup,
 			'#submitOneTimeCode': this.submitOneTimeCode,
@@ -53,17 +54,17 @@ export default class LoginPage extends HTMLElement {
 			'#verifyCode': this.verifyCode,
 			'#openPrivacyPolicyPopup': this.openPrivacyPolicyPopup,
 			'#closePrivacyPolicyPopup': this.closePrivacyPolicyPopup,
-		}
-		
-		clickableElems.forEach(selector, action => {
-			this.addTrackedListener(selector, "click", action);
-		})
+		};
+
+		// add 'click' event listeners to each clickable element with corresponding function
+		Object.entries(clickableElems).forEach(([selector, action]) => {
+			this.addTrackedListener(this.shadowRoot.querySelector(selector), "click", action);
+		});
 
 		this.updateSignupButtonStatus();
 		this.toggleClass("#signupButton", "enabled", false);
-	
+
 		this.shadowRoot.querySelectorAll("#signupForm input").forEach(input => {
-			// this.addTrackedListener(input, "input", this.updateSignupButtonStatus);
 			input.addEventListener("input", () => {
 				this.updateSignupButtonStatus();
 			});
@@ -115,7 +116,7 @@ export default class LoginPage extends HTMLElement {
 		});
 	}
 
-	checkPasswordMatch() {
+	checkPasswordMatch = () => {
 		var password = this.shadowRoot.querySelector("#signupForm input[name='password']").value;
 		var confirmPassword = this.shadowRoot.querySelector("#confirmPassword").value;
 
@@ -150,7 +151,7 @@ export default class LoginPage extends HTMLElement {
 		this.toggleClass("#signupButton", "enabled", allFieldsFilled && isPasswordMatch && isCodeVerified);
 	}
 
-	sendVerificationCode() {
+	sendVerificationCode = () => {
 		var email = this.shadowRoot.querySelector("#signupEmail").value;
 		makeApiRequest('/api/user_management/auth/access_code',
 					'POST',
@@ -165,8 +166,8 @@ export default class LoginPage extends HTMLElement {
 			}
 		});
 	}
-	
-	openPrivacyPolicyPopup() {
+
+	openPrivacyPolicyPopup = () => {
 		fetch("/api/user_management/auth/policy")
 		.then(response => response.text())
 		.then(data => {
@@ -174,35 +175,35 @@ export default class LoginPage extends HTMLElement {
 			this.shadowRoot.querySelector("#privacyPolicyPopup").style.display = "block";
 		});
 	}
-	
-	closePrivacyPolicyPopup() {
+
+	closePrivacyPolicyPopup = () => {
 		this.fadeOut("#privacyPolicyPopup");
 	}
 
-	closeForgotPasswordModal() {
+	closeForgotPasswordModal = () => {
 		this.fadeOut("#darkLayer");
 		this.fadeOut("#forgotPasswordModal");
 	}
-	
-	closeSignupPopup() {
+
+	closeSignupPopup = () => {
 		// $("#darkLayer").this.fadeOut();
 		this.fadeOut("#signupPopup");
 		console.log('closeSignupPopup() called\n\n');
 	}
 
-	closeLoginPopup() {
+	closeLoginPopup = () => {
 		this.fadeOut("#darkLayer");
 		this.fadeOut("#loginPopup");
 		console.log('closeLoginPopup() called\n\n');
 	}
 
-	closeSignupPopup() {
+	closeSignupPopup = () => {
 		// $("#darkLayer").this.fadeOut();
 		this.fadeOut("#signupPopup");
 		console.log('closeSignupPopup() called\n\n');
 	}
 
-	displayErrorMessage(message) {
+	displayErrorMessage = (message) => {
 		this.shadowRoot.getElementById('errorMessage').textContent = message;
 		this.shadowRoot.getElementById('errorMessage').style.color = 'red';
 	}
@@ -213,7 +214,7 @@ export default class LoginPage extends HTMLElement {
 	// 	}
 	// }, false);
 	
-	verifyCode(context) {
+	verifyCode = (context) => {
 		var email = this.shadowRoot.querySelector("#signupEmail").value;
 		var verificationCode = this.shadowRoot.querySelector("#verificationCode").value;
 		makeApiRequest('/api/user_management/auth/verify_code',
@@ -235,8 +236,8 @@ export default class LoginPage extends HTMLElement {
 			console.log('An error occurred while processing your request.');
 		});
 	}
-	
-	submitSignupForm() {
+
+	submitSignupForm = () => {
 		formData = new FormData(this.shadowRoot.querySelector('#signupForm'));
 		makeApiRequest('/api/user_management/auth/signup',
 					'POST',
@@ -257,7 +258,7 @@ export default class LoginPage extends HTMLElement {
 		});
 	}
 
-	submitLoginForm() {
+	submitLoginForm = () => {
 		var formData = new FormData(this.shadowRoot.querySelector('#loginForm'));
 		makeApiRequest('/api/user_management/auth/login',
 					'POST',
@@ -289,7 +290,7 @@ export default class LoginPage extends HTMLElement {
 		});
 	}
 
-	submitOneTimeCode(context) {
+	submitOneTimeCode = (context) => {
 		var oneTimeCode = this.shadowRoot.querySelector('input[name="one_time_code"]').value;
 		console.log('submitOneTimeCode submit');
 		makeApiRequest('/api/user_management/auth/verify_code', 
@@ -312,8 +313,8 @@ export default class LoginPage extends HTMLElement {
 			displayErrorMessage('An error occurred while processing your request.');
 		})
 	}
-	
-	sendUrlToEmail() {
+
+	sendUrlToEmail = () => {
 		var username = this.shadowRoot.querySelector('input[name="username_f"]').value;
 		makeApiRequest('/api/user_management/auth/sendResetLink', 
 					'POST', 
