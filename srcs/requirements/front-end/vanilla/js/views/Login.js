@@ -48,44 +48,45 @@ export default class Login extends AbstractView {
 			});
 		});
 
-		$('#devDbButton').on('click', function () {
-			$.ajax({
-				type: 'GET',
-				url: '/api/user_management/auth/developer_setting',
-				success: function (data) {
-					console.log('Print all user data successful:', data);
+		document.querySelector('#devDbButton').addEventListener("click", function() {
+			makeApiRequest('/api/user_management/auth/developer_setting', 'GET')
+			.then(response => {
+				if (response.ok) {
+					console.log('Print all user data successful:', response);
 					window.location.href = '/api/user_management/auth/developer_setting';
-				},
-				error: function (error) {
-					console.error('Error Cannot print user data:', error);
+				} else {
+					console.log('Error Cannot print user data:', response.statusText);
 				}
+			})
+			.catch(error => {
+				console.error('Error Cannot print user data:', error);
 			});
 		});
 
 		var signupClicked = false;
 
-		$("#forgotPasswordLink").click(function () {
-			$("#darkLayer").fadeIn();
-			$("#forgotPasswordModal").fadeIn();
+		document.querySelector("#forgotPasswordLink").addEventListener("click", function() {
+			click(function () {
+			fadeIn("#darkLayer");
+			fadeIn("#forgotPasswordModal");
 		});
 	
-		$("#signupLink").click(function (event) {
+		document.querySelector("#signupLink").addEventListener("click", function(event) {
 			event.stopPropagation()
 			signupClicked = true;
-	
 			console.log('close login popup');
-			$("#darkLayer").fadeIn();
+			fadeIn("#darkLayer");
 			console.log('opacity applied');
-			$("#signupPopup").fadeIn();
+			fadeIn("#signupPopup");
 			console.log('fade in signup popup\n\n');
 		});
 
-		$("#loginLink").click(function () {
+		document.querySelector("#loginLink").addEventListener("click", function() {
 			console.log('log in link clicked');
 			if (!signupClicked) {
-				$("#darkLayer").fadeIn();
+				fadeIn("#darkLayer");
 				console.log('opacity applied');
-				$("#loginPopup").fadeIn();
+				fadeIn("#loginPopup");
 				console.log('fade in login popup\n\n');
 			}
 			signupClicked = false; // Reset the flag after handling the click
@@ -129,29 +130,26 @@ export default class Login extends AbstractView {
 
 	sendVerificationCode() {
 		var email = document.querySelector("#signupEmail").value;
-
-		$.ajax({
-			url: '/api/user_management/auth/access_code',
-			type: 'POST',
-			data: { 'email': email },
-			headers: { "X-CSRFToken": getCookie('csrftoken') },
-			success: function (data) {
-				if (data.success) {
-					console.log('Code sent successfully');
-				} else {
-					console.log('Failed to send code:', data.error_message);
-				}
-			},
-			error: function () {
-				console.log('An error occurred while processing your request.');
+		makeApiRequest('/api/user_management/auth/access_code',
+					'POST',
+					{ 'email': email },
+					{ 'X-CSRFToken': getCookie('csrftoken') })
+		.then(response => response.json)
+		.then(data => {
+			if (data.success) {
+				console.log('Code sent successfully');
+			} else {
+				console.log('Failed to send code:', data.error_message);
 			}
 		});
 	}
 	
 	openPrivacyPolicyPopup() {
-		$.get("/api/user_management/auth/policy", function(data) {
-			$("#privacyPolicyPopup").html(data);
-			$("#privacyPolicyPopup").fadeIn();
+		fetch("/api/user_management/auth/policy")
+		.then(response => response.text())
+		.then(data => {
+			document.querySelector("#privacyPolicyPopup").innerHTML = data;
+			document.querySelector("#privacyPolicyPopup").style.display = "block";
 		});
 	}
 	
