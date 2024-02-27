@@ -43,8 +43,20 @@ export default class LoginPage extends HTMLElement {
 	}
 
 	setupEventListeners() {
-		this.shadowRoot.querySelectorAll(".XButton").forEach(button => {
-			this.addTrackedListener(button, "click", this)
+		let clickableElems = {
+			'#closeLoginPopup': this.closeLoginPopup,
+			'#submitOneTimeCode': this.submitOneTimeCode,
+			'#closeForgotPasswordModal': this.closeForgotPasswordModal,
+			'#sendUrlToEmail': this.sendUrlToEmail,
+			'#closeSignupPopup': this.closeSignupPopup,
+			'#sendVerificationCode': this.sendVerificationCode,
+			'#verifyCode': this.verifyCode,
+			'#openPrivacyPolicyPopup': this.openPrivacyPolicyPopup,
+			'#closePrivacyPolicyPopup': this.closePrivacyPolicyPopup,
+		}
+		
+		clickableElems.forEach(selector, action => {
+			this.addTrackedListener(selector, "click", action);
 		})
 
 		this.updateSignupButtonStatus();
