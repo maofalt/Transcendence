@@ -240,16 +240,23 @@ export default class Login extends AbstractView {
 	}
 
 	submitLoginForm() {
-		$.ajax({
-			url: '/api/user_management/auth/login',
-			type: 'POST',
-			data: $('#loginForm').serialize(),
-			headers: { "X-CSRFToken": "f9voPDsD3hLuGcC1mEqvtbk5w4rbVQ2sskwaEr3aenihelt2PGyq3XS2gI8Svsyy" },
-			success: function (data) {
+		var loginForm = document.querySelector('#loginForm');
+		var formData = new FormData(loginForm);
+		makeApiRequest('/api/user_management/auth/login',
+					'POST',
+					formData,
+					{	'X-CSRFToken': getCookie('csrftoken'),
+						'Content-Type': 'application/x-www-form-urlencoded' })
+		.then(response => {
+			if (response.ok) {
+				return response.json();
+			} else {
+				throw new Error('An error occurred while processing your request.');
+			}
+		})
+		.then(data => {
 			console.log('Login successful:', data);
 			if (data.requires_2fa) {
-				// closeLoginPopup();
-				// window.location.href = '';
 				document.querySelector('#loginForm').style.display = 'none'; // hide
 				document.querySelector('#forgotPasswordLink').style.display = 'none'; // hide
 				document.querySelector('#signupLink').style.display = 'none'; // hide
@@ -257,44 +264,36 @@ export default class Login extends AbstractView {
 			} else {
 				console.log('2FA not required');
 			}
-			},
-			error: function (xhr, textStatus, errorThrown) {
+		})
+		.catch(error => {
 			console.log('An error occurred while processing your request.');
-			var response = JSON.parse(xhr.responseText);
-			if (response && response.error) {
-				displayErrorMessage(response.error);
-			} else {
-				displayErrorMessage('An error occurred while processing your request.');
-			}
-			}  
+			console.error(error);
+			displayErrorMessage('An error occurred while processing your request.');
 		});
 	}
 
 	submitOneTimeCode(context) {
 		var oneTimeCode = document.querySelector('input[name="one_time_code"]').value;
 		console.log('submitOneTimeCode submit');
-		makeApiRequest('/api/user_management/auth/verify_code', 'POST', { 'X-CSRFToken': getCookie('csrftoken') })
-		fetch('/api/user_management/auth/verify_code', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				'X-CSRFToken': getCookie('csrftoken')
-			},
-			body: JSON.stringify({ 'one_time_code': oneTimeCode, 'context': context })
-		})
+		makeApiRequest('/api/user_management/auth/verify_code', 
+					'POST', 
+					{ 'one_time_code': oneTimeCode, 'context': context },
+					{ 'X-CSRFToken': getCookie('csrftoken') })
 		.then(response => {
-			console.log('One-time code verification successful:', response);
-			closeLoginPopup();
-			window.location.href = '';
+			if (response.ok) {
+				console.log('One-time code verification successful:', response);
+				closeLoginPopup();
+				window.location.href = '';
+			} else {
+				console.log('One-time code verification failed:', response.statusText);
+				displayErrorMessage('An error occurred while processing your request.');
+			}
 		})
 		.catch(error => {
 			console.log('One-time code verification failed.');
 			console.error(error);
 			displayErrorMessage('An error occurred while processing your request.');
 		})
-		.finally(() => {
-			console.log('Request complete.');
-		});
 	}
 	
 	sendUrlToEmail() {
