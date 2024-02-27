@@ -135,15 +135,6 @@ button:focus, button:focus-visible {
 	outline: 4px auto -webkit-focus-ring-color;
 }
 
-/* style to fade elements in and out of view (see utils/fade.js */
-.fade {
-	transition: opacity 0.5s ease;
-	opacity: 0;
-}
-.fade.in {
-	opacity: 1;
-}
-
 @media (prefers-color-scheme: light) {
 	:root {
 		color: #213547;

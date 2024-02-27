@@ -70,3 +70,12 @@
 	max-height: 400px;
 	overflow-y: auto;
 }
+
+/* style to fade elements in and out of view (see utils/fade.js */
+.fade {
+	transition: opacity 0.5s ease;
+	opacity: 0;
+}
+.fade.in {
+	opacity: 1;
+}

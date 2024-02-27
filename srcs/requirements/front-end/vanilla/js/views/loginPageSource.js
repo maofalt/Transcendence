@@ -8,7 +8,7 @@ export default `
 <button id="devDbButton">DEV-DB</button>
 <p></p>
 
-<a href="#" id="loginLink">Log in</a>
+<a id="loginLink">Log in</a>
 
 <div id="loginPopup" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); z-index: 9999; width: 300px;">
 	<span style="float: right; cursor: pointer;" onclick="closeLoginPopup()">×</span>
@@ -23,7 +23,7 @@ export default `
 		<input type="submit" value="Login">
 	</form>
 
-	<a href="#" id="forgotPasswordLink">Forgot Password?</a>
+	<a id="forgotPasswordLink">Forgot Password?</a>
 
 	<div id="oneTimeCodeSection" style="display: none;">
 		<input type="hidden" name="csrfmiddlewaretoken" value="f9voPDsD3hLuGcC1mEqvtbk5w4rbVQ2sskwaEr3aenihelt2PGyq3XS2gI8Svsyy">
@@ -31,7 +31,7 @@ export default `
 		<button onclick="submitOneTimeCode('login')">Submit Code</button>
 	</div>
 
-	<a href="#" id="signupLink">Sign up</a>
+	<a id="signupLink">Sign up</a>
 
 	<div id="forgotPasswordModal" style="display: none;">
 		<span style="float: right; cursor: pointer;" onclick="closeForgotPasswordModal()">×</span>

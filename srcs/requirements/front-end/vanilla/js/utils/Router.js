@@ -56,12 +56,15 @@ let currentView = null;
 
 export const navigateTo = (url) => {
   history.pushState(null, null, url);
+  console.log('url: ', url);
   router();
 };
 
 const router = async () => {
   const path = window.location.pathname;
   const View = routes[path] || routes['/404'];
+
+  console.log('path: ', path);
 
   if (currentView && currentView.destroy && currentView !== View) {
     currentView.destroy();
@@ -79,13 +82,6 @@ const router = async () => {
 window.addEventListener("popstate", router);
 
 document.addEventListener('DOMContentLoaded', () => {
-  document.body.addEventListener('click', event => {
-    if (event.target.matches('[nav-link]')) {
-      event.preventDefault();
-      if (event.target.href !== document.URL)
-        navigateTo(event.target.href);
-    }
-  });
   router();
 });
 

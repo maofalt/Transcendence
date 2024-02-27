@@ -28,13 +28,15 @@ function prop(selector, property, value) {
 // add '.in' class after 10ms
 function fadeIn(selector) {
 	const element = document.querySelector(selector);
+	element.style.display = 'block'; // reset the display property to its default value
 	element.classList.add('fade');
-	setTimeout(() => element.classList.add('in'), 10); // 10ms delay to allow the DOM to update
+	setTimeout(() => element.classList.add('in'), 199); // 10ms delay to allow the DOM to update
 }
 
 // remove '.fade' class after the transition is done
 function fadeOut(selector) {
 	const element = document.querySelector(selector);
+	element.style.display = 'none'; // hide the element after the transition is done
 	element.classList.remove('in');
 	setTimeout(() => element.classList.remove('fade'), 500); // 500ms delay to allow the transition to finish (adjust to match the transition duration in the CSS file)
 }
