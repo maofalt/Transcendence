@@ -196,52 +196,49 @@ export default class Login extends AbstractView {
 	verifyCode(context) {
 		var email = document.querySelector("#signupEmail").value;
 		var verificationCode = document.querySelector("#verificationCode").value;
-
-		$.ajax({
-			url: '/api/user_management/auth/verify_code',
-			type: 'POST',
-			data: { 'email': email, 'one_time_code': verificationCode, 'context': context },
-			headers: { "X-CSRFToken": getCookie('csrftoken') },
-			success: function (data) {
-				if (data.success) {
-					console.log('Code verified successfully');
-					$("#successMessage").text("Verified successfully");
-					updateSignupButtonStatus();
-					// submitSignupForm();
-				} else {
-					console.log('Failed to verify code:', data.error_message);
-				}
-			},
-			error: function () {
-				console.log('An error occurred while processing your request.');
+		makeApiRequest('/api/user_management/auth/verify_code',
+					'POST',
+					{ 'email': email, 'one_time_code': verificationCode, 'context': context },
+					{ 'X-CSRFToken': getCookie('csrftoken') })
+		.then(response => response.json())
+		.then(data => {
+			if (data.success) {
+				console.log('Code verified successfully');
+				document.querySelector("#successMessage").textContent = "Verified successfully";
+				updateSignupButtonStatus();
+				// submitSignupForm();
+			} else {
+				console.log('Failed to verify code:', data.error_message);
 			}
+		})
+		.catch(() => {
+			console.log('An error occurred while processing your request.');
 		});
 	}
 	
 	submitSignupForm() {
-		$.ajax({
-			url: '/api/user_management/auth/signup',
-			type: 'POST',
-			data: $('#signupForm').serialize(),
-			headers: { "X-CSRFToken": getCookie('csrftoken') },
-			success: function (data) {
-				if (data.success) {
-					console.log('signed up success\n\n');
-					closeSignupPopup();
-				} else {
-					$('#signupPopupError').text(data.error_message);
-				}
-			},
-			error: function () {
-				// Handle error
-				console.log('An error occurred while processing your request.');
+		formData = new FormData(document.querySelector('#signupForm'));
+		makeApiRequest('/api/user_management/auth/signup',
+					'POST',
+					formData,
+					{	'X-CSRFToken': getCookie('csrftoken'),
+						'Content-Type': 'application/x-www-form-urlencoded' })
+		.then(response => response.json())
+		.then(data => {
+			if (data.success) {
+				console.log('signed up success\n\n');
+				closeSignupPopup();
+			} else {
+				document.querySelector('#signupPopupError').textContent = data.error_message;
 			}
+		})
+		.catch(() => {
+			console.log('An error occurred while processing your request.');
 		});
 	}
 
 	submitLoginForm() {
-		var loginForm = document.querySelector('#loginForm');
-		var formData = new FormData(loginForm);
+		var formData = new FormData(document.querySelector('#loginForm'));
 		makeApiRequest('/api/user_management/auth/login',
 					'POST',
 					formData,
