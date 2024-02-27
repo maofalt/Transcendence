@@ -88,7 +88,7 @@ def api_login_view(request):
             send_one_time_code(request, user.email)
             
             token = get_token_for_user(user)
-            response = JsonResponse({'message': 'Password Authentication successful', 'user': serializer.data, 'redirect_url': redirect_url, 'requires_2fa': True})
+            response = JsonResponse({'message': 'Password Authentication successful', 'redirect_url': redirect_url, 'requires_2fa': True})
             response.set_cookie(
                 key='jwtToken',
                 value=token,
