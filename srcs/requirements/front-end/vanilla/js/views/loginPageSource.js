@@ -58,7 +58,7 @@ export default `
 			</p>
 			<input name="password" type="password">
 			<p>CONFIRM PASSWORD</p>
-			<input name="confirm_password" id="confirmPassword" type="password" oninput="checkPasswordMatch(); required">
+			<input name="confirm_password" id="confirmPassword" type="password" oninput="console.log('checkPasswordMatch()'); required">
 			<div id="confirmPasswordError" style="color: red;"></div>
 			<p>PLAYERNAME</p>
 			<input name="playername" type="text" required="">

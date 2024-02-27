@@ -61,6 +61,9 @@ export default class LoginPage extends HTMLElement {
 			this.addTrackedListener(this.shadowRoot.querySelector(selector), "click", action);
 		});
 
+		// check that password confirmation matches the initial password
+		this.addTrackedListener(this.shadowRoot.querySelector("#confirmPassword"), 'input', this.checkPasswordMatch);
+
 		this.updateSignupButtonStatus();
 		this.toggleClass("#signupButton", "enabled", false);
 
@@ -73,18 +76,20 @@ export default class LoginPage extends HTMLElement {
 		// let devDbButton = this.shadowRoot.querySelector('#devDbButton');
 		// this.addTrackedListener(devDbButton, "click", this.getDevSetting);
 		this.shadowRoot.querySelector('#devDbButton').addEventListener("click", () => {
-			makeApiRequest('/api/user_management/auth/developer_setting', 'GET')
-			.then(response => {
-				if (response.ok) {
-					console.log('Print all user data successful:', response);
-					// window.location.href = '/api/user_management/auth/developer_setting';
-				} else {
-					console.log('Error Cannot print user data:', response.statusText);
-				}
+			fetch('/api/user_management/auth/developer_setting', {
+				method: 'GET',
 			})
-			.catch(error => {
-				console.error('Error Cannot print user data:', error);
-			});
+				.then(response => {
+					if (response.ok) {
+						console.log('Print all user data successful:', response);
+						// window.location.href = '/api/user_management/auth/developer_setting';
+					} else {
+						console.log('Error Cannot print user data:', response.statusText);
+					}
+				})
+				.catch(error => {
+					console.error('Error Cannot print user data:', error);
+				});
 		});
 
 		var signupClicked = false;
@@ -153,18 +158,22 @@ export default class LoginPage extends HTMLElement {
 
 	sendVerificationCode = () => {
 		var email = this.shadowRoot.querySelector("#signupEmail").value;
-		makeApiRequest('/api/user_management/auth/access_code',
-					'POST',
-					{ 'email': email },
-					{ 'X-CSRFToken': getCookie('csrftoken') })
-		.then(response => response.json)
-		.then(data => {
-			if (data.success) {
-				console.log('Code sent successfully');
-			} else {
-				console.log('Failed to send code:', data.error_message);
-			}
-		});
+		fetch('/api/user_management/auth/access_code', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-CSRFToken': getCookie('csrftoken')
+			},
+			body: JSON.stringify({ 'email': email })
+		})
+			.then(response => response.json())
+			.then(data => {
+				if (data.success) {
+					console.log('Code sent successfully');
+				} else {
+					console.log('Failed to send code:', data.error_message);
+				}
+			});
 	}
 
 	openPrivacyPolicyPopup = () => {
@@ -217,122 +226,144 @@ export default class LoginPage extends HTMLElement {
 	verifyCode = (context) => {
 		var email = this.shadowRoot.querySelector("#signupEmail").value;
 		var verificationCode = this.shadowRoot.querySelector("#verificationCode").value;
-		makeApiRequest('/api/user_management/auth/verify_code',
-					'POST',
-					{ 'email': email, 'one_time_code': verificationCode, 'context': context },
-					{ 'X-CSRFToken': getCookie('csrftoken') })
-		.then(response => response.json())
-		.then(data => {
-			if (data.success) {
-				console.log('Code verified successfully');
-				this.shadowRoot.querySelector("#successMessage").textContent = "Verified successfully";
-				updateSignupButtonStatus();
-				// submitSignupForm();
-			} else {
-				console.log('Failed to verify code:', data.error_message);
-			}
+		fetch('/api/user_management/auth/verify_code', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded',
+				'X-CSRFToken': getCookie('csrftoken')
+			},
+			body: new URLSearchParams({ 'email': email, 'one_time_code': verificationCode, 'context': context })
 		})
-		.catch(() => {
-			console.log('An error occurred while processing your request.');
-		});
+			.then(response => response.json())
+			.then(data => {
+				if (data.success) {
+					console.log('Code verified successfully');
+					this.shadowRoot.querySelector("#successMessage").textContent = "Verified successfully";
+					updateSignupButtonStatus();
+					// submitSignupForm();
+				} else {
+					console.log('Failed to verify code:', data.error_message);
+				}
+			})
+			.catch(() => {
+				console.log('An error occurred while processing your request.');
+			});
 	}
 
 	submitSignupForm = () => {
 		formData = new FormData(this.shadowRoot.querySelector('#signupForm'));
-		makeApiRequest('/api/user_management/auth/signup',
-					'POST',
-					formData,
-					{	'X-CSRFToken': getCookie('csrftoken'),
-						'Content-Type': 'application/x-www-form-urlencoded' })
-		.then(response => response.json())
-		.then(data => {
-			if (data.success) {
-				console.log('signed up success\n\n');
-				closeSignupPopup();
-			} else {
-				this.shadowRoot.querySelector('#signupPopupError').textContent = data.error_message;
-			}
+		fetch('/api/user_management/auth/signup', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded',
+				'X-CSRFToken': getCookie('csrftoken')
+			},
+			body: new URLSearchParams(formData)
 		})
-		.catch(() => {
-			console.log('An error occurred while processing your request.');
-		});
+			.then(response => response.json())
+			.then(data => {
+				if (data.success) {
+					console.log('signed up success\n\n');
+					closeSignupPopup();
+				} else {
+					this.shadowRoot.querySelector('#signupPopupError').textContent = data.error_message;
+				}
+			})
+			.catch(() => {
+				console.log('An error occurred while processing your request.');
+			});
 	}
 
 	submitLoginForm = () => {
 		var formData = new FormData(this.shadowRoot.querySelector('#loginForm'));
-		makeApiRequest('/api/user_management/auth/login',
-					'POST',
-					formData,
-					{	'X-CSRFToken': getCookie('csrftoken'),
-						'Content-Type': 'application/x-www-form-urlencoded' })
-		.then(response => {
-			if (response.ok) {
-				return response.json();
-			} else {
-				throw new Error('An error occurred while processing your request.');
-			}
+		fetch('/api/user_management/auth/signup', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded',
+				'X-CSRFToken': getCookie('csrftoken')
+			},
+			body: new URLSearchParams(formData)
 		})
-		.then(data => {
-			console.log('Login successful:', data);
-			if (data.requires_2fa) {
-				this.shadowRoot.querySelector('#loginForm').style.display = 'none'; // hide
-				this.shadowRoot.querySelector('#forgotPasswordLink').style.display = 'none'; // hide
-				this.shadowRoot.querySelector('#signupLink').style.display = 'none'; // hide
-				this.shadowRoot.querySelector('#oneTimeCodeSection').style.display = 'block'; // show
-			} else {
-				console.log('2FA not required');
-			}
-		})
-		.catch(error => {
-			console.log('An error occurred while processing your request.');
-			console.error(error);
-			displayErrorMessage('An error occurred while processing your request.');
-		});
+			.then(response => {
+				if (response.ok) {
+					return response.json();
+				} else {
+					throw new Error('An error occurred while processing your request.');
+				}
+			})
+			.then(data => {
+				console.log('Login successful:', data);
+				if (data.requires_2fa) {
+					this.shadowRoot.querySelector('#loginForm').style.display = 'none'; // hide
+					this.shadowRoot.querySelector('#forgotPasswordLink').style.display = 'none'; // hide
+					this.shadowRoot.querySelector('#signupLink').style.display = 'none'; // hide
+					this.shadowRoot.querySelector('#oneTimeCodeSection').style.display = 'block'; // show
+				} else {
+					console.log('2FA not required');
+				}
+			})
+			.catch(error => {
+				console.log('An error occurred while processing your request.');
+				console.error(error);
+				displayErrorMessage('An error occurred while processing your request.');
+			});
 	}
 
 	submitOneTimeCode = (context) => {
 		var oneTimeCode = this.shadowRoot.querySelector('input[name="one_time_code"]').value;
 		console.log('submitOneTimeCode submit');
-		makeApiRequest('/api/user_management/auth/verify_code', 
-					'POST', 
-					{ 'one_time_code': oneTimeCode, 'context': context },
-					{ 'X-CSRFToken': getCookie('csrftoken') })
-		.then(response => {
-			if (response.ok) {
-				console.log('One-time code verification successful:', response);
-				this.closeLoginPopup();
-				// window.location.href = '';
-			} else {
-				console.log('One-time code verification failed:', response.statusText);
+		fetch('/api/user_management/auth/verify_code', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-CSRFToken': getCookie('csrftoken')
+			},
+			body: JSON.stringify({
+				// Add the necessary data here
+			})
+		})
+			.then(response => {
+				if (response.ok) {
+					console.log('One-time code verification successful:', response);
+					this.closeLoginPopup();
+					// window.location.href = '';
+				} else {
+					console.log('One-time code verification failed:', response.statusText);
+					displayErrorMessage('An error occurred while processing your request.');
+				}
+			})
+			.catch(error => {
+				console.log('One-time code verification failed.');
+				console.error(error);
 				displayErrorMessage('An error occurred while processing your request.');
-			}
-		})
-		.catch(error => {
-			console.log('One-time code verification failed.');
-			console.error(error);
-			displayErrorMessage('An error occurred while processing your request.');
-		})
+			});
 	}
 
 	sendUrlToEmail = () => {
 		var username = this.shadowRoot.querySelector('input[name="username_f"]').value;
-		makeApiRequest('/api/user_management/auth/sendResetLink', 
-					'POST', 
-					{ 'username': username }, 
-					{ 'X-CSRFToken': getCookie('csrftoken') })
-		.then(response => {
-			console.log('Status Code:', response.status);
-			console.log('Response Body:', response.body);
-			if (response.ok) {
-				console.log('Password reset link sent successfully:', response);
-				closeForgotPasswordModal();
-			} else {
-				console.log('Error sending reset Link:', response.statusText);
-			}
+		fetch('/api/user_management/auth/sendResetLink', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-CSRFToken': getCookie('csrftoken')
+			},
+			body: JSON.stringify({
+				'username': username
+			})
 		})
-		.catch(error => {
-			console.log('Error sending reset Link:', error);
-		});
+			.then(response => {
+				console.log('Status Code:', response.status);
+				console.log('Response Body:', response.body);
+				if (response.ok) {
+					console.log('Password reset link sent successfully:', response);
+					closeForgotPasswordModal();
+				} else {
+					console.log('Error sending reset Link:', response.statusText);
+				}
+			})
+			.catch(error => {
+				console.log('Error sending reset Link:', error);
+			});
 		return false;
 	}
 
