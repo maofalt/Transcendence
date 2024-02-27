@@ -57,7 +57,16 @@ class MatchSetting(models.Model):
         MaxValueValidator(2, message="Paddle speed cannot exceed 2.")
         ]
     )
-    ball_speed = models.IntegerField(default=10)
+    ball_speed = models.IntegerField(default=0.7, 
+        validators=[MinValueValidator(0.1, message="Ball speed must be at least 0.1."),
+        MaxValueValidator(2, message="Ball speed cannot exceed 2.")
+        ]
+    )
+    ball_radius = models.IntegerField(default=1, 
+        validators=[MinValueValidator(0.5, message="Ball radius must be at least 0.5."),
+        MaxValueValidator(7, message="Ball radius cannot exceed 7.")
+        ]
+    )
     # nbr_of_players = models.IntegerField(default=2)
 
 class GameType(models.Model):
