@@ -14,7 +14,11 @@ class Tournament(models.Model):
     tournament_type = models.ForeignKey('TournamentType', on_delete=models.PROTECT, null=False, to_field='type_id', default=1)
     registration = models.ForeignKey('RegistrationType', on_delete=models.PROTECT, null=False, to_field='type_id', default=1)
     setting = models.ForeignKey('MatchSetting', on_delete=models.PROTECT, null=False, to_field='setting_id', default=0)
-    registration_period_min = models.IntegerField(default=15)
+    registration_period_min = models.IntegerField(default=15, 
+        validators=[MinValueValidator(1, message="Registration period must be at least 1 minutes."), 
+        MaxValueValidator(60, message="Registration period cannot exceed 60 minutes.")
+        ]
+    )
     host_id = models.IntegerField()
 
 class TournamentMatch(models.Model):
