@@ -318,6 +318,12 @@ def api_signup_view(request):
             print("\n\nGAMES STATS : user", user.game_stats.user)
             user.save()
         print(" >>  User created successfully.")
+
+        login(request, user)
+        user.is_online = True
+        print(f"Is Online: {user.is_online}")
+        user.save()
+        
         return JsonResponse({'success': True})
 
     return JsonResponse({'success': False, 'error_message': 'Invalid request method'}, status=400)

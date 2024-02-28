@@ -29,8 +29,8 @@
     <span style="float: right; cursor: pointer;" onclick="closeSignupPopup()">&times;</span>
     <h2>Sign Up</h2>
 
-    <div id="signupPopupError" style="color: red;"></div> <!-- Add this line -->
-
+    <div id="signupPopupError" style="color: red;"></div> 
+    
     <form id="signupForm" action="" method="POST" onsubmit="submitSignupForm(); return false;">
         {% csrf_token %}
         <p>ID</p>
@@ -200,6 +200,9 @@
                 if (data.success) {
                     console.log('signed up success\n\n');
                     closeSignupPopup();
+                    closeLoginPopup();
+                    window.location.href = '';
+
                 } else {
                     $('#signupPopupError').text(data.error_message);
                 }
