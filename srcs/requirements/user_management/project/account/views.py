@@ -54,6 +54,100 @@ User = get_user_model()
 def home(request):
     return render(request, 'home.html')
 
+# OPTION 1 check periodically calling this function form frontend
+def user_is_logged_in(request):
+    if request.user.is_authenticated:
+        request.user.is_online = True
+        request.user.save()
+    else:
+        request.user.is_online = False
+        request.user.save()
+    return JsonResponse({'isLoggedIn': request.user.is_authenticated})
+
+# // Function to check user's login status
+# function checkLoginStatus() {
+#     fetch('/checkLogin')
+#         .then(response => response.json())
+#         .then(data => {
+#             if (!data.isLoggedIn) {
+#                 console.log('User is logged out');
+#                 sendNotificationToServer();
+#         })
+#         .catch(error => {
+#             console.error('Error checking login status:', error);
+#         });
+# }
+
+# OPTION 2 using jwt
+
+# def user_is_logged_in(request):
+#     token = request.headers.get('Authorization', '').split('Bearer ')[-1]
+#     try:
+#         decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+#         username = decoded_token.get('username')
+#         if username:
+#             user = User.objects.get(username=username)
+#             request.user = user
+#             return JsonResponse({'isLoggedIn': True})
+#         else:
+#             return JsonResponse({'isLoggedIn': False})
+#     except jwt.ExpiredSignatureError:
+#         request.user.is_online = False
+#         request.user.save()
+#         logout(request)
+#         # Token expired, perform logout operation
+#         return JsonResponse({'isLoggedIn': False})
+#     except jwt.InvalidTokenError:
+#         # Invalid token, handle the error as needed
+#         return JsonResponse({'isLoggedIn': False})
+
+
+
+# // Periodically check user's login status (every 1 minute)
+# setInterval(checkLoginStatus, 60000);
+# function sendNotificationToServer() {
+# }
+
+# // Function to periodically check JWT expiration and user's login status
+# function checkLoginStatus() {
+#     const token = localStorage.getItem('jwtToken'); // Retrieve JWT from local storage
+#     if (!token) {
+#         console.log('User is not logged in');
+#         return;
+#     }
+# const decodedToken = jwt_decode(token);
+#     const currentTime = Date.now() / 1000; 
+
+#     if (decodedToken.exp < currentTime) {
+#         // JWT has expired, log out the user
+#         console.log('JWT has expired, logging out user');
+#         localStorage.removeItem('jwtToken'); // Remove expired JWT from local storage
+#         return;
+#     }
+
+#     console.log('User is logged in');
+# }
+# setInterval(checkLoginStatus, 60000);
+
+
+# However, even if the cookie is marked as HTTP-only, 
+# the browser still includes it in subsequent HTTP requests to the server. 
+# So, when the client makes requests to the server, 
+# the browser automatically includes the JWT token cookie, 
+# allowing the server to authenticate the user.
+
+# In this JavaScript code for checking the login status,
+# it is not directly accessing the cookie using JavaScript.
+# Instead, you are retrieving the JWT token from the local storage
+# (localStorage.getItem('jwtToken')).
+# This approach is not affected by the httponly=True setting
+# because local storage is a separate storage mechanism from cookies
+# and is accessible by JavaScript.
+
+# Therefore, you can safely use httponly=True for the JWT token cookie
+# while still performing client-side JWT token checking in JavaScript
+
+
 def get_token_for_user(user):
     refresh = RefreshToken.for_user(user)
     refresh['username'] = user.username
@@ -88,7 +182,7 @@ def api_login_view(request):
             send_one_time_code(request, user.email)
             
             token = get_token_for_user(user)
-            response = JsonResponse({'message': 'Password Authentication successful', 'user': serializer.data, 'redirect_url': redirect_url, 'requires_2fa': True})
+            response = JsonResponse({'message': 'Password Authentication successful', 'redirect_url': redirect_url, 'requires_2fa': True})
             response.set_cookie(
                 key='jwtToken',
                 value=token,
@@ -224,6 +318,12 @@ def api_signup_view(request):
             print("\n\nGAMES STATS : user", user.game_stats.user)
             user.save()
         print(" >>  User created successfully.")
+
+        login(request, user)
+        user.is_online = True
+        print(f"Is Online: {user.is_online}")
+        user.save()
+        
         return JsonResponse({'success': True})
 
     return JsonResponse({'success': False, 'error_message': 'Invalid request method'}, status=400)
