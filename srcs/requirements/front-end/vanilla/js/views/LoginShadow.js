@@ -108,7 +108,7 @@ export default class LoginPage extends HTMLElement {
 			this.fadeIn("#darkLayer");
 			this.fadeIn("#forgotPasswordModal");
 		});
-	
+
 		this.shadowRoot.querySelector("#signupLink").addEventListener("click", (event) => {
 			event.stopPropagation()
 			signupClicked = true;
@@ -166,7 +166,8 @@ export default class LoginPage extends HTMLElement {
 		this.toggleClass("#signupButton", "enabled", allFieldsFilled && isPasswordMatch && isCodeVerified);
 	}
 
-	sendVerificationCode = () => {
+	sendVerificationCode = (e) => {
+		e.preventDefault();
 		var email = this.shadowRoot.querySelector("#signupEmail").value;
 		fetch('/api/user_management/auth/access_code', {
 			method: 'POST',
@@ -186,40 +187,42 @@ export default class LoginPage extends HTMLElement {
 			});
 	}
 
-	openPrivacyPolicyPopup = () => {
+	openPrivacyPolicyPopup = (e) => {
+		e.preventDefault();
 		fetch("/api/user_management/auth/policy")
 		.then(response => response.text())
 		.then(data => {
-			this.shadowRoot.querySelector("#privacyPolicyPopup").innerHTML = data;
-			this.shadowRoot.querySelector("#privacyPolicyPopup").style.display = "block";
+			let popup = this.shadowRoot.querySelector("#privacyPolicyPopup");
+			let container = document.createElement("div");
+			container.innerHTML = data;
+			popup.appendChild(container);
+			popup.style.display = "block";
 		});
 	}
 
-	closePrivacyPolicyPopup = () => {
+	closePrivacyPolicyPopup = (e) => {
+		e.preventDefault();
 		this.fadeOut("#privacyPolicyPopup");
 	}
 
-	closeForgotPasswordModal = () => {
+	closeForgotPasswordModal = (e) => {
+		e.preventDefault();
 		this.fadeOut("#darkLayer");
 		this.fadeOut("#forgotPasswordModal");
 	}
 
-	closeSignupPopup = () => {
+	closeSignupPopup = (e) => {
+		e.preventDefault();
 		// $("#darkLayer").this.fadeOut();
 		this.fadeOut("#signupPopup");
 		console.log('closeSignupPopup() called\n\n');
 	}
 
-	closeLoginPopup = () => {
+	closeLoginPopup = (e) => {
+		e.preventDefault();
 		this.fadeOut("#darkLayer");
 		this.fadeOut("#loginPopup");
 		console.log('closeLoginPopup() called\n\n');
-	}
-
-	closeSignupPopup = () => {
-		// $("#darkLayer").this.fadeOut();
-		this.fadeOut("#signupPopup");
-		console.log('closeSignupPopup() called\n\n');
 	}
 
 	displayErrorMessage = (message) => {

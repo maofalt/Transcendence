@@ -11,7 +11,7 @@ export default `
 <a id="loginLink">Log in</a>
 
 <div id="loginPopup">
-	<span id="closeLoginPopup">x</span>
+	<span id="closeLoginPopup">×</span>
 	<h2>LOG IN</h2>
 
 	<div id="errorMessage"></div> <!-- This is where the error message will be displayed -->
@@ -32,7 +32,7 @@ export default `
 	<a id="signupLink">Sign up</a>
 
 	<div id="forgotPasswordModal" style="display: none;">
-		<span id="closeForgotPasswordModal">x</span>
+		<span id="closeForgotPasswordModal">×</span>
 		
 		<form id="forgotPasswordForm">
 			<input name="username_f" type="text" placeholder="Enter your username">
@@ -42,7 +42,7 @@ export default `
 </div>
 
 	<div id="signupPopup" style="display: none;">
-		<span id="closeSignupPopup">x</span>
+		<span id="closeSignupPopup">×</span>
 		<h2>Sign Up</h2>
 
 		<div id="signupPopupError"></div> <!-- Add this line -->
@@ -74,7 +74,7 @@ export default `
 			<button id="openPrivacyPolicyPopup">Open Privacy Policy</button>
 
 			<div id="privacyPolicyPopup" class="popup-container">
-				<span id="closePrivacyPolicyPopup">x</span>
+				<button id="closePrivacyPolicyPopup">×</button>
 			</div> 
 			I agree to the terms and conditions.
 			<label for="agreementCheckbox">
