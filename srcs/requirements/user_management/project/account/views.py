@@ -416,9 +416,25 @@ def friend_view(request):
     return render(request, 'friends.html', {'friends': friend_data, 'search_query': search_query, 'search_results': search_results})
 
 @login_required
+@csrf_protect
 def detail_view(request):
+    user = request.user
     game_stats = request.user.game_stats
-    return render(request, 'detail.html')
+
+    data = {
+        'username': user.username,
+        'playername': user.playername,
+        'email': user.email,
+        'avatar': user.avatar.url if user.avatar else None,
+        'friends_count': user.friends.count(),
+        'game_stats': {
+            'user': game_stats.user,
+            'total_games_played': game_stats.total_games_played,
+            'games_won': game_stats.games_won,
+            'games_lost': game_stats.games_lost,
+        }
+    }
+    return render(request, 'detail.html', {'data': data})
 
 @login_required
 def add_friend(request, pk):
