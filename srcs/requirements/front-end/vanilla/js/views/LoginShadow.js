@@ -426,7 +426,6 @@ export default class LoginPage extends HTMLElement {
 			element.style.display = 'none'
 		}, 500); // 500ms delay to allow the transition to finish (adjust to match the transition duration in the CSS file)
 	}
-	
 }
 	
 customElements.define('login-page', LoginPage);

@@ -166,7 +166,7 @@ export default class Tournament extends AbstractView {
 				"color": "0x0000ff"
 			  },
 			  {
-				"accountID": "tata2",
+				"accountID": "yridgway",
 				"color": "0x00ff00"
 			  },
 			  {
