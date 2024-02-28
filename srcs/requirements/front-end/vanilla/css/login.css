@@ -25,6 +25,7 @@
 	margin-bottom: 10px;
 	border: 1px solid #ccc;
 	border-radius: 4px;
+	box-sizing: border-box;
   }
 
 #loginPopup input[type="submit"] {
@@ -72,6 +73,54 @@
 	max-height: 400px;
 	overflow-y: auto;
 }
+
+/* extracted from html */
+#darkLayer {
+}
+
+#loginPopup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    z-index: 9999;
+    width: 300px;
+}
+
+#closeLoginPopup, #closeForgotPasswordModal, #closeSignupPopup, #closePrivacyPolicyPopup {
+    float: right;
+    cursor: pointer;
+}
+
+#errorMessage, #signupPopupError, #confirmPasswordError, #successMessage {
+    color: red;
+}
+
+#successMessage {
+    color: green;
+    margin-top: 5px;
+}
+
+input[name="username_f"] {
+    width: 200px;
+    margin-right: 5px;
+}
+
+input[name="signupEmail"], input[name="access_code"] {
+    width: 200px;
+    margin-right: 5px;
+}
+
+#privacyPolicyPopup {
+}
+
+.popup-container {
+}
+
 
 /* style to fade elements in and out of view (see utils/fade.js */
 .fade {

@@ -10,81 +10,81 @@ export default `
 
 <a id="loginLink">Log in</a>
 
-<div id="loginPopup" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); z-index: 9999; width: 300px;">
-	<span id="closeLoginPopup" style="float: right; cursor: pointer;" onclick="console.log('closeLoginPopup()')">x</span>
-	<h2>LOG IN</h2>
+<div id="loginPopup">
+    <span id="closeLoginPopup">x</span>
+    <h2>LOG IN</h2>
 
-	<div id="errorMessage" style="color: red;"></div> <!-- This is where the error message will be displayed -->
+    <div id="errorMessage"></div> <!-- This is where the error message will be displayed -->
 
-	<form id="loginForm" action="" method="POST" onsubmit="console.log('submitLoginForm(); return false;')">
-		<input type="hidden" name="csrfmiddlewaretoken" value="f9voPDsD3hLuGcC1mEqvtbk5w4rbVQ2sskwaEr3aenihelt2PGyq3XS2gI8Svsyy">
-		<input name="username" type="text">
-		<input name="password" type="password">
-		<input type="submit" value="Login">
-	</form>
+    <form id="loginForm" action="" method="POST">
+        <input type="hidden" name="csrfmiddlewaretoken" value="f9voPDsD3hLuGcC1mEqvtbk5w4rbVQ2sskwaEr3aenihelt2PGyq3XS2gI8Svsyy">
+        <input name="username" type="text">
+        <input name="password" type="password">
+        <input type="submit" value="Login">
+    </form>
 
-	<a id="forgotPasswordLink">Forgot Password?</a>
+    <a id="forgotPasswordLink">Forgot Password?</a>
 
-	<div id="oneTimeCodeSection" style="display: none;">
-		<input type="hidden" name="csrfmiddlewaretoken" value="f9voPDsD3hLuGcC1mEqvtbk5w4rbVQ2sskwaEr3aenihelt2PGyq3XS2gI8Svsyy">
-		<input name="one_time_code" type="text" placeholder="One-Time Code">
-		<button id="submitOneTimeCode" onclick="console.log('submitOneTimeCode(login)')">Submit Code</button>
-	</div>
+    <div id="oneTimeCodeSection" style="display: none;">
+        <input type="hidden" name="csrfmiddlewaretoken" value="f9voPDsD3hLuGcC1mEqvtbk5w4rbVQ2sskwaEr3aenihelt2PGyq3XS2gI8Svsyy">
+        <input name="one_time_code" type="text" placeholder="One-Time Code">
+        <button id="submitOneTimeCode">Submit Code</button>
+    </div>
 
-	<a id="signupLink">Sign up</a>
+    <a id="signupLink">Sign up</a>
 
-	<div id="forgotPasswordModal" style="display: none;">
-		<span id="closeForgotPasswordModal" style="float: right; cursor: pointer;" onclick="console.log('closeForgotPasswordModal()')">x</span>
-		
-		<form id="forgotPasswordForm">
-			<input type="hidden" name="csrfmiddlewaretoken" value="f9voPDsD3hLuGcC1mEqvtbk5w4rbVQ2sskwaEr3aenihelt2PGyq3XS2gI8Svsyy">
-			<input name="username_f" type="text" placeholder="Enter your username" style="width: 200px; margin-right: 5px;">
-			<button id="sendUrlToEmail" type="button" onclick="console.log('sendUrlToEmail()')">Send Password Reset Link</button>
-		</form>
-	</div>
+    <div id="forgotPasswordModal" style="display: none;">
+        <span id="closeForgotPasswordModal">x</span>
+        
+        <form id="forgotPasswordForm">
+            <input type="hidden" name="csrfmiddlewaretoken" value="f9voPDsD3hLuGcC1mEqvtbk5w4rbVQ2sskwaEr3aenihelt2PGyq3XS2gI8Svsyy">
+            <input name="username_f" type="text" placeholder="Enter your username">
+            <button id="sendUrlToEmail" type="button">Send Password Reset Link</button>
+        </form>
+    </div>
 
-	<div id="signupPopup" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); z-index: 9999; width: 300px;">
-		<span id="closeSignupPopup" style="float: right; cursor: pointer;" onclick="console.log('closeSignupPopup()')">x</span>
-		<h2>Sign Up</h2>
+    <div id="signupPopup" style="display: none;">
+        <span id="closeSignupPopup">x</span>
+        <h2>Sign Up</h2>
 
-		<div id="signupPopupError" style="color: red;"></div> <!-- Add this line -->
+        <div id="signupPopupError"></div> <!-- Add this line -->
 
-		<form id="signupForm" action="" method="POST" onsubmit="console.log('submitSignupForm()'); return false;">
-			<input type="hidden" name="csrfmiddlewaretoken" value="f9voPDsD3hLuGcC1mEqvtbk5w4rbVQ2sskwaEr3aenihelt2PGyq3XS2gI8Svsyy">
-			<p>ID</p>
-			<input name="username" type="text" required="">
-			<p>PASSWORD
-				<span style="color: green; font-size: smaller;">(minimum 8 characters, at least 1 digit, 1 alphabet, different from email and playername)</span>
-			</p>
-			<input name="password" type="password">
-			<p>CONFIRM PASSWORD</p>
-			<input name="confirm_password" id="confirmPassword" type="password" oninput="console.log('checkPasswordMatch()'); required">
-			<div id="confirmPasswordError" style="color: red;"></div>
-			<p>PLAYERNAME</p>
-			<input name="playername" type="text" required="">
-			<p>EMAIL</p>
-			<p>
-				<label for="signupEmail"></label>
-				<input name="signupEmail" id="signupEmail" type="text" placeholder="example@example.com" style="width: 200px; margin-right: 5px;">
-				<button id="sendVerificationCode" type="button" onclick="console.log('sendVerificationCode()')">Send Code</button>
-			</p>
-			<p>
-				<label for="access_code"></label>
-				<input name="access_code" id="verificationCode" type="text" placeholder="######" style="width: 200px; margin-right: 5px;">
-				<button id="verifyCode" type="button" onclick="console.log('verifyCode('signup')')">Verify Code</button>
-				<span id="successMessage" style="color: green; margin-top: 5px;"></span>
-			</p>
-			<button id="openPrivacyPolicyPopup" onclick="console.log('openPrivacyPolicyPopup()')">Open Privacy Policy</button>
+        <form id="signupForm" action="" method="POST">
+            <input type="hidden" name="csrfmiddlewaretoken" value="f9voPDsD3hLuGcC1mEqvtbk5w4rbVQ2sskwaEr3aenihelt2PGyq3XS2gI8Svsyy">
+            <p>ID</p>
+            <input name="username" type="text" required="">
+            <p>PASSWORD
+                <span style="color: green; font-size: smaller;">(minimum 8 characters, at least 1 digit, 1 alphabet, different from email and playername)</span>
+            </p>
+            <input name="password" type="password">
+            <p>CONFIRM PASSWORD</p>
+            <input name="confirm_password" id="confirmPassword" type="password" required>
+            <div id="confirmPasswordError"></div>
+            <p>PLAYERNAME</p>
+            <input name="playername" type="text" required="">
+            <p>EMAIL</p>
+            <p>
+                <label for="signupEmail"></label>
+                <input name="signupEmail" id="signupEmail" type="text" placeholder="example@example.com">
+                <button id="sendVerificationCode" type="button">Send Code</button>
+            </p>
+            <p>
+                <label for="access_code"></label>
+                <input name="access_code" id="verificationCode" type="text" placeholder="######">
+                <button id="verifyCode" type="button">Verify Code</button>
+                <span id="successMessage"></span>
+            </p>
+            <button id="openPrivacyPolicyPopup">Open Privacy Policy</button>
 
-			<div id="privacyPolicyPopup" class="popup-container">
-				<span id="closePrivacyPolicyPopup" style="float: right; cursor: pointer;" onclick="console.log('closePrivacyPolicyPopup()')">x</span>
-			</div> 
-			I agree to the terms and conditions.
-			<label for="agreementCheckbox">
-				<input type="checkbox" id="agreementCheckbox" required="">
-			</label><br><br>
-			<input type="submit" value="Sign up" id="signupButton" disabled="">
-		</form>
-	</div>
+            <div id="privacyPolicyPopup" class="popup-container">
+                <span id="closePrivacyPolicyPopup">x</span>
+            </div> 
+            I agree to the terms and conditions.
+            <label for="agreementCheckbox">
+                <input type="checkbox" id="agreementCheckbox" required="">
+            </label><br><br>
+            <input type="submit" value="Sign up" id="signupButton" disabled="">
+        </form>
+    </div>
 </div>
 `;

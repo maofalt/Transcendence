@@ -12,7 +12,7 @@ export default class LoginPage extends HTMLElement {
 	constructor(element) {
 		super(element);
 
-		this.eventListeners = [] // garbage bin for my event listeners
+		this.eventListeners = []; // garbage bin for my event listeners
 
 		this.attachShadow({ mode: 'open' });
 		
