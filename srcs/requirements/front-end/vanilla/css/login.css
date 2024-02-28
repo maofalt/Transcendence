@@ -10,10 +10,23 @@
 	padding: 20px;
 	box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 	z-index: 9999;
-	max-width: 400px; /* Adjust the maximum width as needed */
-	width: 100%;
+	max-width: 300px; /* Adjust the maximum width as needed */
+	width: 50%;
 	border-radius: 8px; /* Add border-radius for rounded corners */
   }
+
+  /* #loginPopup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    z-index: 9999;
+    width: 300px;
+} */
 
 #loginPopup h2 {
 	color: #333; /* Change the heading text color */
@@ -59,7 +72,7 @@
 	cursor: pointer !important;
 }
 
-.popup-container {
+#privacyPolicyPopup {
 	display: none;
 	position: fixed;
 	top: 50%;
@@ -76,19 +89,6 @@
 
 /* extracted from html */
 #darkLayer {
-}
-
-#loginPopup {
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: #fff;
-    padding: 20px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-    z-index: 9999;
-    width: 300px;
 }
 
 #closeLoginPopup, #closeForgotPasswordModal, #closeSignupPopup, #closePrivacyPolicyPopup {
@@ -118,9 +118,18 @@ input[name="signupEmail"], input[name="access_code"] {
 #privacyPolicyPopup {
 }
 
-.popup-container {
+#signupPopup {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	background: rgb(255, 255, 255);
+	padding: 20px;
+	box-shadow: rgba(0, 0, 0, 0.3) 0px 0px 10px;
+	z-index: 9999;
+	width: 300px;
+	display: none;
 }
-
 
 /* style to fade elements in and out of view (see utils/fade.js */
 .fade {

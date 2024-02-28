@@ -171,7 +171,7 @@ export default class LoginPage extends HTMLElement {
 		fetch('/api/user_management/auth/access_code', {
 			method: 'POST',
 			headers: {
-				'Content-Type': 'application/json',
+				'Content-Type': 'application/x-www-form-urlencoded',
 				'X-CSRFToken': getCookie('csrftoken')
 			},
 			body: JSON.stringify({ 'email': email })
@@ -260,7 +260,8 @@ export default class LoginPage extends HTMLElement {
 			});
 	}
 
-	submitSignupForm = () => {
+	submitSignupForm = (event) => {
+		event.preventDefault();
 		let formData = new FormData(this.shadowRoot.querySelector('#signupForm'));
 		fetch('/api/user_management/auth/signup', {
 			method: 'POST',
@@ -285,9 +286,10 @@ export default class LoginPage extends HTMLElement {
 			});
 	}
 
-	submitLoginForm = () => {
+	submitLoginForm = (event) => {
+		event.preventDefault();
 		var formData = new FormData(this.shadowRoot.querySelector('#loginForm'));
-		fetch('/api/user_management/auth/signup', {
+		fetch('/api/user_management/auth/login', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/x-www-form-urlencoded',
@@ -316,22 +318,20 @@ export default class LoginPage extends HTMLElement {
 			.catch(error => {
 				console.log('An error occurred while processing your request.');
 				console.error(error);
-				displayErrorMessage('An error occurred while processing your request.');
+				this.displayErrorMessage('An error occurred while processing your request.');
 			});
 	}
 
 	submitOneTimeCode = (context) => {
-		var oneTimeCode = this.shadowRoot.querySelector('input[name="one_time_code"]').value;
+		var oneTimeCode = this.shadowRoot.querySelector('#oneTimeCodeSection input[name="one_time_code"]').value;
 		console.log('submitOneTimeCode submit');
 		fetch('/api/user_management/auth/verify_code', {
 			method: 'POST',
 			headers: {
-				'Content-Type': 'application/json',
+				'Content-Type': 'application/x-www-form-urlencoded',
 				'X-CSRFToken': getCookie('csrftoken')
 			},
-			body: JSON.stringify({
-				// Add the necessary data here
-			})
+			body: new URLSearchParams({ 'one_time_code': oneTimeCode, 'context': 'signin' })
 		})
 			.then(response => {
 				if (response.ok) {
@@ -340,13 +340,13 @@ export default class LoginPage extends HTMLElement {
 					// window.location.href = '';
 				} else {
 					console.log('One-time code verification failed:', response.statusText);
-					displayErrorMessage('An error occurred while processing your request.');
+					this.displayErrorMessage('An error occurred while processing your request.');
 				}
 			})
 			.catch(error => {
 				console.log('One-time code verification failed.');
 				console.error(error);
-				displayErrorMessage('An error occurred while processing your request.');
+				this.displayErrorMessage('An error occurred while processing your request.');
 			});
 	}
 
