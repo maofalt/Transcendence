@@ -1,4 +1,12 @@
+import { makeApiRequest } from "../utils/makeApiRequest";
 import AbstractView from "./AbstractView";
+import { getCookie } from "@utils/getCookie";
+import { createElement } from "@utils/createElement";
+import { htmlToElement } from "@utils/htmlToElement";
+// import '@css/login.css';
+import loginPageSource from "@views/loginPageSource";
+// import { toggleClass, prop, fadeIn, fadeOut } from "@utils/jqueryUtils";
+import LoginPage from "./LoginShadow";
 
 export default class Login extends AbstractView {
 	constructor(element) {
@@ -6,15 +14,8 @@ export default class Login extends AbstractView {
 	}
 
 	async getHtml() {
-		console.log("path: ", document.location.origin);
-		history.replaceState(null, null, document.location.origin + '/api/user_management');
-		window.location.href = document.location.origin + '/api/user_management';
-		// let html = fetch(document.location.origin + '/api/user_managemen');
-		return `
-		<div class="card">
-			<h1>Login</h1>
-		</div>
-		`;
+		let logincontainer = document.createElement('div');
+		logincontainer.appendChild(document.createElement('login-page'));
+		return logincontainer.innerHTML;
 	}
-
 }
