@@ -5,7 +5,7 @@ import Options from '@views/Options.js';
 import Game from '@views/Game.js';
 import Login from '@views/Login.js';
 import NotFound from '@views/NotFound.js';
-// import UserPage from '@views/UserPage';
+import User from '@views/User';
 
 
 export const routes = {
@@ -45,12 +45,12 @@ export const routes = {
 		title: 'Login',
 		buttonText: 'Login'
 	},
-	// '/user': {
-	// 	path: '/user',
-	// 	view: UserPage,
-	// 	title: 'User Page',
-	// 	buttonText: 'Profile'
-	// },
+	'/user': {
+		path: '/user',
+		view: User,
+		title: 'Profile Page',
+		buttonText: 'Profile'
+	},
 	'/404': {
 		path: '/404',
 		view: NotFound,

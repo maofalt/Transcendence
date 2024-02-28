@@ -2,10 +2,10 @@ import { getCookie } from "@utils/getCookie";
 import { createElement } from "@utils/createElement";
 import { htmlToElement } from "@utils/htmlToElement";
 import styles from '@css/userPage.css?raw';
-import loginPageSource from "@views/loginPageSource";
+import userPageSource from "@views/userPageSource";
 // import { this.toggleClass, this.prop, this.fadeIn, this.fadeOut } from "@utils/jqueryUtils";
 
-export default class UserPage extends HTMLElement {
+export default class User extends HTMLElement {
 	constructor() {
 		super();
 
@@ -20,6 +20,12 @@ export default class UserPage extends HTMLElement {
 		
 		// inject raw html into shadow dom
 		this.shadowRoot.innerHTML += userPageSource;
+	}
+
+	async getHtml() {
+		let logincontainer = document.createElement('div');
+		logincontainer.appendChild(document.createElement('user-page'));
+		return logincontainer.innerHTML;
 	}
 
 	// this function gets called when the custom component gets added to the dom
@@ -71,3 +77,5 @@ export default class UserPage extends HTMLElement {
 
 	}
 }
+
+customElements.define('user-page', User);

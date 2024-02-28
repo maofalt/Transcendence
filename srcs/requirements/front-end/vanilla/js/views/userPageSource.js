@@ -50,7 +50,7 @@ export default `
     <script>
         function redirectToGameStatsPage() {
             const username = "{{ data.username }}";
-            window.location.href = '../gameHistory_microservice/api/game-stats/${username}/';
+            window.location.href = '../gameHistory_microservice/api/game-stats/\${username}/';
         }
 
         document.getElementById('deleteAccountLink').addEventListener('click', function() {
