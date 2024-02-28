@@ -386,6 +386,33 @@ Example response:
 ### Create Tournament
 
 This endpoint creates a tournament and returns `success` if it was created and adds it to the database
+The Tournament API allows the creation and management of game tournaments. Below is a detailed explanation of each attribute within the Tournament model, followed by an example JSON representation of a Tournament object.
+
+#### Attributes:
+- tournament_id: A unique identifier for the tournament. This is an auto-incremented field and serves as the primary key.
+- tournament_name: The name of the tournament. This is a string up to 255 characters and is unique across all tournaments.
+- game_type: A foreign key linking to the GameType model. It identifies the type of game for the tournament. 
+- created_at: The date and time when the tournament was created. This is automatically set when a tournament is created.
+- nbr_of_players: The number of players participating in the tournament. It must be between 2 and 8, inclusive.
+- tournament_type: A foreign key linking to the TournamentType model. It specifies the type of the tournament based on the type_id from the TournamentType model.
+- registration: A foreign key linking to the RegistrationType model, indicating the type of registration based on the type_id from the RegistrationType model.
+- setting: A foreign key to the MatchSetting model, specifying the match settings using the setting_id.
+registration_period_min: The minimum registration period for the tournament, in minutes. The default value is 15.
+- host_id: An integer representing the host's identifier.
+
+## MatchSetting API
+The MatchSetting API facilitates the customization of match parameters. Below are the attribute descriptions and a JSON example.
+
+#### Attributes:
+- setting_id: A unique identifier for the match setting, auto-incremented and used as the primary key.
+- duration_sec: The duration of the match in seconds. It must be between 60 (1 minute) and 300 (5 minutes).
+- max_score: The maximum score a player can achieve in a match. It is constrained between 1 and 10.
+- walls_factor: A setting that determines the influence of walls in a game, with valid values ranging from 0 to 2.
+- size_of_goals: The size of the goals in the game. This value must be between 15 and 30.
+- paddle_height: The height of the paddles used in the game, with a minimum of 1 and a maximum of 12.
+- paddle_speed: The speed of the paddles, ranging from 0.1 to 2.
+- ball_speed: The speed of the ball, also ranging from 0.1 to 2.
+- ball_radius: The radius of the ball, constrained between 0.5 and 7.
 
 ```plaintext
 POST /api/tournament/create-and-list/
@@ -405,10 +432,12 @@ Example Body in ```JSON``` :
   "setting": {
     "duration_sec": 300,
     "max_score": 10,
-    "nbr_of_sets": 2,
-    "paddle_speed": 15,
-    "ball_speed": 20,
-    "nbr_of_players": 4
+    "walls_factor": 0,
+    "size_of_goals": 20,
+    "paddle_height": 1,
+    "paddle_speed": 0.7,
+    "ball_speed": 0.8,
+    "ball_radius": 1
   }
 }
 
