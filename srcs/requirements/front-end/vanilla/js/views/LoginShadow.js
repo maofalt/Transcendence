@@ -54,6 +54,7 @@ export default class LoginPage extends HTMLElement {
 			'#verifyCode': this.verifyCode,
 			'#openPrivacyPolicyPopup': this.openPrivacyPolicyPopup,
 			'#closePrivacyPolicyPopup': this.closePrivacyPolicyPopup,
+			'#darkLayer': this.closeLoginPopup,
 		};
 
 		let submitableElems = {
@@ -92,7 +93,7 @@ export default class LoginPage extends HTMLElement {
 				.then(response => {
 					if (response.ok) {
 						console.log('Print all user data successful:', response);
-						// window.location.href = '/api/user_management/auth/developer_setting';
+						window.location.href = '/api/user_management/auth/developer_setting';
 					} else {
 						console.log('Error Cannot print user data:', response.statusText);
 					}
@@ -412,15 +413,18 @@ export default class LoginPage extends HTMLElement {
 		const element = this.shadowRoot.querySelector(selector);
 		element.style.display = 'block'; // reset the display property to its default value
 		element.classList.add('fade');
-		setTimeout(() => element.classList.add('in'), 199); // 10ms delay to allow the DOM to update
+		setTimeout(() => element.classList.add('in'), 10); // 10ms delay to allow the DOM to update
 	}
 	
 	// remove '.fade' class after the transition is done
 	fadeOut(selector) {
 		const element = this.shadowRoot.querySelector(selector);
-		element.style.display = 'none'; // hide the element after the transition is done
+		// element.style.display = 'none'; // hide the element after the transition is done
 		element.classList.remove('in');
-		setTimeout(() => element.classList.remove('fade'), 500); // 500ms delay to allow the transition to finish (adjust to match the transition duration in the CSS file)
+		setTimeout(() => {
+			element.classList.remove('fade');
+			element.style.display = 'none'
+		}, 500); // 500ms delay to allow the transition to finish (adjust to match the transition duration in the CSS file)
 	}
 	
 }

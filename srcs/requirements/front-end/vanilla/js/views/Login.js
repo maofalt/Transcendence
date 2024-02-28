@@ -11,29 +11,11 @@ import LoginPage from "./LoginShadow";
 export default class Login extends AbstractView {
 	constructor(element) {
 		super(element);
-		// const jwt = getCookie('jwtToken');
-		// const sess = getCookie('sessionid');
-		// const csrf = getCookie('csrftoken');
-		// console.log('tokenys: ', sess, jwt, csrf);
-		// this.state = {
-			
-		// };
-		// this.loginForm = htmlToElement(loginPageSource);
-		// console.log('loginForm: ', this.loginForm);
-		// this.loginForm.classList.add('loginForm');
-		// console.log('Login constructor called\n\n');
 	}
 
 	async getHtml() {
-		console.log("path: ", document.location.origin);
-		// history.replaceState(null, null, document.location.origin + '/api/user_management');
-		// window.location.href = document.location.origin + '/api/user_management';
-		// let html = fetch(document.location.origin + '/api/user_managemen');
-
 		let logincontainer = document.createElement('div');
 		logincontainer.appendChild(document.createElement('login-page'));
-		// document.querySelector('#app').appendChild(shadowEl);
-		// console.log("inner shadow", shadowEl.innerHTML);
 		return logincontainer.innerHTML;
 	}
 }
