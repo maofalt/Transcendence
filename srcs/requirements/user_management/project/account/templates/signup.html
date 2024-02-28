@@ -144,7 +144,7 @@
                 if (data.success) {
                     console.log('Code sent successfully');
                 } else {
-                    console.log('Failed to send code:', data.error_message);
+                    console.log('Failed to send code:', data.error);
                 }
             },
             error: function () {
@@ -182,7 +182,7 @@
                     updateSignupButtonStatus();
                     // submitSignupForm();
                 } else {
-                    console.log('Failed to verify code:', data.error_message);
+                    console.log('Failed to verify code:', data.error);
                 }
             },
             error: function () {
@@ -204,7 +204,7 @@
                     window.location.href = '';
 
                 } else {
-                    $('#signupPopupError').text(data.error_message);
+                    $('#signupPopupError').text(data.error);
                 }
             },
             error: function () {
