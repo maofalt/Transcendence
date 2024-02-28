@@ -6,8 +6,6 @@ def add_game_types(apps, schema_editor):
     GameType = apps.get_model('manage_tournament', 'GameType')
     GameType.objects.create(type_name='gametype1')
     GameType.objects.create(type_name='gametype2')
-    GameType.objects.create(type_name='gametype3')
-
 
 class Migration(migrations.Migration):
 
