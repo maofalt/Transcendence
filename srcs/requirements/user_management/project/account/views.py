@@ -66,11 +66,28 @@ def user_is_logged_in(request):
     if request.user.is_authenticated:
         request.user.is_online = True
         request.user.save()
-        check_refresh_token()
+        if is_access_token_expired(request.user):
+            refresh_token(request.user)
     else:
         request.user.is_online = False
         request.user.save()
     return JsonResponse({'isLoggedIn': request.user.is_authenticated})
+
+def is_access_token_expired(user):
+    # Check if access token is expired
+    access_token = AccessToken.for_user(user)
+    decoded_token = jwt.decode(str(access_token), 'your_secret_key', algorithms=["HS256"])
+    expiration_timestamp = decoded_token['exp']
+    expiration_datetime = datetime.datetime.fromtimestamp(expiration_timestamp)
+    return expiration_datetime < timezone.now()
+
+
+def refresh_token(user):
+    # Use refresh token to obtain a new access token
+    refresh_token = RefreshToken.for_user(user)
+    access_token = AccessToken.for_user(user)
+    # Send the new access token to the frontend
+    return access_token
 
 # // Function to check user's login status
 # function checkLoginStatus() {
@@ -128,8 +145,9 @@ def api_login_view(request):
             access_token = AccessToken.for_user(user)
             access_token['username'] = user.username
 
+            
             response_data = {
-                'access_token': str(access_token),
+                # 'access_token': str(access_token),
                 'message': escape('Password Authentication successful'),
                 'redirect_url': escape(redirect_url),
                 'requires_2fa': True
@@ -139,6 +157,10 @@ def api_login_view(request):
             try:
                 print("original ACCESS TOKEN: ", str(access_token))
                 decodedToken = jwt.decode(str(access_token), secret_key, algorithms=["HS256"])
+                
+                request.session['access_token'] = str(access_token)
+                print("jwt on session: ", request.session['access_token'])
+
                 print("decode ACCESS TOKEN: ", decodedToken)
                 local_tz = pytz.timezone('Europe/Paris')
                 exp_timestamp_accessToken = decodedToken['exp']
