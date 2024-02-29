@@ -11,6 +11,7 @@ export default class Login extends HTMLElement {
 		super(element);
 
 		this.eventListeners = []; // garbage bin for my event listeners
+		this.signupClicked = false; // flag to check if the signup link was clicked
 
 		this.attachShadow({ mode: 'open' });
 		
@@ -32,12 +33,17 @@ export default class Login extends HTMLElement {
 	// this function gets called when the custom component gets added to the dom
 	connectedCallback() {
 		console.log('connectedCallback() called\n\n');
-		this.setupEventListeners();
+		this.setupEventListeners(); // setup all event listeners for the page and track them
 	}
 
 	// this function gets called when the custom component is removed from the dom
 	disconnectedCallback() {
 		console.log('disconnectedCallback() called\n\n');
+		// remove all tracked event listeners on the page
+		this.eventListeners.forEach(({ target, type, listener }) => {
+			target.removeEventListener(type, listener);
+		});
+		this.eventListeners = [];
 	}
 
 	// garbage collection for my event listeners
@@ -59,6 +65,10 @@ export default class Login extends HTMLElement {
 			'#openPrivacyPolicyPopup': this.openPrivacyPolicyPopup,
 			'#closePrivacyPolicyPopup': this.closePrivacyPolicyPopup,
 			'#darkLayer': this.closeLoginPopup,
+			'#devDbButton': this.redirectToDevSetting,
+			'#forgotPasswordLink': this.openForgotPasswordModal,
+			'#signupLink': this.openSignupPopup,
+			'#loginLink': this.openLoginPopup,
 		};
 
 		let submitableElems = {
@@ -87,53 +97,23 @@ export default class Login extends HTMLElement {
 				this.updateSignupButtonStatus();
 			});
 		});
+	}
 
-		// let devDbButton = this.shadowRoot.querySelector('#devDbButton');
-		// this.addTrackedListener(devDbButton, "click", this.getDevSetting);
-		this.shadowRoot.querySelector('#devDbButton').addEventListener("click", () => {
-			fetch('/api/user_management/auth/developer_setting', {
-				method: 'GET',
+	redirectToDevSetting = () => {
+		fetch('/api/user_management/auth/developer_setting', {
+			method: 'GET',
+		})
+			.then(response => {
+				if (response.ok) {
+					console.log('Print all user data successful:', response);
+					window.location.href = '/api/user_management/auth/developer_setting';
+				} else {
+					console.log('Error Cannot print user data:', response.statusText);
+				}
 			})
-				.then(response => {
-					if (response.ok) {
-						console.log('Print all user data successful:', response);
-						window.location.href = '/api/user_management/auth/developer_setting';
-					} else {
-						console.log('Error Cannot print user data:', response.statusText);
-					}
-				})
-				.catch(error => {
-					console.error('Error Cannot print user data:', error);
-				});
-		});
-
-		var signupClicked = false;
-
-		this.shadowRoot.querySelector("#forgotPasswordLink").addEventListener("click", () => {
-			this.fadeIn("#darkLayer");
-			this.fadeIn("#forgotPasswordModal");
-		});
-
-		this.shadowRoot.querySelector("#signupLink").addEventListener("click", (event) => {
-			event.stopPropagation()
-			signupClicked = true;
-			console.log('close login popup');
-			this.fadeIn("#darkLayer");
-			console.log('opacity applied');
-			this.fadeIn("#signupPopup");
-			console.log('fade in signup popup\n\n');
-		});
-
-		this.shadowRoot.querySelector("#loginLink").addEventListener("click", () => {
-			console.log('log in link clicked');
-			if (!signupClicked) {
-				this.fadeIn("#darkLayer");
-				console.log('opacity applied');
-				this.fadeIn("#loginPopup");
-				console.log('fade in login popup\n\n');
-			}
-			signupClicked = false; // Reset the flag after handling the click
-		});
+			.catch(error => {
+				console.error('Error Cannot print user data:', error);
+			});
 	}
 
 	checkPasswordMatch = () => {
@@ -171,27 +151,8 @@ export default class Login extends HTMLElement {
 		this.toggleClass("#signupButton", "enabled", allFieldsFilled && isPasswordMatch && isCodeVerified);
 	}
 
-	sendVerificationCode = (e) => {
-		if (e)
-			e.preventDefault();
-		var email = this.shadowRoot.querySelector("#signupEmail").value;
-		fetch('/api/user_management/auth/access_code', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				'X-CSRFToken': getCookie('csrftoken')
-			},
-			body: JSON.stringify({ 'email': email })
-		})
-			.then(response => response.json())
-			.then(data => {
-				if (data.success) {
-					console.log('Code sent successfully');
-				} else {
-					console.log('Failed to send code:', data.error);
-				}
-			});
-	}
+
+	/* Opening and Closing */
 
 	openPrivacyPolicyPopup = (e) => {
 		if (e)
@@ -213,9 +174,25 @@ export default class Login extends HTMLElement {
 		this.fadeOut("#privacyPolicyPopup");
 	}
 
+	openForgotPasswordModal = () => {
+		this.fadeIn("#darkLayer");
+		this.fadeIn("#forgotPasswordModal");
+	}
+
 	closeForgotPasswordModal = () => {
 		this.fadeOut("#darkLayer");
 		this.fadeOut("#forgotPasswordModal");
+	}
+
+	openSignupPopup = (event) => {
+		if (event)
+			event.stopPropagation()
+		this.signupClicked = true;
+		console.log('close login popup');
+		this.fadeIn("#darkLayer");
+		console.log('opacity applied');
+		this.fadeIn("#signupPopup");
+		console.log('fade in signup popup\n\n');
 	}
 
 	closeSignupPopup = (e) => {
@@ -226,6 +203,17 @@ export default class Login extends HTMLElement {
 		console.log('closeSignupPopup() called\n\n');
 	}
 
+	openLoginPopup = (event) => {
+		console.log('log in link clicked');
+		if (!this.signupClicked) {
+			this.fadeIn("#darkLayer");
+			console.log('opacity applied');
+			this.fadeIn("#loginPopup");
+			console.log('fade in login popup\n\n');
+		}
+		this.signupClicked = false; // Reset the flag after handling the click
+	}
+
 	closeLoginPopup = (e) => {
 		if (e)
 			e.preventDefault();
@@ -234,9 +222,29 @@ export default class Login extends HTMLElement {
 		console.log('closeLoginPopup() called\n\n');
 	}
 
-	displayErrorMessage = (message) => {
-		this.shadowRoot.getElementById('errorMessage').textContent = message;
-		this.shadowRoot.getElementById('errorMessage').style.color = 'red';
+
+	/* API Requests */
+
+	sendVerificationCode = (e) => {
+		if (e)
+			e.preventDefault();
+		var email = this.shadowRoot.querySelector("#signupEmail").value;
+		fetch('/api/user_management/auth/access_code', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-CSRFToken': getCookie('csrftoken')
+			},
+			body: JSON.stringify({ 'email': email })
+		})
+			.then(response => response.json())
+			.then(data => {
+				if (data.success) {
+					console.log('Code sent successfully');
+				} else {
+					console.log('Failed to send code:', data.error);
+				}
+			});
 	}
 
 	// window.addEventListener("message", (event) => {
@@ -377,7 +385,6 @@ export default class Login extends HTMLElement {
 				// 'username': username
 			// })
 		})
-
 			.then(response => {
 				if (response.ok) {
 					console.log('Status Code:', response.status);
@@ -400,6 +407,15 @@ export default class Login extends HTMLElement {
 			});
 		return false;
 	}
+
+
+	displayErrorMessage = (message) => {
+		this.shadowRoot.getElementById('errorMessage').textContent = message;
+		this.shadowRoot.getElementById('errorMessage').style.color = 'red';
+	}
+
+
+	/* Helper Functions */
 
 	// add or remove a class from all elements matching the selector
 	toggleClass(selector, className, state) {
@@ -446,6 +462,5 @@ export default class Login extends HTMLElement {
 		}, 500); // 500ms delay to allow the transition to finish (adjust to match the transition duration in the CSS file)
 	}
 }
-	
+
 customElements.define('login-page', Login);
-	
