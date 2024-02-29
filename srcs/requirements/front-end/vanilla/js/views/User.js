@@ -1,9 +1,8 @@
 import { getCookie } from "@utils/getCookie";
 import { createElement } from "@utils/createElement";
 import { htmlToElement } from "@utils/htmlToElement";
-import styles from '@css/userPage.css?raw';
+import styles from '@css/user.css?raw';
 import userPageSource from '@html/userPageSource';
-// import { this.toggleClass, this.prop, this.fadeIn, this.fadeOut } from "@utils/jqueryUtils";
 
 export default class User extends HTMLElement {
 	constructor() {
@@ -49,15 +48,10 @@ export default class User extends HTMLElement {
 		// get all the clickable elements in the page
 		let clickableElems = {
 			// '#closeLoginPopup': this.closeLoginPopup,
-			// '#submitOneTimeCode': this.submitOneTimeCode,
-			// '#closeForgotPasswordModal': this.closeForgotPasswordModal,
-			// '#sendUrlToEmail': this.sendUrlToEmail,
-			// '#closeSignupPopup': this.closeSignupPopup,
-			// '#sendVerificationCode': this.sendVerificationCode,
-			// '#verifyCode': this.verifyCode,
-			// '#openPrivacyPolicyPopup': this.openPrivacyPolicyPopup,
-			// '#closePrivacyPolicyPopup': this.closePrivacyPolicyPopup,
-			// '#darkLayer': this.closeLoginPopup,
+			'#deleteAccountLink': this.deleteAccount,
+			'#confirmDeleteAccount': this.confirmDeleteAccount,
+			'#cancelDeleteAccount': this.cancelDeleteAccount,
+			'#redirectToHome': this.redirectToHome,
 		};
 
 		let submitableElems = {
@@ -76,6 +70,44 @@ export default class User extends HTMLElement {
 		});
 
 	}
+}
+
+redirectToGameStatsPage = () => {
+	const username = "{{ data.username }}";
+	window.location.href = '../gameHistory_microservice/api/game-stats/\${username}/';
+}
+
+this.shadowRoot.getElementById('deleteAccountLink').addEventListener('click', function() {
+	this.shadowRoot.getElementById('deleteAccountModal').style.display = 'block';
+});
+
+confirmDeleteAccount = () => {
+	this.shadowRoot.getElementById('deleteAccountModal').style.display = 'none';
+
+	$.ajax({
+		type: 'POST',
+		url: '{% url "account:delete_account" %}',
+		headers: { "X-CSRFToken": getCookie('csrftoken') },
+		success: function (data) {
+			if (data.success) {
+				console.log('Print all user data successful:', data);
+				this.shadowRoot.getElementById('deleteConfirmationModal').style.display = 'block';
+			} else {
+				console.error('Error deleting account:', data.error);
+			}
+		},
+		error: function (error) {
+			console.error('Error deleting account:', error);
+		}
+	});
+}
+
+cancelDeleteAccount = () => {
+	this.shadowRoot.getElementById('deleteAccountModal').style.display = 'none';
+}
+
+redirectToHome = () => {
+	window.location.href = '{% url "home" %}';
 }
 
 customElements.define('user-page', User);
