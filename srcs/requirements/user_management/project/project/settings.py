@@ -79,15 +79,17 @@ REST_FRAMWORK = {
 	)
 }
 
+
+#jwt token is realated on session, so when browser closed, session
 JWT_EXPIRATION_DELTA = datetime.timedelta(minutes=15)
 JWT_REFRESH_EXPIRATION_DELTA = datetime.timedelta(days=14)
 # Store access token in a cookie
-# JWT_AUTH_COOKIE = True
+JWT_AUTH_COOKIE = True
 # Mark cookie containing access token as secure
-# JWT_COOKIE_SECURE = True
-# JWT_COOKIE_SAMESITE = 'Lax'
-# JWT_ALGORITHM = 'RS256'
-# JWT_AUTH_HEADER_PREFIX = 'Token'
+JWT_COOKIE_SECURE = True
+JWT_COOKIE_SAMESITE = 'Lax'
+JWT_ALGORITHM = 'RS256'
+JWT_AUTH_HEADER_PREFIX = 'Token'
 JWT_ROTATE_REFRESH_TOKENS = True
 JWT_BLACKLIST_AFTER_ROTATION = True
 
