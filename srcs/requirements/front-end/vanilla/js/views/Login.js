@@ -3,10 +3,8 @@ import AbstractView from "./AbstractView";
 import { getCookie } from "@utils/getCookie";
 import { createElement } from "@utils/createElement";
 import { htmlToElement } from "@utils/htmlToElement";
-// import '@css/login.css';
 import styles from '@css/login.css?raw';
-import loginPageSource from "@views/loginPageSource";
-// import { this.toggleClass, this.prop, this.fadeIn, this.fadeOut } from "@utils/jqueryUtils";
+import loginPageSource from "@html/loginPageSource";
 
 export default class Login extends HTMLElement {
 	constructor(element) {

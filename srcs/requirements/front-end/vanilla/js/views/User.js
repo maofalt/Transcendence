@@ -2,7 +2,7 @@ import { getCookie } from "@utils/getCookie";
 import { createElement } from "@utils/createElement";
 import { htmlToElement } from "@utils/htmlToElement";
 import styles from '@css/userPage.css?raw';
-import userPageSource from "@views/userPageSource";
+import userPageSource from '@html/userPageSource';
 // import { this.toggleClass, this.prop, this.fadeIn, this.fadeOut } from "@utils/jqueryUtils";
 
 export default class User extends HTMLElement {
