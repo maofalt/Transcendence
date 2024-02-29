@@ -37,8 +37,11 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import User
 from .serializers import UserSerializer, AnonymousUserSerializer
+from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework_simplejwt.tokens import RefreshToken
 import jwt
+import datetime
+import pytz
 from django.conf import settings
 # 2FA
 import json
@@ -63,6 +66,7 @@ def user_is_logged_in(request):
     if request.user.is_authenticated:
         request.user.is_online = True
         request.user.save()
+        check_refresh_token()
     else:
         request.user.is_online = False
         request.user.save()
@@ -82,81 +86,15 @@ def user_is_logged_in(request):
 #         });
 # }
 
-# OPTION 2 using jwt
+# def get_token_for_user(user, with_username=False, token_lifetime=None):
+#     refresh = RefreshToken.for_user(user)
+#     if with_username:
+#         refresh['username'] = user.username
+#     if token_lifetime is not None:
+#         print("setting exp as: ", token_lifetime)
+#         refresh.access_token.set_exp(lifetime=datetime.timedelta(seconds=token_lifetime))
+#     return str(refresh.access_token)
 
-# def user_is_logged_in(request):
-#     token = request.headers.get('Authorization', '').split('Bearer ')[-1]
-#     try:
-#         decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-#         username = decoded_token.get('username')
-#         if username:
-#             user = User.objects.get(username=username)
-#             request.user = user
-#             return JsonResponse({'isLoggedIn': True})
-#         else:
-#             return JsonResponse({'isLoggedIn': False})
-#     except jwt.ExpiredSignatureError:
-#         request.user.is_online = False
-#         request.user.save()
-#         logout(request)
-#         # Token expired, perform logout operation
-#         return JsonResponse({'isLoggedIn': False})
-#     except jwt.InvalidTokenError:
-#         # Invalid token, handle the error as needed
-#         return JsonResponse({'isLoggedIn': False})
-
-
-
-# // Periodically check user's login status (every 1 minute)
-# setInterval(checkLoginStatus, 60000);
-# function sendNotificationToServer() {
-# }
-
-# // Function to periodically check JWT expiration and user's login status
-# function checkLoginStatus() {
-#     const token = localStorage.getItem('jwtToken'); // Retrieve JWT from local storage
-#     if (!token) {
-#         console.log('User is not logged in');
-#         return;
-#     }
-# const decodedToken = jwt_decode(token);
-#     const currentTime = Date.now() / 1000; 
-
-#     if (decodedToken.exp < currentTime) {
-#         // JWT has expired, log out the user
-#         console.log('JWT has expired, logging out user');
-#         localStorage.removeItem('jwtToken'); // Remove expired JWT from local storage
-#         return;
-#     }
-
-#     console.log('User is logged in');
-# }
-# setInterval(checkLoginStatus, 60000);
-
-
-# However, even if the cookie is marked as HTTP-only, 
-# the browser still includes it in subsequent HTTP requests to the server. 
-# So, when the client makes requests to the server, 
-# the browser automatically includes the JWT token cookie, 
-# allowing the server to authenticate the user.
-
-# In this JavaScript code for checking the login status,
-# it is not directly accessing the cookie using JavaScript.
-# Instead, you are retrieving the JWT token from the local storage
-# (localStorage.getItem('jwtToken')).
-# This approach is not affected by the httponly=True setting
-# because local storage is a separate storage mechanism from cookies
-# and is accessible by JavaScript.
-
-# Therefore, you can safely use httponly=True for the JWT token cookie
-# while still performing client-side JWT token checking in JavaScript
-
-
-def get_token_for_user(user):
-    refresh = RefreshToken.for_user(user)
-    refresh['username'] = user.username
-
-    return str(refresh.access_token)
 
 def privacy_policy_view(request):
     return render(request, 'privacy_policy.html')
@@ -166,7 +104,7 @@ def api_login_view(request):
     print("\n\n       URL:", request.build_absolute_uri())
 
     secret_key = settings.SECRET_KEY
-    if request.method == "POST":
+    if request.method == "POST": 
         username = request.POST["username"]
         password = request.POST["password"]
         user = authenticate(username=username, password=password)
@@ -186,18 +124,27 @@ def api_login_view(request):
             
             send_one_time_code(request, user.email)
             
-            token = get_token_for_user(user)
-            response = JsonResponse({'message': escape('Password Authentication successful'), 'redirect_url': escape(redirect_url), 'requires_2fa': True})
-            response.set_cookie(
-                key='jwtToken',
-                value=token,
-                httponly=True,
-                samesite='Lax'
-            )
-            print("\ntoken: ", token)
+
+            access_token = AccessToken.for_user(user)
+            access_token['username'] = user.username
+
+            response_data = {
+                'access_token': str(access_token),
+                'message': escape('Password Authentication successful'),
+                'redirect_url': escape(redirect_url),
+                'requires_2fa': True
+            }
+            response = JsonResponse(response_data)    
+            
             try:
-                decoded_token = jwt.decode(token, secret_key, algorithms=["HS256"])
-                print("Decoded Token:", decoded_token)
+                print("original ACCESS TOKEN: ", str(access_token))
+                decodedToken = jwt.decode(str(access_token), secret_key, algorithms=["HS256"])
+                print("decode ACCESS TOKEN: ", decodedToken)
+                local_tz = pytz.timezone('Europe/Paris')
+                exp_timestamp_accessToken = decodedToken['exp']
+                exp_accessToken = datetime.datetime.fromtimestamp(exp_timestamp_accessToken, tz=pytz.utc).astimezone(local_tz).strftime('%Y-%m-%d %H:%M:%S')
+                print("Expiration time of ACCESS token:", exp_accessToken)
+
                 return response
             except jwt.ExpiredSignatureError:
                 return JsonResponse({'error': escape('Token has expired')}, status=400)
