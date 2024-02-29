@@ -40,6 +40,7 @@ export default class User extends HTMLElement {
 
 	// garbage collection for my event listeners
 	addTrackedListener = (target, type, listener, options) => {
+		// console.log("target:", target, "type:", type, "listener:", listener, "options:", options);
 		target.addEventListener(type, listener, options);
 		this.eventListeners.push({ target, type, listener }); // Store the listener details
 	}
@@ -49,6 +50,7 @@ export default class User extends HTMLElement {
 		let clickableElems = {
 			// '#closeLoginPopup': this.closeLoginPopup,
 			'#deleteAccountLink': this.deleteAccount,
+			'#redirectToGameStatsPage': this.redirectToGameStatsPage,
 			'#confirmDeleteAccount': this.confirmDeleteAccount,
 			'#cancelDeleteAccount': this.cancelDeleteAccount,
 			'#redirectToHome': this.redirectToHome,
@@ -68,46 +70,46 @@ export default class User extends HTMLElement {
 		Object.entries(clickableElems).forEach(([selector, action]) => {
 			this.addTrackedListener(this.shadowRoot.querySelector(selector), "click", action);
 		});
-
 	}
-}
-
-redirectToGameStatsPage = () => {
-	const username = "{{ data.username }}";
-	window.location.href = '../gameHistory_microservice/api/game-stats/\${username}/';
-}
-
-this.shadowRoot.getElementById('deleteAccountLink').addEventListener('click', function() {
-	this.shadowRoot.getElementById('deleteAccountModal').style.display = 'block';
-});
-
-confirmDeleteAccount = () => {
-	this.shadowRoot.getElementById('deleteAccountModal').style.display = 'none';
-
-	$.ajax({
-		type: 'POST',
-		url: '{% url "account:delete_account" %}',
-		headers: { "X-CSRFToken": getCookie('csrftoken') },
-		success: function (data) {
-			if (data.success) {
-				console.log('Print all user data successful:', data);
-				this.shadowRoot.getElementById('deleteConfirmationModal').style.display = 'block';
-			} else {
-				console.error('Error deleting account:', data.error);
+	
+	deleteAccount = () => {
+		this.shadowRoot.getElementById('deleteAccountModal').style.display = 'block';
+	}
+	
+	redirectToGameStatsPage = () => {
+		const username = "{{ data.username }}";
+		window.location.href = '../gameHistory_microservice/api/game-stats/\${username}/';
+	}
+	
+	confirmDeleteAccount = () => {
+		this.shadowRoot.getElementById('deleteAccountModal').style.display = 'none';
+	
+		$.ajax({
+			type: 'POST',
+			url: '{% url "account:delete_account" %}',
+			headers: { "X-CSRFToken": getCookie('csrftoken') },
+			success: function (data) {
+				if (data.success) {
+					console.log('Print all user data successful:', data);
+					this.shadowRoot.getElementById('deleteConfirmationModal').style.display = 'block';
+				} else {
+					console.error('Error deleting account:', data.error);
+				}
+			},
+			error: function (error) {
+				console.error('Error deleting account:', error);
 			}
-		},
-		error: function (error) {
-			console.error('Error deleting account:', error);
-		}
-	});
-}
-
-cancelDeleteAccount = () => {
-	this.shadowRoot.getElementById('deleteAccountModal').style.display = 'none';
-}
-
-redirectToHome = () => {
-	window.location.href = '{% url "home" %}';
+		});
+	}
+	
+	cancelDeleteAccount = () => {
+		this.shadowRoot.getElementById('deleteAccountModal').style.display = 'none';
+	}
+	
+	redirectToHome = () => {
+		window.location.href = '{% url "home" %}';
+	}
+	
 }
 
 customElements.define('user-page', User);

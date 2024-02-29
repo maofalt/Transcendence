@@ -23,18 +23,18 @@ export default `
 <p></p>
 <a id="deleteAccountLink">Delete Account</a>
 <p></p>
-<button type="button" onclick="redirectToGameStatsPage()">GAME STATS TEST</button>
+<button type="button" id="redirectToGameStatsPage">GAME STATS TEST</button>
 
 <div id="deleteAccountModal" style="display: none;">
 	<p>If you delete your account, all of your data will be deleted permanently.</p>
 	<p>Are you sure you want to delete your pong account?</p>
-	<button onclick="confirmDeleteAccount()">Yes, I'm sure</button>
-	<button onclick="cancelDeleteAccount()">No, I'll keep my account</button>
+	<button id="confirmDeleteAccount">Yes, I'm sure</button>
+	<button id="cancelDeleteAccount">No, I'll keep my account</button>
 </div>
 
 <div id="deleteConfirmationModal" style="display: none;">
 	<p>Your account has been deleted successfully.</p>
 	<p>Thank you for being part of our community.</p>
-	<button onclick="redirectToHome()">Go to Home</button>
+	<button id="redirectToHome">Go to Home</button>
 </div>
 `;
