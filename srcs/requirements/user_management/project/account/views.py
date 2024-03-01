@@ -157,9 +157,7 @@ def api_login_view(request):
             try:
                 print("original ACCESS TOKEN: ", str(access_token))
                 decodedToken = jwt.decode(str(access_token), secret_key, algorithms=["HS256"])
-                
-                request.session['access_token'] = str(access_token)
-                print("jwt on session: ", request.session['access_token'])
+
 
                 print("decode ACCESS TOKEN: ", decodedToken)
                 local_tz = pytz.timezone('Europe/Paris')

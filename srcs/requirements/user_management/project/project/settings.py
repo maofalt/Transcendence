@@ -87,7 +87,7 @@ JWT_REFRESH_EXPIRATION_DELTA = datetime.timedelta(days=14)
 JWT_AUTH_COOKIE = True
 # Mark cookie containing access token as secure
 JWT_COOKIE_SECURE = True
-JWT_COOKIE_SAMESITE = 'Lax'
+JWT_COOKIE_SAMESITE = 'Strict'
 JWT_ALGORITHM = 'RS256'
 JWT_AUTH_HEADER_PREFIX = 'Token'
 JWT_ROTATE_REFRESH_TOKENS = True
