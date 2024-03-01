@@ -16,32 +16,69 @@ export default class CreateTournament extends AbstractView {
         this.game = new Game();
     }
     
-    async init() {
+    // async init() {
         
-        document.getElementById('tournament-form').addEventListener('submit', async(event) => {
-            event.preventDefault();
-            let gameSettings = this.getGameSettingsFromForm();
-            console.log('Game Settings ANonymous:', gameSettings);
-        });
+    //     document.getElementById('tournament-form').addEventListener('submit', async(event) => {
+    //         event.preventDefault();
+    //         let gameSettings = this.getGameSettingsFromForm();
+    //         console.log('Game Settings ANonymous:', gameSettings);
+    //     });
   
-        let matchID = await this.createGame(gameSettings);
-        console.log('Match ID:', matchID);
-        this.game = new Game(matchID, 500, 830);
-        await this.game.init();
+    //     let matchID = await this.createGame(gameSettings);
+    //     console.log('Match ID:', matchID);
+    //     this.game = new Game(matchID, 500, 830);
+    //     await this.game.init();
+    // }
+
+    async init() {
+      // Initialize the game with basic settings
+      let basicGameSettings = this.getBasicGameSettings();
+      console.log('Initializing game with basic settings:', basicGameSettings);
+      await this.initializeGame(basicGameSettings);
+  
+      // Add event listener for form submission
+      document.getElementById('tournament-form').addEventListener('submit', async (event) => {
+          event.preventDefault();
+          
+          // Get the game settings from the form
+          let gameSettings = this.getGameSettingsFromForm();
+          console.log('Updating game with new settings:', gameSettings);
+          
+          // Re-initialize the game with new settings
+          await this.initializeGame(gameSettings);
+      });
+  }
+
+// Helper method to initialize or update the game preview
+    async initializeGame(gameSettings) {
+      console.log('Create/Update Game with settings:', gameSettings);
+      let matchID = await this.createGame(gameSettings);
+      console.log('Match ID:', matchID);
+    
+      // Assuming the Game constructor or an update method can handle new settings
+      if (!this.game) {
+          this.game = new Game(matchID, gameSettings);
+      } else {
+          //this.game.destroy();
+          this.game = new Game(matchID, gameSettings);   
+      }
+      await this.game.init(); // Make sure this can be safely called multiple times or after updating settings
     }
 
+
     async createGame(gameSettings) {
-		console.log('Create Game');
-		//const gameSettings = this.getGameSettings();
-		try {
-			const response = await makeApiRequest('https://localhost:9443/game-logic/createMatch','POST',gameSettings);
-			console.log('Match created:', response.body);
-            return response.body.matchID;
-		} catch (error) {
-			console.error('Failed to create match:', error);
-            return '';
-		}
-	}
+		  console.log('Create Game');
+		  //const gameSettings = this.getGameSettings();
+		  try {
+		  	const response = await makeApiRequest('https://localhost:9443/game-logic/createMatch','POST',gameSettings);
+		  	console.log('Match created:', response.body);
+              return response.body.matchID;
+		  } catch (error) {
+		  	console.error('Failed to create match:', error);
+              return '';
+		  }
+	  }
+
     async getHtml() {
         let htmlstuff = `
             <section class="create-tournament">
@@ -196,7 +233,7 @@ export default class CreateTournament extends AbstractView {
       return gameSettings;
     }
 
-    getGameSettings() {
+    getBasicGameSettings() {
 		  let gameSettings = {
 		  	"gamemodeData": {
 		  	  "nbrOfPlayers": 3,
