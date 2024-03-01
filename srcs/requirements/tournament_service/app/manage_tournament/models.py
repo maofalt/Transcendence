@@ -19,7 +19,7 @@ class Tournament(models.Model):
         MaxValueValidator(60, message="Registration period cannot exceed 60 minutes.")
         ]
     )
-    host_id = models.IntegerField()
+    host = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='tournaments')
 
 class TournamentMatch(models.Model):
     match_id = models.AutoField(primary_key=True)

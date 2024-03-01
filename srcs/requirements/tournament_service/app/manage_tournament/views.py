@@ -1,18 +1,34 @@
 from django.shortcuts import render, get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView
-from rest_framework import generics, permissions, status
+from rest_framework import generics, permissions, status, authentication, exceptions, viewsets
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from .models import Tournament, TournamentMatch, MatchSetting, GameType, TournamentType, RegistrationType, TournamentPlayer, Player, MatchParticipants
 from .serializers import TournamentSerializer, TournamentMatchSerializer, MatchSettingSerializer, GameTypeSerializer
 from .serializers import TournamentTypeSerializer, RegistrationTypeSerializer, TournamentPlayerSerializer
 from .serializers import PlayerSerializer, MatchParticipantsSerializer
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from .authentication import CustomJWTAuthentication
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view
+from django.contrib.auth.models import User
+
+# ------------------------ Permissions -----------------------------------
+class IsOwnerOrRegisterOnly(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        # Les opérations de lecture sont autorisées pour tous
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        # Les opérations d'écriture sont seulement autorisées au créateur du tournoi
+        return obj.host.username == request.user.username
+        
 
 # ------------------------ Tournament -----------------------------------
 class TournamentListCreate(generics.ListCreateAPIView):
     queryset = Tournament.objects.all()
     serializer_class = TournamentSerializer
+    authentication_classes = [CustomJWTAuthentication]
     renderer_classes = [JSONRenderer]  # Force the response to be rendered in JSON
 
     # permission_classes = [permissions.IsAuthenticated] #add more permissions if is necessary
@@ -33,9 +49,15 @@ class TournamentListCreate(generics.ListCreateAPIView):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
+
 class TournamentRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     queryset = Tournament.objects.all()
     serializer_class = TournamentSerializer
+    authentication_classes = [CustomJWTAuthentication]
+    permission_classes = [IsOwnerOrRegisterOnly]  # Custom permission class for owner-only access
+
+    def perform_update(self, serializer):
+        serializer.save(host=self.request.user)
 
 
 # --------------------------- Tournament Participants -----------------------------------    
