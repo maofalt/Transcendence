@@ -73,6 +73,8 @@ class MatchSetting(models.Model):
         MaxValueValidator(7, message="Ball radius cannot exceed 7.")
         ]
     )
+    ball_color = models.CharField(max_length=7, default='#000000', 
+    validators=[RegexValidator(r'^#(?:[0-9a-fA-F]{3}){1,2}$', message="Invalid color format.")])
 
 class GameType(models.Model):
     type_id = models.AutoField(primary_key=True)
