@@ -88,8 +88,11 @@ def check_refresh(request):
         try:
             decoded_refresh_token = jwt.decode(refreshToken, settings.SECRET_KEY, algorithms=["HS256"])
             print("DECODED REFRESHTOKEN: ", decoded_refresh_token)
+            uid = decoded_refresh_token['user_id']
+            user = User.objects.get(pk=uid)
             refresh = RefreshToken(refreshToken)
             access = refresh.access_token
+            access['username'] = user.username
             new_accessToken = str(access)
 
             # Set new access token in response header
@@ -99,7 +102,6 @@ def check_refresh(request):
         # return JsonResponse({'error': 'Access token has expired'}, status=401)
         except jwt.ExpiredSignatureError:
             return JsonResponse({'error': 'Access/Refresh token has expired'}, status=401)
-
 
     except jwt.InvalidTokenError:
         print("Invalid token")
