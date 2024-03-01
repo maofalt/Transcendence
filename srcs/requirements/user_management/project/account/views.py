@@ -17,6 +17,7 @@ from django.views.decorators.csrf import csrf_exempt, csrf_protect, ensure_csrf_
 from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db import transaction
+from django.utils import timezone
 from django.urls import reverse, reverse_lazy
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
@@ -65,31 +66,48 @@ def home(request):
 def check_refresh(request):
     accessToken = request.headers.get('Authorization', None)
     refreshToken = request.COOKIES.get('refreshToken', None)
+    print("accessToken print: ", str(accessToken))
+    # if not accessToken or not refreshToken:
+    #     return JsonResponse({'error': 'Missing tokens'}, status=400)
 
-    if not accessToken or not refreshToken:
-        return JsonResponse({'error': 'Missing tokens'}, status=400)
+    if not accessToken:
+        return JsonResponse({'error': 'Authorization header is missing'}, status=400)
+    if not refreshToken:
+        return JsonResponse({'error': 'Refresh token is missing'}, status=400)
 
     try:
         decoded_token = jwt.decode(accessToken.split()[1], settings.SECRET_KEY, algorithms=["HS256"])
         exp_timestamp = decoded_token['exp']
-        if timezone.now() > timezone.datetime.fromtimestamp(exp_timestamp):
-            # Access token has expired, generate new access token using refresh token
-            refresh = RefreshToken(refreshToken)
-            access = AccessToken(refresh.accessToken)
+        exp_datetime = datetime.datetime.utcfromtimestamp(exp_timestamp).replace(tzinfo=datetime.timezone.utc)
+        print("exp_datetime: ", exp_datetime)
+        
+        return JsonResponse({'message': 'Access token is still valid'})
 
+    except jwt.ExpiredSignatureError:
+        print("Access token has expired")
+        try:
+            decoded_refresh_token = jwt.decode(refreshToken, settings.SECRET_KEY, algorithms=["HS256"])
+            print("DECODED REFRESHTOKEN: ", decoded_refresh_token)
+            refresh = RefreshToken(refreshToken)
+            access = refresh.access_token
             new_accessToken = str(access)
 
             # Set new access token in response header
-            response = JsonResponse({'message': 'New access token generated', 'new_accessToken': new_accessToken})
+            response = JsonResponse({'message': 'New access token generated', 'freshToken': refreshToken})
             response['Authorization'] = f'Bearer {new_accessToken}'
             return response
+        # return JsonResponse({'error': 'Access token has expired'}, status=401)
+        except jwt.ExpiredSignatureError:
+            return JsonResponse({'error': 'Access/Refresh token has expired'}, status=401)
 
-        # Access token is still valid
-        return JsonResponse({'message': 'Access token is still valid'})
-    except jwt.ExpiredSignatureError:
-        return JsonResponse({'error': 'Access token has expired'}, status=401)
+
     except jwt.InvalidTokenError:
+        print("Invalid token")
         return JsonResponse({'error': 'Invalid token'}, status=401)
+
+    except Exception as e:
+        print("An error occurred:", e)
+        return JsonResponse({'error': 'An error occurred while processing the request'}, status=500)
 
 def privacy_policy_view(request):
     return render(request, 'privacy_policy.html')
@@ -124,7 +142,6 @@ def api_login_view(request):
             accessToken['username'] = user.username
 
             refreshToken = RefreshToken.for_user(user)
-            refreshToken['username'] = user.username
 
             response = JsonResponse({
                 'message': escape('Password Authentication successful'),
@@ -134,7 +151,7 @@ def api_login_view(request):
 
             response['Authorization'] = f'Bearer {str(accessToken)}'
             response.set_cookie('refreshToken', refreshToken, httponly=True, secure=True, samesite='Strict')
-            response.data['accessToken'] = str(accessToken)
+            # response.data['accessToken'] = str(accessToken)
             
             try:
                 secret_key = settings.SECRET_KEY
@@ -142,7 +159,6 @@ def api_login_view(request):
                 print("original ACCESS TOKEN: ", str(accessToken))
                 print("original REFRESH TOKEN: ", str(refreshToken))
                 decodedToken = jwt.decode(str(accessToken), secret_key, algorithms=["HS256"])
-                print("decode ACCESS TOKEN: ", decodedToken)
                 local_tz = pytz.timezone('Europe/Paris')
                 exp_timestamp_accessToken = decodedToken['exp']
                 exp_accessToken = datetime.datetime.fromtimestamp(exp_timestamp_accessToken, tz=pytz.utc).astimezone(local_tz).strftime('%Y-%m-%d %H:%M:%S')
