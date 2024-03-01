@@ -5,6 +5,7 @@ import Options from '@views/Options.js';
 import Game from '@views/Game.js';
 import Login from '@views/Login.js';
 import NotFound from '@views/NotFound.js';
+import User from '@views/User';
 import Design from '@view/Design.js';
 
 
@@ -44,6 +45,12 @@ export const routes = {
 		view: Login,
 		title: 'Login',
 		buttonText: 'Login'
+	},
+	'/user': {
+		path: '/user',
+		view: User,
+		title: 'Profile Page',
+		buttonText: 'Profile'
 	},
 	'/design': {
 		path: '/design',
