@@ -176,9 +176,12 @@ function updatePaddles(data) {
 function updateBall(data) {
     if (!ballHitsWallV2(data) && !ballHitsPaddle(data)) {
         data.ball.pos = data.ball.pos.add(data.ball.dir.scale(data.ball.sp));
+    } else {
+        data.ball.sp *= 1.01;
     }
     if (data.ball.pos.getDistFrom(new Vector(0, 0, 0)) > 100) {
         data.ball.pos = new Vector(0, 0, 0);
+        data.ball.sp = data.ball.startingSp;
     }
 }
 
@@ -255,6 +258,7 @@ function checkForScoring(data) {
         futureHitPos = potentialHitPoint.add(ball.dir.scale(ball.sp));
         hitScaler = vecs.segmentsIntersect(potentialHitPoint, futureHitPos, wall1.top, wall2.bottom);
         if (hitScaler > 0) {
+            data.ball.sp = data.ball.startingSp;
             return handleScoring(data, player);
         }
     }

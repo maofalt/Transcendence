@@ -174,10 +174,10 @@ export default class Game extends AbstractView {
 		
 		this.socket.on('render', data => {
 			data.playersArray = Object.values(data.players);
-			if (data.ball.model && this.ballModel) {
+			// if (data.ball.model && this.ballModel) {
 				console.log("Rendering Frame...");
 				this.updateScene(data);
-			}
+			// }
 			// console.log("FPS: " + 1000 / callTracker() + "fps");
 			fps = 1000 / callTracker();
 			this.renderer.render(this.scene, this.camera);
@@ -220,7 +220,7 @@ export default class Game extends AbstractView {
 
 	refreshScene(data) {
 		this.scene = new THREE.Scene();
-		const back = new THREE.TextureLoader().load('./js/assets/moon.jpg');
+		const back = new THREE.TextureLoader().load('./js/assets/deepspace.jpg');
 		back.colorSpace = THREE.SRGBColorSpace;
 		this.scene.background = back;
 		
@@ -273,10 +273,13 @@ export default class Game extends AbstractView {
 		// console.log("Updating Scene...");
 		if (data.ball.model) {
 			this.ballModel.position.set(data.ball.pos.x, data.ball.pos.y, 0);
-			this.ballModel.rotateX(-Math.PI / 42);
-			this.ballModel.rotateZ(Math.PI / 36);
-			// this.ballModel.rotateY(Math.PI / 64);
+			this.ballModel.rotateX((-Math.PI / 20) * data.ball.sp);
+			this.ballModel.rotateZ((Math.PI / 24) * data.ball.sp);
 		} else {
+			if (data.ball.texture) {
+				// this.ball.mesh.rotateX(-Math.PI / 42 * data.ball.sp);
+				this.ball.mesh.rotateZ(Math.PI / 36 * data.ball.sp);
+			}
 			this.ball.mesh.position.set(data.ball.pos.x, data.ball.pos.y, 0);
 		}
 
@@ -453,12 +456,25 @@ export default class Game extends AbstractView {
 	// }
 
 	generateBall(data) {
-		if (data.ball.model) {
+		let ballTexture;
+		let ballMaterial;
+
+		if (data.ball.model != "") {
+			console.log("LOAD STUFF");
 			this.loadBallModel(data);
 			return ;
 		}
+		console.log("DIDNT LOADGE");
+		if (data.ball.texture != "") {
+			ballTexture = new THREE.TextureLoader().load(`./js/assets/${data.ball.texture}.jpg`);
+			ballMaterial = new THREE.MeshPhongMaterial({ map: ballTexture, transparent: false, opacity: 0.7 });
+			ballTexture.wrapS = ballTexture.wrapT = THREE.RepeatWrapping;
+			ballTexture.offset.set( 0, 0 );
+			ballTexture.repeat.set( 2, 1 );
+		} else {
+			ballMaterial = new THREE.MeshPhongMaterial({ color: data.ball.col, transparent: false, opacity: 0.7 });
+		}
 		const ballGeometry = new THREE.SphereGeometry(data.ball.r, 24, 12);
-		const ballMaterial = new THREE.MeshPhongMaterial({ color: data.ball.col, transparent: false, opacity: 0.7 });
 		const dir1 = new THREE.ArrowHelper(
 			new THREE.Vector3(data.ball.dir.x,
 							data.ball.dir.y,
