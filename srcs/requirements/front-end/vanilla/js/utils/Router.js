@@ -5,6 +5,7 @@ import Options from '@views/Options.js';
 import Game from '@views/Game.js';
 import Login from '@views/Login.js';
 import NotFound from '@views/NotFound.js';
+import Design from '@view/Design.js';
 
 
 export const routes = {
@@ -43,6 +44,12 @@ export const routes = {
 		view: Login,
 		title: 'Login',
 		buttonText: 'Login'
+	},
+	'/design': {
+		path: '/design',
+		view: Design,
+		title: 'Design',
+		buttonText: 'Design'
 	},
 	'/404': {
 		path: '/404',
