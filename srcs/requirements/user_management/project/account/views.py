@@ -26,7 +26,6 @@ from django.views.generic.edit import FormView
 from urllib.parse import urljoin
 import secrets
 import requests
-
 import logging
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 # from django.utils.encoding import force_bytes, force_str
@@ -64,64 +63,33 @@ def home(request):
 
 # call this function from frontend everytime user calls any API
 def check_refresh(request):
-    if request.user.is_authenticated:
-        request.user.is_online = True
-        request.user.save()
-        if is_access_token_expired(request.user):
-            refreshed = refresh_access_token(request)
-            if not refreshed:
-                # If refresh fails, perform logout or other appropriate actions
-                # For example, you can redirect the user to the login page
-                return JsonResponse({'isLoggedIn': False, 'message': 'Token refresh failed'})
-    else:
-        request.user.is_online = False
-        request.user.save()
-    return JsonResponse({'isLoggedIn': request.user.is_authenticated})
+    accessToken = request.headers.get('Authorization', None)
+    refreshToken = request.COOKIES.get('refreshToken', None)
 
-def is_access_token_expired(user):
-    # Check if access token is expired
-    access_token = AccessToken.for_user(user)
-    decoded_token = jwt.decode(str(access_token), 'your_secret_key', algorithms=["HS256"])
-    expiration_timestamp = decoded_token['exp']
-    expiration_datetime = datetime.datetime.fromtimestamp(expiration_timestamp)
-    return expiration_datetime < timezone.now()
-    
-def refresh_access_token(request):
-    # Implement logic to send a request to the /refresh_token endpoint
-    # and renew the access token using the stored refresh token
-    # Return True if refresh is successful, False otherwise
+    if not accessToken or not refreshToken:
+        return JsonResponse({'error': 'Missing tokens'}, status=400)
+
     try:
-        # Example code to send a request to the /refresh_token endpoint
-        refresh_token = request.COOKIES.get('refresh_token')
-        # Send a request to your server to refresh the access token
-        # Use refresh_token to obtain a new access token
-        # ...
-        # If refresh is successful, return True
-        return True
-    except Exception as e:
-        # Log any errors or exceptions that occur during refresh
-        print(f"Refresh token failed: {e}")
-        return False
+        decoded_token = jwt.decode(accessToken.split()[1], settings.SECRET_KEY, algorithms=["HS256"])
+        exp_timestamp = decoded_token['exp']
+        if timezone.now() > timezone.datetime.fromtimestamp(exp_timestamp):
+            # Access token has expired, generate new access token using refresh token
+            refresh = RefreshToken(refreshToken)
+            access = AccessToken(refresh.accessToken)
 
+            new_accessToken = str(access)
 
-# def get_token_for_user(user, with_username=False, token_lifetime=None):
-#     refresh = RefreshToken.for_user(user)
-#     if with_username:
-#         refresh['username'] = user.username
-#     if token_lifetime is not None:
-#         print("setting exp as: ", token_lifetime)
-#         refresh.access_token.set_exp(lifetime=datetime.timedelta(seconds=token_lifetime))
-#     return str(refresh.access_token)
+            # Set new access token in response header
+            response = JsonResponse({'message': 'New access token generated', 'new_accessToken': new_accessToken})
+            response['Authorization'] = f'Bearer {new_accessToken}'
+            return response
 
-
-def generate_refresh_token(user):
-    # Use refresh token to obtain a new access token
-    refresh_token = RefreshToken.for_user(user)
-    refresh_token['username'] = user.username
-    # access_token = AccessToken.for_user(user)
-    print("**original REFRESH TOKEN: ", str(refresh_token))
-    # Send the new access token to the frontend
-    return refresh_token
+        # Access token is still valid
+        return JsonResponse({'message': 'Access token is still valid'})
+    except jwt.ExpiredSignatureError:
+        return JsonResponse({'error': 'Access token has expired'}, status=401)
+    except jwt.InvalidTokenError:
+        return JsonResponse({'error': 'Invalid token'}, status=401)
 
 def privacy_policy_view(request):
     return render(request, 'privacy_policy.html')
@@ -152,27 +120,28 @@ def api_login_view(request):
             
             send_one_time_code(request, user.email)
             
+            accessToken = AccessToken.for_user(user)
+            accessToken['username'] = user.username
 
-            access_token = AccessToken.for_user(user)
-            access_token['username'] = user.username
-
-            refresh_token = generate_refresh_token(user)
+            refreshToken = RefreshToken.for_user(user)
+            refreshToken['username'] = user.username
 
             response = JsonResponse({
-                # 'access_token': str(access_token),
                 'message': escape('Password Authentication successful'),
                 'redirect_url': escape(redirect_url),
                 'requires_2fa': True
             })
-            response.set_cookie('refresh_token', refresh_token, httponly=True, secure=True, samesite='Strict')
-            response.data['access_token'] = str(access_token)
+
+            response['Authorization'] = f'Bearer {str(accessToken)}'
+            response.set_cookie('refreshToken', refreshToken, httponly=True, secure=True, samesite='Strict')
+            response.data['accessToken'] = str(accessToken)
             
             try:
                 secret_key = settings.SECRET_KEY
 
-                print("original ACCESS TOKEN: ", str(access_token))
-                print("original REFRESH TOKEN: ", str(refresh_token))
-                decodedToken = jwt.decode(str(access_token), secret_key, algorithms=["HS256"])
+                print("original ACCESS TOKEN: ", str(accessToken))
+                print("original REFRESH TOKEN: ", str(refreshToken))
+                decodedToken = jwt.decode(str(accessToken), secret_key, algorithms=["HS256"])
                 print("decode ACCESS TOKEN: ", decodedToken)
                 local_tz = pytz.timezone('Europe/Paris')
                 exp_timestamp_accessToken = decodedToken['exp']
