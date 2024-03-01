@@ -154,6 +154,20 @@ EMAIL_HOST_PASSWORD = 'dhefhwnswtqtldzz'
 SECURE_SSL_REDIRECT = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
+# Headers for security
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_BROWSER_XSS_FILTER = True
+
+SECURE_REFERRER_POLICY = 'same-origin'
+
+# HSTS(HTTP Strict Transport Security)
+SECURE_HSTS_SECONDS = 31536000  # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+
+# CSP(Content Security Policy)
+
+
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 

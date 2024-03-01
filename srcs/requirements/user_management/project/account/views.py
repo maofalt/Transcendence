@@ -23,6 +23,7 @@ from django.utils.encoding import force_bytes
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_decode
 from django.views.generic.edit import FormView
+from urllib.parse import urljoin
 import secrets
 import requests
 
@@ -48,11 +49,108 @@ from django.utils.crypto import get_random_string
 from django.contrib.sessions.models import Session
 from django.middleware.csrf import get_token
 
+#XSS protection
+from django.utils.html import escape
+
 logger = logging.getLogger(__name__)
 User = get_user_model()
 
 def home(request):
     return render(request, 'home.html')
+
+# OPTION 1 check periodically calling this function form frontend
+def user_is_logged_in(request):
+    if request.user.is_authenticated:
+        request.user.is_online = True
+        request.user.save()
+    else:
+        request.user.is_online = False
+        request.user.save()
+    return JsonResponse({'isLoggedIn': request.user.is_authenticated})
+
+# // Function to check user's login status
+# function checkLoginStatus() {
+#     fetch('/checkLogin')
+#         .then(response => response.json())
+#         .then(data => {
+#             if (!data.isLoggedIn) {
+#                 console.log('User is logged out');
+#                 sendNotificationToServer();
+#         })
+#         .catch(error => {
+#             console.error('Error checking login status:', error);
+#         });
+# }
+
+# OPTION 2 using jwt
+
+# def user_is_logged_in(request):
+#     token = request.headers.get('Authorization', '').split('Bearer ')[-1]
+#     try:
+#         decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+#         username = decoded_token.get('username')
+#         if username:
+#             user = User.objects.get(username=username)
+#             request.user = user
+#             return JsonResponse({'isLoggedIn': True})
+#         else:
+#             return JsonResponse({'isLoggedIn': False})
+#     except jwt.ExpiredSignatureError:
+#         request.user.is_online = False
+#         request.user.save()
+#         logout(request)
+#         # Token expired, perform logout operation
+#         return JsonResponse({'isLoggedIn': False})
+#     except jwt.InvalidTokenError:
+#         # Invalid token, handle the error as needed
+#         return JsonResponse({'isLoggedIn': False})
+
+
+
+# // Periodically check user's login status (every 1 minute)
+# setInterval(checkLoginStatus, 60000);
+# function sendNotificationToServer() {
+# }
+
+# // Function to periodically check JWT expiration and user's login status
+# function checkLoginStatus() {
+#     const token = localStorage.getItem('jwtToken'); // Retrieve JWT from local storage
+#     if (!token) {
+#         console.log('User is not logged in');
+#         return;
+#     }
+# const decodedToken = jwt_decode(token);
+#     const currentTime = Date.now() / 1000; 
+
+#     if (decodedToken.exp < currentTime) {
+#         // JWT has expired, log out the user
+#         console.log('JWT has expired, logging out user');
+#         localStorage.removeItem('jwtToken'); // Remove expired JWT from local storage
+#         return;
+#     }
+
+#     console.log('User is logged in');
+# }
+# setInterval(checkLoginStatus, 60000);
+
+
+# However, even if the cookie is marked as HTTP-only, 
+# the browser still includes it in subsequent HTTP requests to the server. 
+# So, when the client makes requests to the server, 
+# the browser automatically includes the JWT token cookie, 
+# allowing the server to authenticate the user.
+
+# In this JavaScript code for checking the login status,
+# it is not directly accessing the cookie using JavaScript.
+# Instead, you are retrieving the JWT token from the local storage
+# (localStorage.getItem('jwtToken')).
+# This approach is not affected by the httponly=True setting
+# because local storage is a separate storage mechanism from cookies
+# and is accessible by JavaScript.
+
+# Therefore, you can safely use httponly=True for the JWT token cookie
+# while still performing client-side JWT token checking in JavaScript
+
 
 def get_token_for_user(user):
     refresh = RefreshToken.for_user(user)
@@ -63,6 +161,7 @@ def get_token_for_user(user):
 def privacy_policy_view(request):
     return render(request, 'privacy_policy.html')
 
+@csrf_protect
 def api_login_view(request):
     print("\n\n       URL:", request.build_absolute_uri())
 
@@ -88,7 +187,7 @@ def api_login_view(request):
             send_one_time_code(request, user.email)
             
             token = get_token_for_user(user)
-            response = JsonResponse({'message': 'Password Authentication successful', 'user': serializer.data, 'redirect_url': redirect_url, 'requires_2fa': True})
+            response = JsonResponse({'message': escape('Password Authentication successful'), 'redirect_url': escape(redirect_url), 'requires_2fa': True})
             response.set_cookie(
                 key='jwtToken',
                 value=token,
@@ -101,18 +200,18 @@ def api_login_view(request):
                 print("Decoded Token:", decoded_token)
                 return response
             except jwt.ExpiredSignatureError:
-                return JsonResponse({'error': 'Token has expired'}, status=400)
+                return JsonResponse({'error': escape('Token has expired')}, status=400)
             except jwt.InvalidTokenError:
-                return JsonResponse({'error': 'Invalid token'}, status=400)
+                return JsonResponse({'error': escape('Invalid token')}, status=400)
         else:
             print("Authentication failed")
-            return JsonResponse({'error': 'Authentication failed: Wrong user data'}, status=400)
-    return JsonResponse({'error': 'Invalid request method'}, status=400)
+            return JsonResponse({'error': escape('Authentication failed: Wrong user data')}, status=400)
+    return JsonResponse({'error': escape('Invalid request method')}, status=400)
 
 def generate_one_time_code():
     return get_random_string(length=6, allowed_chars='1234567890')
 
-@csrf_exempt
+@csrf_protect
 def send_one_time_code(request, email=None):
     if email is None and request.method == 'POST':
         email = request.POST.get('email', None)
@@ -121,7 +220,7 @@ def send_one_time_code(request, email=None):
 
     print("\n\nCHECK CODE ON SESSION: ", request.session.get('one_time_code'))
     subject = 'Your Access Code for PONG'
-    message = f'Your one-time code is: {one_time_code}'
+    message = f'Your one-time code is: {escape(one_time_code)}'
     from_email = 'no-reply@student.42.fr' 
     to_email = email
     send_mail(subject, message, from_email, [to_email])
@@ -136,6 +235,7 @@ def verify_one_time_code(request):
         submitted_code = request.POST.get('one_time_code')
         stored_code = request.session.get('one_time_code')
         context = request.POST.get('context')
+        print("REQUEST CODE: ", request.POST)
         print("\n\ncode from Session : ", stored_code)
         print("code from User : ", submitted_code, '\n\n')
         pending_username = request.session.get('pending_username')
@@ -148,13 +248,13 @@ def verify_one_time_code(request):
                     user.is_online = True
                     print(f"Is Online: {user.is_online}")
                     user.save()
-                return JsonResponse({'success': True, 'message': 'One-time code verification successful', 'csrf_token': csrf_token})
+                return JsonResponse({'success': True, 'message': escape('One-time code verification successful'), 'csrf_token': csrf_token})
             else:
-                return JsonResponse({'success': False, 'error': 'One-time code verification failed', 'csrf_token': csrf_token}, status=400)
+                return JsonResponse({'success': False, 'error': escape('One-time code verification failed'), 'csrf_token': csrf_token}, status=400)
         else:
-            return JsonResponse({'success': False, 'error': 'User authentication not found'}, status=400)
+            return JsonResponse({'success': False, 'error': escape('User authentication not found')}, status=400)
 
-    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=400)
+    return JsonResponse({'success': False, 'error': escape('Invalid request method')}, status=400)
 
 def get_serializer(user):
     if user.is_authenticated:
@@ -162,7 +262,7 @@ def get_serializer(user):
     else:
         return AnonymousUserSerializer()
 
-@csrf_exempt
+@csrf_protect
 @login_required
 def api_logout_view(request):
     if request.method == 'POST':
@@ -173,9 +273,9 @@ def api_logout_view(request):
         serializer = get_serializer(request.user)
         return redirect('/api/user_management/')
     else:
-        return JsonResponse({'error': 'Invalid request method'}, status=400)
+        return JsonResponse({'error': escape('Invalid request method')}, status=400)
 
-@csrf_exempt
+@csrf_protect
 def api_signup_view(request):
     if request.method == "POST":
         username = request.POST["username"]
@@ -186,18 +286,18 @@ def api_signup_view(request):
         try:
             validate_password(password, user=User(username=username))
         except ValidationError as e:
-            return JsonResponse({'success': False, 'error_message': e.messages[0]})
+            return JsonResponse({'success': False, 'error': e.messages[0]})
 
         try:
             validate_email(email)
         except ValidationError:
-            return JsonResponse({'success': False, 'error_message': 'Invalid email'})
+            return JsonResponse({'success': False, 'error': escape('Invalid email')})
 
         if User.objects.filter(username=username).exists():
-            return JsonResponse({'success': False, 'error_message': 'Username already exists'})
+            return JsonResponse({'success': False, 'error': escape('Username already exists')})
 
         if User.objects.filter(playername=playername).exists():
-            return JsonResponse({'success': False, 'error_message': 'Playername already exists'})
+            return JsonResponse({'success': False, 'error': escape('Playername already exists')})
 
         user = User(
             username=username,
@@ -210,7 +310,7 @@ def api_signup_view(request):
         try:
             user.save()
         except IntegrityError as e:
-            return JsonResponse({'success': False, 'error_message': 'User creation failed.'})
+            return JsonResponse({'success': False, 'error': escape('User creation failed.')})
 
         if user.game_stats is None:
             game_stats = GameStats.objects.create(
@@ -224,9 +324,15 @@ def api_signup_view(request):
             print("\n\nGAMES STATS : user", user.game_stats.user)
             user.save()
         print(" >>  User created successfully.")
+
+        login(request, user)
+        user.is_online = True
+        print(f"Is Online: {user.is_online}")
+        user.save()
+        
         return JsonResponse({'success': True})
 
-    return JsonResponse({'success': False, 'error_message': 'Invalid request method'}, status=400)
+    return JsonResponse({'success': False, 'error': escape('Invalid request method')}, status=400)
 
 
 
@@ -268,34 +374,68 @@ def delete_account(request):
                 username = decoded_token.get('username')
                 send_notification_to_microservices(username)
             except jwt.ExpiredSignatureError:
-                return JsonResponse({'error': 'Token has expired'}, status=400)
+                return JsonResponse({'error': escape('Token has expired')}, status=400)
             except jwt.InvalidTokenError:
-                return JsonResponse({'error': 'Invalid token'}, status=400)
+                return JsonResponse({'error': escape('Invalid token')}, status=400)
         
-        return JsonResponse({'success': True, 'message': 'Account deleted successfully'})
+        return JsonResponse({'success': True, 'message': escape('Account deleted successfully')})
     except Exception as e:
         logger.error(f"Error deleting account: {str(e)}")
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 
 @login_required
+@csrf_protect
 def friend_view(request):
     user = request.user
     friends = user.friends.all()
+
+    friend_data = []
+    for friend in friends:
+        avatar_url = None
+        if friend.avatar:
+            avatar_url = urljoin(settings.MEDIA_URL, friend.avatar.url)
+        friend_info = {
+            'username': friend.username,
+            'playername': friend.playername,
+            'avatar': avatar_url,
+            'pk': friend.pk,
+            'game_stats': {
+                'total_games_played': friend.game_stats.total_games_played,
+                'games_won': friend.game_stats.games_won,
+                'games_lost': friend.game_stats.games_lost
+            }
+        }
+        friend_data.append(friend_info)
 
     search_query = request.GET.get('search')
     search_results = []
     if search_query:
         print(search_query)
         search_results = User.objects.filter(username__icontains=search_query)
-        # friends = friends.filter(username__icontains=search_query)
 
-    return render(request, 'friends.html', {'friends': friends, 'search_query': search_query, 'search_results': search_results})
+    return render(request, 'friends.html', {'friends': friend_data, 'search_query': search_query, 'search_results': search_results})
 
 @login_required
+@csrf_protect
 def detail_view(request):
+    user = request.user
     game_stats = request.user.game_stats
-    return render(request, 'detail.html')
+
+    data = {
+        'username': user.username,
+        'playername': user.playername,
+        'email': user.email,
+        'avatar': user.avatar.url if user.avatar else None,
+        'friends_count': user.friends.count(),
+        'game_stats': {
+            'user': game_stats.user,
+            'total_games_played': game_stats.total_games_played,
+            'games_won': game_stats.games_won,
+            'games_lost': game_stats.games_lost,
+        }
+    }
+    return render(request, 'detail.html', {'data': data})
 
 @login_required
 def add_friend(request, pk):
@@ -310,6 +450,7 @@ def remove_friend(request, pk):
     return redirect('account:friend')
 
 @login_required
+@csrf_protect
 def profile_update_view(request):
     if request.method == 'POST':
         user_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user)
@@ -358,7 +499,7 @@ def send_password_reset_link(request):
         try:
             user = User.objects.get(username=username)
         except User.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'User not found'})
+            return JsonResponse({'success': False, 'error': escape('User not found')})
 
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         token = token_generator.make_token(user)
@@ -373,11 +514,12 @@ def send_password_reset_link(request):
         to_email = user.email
         send_mail(subject, email_content, from_email, [to_email], fail_silently=False)
 
-        return JsonResponse({'success': True, 'message': 'Password reset link sent successfully'})
+        return JsonResponse({'success': True, 'message': escape('Password reset link sent successfully')})
 
     else:
-        return JsonResponse({'success': False, 'error_message': 'Invalid request method'})
+        return JsonResponse({'success': False, 'error': escape('Invalid request method')})
 
+@csrf_protect
 def password_reset_view(request, uidb64, token):
     print("uidb64: ", uidb64, "token: ", token)
     try:
@@ -393,7 +535,7 @@ def password_reset_view(request, uidb64, token):
             try:
                 validate_password(new_password1, user=User(username=user.username))
             except ValidationError as e:
-                return JsonResponse({'success': False, 'error_message': e.messages[0]}, status=400)
+                return JsonResponse({'success': False, 'error': e.messages[0]}, status=400)
 
             if new_password1 == new_password2:
                 user.set_password(new_password1)
@@ -403,7 +545,7 @@ def password_reset_view(request, uidb64, token):
                 #     login(request, user)
                 return redirect('account:password_reset_done')
             else:
-                return JsonResponse({'success': False, 'error_message': 'Passwords do not match'}, status=400)
+                return JsonResponse({'success': False, 'error': escape('Passwords do not match')}, status=400)
         else:
             return render(request, 'password_reset.html', {'uidb64': uidb64, 'token': token, 'user': user})
     else:
@@ -422,7 +564,7 @@ class UserAPIView(APIView):
             serializer = UserSerializer(user)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except User.DoesNotExist:
-            return Response({"detail": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": escape("User not found")}, status=status.HTTP_404_NOT_FOUND)
 
 
 def print_all_user_data(request):
