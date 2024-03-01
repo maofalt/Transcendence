@@ -22,6 +22,8 @@ urlpatterns = [
     path('<int:id>/participants/', views.TournamentParticipantList.as_view(), name='tournament-participants'),
     # DELETE /{id}/participants/{participantId}/ - Deregister a participant from a tournament.
     path('<int:id>/participants/<int:participant_id>/', views.TournamentParticipantDetail.as_view(), name='tournament-participant-detail'),
+    # POST /{id}/register/ - Register for a tournament.
+    path('<int:id>/register/', TournamentRegistrationCreate.as_view(), name='tournament-registration'),
 
 # Tournament Progression:
     # GET /{id}/matches - Retrieve a list of matches for a tournament.

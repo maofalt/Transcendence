@@ -10,19 +10,10 @@ from .serializers import TournamentTypeSerializer, RegistrationTypeSerializer, T
 from .serializers import PlayerSerializer, MatchParticipantsSerializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from .authentication import CustomJWTAuthentication
-from rest_framework.permissions import IsAuthenticated
+from .permissions import  IsOwnerOrRegisterOnly, CanRegister
 from rest_framework.decorators import api_view
 from django.contrib.auth.models import User
 
-# ------------------------ Permissions -----------------------------------
-class IsOwnerOrRegisterOnly(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
-        # Les opérations de lecture sont autorisées pour tous
-        if request.method in permissions.SAFE_METHODS:
-            return True
-        # Les opérations d'écriture sont seulement autorisées au créateur du tournoi
-        return obj.host.username == request.user.username
-        
 
 # ------------------------ Tournament -----------------------------------
 class TournamentListCreate(generics.ListCreateAPIView):
@@ -30,8 +21,19 @@ class TournamentListCreate(generics.ListCreateAPIView):
     serializer_class = TournamentSerializer
     authentication_classes = [CustomJWTAuthentication]
     renderer_classes = [JSONRenderer]  # Force the response to be rendered in JSON
+    permission_classes = [IsAuthenticated]  # Only authenticated users can create and list tournaments
 
-    # permission_classes = [permissions.IsAuthenticated] #add more permissions if is necessary
+    def get_permissions(self):
+        if self.request.method in SAFE_METHODS:
+            # if the request is a safe method, then no need for any authentication
+            return []
+        elif self.request.method == 'POST':
+            # if the request is a POST (create), then the user needs to be authenticated
+            return [IsAuthenticated()]
+        else:
+            # if the request is a PUT, PATCH or DELETE, then the user needs to be the owner
+            return [IsOwnerOrReadOnly()]
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
@@ -40,6 +42,9 @@ class TournamentListCreate(generics.ListCreateAPIView):
         else:
             # If the data is not valid, return a 400 response with the error details
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def perform_create(self, serializer):
+        serializer.save(host=self.request.user)
     
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
@@ -58,6 +63,11 @@ class TournamentRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
 
     def perform_update(self, serializer):
         serializer.save(host=self.request.user)
+
+class TournamentRegistrationCreate(generics.CreateAPIView):
+    queryset = TournamentRegistration.objects.all()
+    serializer_class = TournamentRegistrationSerializer
+    permission_classes = [CanRegister]  # Only authenticated users can register
 
 
 # --------------------------- Tournament Participants -----------------------------------    
