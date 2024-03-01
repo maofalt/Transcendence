@@ -13,7 +13,7 @@ from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import csrf_exempt, csrf_protect
+from django.views.decorators.csrf import csrf_exempt, csrf_protect, ensure_csrf_cookie
 from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db import transaction
@@ -33,6 +33,7 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 
 #JWT
 from rest_framework.views import APIView
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .models import User
@@ -61,13 +62,17 @@ User = get_user_model()
 def home(request):
     return render(request, 'home.html')
 
-# OPTION 1 check periodically calling this function form frontend
-def user_is_logged_in(request):
+# call this function from frontend everytime user calls any API
+def check_refresh(request):
     if request.user.is_authenticated:
         request.user.is_online = True
         request.user.save()
         if is_access_token_expired(request.user):
-            refresh_token(request.user)
+            refreshed = refresh_access_token(request)
+            if not refreshed:
+                # If refresh fails, perform logout or other appropriate actions
+                # For example, you can redirect the user to the login page
+                return JsonResponse({'isLoggedIn': False, 'message': 'Token refresh failed'})
     else:
         request.user.is_online = False
         request.user.save()
@@ -80,28 +85,24 @@ def is_access_token_expired(user):
     expiration_timestamp = decoded_token['exp']
     expiration_datetime = datetime.datetime.fromtimestamp(expiration_timestamp)
     return expiration_datetime < timezone.now()
+    
+def refresh_access_token(request):
+    # Implement logic to send a request to the /refresh_token endpoint
+    # and renew the access token using the stored refresh token
+    # Return True if refresh is successful, False otherwise
+    try:
+        # Example code to send a request to the /refresh_token endpoint
+        refresh_token = request.COOKIES.get('refresh_token')
+        # Send a request to your server to refresh the access token
+        # Use refresh_token to obtain a new access token
+        # ...
+        # If refresh is successful, return True
+        return True
+    except Exception as e:
+        # Log any errors or exceptions that occur during refresh
+        print(f"Refresh token failed: {e}")
+        return False
 
-
-def refresh_token(user):
-    # Use refresh token to obtain a new access token
-    refresh_token = RefreshToken.for_user(user)
-    access_token = AccessToken.for_user(user)
-    # Send the new access token to the frontend
-    return access_token
-
-# // Function to check user's login status
-# function checkLoginStatus() {
-#     fetch('/checkLogin')
-#         .then(response => response.json())
-#         .then(data => {
-#             if (!data.isLoggedIn) {
-#                 console.log('User is logged out');
-#                 sendNotificationToServer();
-#         })
-#         .catch(error => {
-#             console.error('Error checking login status:', error);
-#         });
-# }
 
 # def get_token_for_user(user, with_username=False, token_lifetime=None):
 #     refresh = RefreshToken.for_user(user)
@@ -113,14 +114,24 @@ def refresh_token(user):
 #     return str(refresh.access_token)
 
 
+def generate_refresh_token(user):
+    # Use refresh token to obtain a new access token
+    refresh_token = RefreshToken.for_user(user)
+    refresh_token['username'] = user.username
+    # access_token = AccessToken.for_user(user)
+    print("**original REFRESH TOKEN: ", str(refresh_token))
+    # Send the new access token to the frontend
+    return refresh_token
+
 def privacy_policy_view(request):
     return render(request, 'privacy_policy.html')
 
+@api_view(['POST'])
+@ensure_csrf_cookie
 @csrf_protect
 def api_login_view(request):
     print("\n\n       URL:", request.build_absolute_uri())
 
-    secret_key = settings.SECRET_KEY
     if request.method == "POST": 
         username = request.POST["username"]
         password = request.POST["password"]
@@ -145,20 +156,23 @@ def api_login_view(request):
             access_token = AccessToken.for_user(user)
             access_token['username'] = user.username
 
-            
-            response_data = {
+            refresh_token = generate_refresh_token(user)
+
+            response = JsonResponse({
                 # 'access_token': str(access_token),
                 'message': escape('Password Authentication successful'),
                 'redirect_url': escape(redirect_url),
                 'requires_2fa': True
-            }
-            response = JsonResponse(response_data)    
+            })
+            response.set_cookie('refresh_token', refresh_token, httponly=True, secure=True, samesite='Strict')
+            response.data['access_token'] = str(access_token)
             
             try:
+                secret_key = settings.SECRET_KEY
+
                 print("original ACCESS TOKEN: ", str(access_token))
+                print("original REFRESH TOKEN: ", str(refresh_token))
                 decodedToken = jwt.decode(str(access_token), secret_key, algorithms=["HS256"])
-
-
                 print("decode ACCESS TOKEN: ", decodedToken)
                 local_tz = pytz.timezone('Europe/Paris')
                 exp_timestamp_accessToken = decodedToken['exp']
