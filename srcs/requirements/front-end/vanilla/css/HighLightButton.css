@@ -1,0 +1,24 @@
+div {
+	margin: 10px;
+	padding:15px 50px;
+
+	/* color: white; */
+	text-align: center;
+
+	/* From https://css.glass */
+	background: rgba(0, 217, 255, 1);
+	/* border-radius: 16px 0px 16px 0px; */
+	border-radius: 16px;
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(11.1px);
+	/* border: 1px solid rgba(0, 0, 0, 0.07); */
+}
+
+p {
+	margin: 0px;
+	padding: 0px;
+}
+
+div:hover {
+	background: rgb(0, 123, 145);
+}

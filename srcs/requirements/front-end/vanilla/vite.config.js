@@ -12,7 +12,8 @@ export default defineConfig({
 	  '@css': '/css',
 	  '@public': '/public',
 	  '@components': '/js/components',
-	  '@html': '/js/html'
+	  '@html': '/js/html',
+	  '@assets' : '/js/assets'
 	}
   }
 });

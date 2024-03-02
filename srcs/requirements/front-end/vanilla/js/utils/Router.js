@@ -6,7 +6,7 @@ import Game from '@views/Game.js';
 import Login from '@views/Login.js';
 import NotFound from '@views/NotFound.js';
 import User from '@views/User';
-import Design from '@view/Design.js';
+import Design from '@views/Design.js';
 
 
 export const routes = {
