@@ -31,8 +31,12 @@ class CustomJWTAuthentication(authentication.BaseAuthentication):
             raise exceptions.AuthenticationFailed('Token decoding error')
         except Exception as e:
             raise exceptions.AuthenticationFailed('JWT authentication error')
+        user_identifier = self.get_user_from_payload(payload)
+        return (user_identifier, token)
             
     def get_user_from_payload(self, payload):
         username = payload.get('username')
+        if not username:
+            raise exceptions.AuthenticationFailed('Invalid payload')
         return username
         

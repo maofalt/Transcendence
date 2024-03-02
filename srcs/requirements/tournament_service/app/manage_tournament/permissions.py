@@ -20,6 +20,6 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
         # Les opérations de lecture sont autorisées pour tous
         if request.method in permissions.SAFE_METHODS:
             return request.user and request.user.is_authenticated
-        return obj.host == request.user
+        return obj.host.username == request.user
 
 

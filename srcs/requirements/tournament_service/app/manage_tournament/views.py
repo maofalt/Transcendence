@@ -44,6 +44,7 @@ class TournamentRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
 class TournamentRegistrationCreate(generics.CreateAPIView):
     queryset = TournamentRegistration.objects.all()
     serializer_class = TournamentRegistrationSerializer
+    authentication_classes = [CustomJWTAuthentication]
     permission_classes = [IsAuthenticated]  # Only authenticated users can register
 
     def post(self, request, *args, **kwargs):
@@ -68,6 +69,8 @@ class TournamentRegistrationCreate(generics.CreateAPIView):
 
 # --------------------------- Tournament Participants -----------------------------------    
 class TournamentParticipantList(APIView):
+    authentication_classes = [CustomJWTAuthentication]
+    permission_classes = [IsAuthenticated] # Only authenticated users can view the participant list
     def get(self, request, id):
         tournament = get_object_or_404(Tournament, pk=id)
         
@@ -81,6 +84,8 @@ class TournamentParticipantList(APIView):
 
 
 class TournamentParticipantDetail(APIView):
+    authentication_classes = [CustomJWTAuthentication]
+    permission_classes = [IsAuthenticated] 
     def delete(self, request, id, participant_id):
         tournament = get_object_or_404(Tournament, pk=id)
         participant = get_object_or_404(TournamentPlayer, tournament_id=tournament, player__player_id=participant_id)
@@ -90,6 +95,8 @@ class TournamentParticipantDetail(APIView):
 
 # -------------------------------- Tournament Visualization --------------------------------------
 class TournamentVisualization(APIView):
+    authentication_classes = [CustomJWTAuthentication]
+    permission_classes = [IsAuthenticated] 
     def get(self, request, id):
         tournament = get_object_or_404(Tournament, pk=id)
         matches = TournamentMatch.objects.filter(tournament_id=tournament)
@@ -99,12 +106,16 @@ class TournamentVisualization(APIView):
 
 # -------------------------------- Tournament Lifecycle --------------------------------------
 class TournamentStart(APIView):
+    authentication_classes = [CustomJWTAuthentication]
+    permission_classes = [IsAuthenticated] 
     def post(self, request, id):
         tournament = get_object_or_404(Tournament, pk=id)
         # Update tournament state to start
         return Response({"status": "Tournament started"})
 
 class TournamentEnd(APIView):
+    authentication_classes = [CustomJWTAuthentication]
+    permission_classes = [IsAuthenticated]
     def post(self, request, id):
         tournament = get_object_or_404(Tournament, pk=id)
         # Update tournament state to end
@@ -113,6 +124,8 @@ class TournamentEnd(APIView):
 
 # -------------------------------- Tournament Matches Progression ------------------------------------
 class TournamentMatchList(APIView):
+    authentication_classes = [CustomJWTAuthentication]
+    permission_classes = [IsAuthenticated] 
     def get(self, request, id):
         tournament = get_object_or_404(Tournament, pk=id)
         matches = TournamentMatch.objects.filter(tournament_id=tournament)
@@ -127,6 +140,8 @@ class TournamentMatchList(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class TournamentMatchDetail(APIView):
+    authentication_classes = [CustomJWTAuthentication]
+    permission_classes = [IsAuthenticated] 
     def put(self, request, id, match_id):
         match = get_object_or_404(TournamentMatch, pk=match_id, tournament_id=id)
         serializer = TournamentMatchSerializer(match, data=request.data, partial=True)
@@ -141,6 +156,8 @@ class TournamentMatchDetail(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 class TournamentMatchList(ListAPIView):
+    authentication_classes = [CustomJWTAuthentication]
+    permission_classes = [IsAuthenticated] 
     serializer_class = TournamentMatchSerializer
 
     def get_queryset(self):
@@ -149,12 +166,18 @@ class TournamentMatchList(ListAPIView):
 
 # ---------------------------- Match Operations -------------------------------
 class MatchStart(APIView):
+    authentication_classes = [CustomJWTAuthentication]
+    permission_classes = [IsAuthenticated] 
+
     def post(self, request, match_id):
         match = get_object_or_404(TournamentMatch, pk=match_id)
         # Mettre à jour l'état du match pour le démarrer
         return Response({"status": "Match started"})
 
 class MatchEnd(APIView):
+    authentication_classes = [CustomJWTAuthentication]
+    permission_classes = [IsAuthenticated] 
+
     def post(self, request, match_id):
         match = get_object_or_404(TournamentMatch, pk=match_id)
         # Enregistrer les résultats du match et mettre à jour son état
@@ -169,26 +192,44 @@ class MatchEnd(APIView):
 #         serializer.save()
 
 class GameTypeList(ListAPIView):
+    authentication_classes = [CustomJWTAuthentication]
+    permission_classes = [IsAuthenticated] 
+
     queryset = GameType.objects.all()
     serializer_class = GameTypeSerializer
 
 class TournamentTypeList(ListAPIView):
+    authentication_classes = [CustomJWTAuthentication]
+    permission_classes = [IsAuthenticated] 
+
     queryset = TournamentType.objects.all()
     serializer_class = TournamentTypeSerializer
 
 class RegistrationTypeList(ListAPIView):
+    authentication_classes = [CustomJWTAuthentication]
+    permission_classes = [IsAuthenticated] 
+
     queryset = TournamentType.objects.all()
     serializer_class = TournamentTypeSerializer
 
 class TournamentPlayerList(ListAPIView):
+    authentication_classes = [CustomJWTAuthentication]
+    permission_classes = [IsAuthenticated] 
+
     queryset = TournamentPlayer.objects.all()
     serializer_class = TournamentPlayerSerializer
 
 class PlayerList(ListAPIView):
+    authentication_classes = [CustomJWTAuthentication]
+    permission_classes = [IsAuthenticated] 
+
     queryset = Player.objects.all()
     serializer_class = PlayerSerializer
 
 class MatchParticipantsList(ListAPIView):
+    authentication_classes = [CustomJWTAuthentication]
+    permission_classes = [IsAuthenticated] 
+    
     queryset = MatchParticipants.objects.all()
     serializer_class = MatchParticipantsSerializer
 
