@@ -96,7 +96,7 @@ def check_refresh(request):
             new_accessToken = str(access)
 
             # Set new access token in response header
-            response = JsonResponse({'message': 'New access token generated', 'freshToken': refreshToken})
+            response = JsonResponse({'message': 'New access token generated'})
             response['Authorization'] = f'Bearer {new_accessToken}'
             return response
         # return JsonResponse({'error': 'Access token has expired'}, status=401)
@@ -140,41 +140,45 @@ def api_login_view(request):
             
             send_one_time_code(request, user.email)
             
-            accessToken = AccessToken.for_user(user)
-            accessToken['username'] = user.username
-
-            refreshToken = RefreshToken.for_user(user)
-
-            response = JsonResponse({
-                'message': escape('Password Authentication successful'),
-                'redirect_url': escape(redirect_url),
-                'requires_2fa': True
-            })
-
-            response['Authorization'] = f'Bearer {str(accessToken)}'
-            response.set_cookie('refreshToken', refreshToken, httponly=True, secure=True, samesite='Strict')
-            # response.data['accessToken'] = str(accessToken)
-            
-            try:
-                secret_key = settings.SECRET_KEY
-
-                print("original ACCESS TOKEN: ", str(accessToken))
-                print("original REFRESH TOKEN: ", str(refreshToken))
-                decodedToken = jwt.decode(str(accessToken), secret_key, algorithms=["HS256"])
-                local_tz = pytz.timezone('Europe/Paris')
-                exp_timestamp_accessToken = decodedToken['exp']
-                exp_accessToken = datetime.datetime.fromtimestamp(exp_timestamp_accessToken, tz=pytz.utc).astimezone(local_tz).strftime('%Y-%m-%d %H:%M:%S')
-                print("Expiration time of ACCESS token:", exp_accessToken)
-
-                return response
-            except jwt.ExpiredSignatureError:
-                return JsonResponse({'error': escape('Token has expired')}, status=400)
-            except jwt.InvalidTokenError:
-                return JsonResponse({'error': escape('Invalid token')}, status=400)
+            return generate_tokens_and_response(user)
         else:
             print("Authentication failed")
             return JsonResponse({'error': escape('Authentication failed: Wrong user data')}, status=400)
     return JsonResponse({'error': escape('Invalid request method')}, status=400)
+
+
+def generate_tokens_and_response(user):
+    accessToken = AccessToken.for_user(user)
+    accessToken['username'] = user.username
+
+    refreshToken = RefreshToken.for_user(user)
+
+    response = JsonResponse({
+        'success' : True,
+        'message': escape('Password Authentication successful'),
+        # 'redirect_url': escape(redirect_url),
+        'requires_2fa': True
+    })
+
+    response['Authorization'] = f'Bearer {str(accessToken)}'
+    response.set_cookie('refreshToken', refreshToken, httponly=True, secure=True, samesite='Strict')
+
+    try:
+        secret_key = settings.SECRET_KEY
+
+        print("original ACCESS TOKEN: ", str(accessToken))
+        print("original REFRESH TOKEN: ", str(refreshToken))
+        decodedToken = jwt.decode(str(accessToken), secret_key, algorithms=["HS256"])
+        local_tz = pytz.timezone('Europe/Paris')
+        exp_timestamp_accessToken = decodedToken['exp']
+        exp_accessToken = datetime.datetime.fromtimestamp(exp_timestamp_accessToken, tz=pytz.utc).astimezone(local_tz).strftime('%Y-%m-%d %H:%M:%S')
+        print("Expiration time of ACCESS token:", exp_accessToken)
+
+        return response
+    except jwt.ExpiredSignatureError:
+        return JsonResponse({'error': escape('Token has expired')}, status=400)
+    except jwt.InvalidTokenError:
+        return JsonResponse({'error': escape('Invalid token')}, status=400)
 
 def generate_one_time_code():
     return get_random_string(length=6, allowed_chars='1234567890')
@@ -289,16 +293,14 @@ def api_signup_view(request):
                 games_lost=0
             )
             user.game_stats = game_stats
-            print("\n\nGAMES STATS : user", user.game_stats.user)
             user.save()
         print(" >>  User created successfully.")
 
         login(request, user)
         user.is_online = True
-        print(f"Is Online: {user.is_online}")
         user.save()
-        
-        return JsonResponse({'success': True})
+        return generate_tokens_and_response(user)
+        # return JsonResponse({'success': True})
 
     return JsonResponse({'success': False, 'error': escape('Invalid request method')}, status=400)
 
