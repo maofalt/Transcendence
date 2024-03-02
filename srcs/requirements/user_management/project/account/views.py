@@ -415,13 +415,13 @@ def detail_view(request):
 def add_friend(request, pk):
     friend = get_object_or_404(User, pk=pk)
     request.user.add_friend(friend)
-    return redirect('account:friend')
+    return JsonResponse({})
 
 @login_required
 def remove_friend(request, pk):
     friend = get_object_or_404(User, pk=pk)
     request.user.friends.remove(friend)
-    return redirect('account:friend')
+    return JsonResponse({})
 
 @login_required
 @csrf_protect

@@ -38,9 +38,9 @@
         // Call the function with friend's data
       calculateWinRate({{ friend.game_stats.games_won }}, {{ friend.game_stats.total_games_played }}, {{ friend.pk }});
       </script>
-      <form method="post" action="{% url 'account:remove_friend' friend.pk %}">
+      <form id="removeFriend" method="post" action="{% url 'account:remove_friend' friend.pk %}">
         {% csrf_token %}
-        <button type="submit">Remove Friend</button>
+        <button type="button" id="removeFriendButton">Remove Friend</button>
       </form>
     </li>
   {% endfor %}
@@ -61,11 +61,45 @@
         {% else %}
           <span style="color: red;">Off</span>
         {% endif %}
-        <form method="post" action="{% url 'account:add_friend' result.pk %}">
+          <form id="addFriend" method="post" action="{% url 'account:add_friend' result.pk %}">
           {% csrf_token %}
-          <button type="submit">Add Friend</button>
+          <button type="button" id="addFriendButton">Add Friend</button>
         </form>
       </li>
     {% endfor %}
   </ul>
 {% endif %}
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    $('#addFriendButton').click(function() {
+        $.ajax({
+            type: 'POST',
+            url: $('#addFriend').attr('action'),
+            data: $('#addFriend').serialize(),
+            success: function(response) {
+                location.reload();
+            },
+            error: function(xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
+    });
+    $('#removeFriendButton').click(function() {
+        $.ajax({
+            type: 'POST',
+            url: $('#removeFriend').attr('action'),
+            data: $('#removeFriend').serialize(),
+            success: function(response) {
+                location.reload();
+            },
+            error: function(xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
+    });
+});
+
+</script>
