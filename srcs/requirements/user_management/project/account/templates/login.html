@@ -90,7 +90,7 @@
       url: '{% url "account:login" %}',
       type: 'POST',
       data: $('#loginForm').serialize(),
-      headers: { "X-CSRFToken": "{{ csrf_token }}" },
+      headers: { "X-CSRFToken": getCookie('csrftoken') },
       success: function (data, textStatus, xhr) {
         console.log('Login successful:', data);
         // Extract access token from Authorization header
