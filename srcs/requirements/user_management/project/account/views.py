@@ -397,9 +397,9 @@ def detail_view(request):
     game_stats = request.user.game_stats
 
     data = {
-        'username': user.username,
-        'playername': user.playername,
-        'email': user.email,
+        'username': escape(user.username),
+        'playername': escape(user.playername),
+        'email': escape(user.email),
         'avatar': user.avatar.url if user.avatar else None,
         'friends_count': user.friends.count(),
         'game_stats': {
