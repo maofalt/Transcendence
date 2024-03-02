@@ -84,9 +84,13 @@
         headers: {
           'Authorization': accessToken
         },
-        success: function(data) {
+        success: function(data, textStatus, xhr) {
           console.log('Check refresh successful:', data);
-          // Handle successful response
+          var new_accessToken = xhr.getResponseHeader('Authorization');
+          if (new_accessToken) {
+            sessionStorage.setItem('accessToken', new_accessToken);
+            console.log('Update accessToken on Storage');
+          }
         },
         error: function(xhr, textStatus, errorThrown) {
           console.error('Error checking refresh:', errorThrown);
