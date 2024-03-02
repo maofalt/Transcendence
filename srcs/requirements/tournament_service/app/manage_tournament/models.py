@@ -24,7 +24,7 @@ class Tournament(models.Model):
 class TournamentMatch(models.Model):
     match_id = models.AutoField(primary_key=True)
     tournament_id = models.ForeignKey('Tournament', on_delete=models.CASCADE, related_name='match' )
-    round_number = models.IntegerField()
+    round_number = models.IntegerField(default=1, validators=[MinValueValidator(1)])
     match_time = models.DateTimeField(null=True) 
     match_result = models.CharField(max_length=255)
 

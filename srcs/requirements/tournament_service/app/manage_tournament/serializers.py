@@ -26,15 +26,40 @@ class TournamentSerializer(serializers.ModelSerializer):
 
         instance.tournament_name = validated_data.get('tournament_name', instance.tournament_name)
         instance.nbr_of_player = validated_data.get('nbr_of_player', instance.nbr_of_player)
-        # Mettre à jour d'autres champs de `Tournament` au besoin
+        instance.game_type = validated_data.get('game_type', instance.game_type)
+        instance.tournament_type = validated_data.get('tournament_type', instance.tournament_type)
+        instance.registration = validated_data.get('registration', instance.registration)
+        instance.registration_period_min = validated_data.get('registration_period_min', instance.registration_period_min)
+        instance.host_id = validated_data.get('host_id', instance.host_id)
         instance.save()
 
-        # Mettre à jour les champs de `MatchSetting`
+        # `MatchSetting`
+        instance.setting.duration_sec = setting_data.get('duration_sec', setting.duration_sec)
+        instance.setting.max_score = setting_data.get('max_score', setting.max_score)
+        instance.setting.walls_factor = setting_data.get('walls_factor', setting.walls_factor)
+        instance.setting.size_of_goals = setting_data.get('size_of_goals', setting.size_of_goals)
+        instance.setting.paddle_height = setting_data.get('paddle_height', setting.paddle_height)
+        instance.setting.paddle_speed = setting_data.get('paddle_speed', setting.paddle_speed)
+        instance.setting.ball_speed = setting_data.get('ball_speed', setting.ball_speed)
+        instance.setting.ball_radius = setting_data.get('ball_radius', setting.ball_radius)
+        instance.setting.ball_color = setting_data.get('ball_color', setting.ball_color)
+        instance.setting.save()
         for field, value in setting_data.items():
             setattr(setting, field, value)
         setting.save()
 
         return instance
+
+class TournamentRegistrationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TournamentPlayer
+        fields = ['tournament_id', 'player']  # Assurez-vous que ces noms correspondent à ceux dans votre modèle
+
+    def create(self, validated_data):
+        # Créez une nouvelle instance TournamentPlayer avec les données validées
+        tournament_player = TournamentPlayer.objects.create(**validated_data)
+        return tournament_player
+
 
 class GameTypeSerializer(serializers.ModelSerializer):
     class Meta:
