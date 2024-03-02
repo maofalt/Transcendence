@@ -10,10 +10,9 @@ from .serializers import TournamentTypeSerializer, RegistrationTypeSerializer, T
 from .serializers import PlayerSerializer, MatchParticipantsSerializer, TournamentRegistrationSerializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from .authentication import CustomJWTAuthentication
-from .permissions import  IsOwnerOrRegisterOnly, CanRegister
+from .permissions import  IsOwnerOrReadOnly
 from rest_framework.decorators import api_view
 from django.contrib.auth.models import User
-
 
 # ------------------------ Tournament -----------------------------------
 class TournamentListCreate(generics.ListCreateAPIView):
@@ -23,33 +22,14 @@ class TournamentListCreate(generics.ListCreateAPIView):
     renderer_classes = [JSONRenderer]  # Force the response to be rendered in JSON
     permission_classes = [IsAuthenticated]  # Only authenticated users can create and list tournaments
 
-    def get_permissions(self):
-        if self.request.method in SAFE_METHODS:
-            # if the request is a safe method, then no need for any authentication
-            return []
-        elif self.request.method == 'POST':
-            # if the request is a POST (create), then the user needs to be authenticated
-            return [IsAuthenticated()]
-        else:
-            # if the request is a PUT, PATCH or DELETE, then the user needs to be the owner
-            return [IsOwnerOrReadOnly()]
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            # If the data is not valid, return a 400 response with the error details
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
     def perform_create(self, serializer):
+        # Attribue automatiquement l'utilisateur actuel comme host du tournoi créé
         serializer.save(host=self.request.user)
-    
+
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         if not queryset.exists():
-            return Response({"message": "NO tournament was found."}, status=status.HTTP_204_NO_CONTENT)
+            return Response([], status=status.HTTP_200_OK)
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
@@ -59,17 +39,15 @@ class TournamentRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     queryset = Tournament.objects.all()
     serializer_class = TournamentSerializer
     authentication_classes = [CustomJWTAuthentication]
-    permission_classes = [IsOwnerOrRegisterOnly]  # Custom permission class for owner-only access
-
-    def perform_update(self, serializer):
-        serializer.save(host=self.request.user)
+    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]  # Custom permission class for owner-only access
 
 class TournamentRegistrationCreate(generics.CreateAPIView):
     queryset = TournamentRegistration.objects.all()
     serializer_class = TournamentRegistrationSerializer
-    permission_classes = [CanRegister]  # Only authenticated users can register
+    permission_classes = [IsAuthenticated]  # Only authenticated users can register
 
     def post(self, request, *args, **kwargs):
+        tournament_id = kwargs.get('id')
         tournament = get_object_or_404(Tournament, pk=id)
         player_id = request.data.get('player_id')
         player = get_object_or_404(Player, pk=player_id)
