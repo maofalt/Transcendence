@@ -83,7 +83,6 @@ class TournamentRegistrationCreate(generics.CreateAPIView):
         try:
             return super().post(request, *args, **kwargs)
         except ValidationError as e:
-            # Manage other validation errors
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         
         return Response({"message": "Player registered successfully."}, serializer.data, status=status.HTTP_201_CREATED)
@@ -116,7 +115,6 @@ class TournamentVisualization(APIView):
     def get(self, request, id):
         tournament = get_object_or_404(Tournament, pk=id)
         matches = TournamentMatch.objects.filter(tournament_id=tournament)
-        # Construisez ici la structure de données pour le bracket du tournoi
         data = {"matches": matches}
         return Response(data)
 
