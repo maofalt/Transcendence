@@ -7,7 +7,7 @@ from rest_framework.renderers import JSONRenderer
 from .models import Tournament, TournamentMatch, MatchSetting, GameType, TournamentType, RegistrationType, TournamentPlayer, Player, MatchParticipants
 from .serializers import TournamentSerializer, TournamentMatchSerializer, MatchSettingSerializer, GameTypeSerializer
 from .serializers import TournamentTypeSerializer, RegistrationTypeSerializer, TournamentPlayerSerializer
-from .serializers import PlayerSerializer, MatchParticipantsSerializer
+from .serializers import PlayerSerializer, MatchParticipantsSerializer, TournamentRegistrationSerializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from .authentication import CustomJWTAuthentication
 from .permissions import  IsOwnerOrRegisterOnly, CanRegister
@@ -69,20 +69,38 @@ class TournamentRegistrationCreate(generics.CreateAPIView):
     serializer_class = TournamentRegistrationSerializer
     permission_classes = [CanRegister]  # Only authenticated users can register
 
-
-# --------------------------- Tournament Participants -----------------------------------    
-class TournamentParticipantList(APIView):
-    def post(self, request, id):
+    def post(self, request, *args, **kwargs):
         tournament = get_object_or_404(Tournament, pk=id)
         player_id = request.data.get('player_id')
         player = get_object_or_404(Player, pk=player_id)
 
-        # check if player is already registered
         if TournamentPlayer.objects.filter(tournament_id=tournament, player=player).exists():
             return Response({"message": "Player already registered."}, status=status.HTTP_400_BAD_REQUEST)
 
         tournament_player = TournamentPlayer.objects.create(tournament_id=tournament, player=player)
-        return Response({"message": "Player registered successfully."}, status=status.HTTP_201_CREATED)
+        # Serialize and return the new TournamentPlayer
+        serializer = self.get_serializer(tournament_player)
+        try:
+            return super().post(request, *args, **kwargs)
+        except ValidationError as e:
+            # Manage other validation errors
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+        return Response({"message": "Player registered successfully."}, serializer.data, status=status.HTTP_201_CREATED)
+
+
+# --------------------------- Tournament Participants -----------------------------------    
+class TournamentParticipantList(APIView):
+    def get(self, request, id):
+        tournament = get_object_or_404(Tournament, pk=id)
+        
+        # Check if the user is the tournament host or a registered participant
+        if tournament.host != request.user and not TournamentPlayer.objects.filter(tournament_id=tournament, player=request.user).exists():
+            return Response({"message": "You are not authorized to view the participant list."}, status=status.HTTP_403_FORBIDDEN)
+        
+        participants = TournamentPlayer.objects.filter(tournament_id=tournament)
+        serializer = TournamentPlayerSerializer(participants, many=True)
+        return Response(serializer.data)
 
 
 class TournamentParticipantDetail(APIView):

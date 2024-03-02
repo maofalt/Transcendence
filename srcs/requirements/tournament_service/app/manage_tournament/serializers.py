@@ -15,9 +15,9 @@ class TournamentSerializer(serializers.ModelSerializer):
         fields = ['tournament_name', 'nbr_of_player', 'game_type', 'tournament_type', 'registration', 'setting', 'registration_period_min', 'host_id' ]
 
     def create(self, validated_data):
-        setting_data = validated_data.pop('setting')  # Extrait les données de setting
-        setting = MatchSetting.objects.create(**setting_data)  # Crée un nouvel objet MatchSetting
-        tournament = Tournament.objects.create(setting=setting, **validated_data)  # Crée un nouvel objet Tournament avec le MatchSetting créé
+        setting_data = validated_data.pop('setting')  # Extract data from MatchSetting
+        setting = MatchSetting.objects.create(**setting_data)  # Create a new MatchSetting object
+        tournament = Tournament.objects.create(setting=setting, **validated_data)  # Create a new Tournament object
         return tournament
 
     def update(self, instance, validated_data):
@@ -33,17 +33,7 @@ class TournamentSerializer(serializers.ModelSerializer):
         instance.host_id = validated_data.get('host_id', instance.host_id)
         instance.save()
 
-        # `MatchSetting`
-        instance.setting.duration_sec = setting_data.get('duration_sec', setting.duration_sec)
-        instance.setting.max_score = setting_data.get('max_score', setting.max_score)
-        instance.setting.walls_factor = setting_data.get('walls_factor', setting.walls_factor)
-        instance.setting.size_of_goals = setting_data.get('size_of_goals', setting.size_of_goals)
-        instance.setting.paddle_height = setting_data.get('paddle_height', setting.paddle_height)
-        instance.setting.paddle_speed = setting_data.get('paddle_speed', setting.paddle_speed)
-        instance.setting.ball_speed = setting_data.get('ball_speed', setting.ball_speed)
-        instance.setting.ball_radius = setting_data.get('ball_radius', setting.ball_radius)
-        instance.setting.ball_color = setting_data.get('ball_color', setting.ball_color)
-        instance.setting.save()
+        # `MatchSetting` is a one-to-one relationship with `Tournament`
         for field, value in setting_data.items():
             setattr(setting, field, value)
         setting.save()
@@ -53,10 +43,10 @@ class TournamentSerializer(serializers.ModelSerializer):
 class TournamentRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = TournamentPlayer
-        fields = ['tournament_id', 'player']  # Assurez-vous que ces noms correspondent à ceux dans votre modèle
+        fields = ['tournament_id', 'player'] # Fields to be serialized
 
     def create(self, validated_data):
-        # Créez une nouvelle instance TournamentPlayer avec les données validées
+        # Create a new TournamentPlayer object
         tournament_player = TournamentPlayer.objects.create(**validated_data)
         return tournament_player
 
