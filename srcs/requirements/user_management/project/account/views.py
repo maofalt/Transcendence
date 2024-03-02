@@ -14,7 +14,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt, csrf_protect, ensure_csrf_cookie
-from django.http import JsonResponse, HttpResponseRedirect
+from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db import transaction
 from django.utils import timezone
@@ -243,7 +243,9 @@ def api_logout_view(request):
         print(request.user.username, ": is_online status", request.user.is_online)
         logout(request)
         serializer = get_serializer(request.user)
-        return redirect('/api/user_management/')
+        redirect_url = "/api/user_management/"
+        response_data = {'redirect_url': escape(redirect_url)}
+        return JsonResponse(response_data)
     else:
         return JsonResponse({'error': escape('Invalid request method')}, status=400)
 
@@ -366,8 +368,8 @@ def friend_view(request):
         if friend.avatar:
             avatar_url = urljoin(settings.MEDIA_URL, friend.avatar.url)
         friend_info = {
-            'username': friend.username,
-            'playername': friend.playername,
+            'username': escape(friend.username),
+            'playername': escape(friend.playername),
             'avatar': avatar_url,
             'pk': friend.pk,
             'game_stats': {
@@ -380,11 +382,13 @@ def friend_view(request):
 
     search_query = request.GET.get('search')
     search_results = []
-    if search_query:
-        print(search_query)
-        search_results = User.objects.filter(username__icontains=search_query)
-
+    if (search_query != user.username):
+        if search_query:
+            print(search_query)
+            search_results = User.objects.filter(username__icontains=search_query)
+        html = render_to_string('friends.html')
     return render(request, 'friends.html', {'friends': friend_data, 'search_query': search_query, 'search_results': search_results})
+    # return JsonResponse({'friends': friend_data, 'html': escape(html),'search_query': escape(search_query), 'search_results': search_results})
 
 @login_required
 @csrf_protect
