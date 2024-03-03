@@ -40,7 +40,8 @@ export default class Design extends HTMLElement {
 
 	async getHtml() {
 		let logincontainer = document.createElement('div');
-		logincontainer.appendChild(document.createElement('design-page'));
+		logincontainer.innerHTML = this.shadowRoot.innerHTML;
+		// logincontainer.appendChild(document.createElement('design-page'));
 		return logincontainer.innerHTML;
 
 		// let logincontainer = document.createElement('div');

@@ -7,7 +7,7 @@ export default class HighLightButton extends AbstractComponent {
 	constructor(element) {
 		super(element);
 
-		this.eventListeners = []; // garbage bin for my event listeners
+		// this.eventListeners = []; // garbage bin for my event listeners
 
 		// Customize the constructor if needed
 		// this.attachShadow({ mode: 'open' });
