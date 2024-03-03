@@ -1,19 +1,32 @@
+@font-face {
+	font-family: "tk-421";
+	src: url('js/assets/fonts/Tk421-K7mv7.otf') format('opentype');
+}
+
 div {
 	margin: 10px;
 	padding: 10px;
 
 	width: 500px;
-	height: 400px;
+	height: 200px;
+
+	font-family: "tk-421";
+	font-size: 40px;
 
 	color: white;
 	text-align: center;
 
 	/* From https://css.glass */
-	background: rgba(255, 255, 255, 0.05);
-	/* border-radius: 16px 0px 16px 0px; */
-	border-radius: 16px;
+	background: rgba(255, 255, 255, 0.1);
+	/* border-radius: 20px 0px 20px 0px; */
+	border-radius: 20px;
 	box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 	backdrop-filter: blur(16px);
 	/* -webkit-backdrop-filter: blur(16px); */
-	border: 0.5px solid rgba(255, 255, 255, 0.07);
+	/* border: 2px solid rgba(0, 217, 255, 0.6); */
+}
+
+h3 {
+	margin: 0px;
+	padding: 0px;
 }

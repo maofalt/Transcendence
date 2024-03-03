@@ -220,7 +220,7 @@ export default class Game extends AbstractView {
 
 	refreshScene(data) {
 		this.scene = new THREE.Scene();
-		const back = new THREE.TextureLoader().load('./js/assets/deepspace.jpg');
+		const back = new THREE.TextureLoader().load('./js/assets/3D_Models/deepspace.jpg');
 		back.colorSpace = THREE.SRGBColorSpace;
 		this.scene.background = back;
 		
@@ -417,7 +417,7 @@ export default class Game extends AbstractView {
 
 	async loadBallModel(data) {
 		// Load the model
-		this.loadModel(`./js/assets/${data.ball.model}/scene.gltf`).then((model) => {
+		this.loadModel(`./js/assets/3D_Models/${data.ball.model}/scene.gltf`).then((model) => {
 			console.log("MODEL LOADED", model);
 
 			// Assign the loaded model to this.ballModel
@@ -439,7 +439,7 @@ export default class Game extends AbstractView {
 	}
 
 	// loadBallModel(model) {
-	// 	this.loader.load("./js/assets/" + model + "/scene.gltf", ( gltf ) => {
+	// 	this.loader.load("./js/assets/3D_Models/" + model + "/scene.gltf", ( gltf ) => {
 	// 		this.ballModel = gltf.scene;
 	// 		this.scene.add(this.ballModel);
 	// 	});
@@ -466,7 +466,7 @@ export default class Game extends AbstractView {
 		}
 		console.log("DIDNT LOADGE");
 		if (data.ball.texture != "") {
-			ballTexture = new THREE.TextureLoader().load(`./js/assets/${data.ball.texture}.jpg`);
+			ballTexture = new THREE.TextureLoader().load(`./js/assets/images/${data.ball.texture}.jpg`);
 			ballMaterial = new THREE.MeshPhongMaterial({ map: ballTexture, transparent: false, opacity: 0.7 });
 			ballTexture.wrapS = ballTexture.wrapT = THREE.RepeatWrapping;
 			ballTexture.offset.set( 0, 0 );
@@ -583,12 +583,12 @@ export default class Game extends AbstractView {
 
 	generateSkyBox(data) {
 		// Charger la texture de ciel étoilé
-		// this.starTexture = new THREE.TextureLoader().load('./js/assets/blueSpace.jpg');
-		// const starTexture1 = new THREE.TextureLoader().load('./js/assets/PurpleLayer1.png');
-		// const starTexture2 = new THREE.TextureLoader().load('./js/assets/PurpleLayer2.png');
-		// const starTexture3 = new THREE.TextureLoader().load('./js/assets/PurpleLayer3.png');
-		const starTextureBase = new THREE.TextureLoader().load('./js/assets/purpleSpace.jpg');
-		// this.starTexture = new THREE.TextureLoader().load('./js/assets/redSpace.jpg');
+		// this.starTexture = new THREE.TextureLoader().load('./js/assets/images/blueSpace.jpg');
+		// const starTexture1 = new THREE.TextureLoader().load('./js/assets/images/PurpleLayer1.png');
+		// const starTexture2 = new THREE.TextureLoader().load('./js/assets/images/PurpleLayer2.png');
+		// const starTexture3 = new THREE.TextureLoader().load('./js/assets/images/PurpleLayer3.png');
+		const starTextureBase = new THREE.TextureLoader().load('./js/assets/images/purpleSpace.jpg');
+		// this.starTexture = new THREE.TextureLoader().load('./js/assets/images/redSpace.jpg');
 
 		// Créer la géométrie de la sphère
 		// starTexture.colorSpace = THREE.SRGBColorSpace;

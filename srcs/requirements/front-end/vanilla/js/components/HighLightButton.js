@@ -4,8 +4,8 @@ import AbstractComponent from "./AbstractComponent";
 import styles from '@css/HighLightButton.css?raw';
 
 export default class HighLightButton extends AbstractComponent {
-	constructor(element) {
-		super(element);
+	constructor(options = {}) {
+		super();
 
 		const styleEl = document.createElement('style');
 		styleEl.textContent = styles;
@@ -14,7 +14,7 @@ export default class HighLightButton extends AbstractComponent {
 		// Example: Set inner HTML
 		this.shadowRoot.innerHTML += `
 		<div>
-			<p>PLAY</p>
+			<p>${options.content}</p>
 		</div>`;
 	}
 }

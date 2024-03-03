@@ -1,9 +1,9 @@
 import { createElement } from "@utils/createElement";
 import { htmlToElement } from "@utils/htmlToElement";
-import styles from '@css/darkPannel.css?raw';
+import styles from '@css/BigTitle.css?raw';
 import AbstractComponent from '@components/AbstractComponent';
 
-export default class DarkPannel extends AbstractComponent {
+export default class BigTitle extends AbstractComponent {
 	constructor() {
 		super();
 
@@ -14,11 +14,11 @@ export default class DarkPannel extends AbstractComponent {
 		// Example: Set inner HTML
 		this.shadowRoot.innerHTML += `
 		<div>
-			<h3>DARK PANNEL</h3>
+			<h3>Cosmic Pong</h3>
 		</div>`;
 	}
 
 	// Implement other methods or properties as needed
 }
 
-customElements.define('dark-glass-pannel', DarkPannel);
+customElements.define('big-title', BigTitle);

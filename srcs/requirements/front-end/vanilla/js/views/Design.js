@@ -2,6 +2,7 @@ import AbstractView from "./AbstractView";
 import DarkPannel from "@components/DarkPannel";
 import Pannel from "@components/Pannel";
 import HighLightButton from "@components/HighLightButton";
+import BigTitle from "../components/BigTitle";
 import { createElement } from "@utils/createElement";
 import { htmlToElement } from "@utils/htmlToElement";
 import styles from '@css/Design.css?raw';
@@ -20,12 +21,13 @@ export default class Design extends HTMLElement {
 		this.shadowRoot.appendChild(styleEl);
 		
 		let div = document.createElement('div');
+		const bigTitle = new BigTitle();
+		div.appendChild(bigTitle);
 		const pannelComponent = new Pannel();
 		div.appendChild(pannelComponent);
 		const darkPannelComponent = new DarkPannel();
 		div.appendChild(darkPannelComponent);
-		const highLightButton = new HighLightButton();
-		highLightButton.id = "highLightButton"; // Add the id "highLightButton"
+		const highLightButton = new HighLightButton({content: "HELLooo"});
 		div.appendChild(highLightButton);
 		this.shadowRoot.appendChild(div);
 		this.highLightButton = highLightButton;
@@ -40,7 +42,9 @@ export default class Design extends HTMLElement {
 	// this function gets called when the custom component gets added to the dom
 	connectedCallback() {
 		console.log('connectedCallback() called\n\n');
-		this.highLightButton.onEvent((e) => this.testButton(e, "button clicked arg!"), "click");
+		// this.darkPannelComponent.height = "300px";
+		// this.darkPannelComponent.width = "500px";
+		this.highLightButton.onEvent((e) => this.buttonOnClick(e, "button clicked!"), "click");
 		this.setupEventListeners(); // setup all event listeners for the page and track them
 	}
 
@@ -101,9 +105,8 @@ export default class Design extends HTMLElement {
 
 	}
 
-	testButton = (e, arg) => {
+	buttonOnClick = (e, arg) => {
 		console.log(e, arg);
-		// console.log(arg);
 	}
 }
 

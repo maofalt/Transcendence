@@ -1,13 +1,11 @@
 import { createElement } from "@utils/createElement";
 import { htmlToElement } from "@utils/htmlToElement";
 import styles from '@css/pannel.css?raw';
+import AbstractComponent from '@components/AbstractComponent';
 
-export default class Pannel extends HTMLElement {
-	constructor(element) {
-		super(element);
-
-		// Customize the constructor if needed
-		this.attachShadow({ mode: 'open' });
+export default class Pannel extends AbstractComponent {
+	constructor() {
+		super();
 
 		const styleEl = document.createElement('style');
 		styleEl.textContent = styles;

@@ -237,7 +237,7 @@ export default class Game extends AbstractView {
 
 	generateSkyBox(data) {
 		// Charger la texture de ciel étoilé
-		const starTexture = new THREE.TextureLoader().load('../../assets/banana.jpg'); // Remplacez par le chemin de votre texture
+		const starTexture = new THREE.TextureLoader().load('../../assets/3D_Models/banana.jpg'); // Remplacez par le chemin de votre texture
 		// Créer la géométrie de la sphère
 		starTexture.colorSpace = THREE.SRGBColorSpace;
 		const starGeometry = new THREE.SphereGeometry(300, 64, 64); // Rayon, segmentsWidth, segmentsHeight

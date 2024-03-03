@@ -11,10 +11,26 @@ export default class AbstractComponent extends HTMLElement {
 		this.shadowRoot.innerHTML += "";
 	}
 
+	static get observedAttributes() {
+		return ['width', 'height', 'color', 'background'];
+	}
+
 	// this function gets called when the custom component gets added to the dom
 	connectedCallback() {
 		console.log('connectedCallback() called\n\n');
 		// this.setupEventListeners(); // setup all event listeners for the page and track them
+	}
+
+	attributeChangedCallback(name, oldValue, newValue) {
+		// if (name === 'width' || name === 'height') {
+			// Select an element inside the shadow root
+			let element = this.shadowRoot.querySelector('div');
+	
+			// Set the style of the selected element
+			if (element) {
+				element.style[name] = newValue;
+			}
+		// }
 	}
 
 	// this function gets called when the custom component is removed from the dom
@@ -36,16 +52,13 @@ export default class AbstractComponent extends HTMLElement {
 	onEvent = (funct, type) => {
 		// event.preventDefault();
 		// event.stopPropagation();
-		// console.log('event: ', event);
 		console.log('funct: ', funct);
 		console.log('type: ', type);
-		console.log("helllo?");
 		// console.trace();
 		this.addTrackedListener(this, type, funct);
 	}
 
 	setupEventListeners = () => {
-		// get all the clickable elements in the page
 		let clickableElems = {
 			// '#idOfElement': functionToRun,
 		};
