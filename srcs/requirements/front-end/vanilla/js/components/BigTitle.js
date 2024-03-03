@@ -14,7 +14,7 @@ export default class BigTitle extends AbstractComponent {
 		// Example: Set inner HTML
 		this.shadowRoot.innerHTML += `
 		<div>
-			<h3>Cosmic Pong</h3>
+			<p>CoSmic Pong</p>
 		</div>`;
 	}
 
