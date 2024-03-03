@@ -14,7 +14,7 @@ export default class Pannel extends AbstractComponent {
 		// Example: Set inner HTML
 		this.shadowRoot.innerHTML += `
 		<div>
-			<h3>PANNEL</h3>
+			<p>PANNEL</p>
 		</div>`;
 	}
 
