@@ -26,10 +26,9 @@ export default class Design extends HTMLElement {
 		div.appendChild(darkPannelComponent);
 		const highLightButton = new HighLightButton();
 		highLightButton.id = "highLightButton"; // Add the id "highLightButton"
-		highLightButton.onEvent((event) => (event, this.testButton("hello?"), 'click'));
 		div.appendChild(highLightButton);
 		this.shadowRoot.appendChild(div);
-		
+		this.highLightButton = highLightButton;
 		// inject raw html into shadow dom
 		// this.shadowRoot.innerHTML += `
 		// <div>
@@ -38,22 +37,10 @@ export default class Design extends HTMLElement {
 		// </div>`;
 	}
 
-	async getHtml() {
-		let logincontainer = document.createElement('div');
-		logincontainer.innerHTML = this.shadowRoot.innerHTML;
-		// logincontainer.appendChild(document.createElement('design-page'));
-		return logincontainer.innerHTML;
-
-		// let logincontainer = document.createElement('div');
-		// let designPage = document.createElement('design-page');
-		// logincontainer.appendChild(designPage);
-		// // document.body.appendChild(logincontaiTner); // Add logincontainer to the DOM
-		// return logincontainer.outerHTML;
-	}
-
 	// this function gets called when the custom component gets added to the dom
 	connectedCallback() {
 		console.log('connectedCallback() called\n\n');
+		this.highLightButton.onEvent((e) => this.testButton(e, "button clicked arg!"), "click");
 		this.setupEventListeners(); // setup all event listeners for the page and track them
 	}
 
@@ -74,6 +61,10 @@ export default class Design extends HTMLElement {
 	}
 
 	setupEventListeners = () => {
+		// this.shadowRoot.querySelectorAll('highlight-button').forEach((button) => {
+		// 	button.onClick((e) => this.testButton(e, "hello?"));
+		// });
+
 		// get all the clickable elements in the page
 		let clickableElems = {
 			// '#closeLoginPopup': this.closeLoginPopup
@@ -110,9 +101,9 @@ export default class Design extends HTMLElement {
 
 	}
 
-	testButton = (arg) => {
-		// console.log(e, arg);
-		console.log(arg);
+	testButton = (e, arg) => {
+		console.log(e, arg);
+		// console.log(arg);
 	}
 }
 

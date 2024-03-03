@@ -33,8 +33,12 @@ export default class AbstractComponent extends HTMLElement {
 		this.eventListeners.push({ target, type, listener }); // Store the listener details
 	}
 
-	onEvent = (event, funct, type) => {
+	onEvent = (funct, type) => {
 		// event.preventDefault();
+		// event.stopPropagation();
+		// console.log('event: ', event);
+		console.log('funct: ', funct);
+		console.log('type: ', type);
 		console.log("helllo?");
 		// console.trace();
 		this.addTrackedListener(this, type, funct);

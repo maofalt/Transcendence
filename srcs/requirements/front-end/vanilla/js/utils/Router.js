@@ -56,7 +56,8 @@ export const routes = {
 		path: '/design',
 		view: Design,
 		title: 'Design',
-		buttonText: 'Design'
+		buttonText: 'Design',
+		component: 'design-page'
 	},
 	'/404': {
 		path: '/404',
@@ -77,19 +78,24 @@ export const navigateTo = (url) => {
 const router = async () => {
   const path = window.location.pathname;
   const View = routes[path] || routes['/404'];
+  const viewContainer = document.querySelector('#view');
 
-  console.log('path: ', path);
+  if (View.component) {
+	viewContainer.innerHTML = `<${View.component}></${View.component}>`;
+  } else {
+	console.log('path: ', path);
 
-  if (currentView && currentView.destroy && currentView !== View) {
-    currentView.destroy();
-  }
+	if (currentView && currentView.destroy && currentView !== View) {
+		currentView.destroy();
+	}
 
-  currentView = new View.view();
+	currentView = new View.view();
 
-  document.querySelector('#view').innerHTML = await currentView.getHtml();
-  document.title = View.title;
-  if (currentView.init) {
-    currentView.init();
+	document.querySelector('#view').innerHTML = await currentView.getHtml();
+	document.title = View.title;
+    if (currentView.init) {
+        currentView.init();
+    }
   }
 };
 
