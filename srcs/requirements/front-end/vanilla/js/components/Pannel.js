@@ -21,6 +21,7 @@ export default class Pannel extends AbstractComponent {
 		const p = document.createElement('p');
 		p.textContent = options.content;
 		p.id = "pannelTitle";
+		div.id = "container";
 		div.appendChild(p);
 		this.shadowRoot.appendChild(div);
 		div.setAttribute('width', options.width);

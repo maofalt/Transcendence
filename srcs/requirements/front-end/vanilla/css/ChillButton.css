@@ -13,6 +13,7 @@ div {
 	text-align: center;
 	font-family: "tk-421";
 	font-size: 40px;
+	display: block;
 
 	/* From https://css.glass */
 	background: rgba(255, 255, 255, 1);

@@ -1,21 +1,21 @@
-/* @font-face {
+@font-face {
 	font-family: "tk-421";
 	src: url('js/assets/fonts/Tk421-K7mv7.otf') format('opentype');
-} */
-
-@font-face {
-	font-family: "Space-Grotesk";
-	src: url('js/assets/fonts/Space_Grotesk/static/SpaceGrotesk-Regular.ttf') format('truetype');
 }
 
-div {
+/* @font-face {
+	font-family: "Space-Grotesk";
+	src: url('js/assets/fonts/Space_Grotesk/static/SpaceGrotesk-Regular.ttf') format('truetype');
+} */
+
+#container {
 	margin: 10px;
 	padding: 10px;
 
 	width: 500px;
 	height: 200px;
 
-	font-family: "Space-Grotesk", sans-serif;
+	font-family: "tk-421";
 	font-size: 40px;
 	/* font-weight: 400; */
 

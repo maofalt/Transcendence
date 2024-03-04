@@ -7,7 +7,8 @@ import Login from '@views/Login.js';
 import NotFound from '@views/NotFound.js';
 import User from '@views/User';
 import Design from '@views/Design.js';
-
+import HomeDesign from '@views/HomeDesign';
+import LoginDesign from '@views/LoginDesign';
 
 export const routes = {
 	'/': {
@@ -58,6 +59,20 @@ export const routes = {
 		title: 'Design',
 		buttonText: 'Design',
 		component: 'design-page'
+	},
+	'/home-design': {
+		path: '/home-design',
+		view: HomeDesign,
+		title: 'home-design',
+		buttonText: 'home-design',
+		component: 'home-design'
+	},
+	'/login-design': {
+		path: '/login-design',
+		view: LoginDesign,
+		title: 'login-design',
+		buttonText: 'login-design',
+		component: 'login-design'
 	},
 	'/404': {
 		path: '/404',

@@ -21,7 +21,7 @@ export default class Design extends HTMLElement {
 		const styleEl = document.createElement('style');
 		styleEl.textContent = styles;
 		this.shadowRoot.appendChild(styleEl);
-		
+
 		let div = document.createElement('div');
 		const bigTitle = new BigTitle({content: "Cosmic<br>Pong"});
 		bigTitle.setAttribute("margin", "5vh 0 15vh 0");
@@ -32,13 +32,6 @@ export default class Design extends HTMLElement {
 		const chillButton = new ChillButton({content : "Options"});
 		div.appendChild(chillButton);
 		this.shadowRoot.appendChild(div);
-		this.highLightButton = highLightButton;
-		// inject raw html into shadow dom
-		// this.shadowRoot.innerHTML += `
-		// <div>
-		// 	<glass-pannel></glass-pannel>
-		// 	<dark-glass-pannel></dark-glass-pannel>
-		// </div>`;
 	}
 
 	// this function gets called when the custom component gets added to the dom

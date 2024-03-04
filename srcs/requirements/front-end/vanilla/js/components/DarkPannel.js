@@ -19,7 +19,7 @@ export default class DarkPannel extends AbstractComponent {
 
 		const div = document.createElement('div');
 		const p = document.createElement('p');
-		p.textContent = 'DARK-PANNEL';
+		p.textContent = options.content;
 		div.appendChild(p);
 		this.shadowRoot.appendChild(div);
 	}
