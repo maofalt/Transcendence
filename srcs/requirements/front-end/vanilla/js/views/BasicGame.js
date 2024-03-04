@@ -617,13 +617,7 @@ export default class BasicGame extends AbstractComponent {
 
 	/* GAME LOGIC PREVIOUSLY BACKEND */
 
-	waitingLoop = (matchID) => {
-		if (!match) {
-			console.log("Match not found");
-			// client.emit('error', 'Match not found');
-			// client.disconnect();
-			return ;
-		}
+	waitingLoop = () => {
 		let gameState = render.updateData(match.gameState);
 		if (gameState == 1) {
 			this.localdestroy(match.gameState);
@@ -638,30 +632,30 @@ export default class BasicGame extends AbstractComponent {
 		}
 	}
 
-	handleConnectionV2 = (client) => {
+	handleConnectionV2() {
 
 		console.log("\nCLIENT CONNECTED\n");
 
 		console.log('---DATA---\n', match.gameState, '\n---END---\n');
-		client.emit('generate', match.gameState);
+		localgenerate(match.gameState);
 		
-		match.gameInterval = setInterval(waitingLoop, 10, client.matchID);
+		match.gameInterval = setInterval(this.waitingLoop, 10);
 		match.gameState.ball.dir.y = -1;
 		match.gameState.ball.dir.x = 0.01;
 
-		console.log(`Player connected with ID: ${client.playerID}`);
+		console.log(`Player connected with ID: `);
 
 		// client.emit('generate', data);
 		// debugDisp.displayData(match.gameState);
 	}
 
 	// Set up Socket.IO event handlers
-	io.on('connection', (client) => {
+	localconnection = (client) => {
 		//handle client connection and match init + players status
-		console.log("\nclient:\n", client.decoded);
-		handleConnectionV2(client);
+		// console.log("\nclient:\n", client.decoded);
+		this.handleConnectionV2();
 		data = match.gameState;
-	});
+	}
 
 	// player controls
 	localmoveUp = () => {
