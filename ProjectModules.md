@@ -1,7 +1,6 @@
 # Transcendence Project Modules
 ##### Listed below are all the modules we have completed for ft_transcendence with links to the pages in the subject where they are specified and to relevent files in which the requirements are fulfilled. Major and minor modules are denoted by `Major` and `Minor` respectively.
 
-## Summary:
 ### [Mandatory Part](https://cdn.intra.42.fr/pdf/pdf/118630/en.subject.pdf#page=5):
 - [Minimal technical requirements](https://cdn.intra.42.fr/pdf/pdf/118630/en.subject.pdf#page=6):
   - Built **with** backend => [Framework module](https://cdn.intra.42.fr/pdf/pdf/118630/en.subject.pdf#page=12) : `Django`
@@ -57,9 +56,23 @@
   - User-friendly setup process for 2FA enabling. With options for: SMS codes, authenticatior apps and email codes.
   - Use `JSON Web Tokens` (JWT) for for authentication. User sessions and access to resources should be managed securely
   - JWT tokens must be issued and validated securely!
-#### Devops
+#### Devops:
 - `Major` Backend as Microservices [page 22](https://cdn.intra.42.fr/pdf/pdf/118630/en.subject.pdf#page=22)
   - Loosely-coupled microservices
   - Define clear boundaries between microservices
-  - Implement communication between microservices
-  - Ensure that **seperation of concerns** is being met
+  - Implement microservice communication (REST or message queue)
+  - Ensure that there is proper **seperation of concerns** between services
+#### Graphics:
+- `Major` Advanced 3D => `ThreeJS` [page 24](https://cdn.intra.42.fr/pdf/pdf/118630/en.subject.pdf#page=22)
+#### Server-Side Pong:
+- `Major` Server-Side Pong + API [page 27](https://cdn.intra.42.fr/pdf/pdf/118630/en.subject.pdf#page=22)
+  - All login is on the server-side: ball movement, scoring, player interactions, etc.
+  - Create API to interact with the game => allow partial usage via CLI
+  - API endpoints: game initialization, player controls, and game state updates.
+ 
+## TOTAL: 8x `Major` + 4x `Minor` = 7x `Major` (`100%`) + 1x`Major` (10%) + 4x`
+
+#### Accessibility: `?`
+- `Minor` Support on all devices `?`
+- `Minor` Expanding Browser Compatibility `?`
+
