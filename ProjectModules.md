@@ -70,8 +70,13 @@
   - Create API to interact with the game => allow partial usage via CLI
   - API endpoints: game initialization, player controls, and game state updates.
  
-## TOTAL: 8x `Major` + 4x `Minor` = 7x `Major` (`100%`) + 1x`Major` (10%) + 4x`
+## TOTAL: 
+### 8x `Major` + 4x `Minor` 
+### = 7x `Major` (100%) + 1x `Major` (10%) + 4x `Minor` (20%) 
+### = <ins>**130%**</ins>
 
+
+## Potential `?`
 #### Accessibility: `?`
 - `Minor` Support on all devices `?`
 - `Minor` Expanding Browser Compatibility `?`
