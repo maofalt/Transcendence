@@ -4,7 +4,7 @@ import styles from '@css/darkPannel.css?raw';
 import AbstractComponent from '@components/AbstractComponent';
 
 export default class DarkPannel extends AbstractComponent {
-	constructor() {
+	constructor(options = {}) {
 		super();
 
 		const styleEl = document.createElement('style');
@@ -12,10 +12,16 @@ export default class DarkPannel extends AbstractComponent {
 		this.shadowRoot.appendChild(styleEl);
 
 		// Example: Set inner HTML
-		this.shadowRoot.innerHTML += `
-		<div>
-			<p>DARK PANNEL</p>
-		</div>`;
+		// this.shadowRoot.innerHTML += `
+		// <div>
+		// 	<p>DARK PANNEL</p>
+		// </div>`;
+
+		const div = document.createElement('div');
+		const p = document.createElement('p');
+		p.textContent = 'DARK-PANNEL';
+		div.appendChild(p);
+		this.shadowRoot.appendChild(div);
 	}
 
 	// Implement other methods or properties as needed

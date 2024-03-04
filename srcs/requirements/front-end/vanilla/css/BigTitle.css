@@ -8,7 +8,9 @@ div {
 	padding: 10px;
 
 	font-family: "tk-421";
-	font-size: 80px;
+	font-size: 120px;
+
+	line-height: 76px;
 
 	color: white;
 	text-align: center;

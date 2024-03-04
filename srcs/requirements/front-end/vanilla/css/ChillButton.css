@@ -7,20 +7,21 @@ div {
 	margin: 10px;
 	padding: 15px 50px;
 
-	color: white;
+	width: 300px;
+
+	color: black;
 	text-align: center;
 	font-family: "tk-421";
 	font-size: 40px;
 
-	width: 300px;
-
 	/* From https://css.glass */
-	background: rgb(0, 217, 255);
-	/* border-radius: 0px 20px 0px 20px; */
+	background: rgba(255, 255, 255, 1);
+	/* border-radius: 20px 0px 20px 0px; */
 	border-radius: 20px;
-	/* border: 1px solid rgba(0, 0, 0, 0.07); */
-	transition: all 300ms;
+	box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+	backdrop-filter: blur(12px);
 	cursor: pointer;
+	transition: all 300ms;
 }
 
 p {
@@ -30,9 +31,9 @@ p {
 }
 
 div:hover {
-	background: white;
 	color : rgb(0, 217, 255);
 	border-radius: 20px 0px 20px 0px;
 	transition: all 300ms;
 	/* font-size: 42px; */
 }
+

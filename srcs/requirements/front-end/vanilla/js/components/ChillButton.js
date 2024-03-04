@@ -1,9 +1,9 @@
 import { createElement } from "@utils/createElement";
 import { htmlToElement } from "@utils/htmlToElement";
-import styles from '@css/BigTitle.css?raw';
-import AbstractComponent from '@components/AbstractComponent';
+import AbstractComponent from "./AbstractComponent";
+import styles from '@css/ChillButton.css?raw';
 
-export default class BigTitle extends AbstractComponent {
+export default class ChillButton extends AbstractComponent {
 	constructor(options = {}) {
 		super();
 
@@ -17,8 +17,6 @@ export default class BigTitle extends AbstractComponent {
 			<p>${options.content}</p>
 		</div>`;
 	}
-
-	// Implement other methods or properties as needed
 }
 
-customElements.define('big-title', BigTitle);
+customElements.define('chill-button', ChillButton);

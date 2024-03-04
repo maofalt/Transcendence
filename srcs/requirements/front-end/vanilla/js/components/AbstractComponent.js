@@ -1,6 +1,6 @@
 export default class AbstractComponent extends HTMLElement {
-	constructor(element) {
-		super(element);
+	constructor() {
+		super();
 
 		this.eventListeners = []; // garbage bin for my event listeners
 
@@ -12,7 +12,7 @@ export default class AbstractComponent extends HTMLElement {
 	}
 
 	static get observedAttributes() {
-		return ['width', 'height', 'color', 'background'];
+		return ['width', 'height', 'color', 'background', 'margin', 'font-size'];
 	}
 
 	// this function gets called when the custom component gets added to the dom

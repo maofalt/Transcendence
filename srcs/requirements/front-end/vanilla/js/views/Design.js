@@ -3,6 +3,8 @@ import DarkPannel from "@components/DarkPannel";
 import Pannel from "@components/Pannel";
 import HighLightButton from "@components/HighLightButton";
 import BigTitle from "../components/BigTitle";
+import Navigation from "../components/Navigation";
+import ChillButton from "../components/ChillButton";
 import { createElement } from "@utils/createElement";
 import { htmlToElement } from "@utils/htmlToElement";
 import styles from '@css/Design.css?raw';
@@ -21,14 +23,14 @@ export default class Design extends HTMLElement {
 		this.shadowRoot.appendChild(styleEl);
 		
 		let div = document.createElement('div');
-		const bigTitle = new BigTitle();
+		const bigTitle = new BigTitle({content: "Cosmic<br>Pong"});
+		bigTitle.setAttribute("margin", "5vh 0 15vh 0");
+		bigTitle.setAttribute("margin-bottom", "300px");
 		div.appendChild(bigTitle);
-		const pannelComponent = new Pannel();
-		div.appendChild(pannelComponent);
-		const darkPannelComponent = new DarkPannel();
-		div.appendChild(darkPannelComponent);
-		const highLightButton = new HighLightButton({content: "HELLooo"});
+		const highLightButton = new HighLightButton({content: "Play !"});
 		div.appendChild(highLightButton);
+		const chillButton = new ChillButton({content : "Options"});
+		div.appendChild(chillButton);
 		this.shadowRoot.appendChild(div);
 		this.highLightButton = highLightButton;
 		// inject raw html into shadow dom
@@ -42,9 +44,9 @@ export default class Design extends HTMLElement {
 	// this function gets called when the custom component gets added to the dom
 	connectedCallback() {
 		console.log('connectedCallback() called\n\n');
-		// this.darkPannelComponent.height = "300px";
-		// this.darkPannelComponent.width = "500px";
-		this.highLightButton.onEvent((e) => this.buttonOnClick(e, "button clicked!"), "click");
+		// this.highLightButton.onEvent((e) => this.buttonOnClick(e, "button clicked!"), "click");
+		this.highLightButton.onclick = (e) => this.buttonOnClick(e, "Play button clicked!");
+		// this.chillButton.onclick = (e) => this.buttonOnClick(e, "Options button clicked!");
 		this.setupEventListeners(); // setup all event listeners for the page and track them
 	}
 

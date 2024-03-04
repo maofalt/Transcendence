@@ -10,11 +10,11 @@ div {
 	width: 500px;
 	height: 200px;
 
-	font-family: "tk-421";
-	font-size: 40px;
+	/* font-family: "tk-421"; */
+	/* font-size: 40px; */
 
 	color: white;
-	color: rgba(0, 217, 255, 1);
+	/* color: rgba(0, 217, 255, 1); */
 	text-align: center;
 
 	/* From https://css.glass */
