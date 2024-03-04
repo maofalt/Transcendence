@@ -42,3 +42,24 @@
   - Each user has **Match History**: 1v1, dates... etc.
 #### Gameplay and UX:
 - `Major` Remote players [page 15](https://cdn.intra.42.fr/pdf/pdf/118630/en.subject.pdf#page=15)
+- `Major` Multiple players [page 15](https://cdn.intra.42.fr/pdf/pdf/118630/en.subject.pdf#page=15)
+- `Minor` Game Customization [page 15-16](https://cdn.intra.42.fr/pdf/pdf/118630/en.subject.pdf#page=15)
+  - power-ups, attacks, or different maps => enhance gameplay experience
+  - option to choose default game for simpler experience
+  - User friendly menus for game customization
+#### Cybersecurity:
+- `Minor` GDPR Compliance, User Anonymization, Data Managment, and Account Deletion [page 19](https://cdn.intra.42.fr/pdf/pdf/118630/en.subject.pdf#page=19)
+  - Allow users to request anonymization
+  - Provide tools to manage data: ability to view, edit and delete personal information
+  - Streamlined process for account deletion
+- `Major` Two-Factor Auth (2FA) + JWT [page 20](https://cdn.intra.42.fr/pdf/pdf/118630/en.subject.pdf#page=20)
+  - Require users to provide secondary verification
+  - User-friendly setup process for 2FA enabling. With options for: SMS codes, authenticatior apps and email codes.
+  - Use `JSON Web Tokens` (JWT) for for authentication. User sessions and access to resources should be managed securely
+  - JWT tokens must be issued and validated securely!
+#### Devops
+- `Major` Backend as Microservices [page 22](https://cdn.intra.42.fr/pdf/pdf/118630/en.subject.pdf#page=22)
+  - Loosely-coupled microservices
+  - Define clear boundaries between microservices
+  - Implement communication between microservices
+  - Ensure that **seperation of concerns** is being met
