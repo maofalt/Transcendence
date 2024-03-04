@@ -18,7 +18,6 @@ function waitingLoop(matchID) {
 		// client.disconnect();
 		return ;
 	}
-	let string = JSON.stringify(match.gameState);
 	let gameState = render.updateData(match.gameState);
 	if (gameState == 1) {
 		io.to(matchID).emit('destroy', match.gameState);

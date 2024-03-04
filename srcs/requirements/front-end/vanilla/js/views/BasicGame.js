@@ -9,7 +9,14 @@ import { createElement } from "@utils/createElement";
 import { htmlToElement } from "@utils/htmlToElement";
 import styles from '@css/BasicGame.css?raw';
 import AbstractComponent from '@components/AbstractComponent';
-import app_remastered from '@gameLogic/app_remastered'
+import app_remastered from '@gameLogic/app_remastered';
+
+// importing game logic code :
+import lobbySettings from '#gameLogic/lobbySettings';
+import init from '#gameLogic/init';
+import debugDisp from '#gameLogic/debugDisplay';
+import render from '#gameLogic/rendering';
+
 
 class SpObject {
 	constructor(objMesh, dirMesh) {
@@ -53,6 +60,14 @@ export default class BasicGame extends AbstractComponent {
 		// // 	<glass-pannel></glass-pannel>
 		// // 	<dark-glass-pannel></dark-glass-pannel>
 		// // </div>`;
+
+
+		this.match = {};
+
+		this.data;
+
+		this.latency = 0;
+
 		this.loader = new GLTFLoader();
 		
 		// controls
@@ -171,7 +186,7 @@ export default class BasicGame extends AbstractComponent {
 		this.socket.emit('ID', this.playerID, this.matchID);
 	}
 
-	localgenerate = data => {
+	localgenerate = (data) => {
 		// Generate scene and update it
 		data.playersArray = Object.values(data.players);
 		console.log("data : ", data);
@@ -180,7 +195,7 @@ export default class BasicGame extends AbstractComponent {
 		this.renderer.render(this.scene, this.camera);
 	};
 	
-	localrender = data => {
+	localrender = (data) => {
 		data.playersArray = Object.values(data.players);
 		// if (data.ball.model && this.ballModel) {
 			console.log("Rendering Frame...");
@@ -191,12 +206,12 @@ export default class BasicGame extends AbstractComponent {
 		this.renderer.render(this.scene, this.camera);
 	};
 
-	localdestroy = data => {
+	localdestroy = (data) => {
 		this.scene.clear();
 		console.log("DESTROY SCENE");
 	}
 
-	localrefresh = data => {
+	localrefresh = (data) => {
 		console.log("REFRESH SCENE");
 		data.playersArray = Object.values(data.players);
 		this.refreshScene(data);
@@ -327,17 +342,6 @@ export default class BasicGame extends AbstractComponent {
 		} );
 
 	}
-
-		// font: font,
-
-		// size: size,
-		// height: height,
-		// curveSegments: curveSegments,
-
-		// bevelThickness: bevelThickness,
-		// bevelSize: bevelSize,
-		// bevelEnabled: bevelEnabled
-
 	
 	createScore(data, player, i) {
 
@@ -429,24 +433,7 @@ export default class BasicGame extends AbstractComponent {
 		});
 	}
 
-	// loadBallModel(model) {
-	// 	this.loader.load("./js/assets/3D_Models/" + model + "/scene.gltf", ( gltf ) => {
-	// 		this.ballModel = gltf.scene;
-	// 		this.scene.add(this.ballModel);
-	// 	});
-		
-	// }
-
-	// scaleBallModel(data) {
-	// 	this.loadBallModel(data.ball.model);
-	// 	let boundingBox = new THREE.Box3().setFromObject(this.ballModel);
-	// 	let size = boundingBox.getSize(); // Returns Vector3
-	// 	let len = size.x > size.y ? size.x : size.y;
-	// 	let scale = len / data.ball.r;
-	// 	this.ballModel.scale.set(scale, scale, scale);
-	// }
-
-	generateBall(data) {
+	generateBall = (data) => {
 		let ballTexture;
 		let ballMaterial;
 
@@ -481,7 +468,7 @@ export default class BasicGame extends AbstractComponent {
 		this.ball.mesh.position.set(data.ball.pos.x, data.ball.pos.y, data.ball.pos.z);
 	}
 
-	generateWalls(data) {
+	generateWalls = (data) => {
 		const wallGeometry = new THREE.BoxGeometry(data.field.wallsSize, 1, 2);
 		const wallMaterial = new THREE.MeshPhongMaterial({ color: data.ball.col, transparent: true, opacity: 1, reflectivity: 0.5 });
 		// console.log("number of players : ", data.gamemode.nbrOfPlayers);
@@ -493,7 +480,7 @@ export default class BasicGame extends AbstractComponent {
 		}
 	}
 
-	generateGoals(data) {
+	generateGoals = (data) => {
 		// console.log("number of players : ", data.gamemode.nbrOfPlayers);
 		for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
 			const top = data.field.walls[i].top;
@@ -522,7 +509,7 @@ export default class BasicGame extends AbstractComponent {
 	// 	}
 	// }
 
-	generatePaddles(data) {
+	generatePaddles = (data) => {
 		for (let i=0; i<data.playersArray.length; i++) {
 			const paddleGeometry = new THREE.BoxGeometry(data.playersArray[i].paddle.h, 1, 2);
 			const paddleMaterial = new THREE.MeshPhongMaterial({ color: data.playersArray[i].color, transparent: true, opacity: 1, reflectivity: 0 });
@@ -538,7 +525,7 @@ export default class BasicGame extends AbstractComponent {
 								data.playersArray[i].paddle.dirToTop.z,),
 					data.playersArray[i].paddle.pos, 10, 0x00ff00);
 
-            this.paddles[i] = new BoxObject(new THREE.Mesh(paddleGeometry, paddleMaterial), dir1, dir2);
+			this.paddles[i] = new BoxObject(new THREE.Mesh(paddleGeometry, paddleMaterial), dir1, dir2);
 			this.scene.add(this.paddles[i].mesh); // add mesh to the scene
 			// this.scene.add(this.paddles[i].dir1Mesh);
 			// this.scene.add(this.paddles[i].dir2Mesh);
@@ -549,14 +536,14 @@ export default class BasicGame extends AbstractComponent {
 		}
 	}
 
-	deletePaddles(data) {
+	deletePaddles = (data) => {
 		for (let i=0; i<data.playersArray.length; i++) {
 			this.paddles[i].mesh.paddleGeometry.dispose();
 			this.paddles[i].mesh.paddleMaterial.dispose();
 		}
 	}
 
-	generateLights(){
+	generateLights = () => {
 		this.directionalLight = new THREE.DirectionalLight(0xffffff, 1);
 		this.directionalLight.position.set(0, 1, 1);
 
@@ -567,12 +554,12 @@ export default class BasicGame extends AbstractComponent {
 		this.scene.add(this.ambientLight);
 	}
 
-	deleteLights() {
+	deleteLights = () => {
 		this.directionalLight.dispose();
 		this.ambientLight.dispose();
 	}
 
-	generateSkyBox(data) {
+	generateSkyBox = (data) => {
 		// Charger la texture de ciel étoilé
 		// this.starTexture = new THREE.TextureLoader().load('./js/assets/images/blueSpace.jpg');
 		// const starTexture1 = new THREE.TextureLoader().load('./js/assets/images/PurpleLayer1.png');
@@ -627,6 +614,127 @@ export default class BasicGame extends AbstractComponent {
 		// this.scene.add(starSphere3);
 		this.scene.add(starSphereBase);
 	};
+
+	/* GAME LOGIC PREVIOUSLY BACKEND */
+
+	waitingLoop = (matchID) => {
+		if (!match) {
+			console.log("Match not found");
+			// client.emit('error', 'Match not found');
+			// client.disconnect();
+			return ;
+		}
+		let gameState = render.updateData(match.gameState);
+		if (gameState == 1) {
+			this.localdestroy(match.gameState);
+			this.localrefresh(match.gameState);
+		} else if (gameState == -1) {
+			this.localdestroy(match.gameState);
+			clearInterval(match.gameInterval);
+			return ;
+		} else {
+			// else if (gameState == 0) {
+			localrender(match.gameState);
+		}
+	}
+
+	handleConnectionV2 = (client) => {
+
+		console.log("\nCLIENT CONNECTED\n");
+
+		console.log('---DATA---\n', match.gameState, '\n---END---\n');
+		client.emit('generate', match.gameState);
+		
+		match.gameInterval = setInterval(waitingLoop, 10, client.matchID);
+		match.gameState.ball.dir.y = -1;
+		match.gameState.ball.dir.x = 0.01;
+
+		console.log(`Player connected with ID: ${client.playerID}`);
+
+		// client.emit('generate', data);
+		// debugDisp.displayData(match.gameState);
+	}
+
+	// Set up Socket.IO event handlers
+	io.on('connection', (client) => {
+		//handle client connection and match init + players status
+		console.log("\nclient:\n", client.decoded);
+		handleConnectionV2(client);
+		data = match.gameState;
+	});
+
+	// player controls
+	localmoveUp = () => {
+		console.log(`client ${client.id} moving up`);
+		let player = data.players[client.playerID];
+		if (player && player.paddle && !player.paddle.dashSp) {
+			player.paddle.currSp = player.paddle.sp;
+		}
+	}
+
+	localmoveDown = () => {
+		console.log(`client ${client.id} moving down`);
+		let player = data.players[client.playerID];
+		if (player && player.paddle && !player.paddle.dashSp) {
+			player.paddle.currSp = -player.paddle.sp;
+		}
+	}
+
+	localdash = () => {
+		console.log(`client ${client.id} dashing`);
+		let player = data.players[client.playerID];
+		if (player && player.paddle && !player.paddle.dashSp) {
+			if (player.paddle.currSp == 0) {
+				// do something for this err case
+				return ;
+			}
+			player.paddle.dashSp = player.paddle.currSp > 0 ? player.paddle.w * 1.5 : player.paddle.w * -1.5;
+			// player.paddle.dashSp = player.paddle.w * 1.5 * (player.paddle.currSp > 0);
+		}
+	}
+
+	localstop = () => {
+		console.log(`client ${client.id} stopping`);
+		let player = data.players[client.playerID];
+		if (player && player.paddle && !player.paddle.dashing) {
+			player.paddle.currSp = 0;
+		}
+	}
+
+	// disconnect event
+	localdisconnect = () => {
+		client.leave("gameRoom");
+		data.connectedPlayers--;
+		let player = data.players[client.playerID];
+		if (player)
+			player.connected = false;
+		if (data.connectedPlayers < 1) {
+			console.log("CLEARING INTERVAL");
+			clearInterval(match.gameInterval);
+			matches.delete(client.matchID);
+			// delete data;
+		}
+		console.log(`Client disconnected with ID: ${client.id})`);
+	}
+
+	generateMatchID = (gameSettings) => {
+		// Convert request content to a string representation
+		const string = JSON.stringify(gameSettings);
+		// Use SHA-256 to hash the string
+		return crypto.createHash('sha256').update(string).digest('hex');
+	}
+
+	// app.use(express.static('./public/remote/'));
+	initMatch = (gameSettings) => {
+		// Convert game settings to game state
+		const gameState = init.initLobby(gameSettings);
+		
+		console.log("\nMATCH CREATED\n");
+		match = { gameState: gameState, gameInterval: 0 };
+	}
+
+	// module.exports = { io };
+
 }
 
 customElements.define('basic-game', BasicGame);
