@@ -41,7 +41,15 @@ tls:
 #if dynamic configuration doesnt work probably the filepath in providers is wrong
 http:
   routers:
-#GAMR FRONT END FOR DEVELOPMENT USING NODE.JS
+    #SWAGGER UI
+    swagger-ui:
+      rule: "Host(`HOST_IP`) && PathPrefix(`/api/docs`)"
+      entryPoints:
+        - "websecure"
+      service: "swagger-ui-service"
+      tls:
+        certResolver: "myresolver"
+    #GAMR FRONT END FOR DEVELOPMENT USING NODE.JS
     jsDev:
       rule: "Host(`HOST_IP`)"
       service: "jsDevService"
@@ -49,7 +57,7 @@ http:
         - "websecure"
       tls:
         certResolver: "myresolver"
-#GAME LOGIC
+    #GAME LOGIC
     game:
       rule: "Host(`HOST_IP`) && PathPrefix(`/game-logic`)"
       entryPoints: ["websecure"]
@@ -57,7 +65,7 @@ http:
       service: "game"
       tls:
         certResolver: "myresolver"
-#USER_MANAGEMENT
+    #USER_MANAGEMENT
     user_management:
       rule: "Host(`HOST_IP`) && PathPrefix(`/api/user_management`)"
       entryPoints: ["websecure"]
@@ -65,7 +73,7 @@ http:
       service: "user_management"
       tls:
         certResolver: "myresolver"
-#TOURNAMENT
+    #TOURNAMENT
     tournament:
       rule: "Host(`HOST_IP`) && PathPrefix(`/api/tournament`)"
       entryPoints: ["websecure"]
@@ -73,7 +81,7 @@ http:
       service: "tournament"
       tls:
         certResolver: "myresolver"
-#catch all for http requests and redirect to https
+    #catch all for http requests and redirect to https
     http-catchall:
       rule: "HostRegexp(`{host:.+}`)"
       entrypoints:
@@ -81,7 +89,7 @@ http:
       middlewares:
         - "redirect-to-https"
       service: noop-service
-#when a websocket request is made, it is redirected to the game service    
+    #when a websocket request is made, it is redirected to the game service    
     websocket:
       rule: "PathPrefix(`/socket.io/`)"
       service: "game"
@@ -109,6 +117,11 @@ http:
       loadBalancer:
         servers:
           - url: "http://edge:8000"
+
+    swagger-ui-service:
+      loadBalancer:
+        servers:
+          - url: "http://swagger-ui:8080"
 
     frontEnd:
       loadBalancer:

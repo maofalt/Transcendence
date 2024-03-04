@@ -66,7 +66,7 @@
 </form>
 <a href="{% url 'account:friend' %}">Friends</a>
 <a href="{% url 'account:detail' %}">Detail</a>
-
+<button id="tokenTestButton">TokenTest</button>
 {% else %}
 
 <a href="#" id="loginLink">Log in</a>
@@ -75,18 +75,45 @@
 
 <script>
   $(document).ready(function () {
-      $('#devDbButton').on('click', function () {
-          $.ajax({
-              type: 'GET',
-              url: '{% url "account:print_db" %}',
-              success: function (data) {
-                  console.log('Print all user data successful:', data);
-                  window.location.href = '{% url "account:print_db" %}';
-              },
-              error: function (error) {
-                  console.error('Error Cannot print user data:', error);
-              }
-          });
+    $('#tokenTestButton').on('click', function() {
+    var accessToken = sessionStorage.getItem('accessToken');
+    if (accessToken) {
+      $.ajax({
+        type: 'GET',
+        url: '{% url "account:check_refresh" %}',
+        headers: {
+          'Authorization': accessToken
+        },
+        success: function(data, textStatus, xhr) {
+          console.log('Check refresh successful:', data);
+          var new_accessToken = xhr.getResponseHeader('Authorization');
+          if (new_accessToken) {
+            sessionStorage.setItem('accessToken', new_accessToken);
+            console.log('Update accessToken on Storage');
+          }
+        },
+        error: function(xhr, textStatus, errorThrown) {
+          console.error('Error checking refresh:', errorThrown);
+          // Handle error
+        }
       });
+    } else {
+      console.error('Access token not found in sessionStorage');
+      // Handle case where access token is not found
+    }
   });
+    $('#devDbButton').on('click', function () {
+        $.ajax({
+            type: 'GET',
+            url: '{% url "account:print_db" %}',
+            success: function (data) {
+                console.log('Print all user data successful:', data);
+                window.location.href = '{% url "account:print_db" %}';
+            },
+            error: function (error) {
+                console.error('Error Cannot print user data:', error);
+            }
+        });
+    });
+});
 </script>
