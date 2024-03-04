@@ -326,7 +326,7 @@ export default class LoginPage extends HTMLElement {
 			});
 	}
 
-	submitOneTimeCode = (context) => {
+	submitOneTimeCode = (event) => {
 		var oneTimeCode = this.shadowRoot.querySelector('#oneTimeCodeSection input[name="one_time_code"]').value;
 		console.log('submitOneTimeCode submit');
 		fetch('/api/user_management/auth/verify_code', {
@@ -335,12 +335,12 @@ export default class LoginPage extends HTMLElement {
 				'Content-Type': 'application/x-www-form-urlencoded',
 				'X-CSRFToken': getCookie('csrftoken')
 			},
-			body: new URLSearchParams({ 'one_time_code': oneTimeCode, 'context': 'signin' })
+			body: new URLSearchParams({ 'one_time_code': oneTimeCode, 'context': 'login' })
 		})
 			.then(response => {
 				if (response.ok) {
 					console.log('One-time code verification successful:', response);
-					this.closeLoginPopup();
+					this.closeLoginPopup(event);
 					// window.location.href = '';
 				} else {
 					console.log('One-time code verification failed:', response.statusText);
