@@ -11,7 +11,7 @@
   - Everything should be launched with `docker-compose up --build`
 
 - [Game](https://cdn.intra.42.fr/pdf/pdf/118630/en.subject.pdf#page=7):
-  - Both players should be able to use **the same keyboard** to play the Pong game => [Remote players module]() will only *"enhance"* this by adding remote players.
+  - Both players should be able to use **the same keyboard** to play the Pong game ([Remote players module](https://cdn.intra.42.fr/pdf/pdf/118630/en.subject.pdf#page=15) will only *"enhance"* this by adding remote players).
   - We have a **Tournament** => must clearly display who is playing who and the order of players.
   - **Registration system** is modified by [Standard User Management module]()
   - **Matchmaking system** must announce the next fight
@@ -77,7 +77,7 @@
 
 
 ## Potential `?`
-#### Accessibility: `?`
+#### Accessibility: `?` [page 25](https://cdn.intra.42.fr/pdf/pdf/118630/en.subject.pdf#page=25)
 - `Minor` Support on all devices `?`
 - `Minor` Expanding Browser Compatibility `?`
 
