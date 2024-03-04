@@ -110,8 +110,11 @@ class Ball {
         // this.previousLastHit = -1;
         // this.lastScoredOn = -1;
         this.r = ballData.radius;
+        this.startingSp = ballData.speed;
         this.sp = ballData.speed;
         this.col = parseInt(ballData.color, 16);
+        this.model = ballData.model;
+        this.texture = ballData.texture;
     }
 }
 

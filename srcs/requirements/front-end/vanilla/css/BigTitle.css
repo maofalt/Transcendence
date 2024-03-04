@@ -1,0 +1,24 @@
+@font-face {
+	font-family: "tk-421";
+	src: url('js/assets/fonts/Tk421-K7mv7.otf') format('opentype');
+}
+
+div {
+	margin: 10px;
+	padding: 10px;
+
+	font-family: "tk-421";
+	font-size: 120px;
+
+	line-height: 76px;
+
+	color: white;
+	text-align: center;
+	/* letter-spacing: 5px;
+	word-spacing: 30px; */
+}
+
+p {
+	margin: 0px;
+	padding: 0px;
+}
