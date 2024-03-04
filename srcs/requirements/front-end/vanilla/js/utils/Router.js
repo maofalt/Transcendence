@@ -7,6 +7,7 @@ import Login from '@views/Login.js';
 import NotFound from '@views/NotFound.js';
 import User from '@views/User';
 import Design from '@views/Design.js';
+import BasicGame from '@views/BasicGame.js';
 
 
 export const routes = {
@@ -58,6 +59,13 @@ export const routes = {
 		title: 'Design',
 		buttonText: 'Design',
 		component: 'design-page'
+	},
+	'/basic': {
+		path: '/basic',
+		view: BasicGame,
+		title: 'Basic Game',
+		buttonText: 'Basic',
+		component: 'basic-game'
 	},
 	'/404': {
 		path: '/404',
