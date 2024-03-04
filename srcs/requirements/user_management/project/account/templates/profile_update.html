@@ -3,19 +3,50 @@
 {% block content %}
   <h1>Update Profile</h1>
   
-  {% if messages %}
-  <ul class="messages">
-    {% for message in messages %}
-      <li{% if message.tags %} class="{{ message.tags}}"{% endif %}>{{ message }}</li>
-    {% endfor %}
-    </ul>
-  {% endif %}
+  <div id="messages">
+    {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+          <li{% if message.tags %} class="{{ message.tags}}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </div>
   
-  <form method="post" enctype="multipart/form-data">
+  <form id="update-form" method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ user_form.as_p }}
     <button type="submit">Update Profile</button>
   </form>
 
   <p><a href="{% url 'account:password_update' %}">Change Password</a></p>
+
+  <script>
+    document.getElementById("update-form").addEventListener("submit", function(event) {
+      event.preventDefault();
+      
+      var form = document.getElementById("update-form");
+      var formData = new FormData(form);
+      
+      fetch("{% url 'account:profile_update' %}", {
+        method: "POST",
+        body: formData,
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.error) {
+          document.getElementById("messages").innerHTML = '<ul class="messages"><li class="error">' + data.error + '</li></ul>';
+        } else if (data.success) {
+          document.getElementById("messages").innerHTML = '<ul class="messages"><li class="success">' + data.success + '</li></ul>';
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        document.getElementById("messages").innerHTML = '<ul class="messages"><li class="error">An error occurred. Please try again later.</li></ul>';
+      });
+    });
+  </script>
 {% endblock %}

@@ -409,7 +409,7 @@ def detail_view(request):
             'games_lost': game_stats.games_lost,
         }
     }
-    return render(request, 'detail.html', {'data': data})
+    return JsonResponse(data)
 
 @login_required
 def add_friend(request, pk):
@@ -432,12 +432,12 @@ def profile_update_view(request):
         if user_form.is_valid():
             user = user_form.save(commit=False)
             if User.objects.filter(playername=user.playername).exclude(username=request.user.username).exists():
-                messages.error(request, 'Playername already exists. Please choose a different one.')
-                return redirect('account:profile_update')
+                return JsonResponse({'error': 'Playername already exists. Please choose a different one.'})
             else:
                 user.save()    
-                messages.success(request, 'Your profile has update.')
-                return redirect('account:detail')
+                return JsonResponse({'success': 'Your profile has been updated.'})
+        else:
+            return JsonResponse({'error': 'Form is not valid.'}, status=400)
     else:
         user_form = ProfileUpdateForm(instance=request.user)
 
