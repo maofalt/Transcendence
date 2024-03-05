@@ -624,6 +624,7 @@ export default class BasicGame extends AbstractComponent {
 
 	waitingLoop = () => {
 		let gameState = render.updateData(this.match.gameState);
+		this.data = this.match.gameState;
 		if (gameState == 1) {
 			this.localdestroy(this.match.gameState);
 			this.localrefresh(this.match.gameState);
@@ -667,7 +668,9 @@ export default class BasicGame extends AbstractComponent {
 	// player controls
 	localmoveUp = () => {
 		console.log(`client moving up`);
-		let player = this.data.players[0];
+		let player = this.data.players['player1'];
+		console.log("player: ", player);
+		console.log("data: ", this.data);
 		if (player && player.paddle && !player.paddle.dashSp) {
 			player.paddle.currSp = player.paddle.sp;
 		}
@@ -675,7 +678,7 @@ export default class BasicGame extends AbstractComponent {
 
 	localmoveDown = () => {
 		console.log(`client moving down`);
-		let player = this.data.players[0];
+		let player = this.data.players['player1'];
 		if (player && player.paddle && !player.paddle.dashSp) {
 			player.paddle.currSp = -player.paddle.sp;
 		}
@@ -683,7 +686,7 @@ export default class BasicGame extends AbstractComponent {
 
 	localdash = () => {
 		console.log(`client dashing`);
-		let player = this.data.players[0];
+		let player = this.data.players['player1'];
 		if (player && player.paddle && !player.paddle.dashSp) {
 			if (player.paddle.currSp == 0) {
 				// do something for this err case
@@ -696,7 +699,7 @@ export default class BasicGame extends AbstractComponent {
 
 	localstop = () => {
 		console.log(`client stopping`);
-		let player = this.data.players[0];
+		let player = this.data.players['player1'];
 		if (player && player.paddle && !player.paddle.dashing) {
 			player.paddle.currSp = 0;
 		}
@@ -706,7 +709,7 @@ export default class BasicGame extends AbstractComponent {
 	localdisconnect = () => {
 		client.leave("gameRoom");
 		this.data.connectedPlayers--;
-		let player = this.data.players[0];
+		let player = this.data.players['player1'];
 		if (player)
 			player.connected = false;
 		if (this.data.connectedPlayers < 1) {
