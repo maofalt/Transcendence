@@ -4,8 +4,8 @@ from django.db import migrations
 
 def add_game_types(apps, schema_editor):
     GameType = apps.get_model('manage_tournament', 'GameType')
-    GameType.objects.create(type_name='gametype1')
-    GameType.objects.create(type_name='gametype2')
+    GameType.objects.create(type_name='duel') 
+    GameType.objects.create(type_name='battle royale')
 
 class Migration(migrations.Migration):
 

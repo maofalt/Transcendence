@@ -4,9 +4,9 @@ from django.db import migrations
 
 def add_tournament_types(apps, schema_editor):
     TournamentType = apps.get_model('manage_tournament', 'TournamentType')
-    TournamentType.objects.create(type_name='single-elimination tournament')
-    TournamentType.objects.create(type_name='double-elimination tournament')
-    TournamentType.objects.create(type_name='best-of-n series')
+    TournamentType.objects.create(type_name = 'single-elimination tournament (Knockout)')
+    # TournamentType.objects.create(type_name = 'double-elimination tournament')
+    # TournamentType.objects.create(type_name = 'best-of-n series')
 
 class Migration(migrations.Migration):
 

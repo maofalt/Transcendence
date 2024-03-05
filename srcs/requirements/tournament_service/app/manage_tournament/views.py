@@ -132,7 +132,7 @@ class TournamentStart(APIView):
         tournament.state = "started"
         tournament.save()
         return Response({"status": "Tournament started"})
-        
+
 
 class TournamentEnd(APIView):
     authentication_classes = [CustomJWTAuthentication]
@@ -154,9 +154,11 @@ class TournamentEnd(APIView):
 # -------------------------------- Tournament Matches Progression ------------------------------------
 class TournamentMatchList(APIView):
     authentication_classes = [CustomJWTAuthentication]
-    permission_classes = [IsAuthenticated] 
+    permission_classes = [IsAuthenticated, IsHostOrParticipant]
+
     def get(self, request, id):
         tournament = get_object_or_404(Tournament, pk=id)
+        self.check_object_permissions(request, tournament)
         matches = TournamentMatch.objects.filter(tournament_id=tournament)
         serializer = TournamentMatchSerializer(matches, many=True)
         return Response(serializer.data)
@@ -168,9 +170,11 @@ class TournamentMatchList(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class TournamentMatchDetail(APIView):
     authentication_classes = [CustomJWTAuthentication]
-    permission_classes = [IsAuthenticated] 
+    permission_classes = [IsAuthenticated]
+    
     def put(self, request, id, match_id):
         match = get_object_or_404(TournamentMatch, pk=match_id, tournament_id=id)
         serializer = TournamentMatchSerializer(match, data=request.data, partial=True)
@@ -192,6 +196,7 @@ class TournamentMatchList(ListAPIView):
     def get_queryset(self):
         tournament_id = self.kwargs['tournament_id']
         return TournamentMatch.objects.filter(tournament_id=tournament_id)
+
 
 # ---------------------------- Match Operations -------------------------------
 class MatchStart(APIView):
