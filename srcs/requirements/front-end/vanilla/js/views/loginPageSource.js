@@ -2,7 +2,7 @@
 export default `
 <div id="darkLayer"></div>
 
-<h1>Login</h1>
+<h1 id="loginHeading">Login</h1>
 
 <p></p>
 <button id="devDbButton">DEV-DB</button>

@@ -63,7 +63,7 @@
 <button id="logoutButton" type="submit">Log out</button>
 {% csrf_token %}
 <!-- <button id="friendButton">Friends</button> -->
-<a href="{% url 'account:friend' %}">friends</a>
+<a href="{% url 'account:friends' %}">friends</a>
 <a href="{% url 'account:detail' %}">Detail</a>
 <button id="tokenTestButton">TokenTest</button>
 {% else %}
@@ -150,7 +150,7 @@
     });
     // $('#friendButton').click(function() {
     //     $.ajax({
-    //         url: '{% url "account:friend" %}',
+    //         url: '{% url "account:friends" %}',
     //         headers: { "X-CSRFToken": getCookie('csrftoken') },
     //         success: function(data) {
     //             console.log(data.html);
