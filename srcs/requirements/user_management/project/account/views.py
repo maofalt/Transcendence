@@ -355,6 +355,15 @@ def delete_account(request):
         logger.error(f"Error deleting account: {str(e)}")
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
+@login_required
+@csrf_protect
+def settings_view(request):
+    return JsonResponse({})
+
+@login_required
+@csrf_protect
+def game_history_view(requset):
+    return JsonResponse({})
 
 @login_required
 @csrf_protect
@@ -415,10 +424,10 @@ def friends_view(request):
 @csrf_protect
 def detail_view(request):
     access_token = request.headers.get('Authorization')  # Get the access token from the request headers
-
+    print("GOT IN \n")
     if access_token:
         decoded_token = jwt.decode(access_token.split()[1], settings.SECRET_KEY, algorithms=["HS256"])
-        print("\nDECODED: ", decoded_token)
+        print("\nDECODED from detail_view: ", decoded_token)
         user_id = decoded_token.get('user_id')
 
         if user_id:
@@ -476,8 +485,9 @@ def profile_update_view(request):
             return JsonResponse({'error': 'Form is not valid.'}, status=400)
     else:
         user_form = ProfileUpdateForm(instance=request.user)
-
-    return render(request, 'profile_update.html', {'user_form': user_form})
+        serialized_form = model_to_dict(user_form)
+        html = render_to_string('profile_update.html')
+        return JsonResponse({'form': serialized_form, 'html': html})
 
 @login_required
 def password_update_view(request):
@@ -487,11 +497,15 @@ def password_update_view(request):
             form.save()
             request.user.save()
             messages.success(request, 'Your password has changed successfully. Please login again.')
-            return redirect('account:login')
+            return JsonResponse({'success': True, 'message': "Please login again"}) # needed to redirect to login homepage
+        else:
+            return JsonResponse({'error': 'Form is not valid.'}, status=400)
     else:
         form = PasswordUpdateForm(request.user)
-    
-    return render(request, 'password_update.html', {'form': form})
+        serialized_form = model_to_dict(form)
+        html = render_to_string('password_update.html')
+        # return render(request, 'password_update.html', {'form': form})
+        return JsonResponse({'form': serialized_form, 'html': html})
 
 
 class TokenGenerator(PasswordResetTokenGenerator):
@@ -553,16 +567,21 @@ def password_reset_view(request, uidb64, token):
                 user = authenticate(request, username=user.username, password=new_password1)
                 # if user is not None:
                 #     login(request, user)
-                return redirect('account:password_reset_done')
+                # return redirect('account:password_reset_done')
+                return JsonResponse({'success': True, 'message': escape('Password reset successfully')})
             else:
                 return JsonResponse({'success': False, 'error': escape('Passwords do not match')}, status=400)
         else:
-            return render(request, 'password_reset.html', {'uidb64': uidb64, 'token': token, 'user': user})
+            # return render(request, 'password_reset.html', {'uidb64': uidb64, 'token': token, 'user': user})
+            return JsonResponse({'success': False, 'error': escape('Invalid method')}, status=405)
     else:
-        return HttpResponse('Invalid password reset link', status=400)
+        # return HttpResponse('Invalid password reset link', status=400)
+        return JsonResponse({'success': False, 'error': escape('Invalid password reset link')}, status=400)
 
 def password_reset_done(request):
-    return render(request, 'password_reset_done.html')
+    html = render_to_string('password_reset_done.html')
+    # return render(request, 'password_reset_done.html')
+    return JsonResponse({'html': html})
 
 class UserAPIView(APIView):
     def get(self, request, *args, **kwargs):
