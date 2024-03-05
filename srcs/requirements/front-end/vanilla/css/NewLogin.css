@@ -1,0 +1,242 @@
+/* css file for login page */
+
+@font-face {
+	font-family: "tk-421";
+	src: url('js/assets/fonts/Tk421-K7mv7.otf') format('opentype');
+}
+
+#page {
+	background: url('js/assets/images/blueSpace.jpg');
+	height: 100vh;
+	width: 100vw;
+	/* display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center; */
+}
+
+.popupTitle {
+	margin-top: 0px;
+	font-family: "tk-421";
+	font-size: 50px;
+	color: white;
+}
+
+#signupPopup {
+	display: none;
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	background: #fff;
+	padding: 20px;
+	/* box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); */
+	z-index: 9999;
+	max-width: 300px; /* Adjust the maximum width as needed */
+	width: 50%;
+	border-radius: 20px; /* Add border-radius for rounded corners */
+}
+
+#loginPopup,
+#signupPopup {
+	position: fixed;
+	display: flex;
+	flex-direction: column;
+	/* justify-content: center; */
+	align-items: center;
+	top: 50%;
+	left: 50%;
+
+	transform: translate(-50%, -50%);
+	background: #fff;
+	padding: 20px;
+	background: rgba(255, 255, 255, 0.1);
+	border-radius: 20px;
+	backdrop-filter: blur(16px);
+	z-index: 9999;
+	max-width: 400px; /* Adjust the maximum width as needed */
+	width: 30%;
+	height: 50%;
+	max-height: 500px;
+	border-radius: 20px; /* Add border-radius for rounded corners */
+	/* border: red solid 1px; */
+}
+
+#loginPopup input,
+#signupPopup input {
+	display: block;
+	width: 92%;
+	height: 34px;
+	color: white;
+	font-size: 20px;
+	font-family: Verdana, Geneva, Tahoma, sans-serif;
+
+	text-justify: center;
+
+	/* padding: 10px; */
+	padding: 10px 10px 20px 20px;
+	margin: 10px;
+	/* box-sizing: border-box; */
+	background: rgba(0, 0, 0, 0.7);
+	/* border-radius: 20px 0px 20px 0px; */
+	border-radius: 20px;
+	backdrop-filter: blur(12px);
+	/* border: red solid 1px; */
+}
+
+#loginForm {
+	width: 100%;
+	height: 60%;
+	display: flex;
+	flex-direction: column;
+	/* justify-content: center; */
+	align-items: center;
+	/* border: red solid 1px; */
+}
+
+#forgotPasswordLink {
+	color: white;
+	font-size: 16px;
+	font-family: Verdana, Geneva, Tahoma, sans-serif;
+	font-weight: medium;
+	cursor: pointer;
+}
+
+#forgotPasswordLink:hover {
+	color: rgb(0, 217, 255);
+}
+
+#loginPopup input[type="submit"],
+#signupPopup input[type="submit"] {
+	margin: 30px 10px 10px 10px;
+	padding: 15px 50px;
+
+	color: white;
+	text-align: center;
+	font-family: "tk-421";
+	font-size: 32px;
+	width: 100%;
+	height: 70px;
+
+	/* From https://css.glass */
+	background: rgb(0, 217, 255);
+	border-radius: 20px;
+	transition: all 300ms;
+	cursor: pointer;
+	display: block;
+	/* border: red solid 1px; */
+}
+
+#signupLink {
+	color: black;
+	text-align: center;
+	font-family: "tk-421";
+	font-size: 32px;
+	display: block;
+	margin: 10px;
+	padding: 15px 50px;
+
+	width: 74%;
+
+	/* From https://css.glass */
+	background: rgba(255, 255, 255, 1);
+	/* border-radius: 20px 0px 20px 0px; */
+	border-radius: 20px;
+	box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+	backdrop-filter: blur(12px);
+	cursor: pointer;
+	transition: all 300ms;
+	border: red solid 1px;
+}
+
+#signupLink:hover {
+	color : rgb(0, 217, 255);
+	border-radius: 20px 0px 20px 0px;
+	transition: all 300ms;
+}
+
+#loginPopup input[type="submit"]:hover,
+#signupPopup input[type="submit"]:hover {
+	background: white;
+	color : rgb(0, 217, 255);
+	border-radius: 20px 0px 20px 0px;
+	transition: all 300ms;
+}
+
+#signupButton:disabled {
+	background-color: grey !important;
+	cursor: not-allowed !important;
+}
+
+#signupButton:enabled {
+	background-color: green !important;
+	cursor: pointer !important;
+}
+
+#darkLayer {
+	display: none;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.3);
+	z-index: 9998;
+}
+
+#privacyPolicyPopup {
+	display: none;
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	background: #fff;
+	padding: 20px;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+	z-index: 9999;
+	width: 300px;
+	max-height: 400px;
+	overflow-y: auto;
+}
+
+/* extracted from html */
+#darkLayer {
+}
+
+#closeLoginPopup, #closeForgotPasswordModal, #closeSignupPopup, #closePrivacyPolicyPopup {
+	float: right;
+	cursor: pointer;
+}
+
+#errorMessage, #signupPopupError, #confirmPasswordError, #successMessage {
+	color: red;
+}
+
+#successMessage {
+	color: green;
+	margin-top: 5px;
+}
+
+input[name="username_f"] {
+	width: 200px;
+	margin-right: 5px;
+	border: none;
+}
+
+input[name="signupEmail"], input[name="access_code"] {
+	width: 200px;
+	margin-right: 5px;
+}
+
+#privacyPolicyPopup {
+}
+
+
+/* style to fade elements in and out of view (see utils/fade.js */
+.fade {
+	transition: opacity 0.5s ease;
+	opacity: 0;
+}
+.fade.in {
+	opacity: 1;
+}

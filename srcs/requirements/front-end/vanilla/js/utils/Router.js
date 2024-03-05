@@ -9,6 +9,7 @@ import User from '@views/User';
 import Design from '@views/Design.js';
 import HomeDesign from '@views/HomeDesign';
 import LoginDesign from '@views/LoginDesign';
+import PlayMenu from '../components/PlayMenu';
 
 export const routes = {
 	'/': {
@@ -73,6 +74,13 @@ export const routes = {
 		title: 'login-design',
 		buttonText: 'login-design',
 		component: 'login-design'
+	},
+	'/play-menu': {
+		path: '/play-menu',
+		view: PlayMenu,
+		title: 'play-menu',
+		buttonText: 'play-menu',
+		component: 'play-menu'
 	},
 	'/404': {
 		path: '/404',

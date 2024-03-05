@@ -1,0 +1,13 @@
+#page {
+	display: flex;
+	flex-direction: row;
+	background: url("js/assets/images/blueSpace.jpg");
+	width: 100vw;
+	height: 100vh;
+	align-items: center;
+	justify-content: center;
+}
+
+glass-pannel {
+	flex: 1;
+}
