@@ -39,13 +39,7 @@ export default class BasicGame extends AbstractComponent {
 		super(element);
 
 		// inject css into the shadow dom
-		const styleEl = document.createElement('style');
-		styleEl.textContent = styles;
-		this.shadowRoot.appendChild(styleEl);
-		
-		let div = document.createElement('div');
-		div.setAttribute("id", "gameContainer");
-		this.shadowRoot.appendChild(div);
+
 		// const bigTitle = new BigTitle({content: "Cosmic<br>Pong"});
 		// bigTitle.setAttribute("margin", "5vh 0 15vh 0");
 		// bigTitle.setAttribute("margin-bottom", "300px");
@@ -105,11 +99,22 @@ export default class BasicGame extends AbstractComponent {
 			curveSegments: 12,
 		}
 		this.prevScores = [];
-		this.dir = 0;
+
+		// this.dir = 10;
+		this.facing = 0.5;
+
+		const styleEl = document.createElement('style');
+		styleEl.textContent = styles;
+		this.shadowRoot.appendChild(styleEl);
+		
+		let div = document.createElement('div');
+		div.setAttribute("id", "gameContainer");
+		this.shadowRoot.appendChild(div);
 	}
 	
 	// this function gets called when the custom component gets added to the dom
 	connectedCallback() {
+
 		console.log("init Game View...");
 
 		// Set up the game container
@@ -160,17 +165,26 @@ export default class BasicGame extends AbstractComponent {
 
 	handleKeyPress(event) {
 		console.log(event.key);
-		if (event.key == "w")
-			this.localmoveUp();
 		if (event.key == "s")
-			this.localmoveDown();
+			this.localmoveUp(0);
+		if (event.key == "w")
+			this.localmoveDown(0);
 		if (event.key == "d")
-			this.localdash();
+			this.localdash(0);
+		console.log("KEYYYYYY: ", event.key);
+		if (event.key == "ArrowUp")
+			this.localmoveUp(1);
+		if (event.key == "ArrowDown")
+			this.localmoveDown(1);
+		if (event.key == "Shift")
+			this.localdash(1);
 	};
 
 	handleKeyRelease(event) {
 		if (event.key == "w" || event.key == "s")
-			this.localstop();
+			this.localstop(0);
+		if (event.key == "ArrowUp" || event.key == "ArrowDown")
+			this.localstop(1);
 	};
 
 
@@ -246,7 +260,12 @@ export default class BasicGame extends AbstractComponent {
 		this.generateScores(data);
 		
 		// rotate the scene relative to the current client (so the paddle is at the bottom)
-		this.scene.rotateZ(-2 * Math.PI/data.gamemode.nbrOfPlayers * this.dir)
+		this.scene.rotateZ(-2 * Math.PI/data.gamemode.nbrOfPlayers * this.facing);
+		console.log("\n\n\n\nnumber of players:", data.gamemode.nbrOfPlayers);
+		console.log("pi:", Math.PI);
+		console.log("facing:", this.facing);
+		console.log("total:", -2 * Math.PI/data.gamemode.nbrOfPlayers * this.facing)
+		console.log("\n\n\n\n\n")
 
 		// this.drawAxes();
 	}
@@ -271,7 +290,6 @@ export default class BasicGame extends AbstractComponent {
 		// 		console.log(`socket : ${data.playersArray[i].socketID}, client : ${socket.id}, ${i}, angle = ${data.playersArray[i].paddle.angle}`);
 		// 	}
 		// }
-		this.dir = 0;
 
 		this.refreshScene(data);
 	};
@@ -294,9 +312,8 @@ export default class BasicGame extends AbstractComponent {
 
 		for (let i=0; i<data.playersArray.length; i++) {
 			this.paddles[i].mesh.position.set(data.playersArray[i].paddle.pos.x, data.playersArray[i].paddle.pos.y, data.playersArray[i].paddle.pos.z);
-			this.paddles[i].mesh.material.opacity = data.playersArray[i].connected ? 1.0 : 0.3;
+			this.paddles[i].mesh.material.opacity = data.playersArray[i].connected ? 1.0 : 1.0;
 		}
-				
 		// update scores
 		this.refreshScores(data);
 	}
@@ -324,15 +341,6 @@ export default class BasicGame extends AbstractComponent {
 		// get previous scores for comparison when updating score text meshes
 		this.prevScores = data.playersArray.map(player => -1);
 
-		// get the direction of the client to rotate the scores to face the client
-		// for (let i = 0; i < data.playersArray.length; i++) {
-		// 	if (data.playersArray[i].socketID === this.socket.id) {
-		// 		this.dir = i;
-		// 	}
-		// }
-
-		this.dir = 0;
-
 		if (!loader)
 			return console.error("FontLoader not found");
 
@@ -354,7 +362,7 @@ export default class BasicGame extends AbstractComponent {
 
 		// generate scores for each player
 		const scoreText = player.score.toString();
-		console.log("Creating score: " + scoreText + " for player " + i + " with dir: " + this.dir);
+		// console.log("Creating score: " + scoreText + " for player " + i + " with dir: " + this.dir);
 
 		const geometry = new TextGeometry(scoreText, this.textSettings);
 
@@ -377,7 +385,7 @@ export default class BasicGame extends AbstractComponent {
 		this.scene.add(this.scores[i]);
 
 		// rotate the score to face client
-		this.scores[i].rotation.set(0, 0, 2 * Math.PI/data.gamemode.nbrOfPlayers * this.dir);
+		this.scores[i].rotation.set(0, 0, 2 * Math.PI/data.gamemode.nbrOfPlayers * this.facing);
 		
 	}
 
@@ -450,12 +458,12 @@ export default class BasicGame extends AbstractComponent {
 		console.log("DIDNT LOADGE");
 		if (data.ball.texture != "") {
 			ballTexture = new THREE.TextureLoader().load(`./js/assets/images/${data.ball.texture}.jpg`);
-			ballMaterial = new THREE.MeshPhongMaterial({ map: ballTexture, transparent: false, opacity: 0.7 });
+			ballMaterial = new THREE.MeshPhongMaterial({ map: ballTexture, transparent: false, opacity: 1 });
 			ballTexture.wrapS = ballTexture.wrapT = THREE.RepeatWrapping;
 			ballTexture.offset.set( 0, 0 );
 			ballTexture.repeat.set( 2, 1 );
 		} else {
-			ballMaterial = new THREE.MeshPhongMaterial({ color: data.ball.col, transparent: false, opacity: 0.7 });
+			ballMaterial = new THREE.MeshPhongMaterial({ color: data.ball.col, transparent: false, opacity: 1 });
 		}
 		const ballGeometry = new THREE.SphereGeometry(data.ball.r, 24, 12);
 		const dir1 = new THREE.ArrowHelper(
@@ -666,9 +674,9 @@ export default class BasicGame extends AbstractComponent {
 	}
 
 	// player controls
-	localmoveUp = () => {
+	localmoveUp = (playerindex) => {
 		console.log(`client moving up`);
-		let player = this.data.players['player1'];
+		let player = this.data.playersArray[playerindex];
 		console.log("player: ", player);
 		console.log("data: ", this.data);
 		if (player && player.paddle && !player.paddle.dashSp) {
@@ -676,17 +684,17 @@ export default class BasicGame extends AbstractComponent {
 		}
 	}
 
-	localmoveDown = () => {
+	localmoveDown = (playerindex) => {
 		console.log(`client moving down`);
-		let player = this.data.players['player1'];
+		let player = this.data.playersArray[playerindex];
 		if (player && player.paddle && !player.paddle.dashSp) {
 			player.paddle.currSp = -player.paddle.sp;
 		}
 	}
 
-	localdash = () => {
+	localdash = (playerindex) => {
 		console.log(`client dashing`);
-		let player = this.data.players['player1'];
+		let player = this.data.playersArray[playerindex];
 		if (player && player.paddle && !player.paddle.dashSp) {
 			if (player.paddle.currSp == 0) {
 				// do something for this err case
@@ -697,19 +705,19 @@ export default class BasicGame extends AbstractComponent {
 		}
 	}
 
-	localstop = () => {
+	localstop = (playerindex) => {
 		console.log(`client stopping`);
-		let player = this.data.players['player1'];
+		let player = this.data.playersArray[playerindex];
 		if (player && player.paddle && !player.paddle.dashing) {
 			player.paddle.currSp = 0;
 		}
 	}
 
 	// disconnect event
-	localdisconnect = () => {
+	localdisconnect = (playerindex) => {
 		client.leave("gameRoom");
 		this.data.connectedPlayers--;
-		let player = this.data.players['player1'];
+		let player = this.data.playersArray[playerindex];
 		if (player)
 			player.connected = false;
 		if (this.data.connectedPlayers < 1) {

@@ -6,8 +6,8 @@
 	  "timeLimit": 0
 	},
 	"fieldData": {
-	  "wallsFactor": 1,
-	  "sizeOfGoals": 20
+	  "wallsFactor": 2,
+	  "sizeOfGoals": 80
 	},
 	"paddlesData": {
 	  "width": 2,
