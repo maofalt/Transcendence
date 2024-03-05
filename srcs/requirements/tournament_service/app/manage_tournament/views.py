@@ -71,6 +71,7 @@ class TournamentRegistrationCreate(generics.CreateAPIView):
 class TournamentParticipantList(APIView):
     authentication_classes = [CustomJWTAuthentication]
     permission_classes = [IsAuthenticated] # Only authenticated users can view the participant list
+    
     def get(self, request, id):
         tournament = get_object_or_404(Tournament, pk=id)
         
@@ -85,10 +86,15 @@ class TournamentParticipantList(APIView):
 
 class TournamentParticipantDetail(APIView):
     authentication_classes = [CustomJWTAuthentication]
-    permission_classes = [IsAuthenticated] 
+    permission_classes = [IsAuthenticated]
+
     def delete(self, request, id, participant_id):
         tournament = get_object_or_404(Tournament, pk=id)
         participant = get_object_or_404(TournamentPlayer, tournament_id=tournament, player__player_id=participant_id)
+
+        if request.user != tournament.host.username and request.user != participant.player.username:
+            return Response({"message": "You do not have permission to deregister this participant."}, status=status.HTTP_403_FORBIDDEN)
+
         participant.delete()
         return Response({"message": "Participant deregistered successfully."}, status=status.HTTP_204_NO_CONTENT)
 

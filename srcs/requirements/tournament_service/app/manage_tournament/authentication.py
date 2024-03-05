@@ -14,8 +14,7 @@ class CustomJWTAuthentication(authentication.BaseAuthentication):
         try:
             payload = jwt.decode(token, 'DJANGO_SECRET_KEY', algorithms=["HS256"])
             if 'username' in payload and 'exp' in payload:
-                # Perform additional validation logic here
-                # For example, check if the username is not empty and the expiration time is valid
+                # Check if the username is not empty and the expiration time is valid
                 if payload['username'] and payload['exp'] > time.time():
                     # Payload is valid
                     pass
