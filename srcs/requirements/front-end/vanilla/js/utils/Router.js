@@ -5,6 +5,7 @@ import Options from '@views/Options.js';
 import Game from '@views/Game.js';
 import Login from '@views/Login.js';
 import NotFound from '@views/NotFound.js';
+import ProfilePage from '@views/LoginUserProfile.js';
 
 
 export const routes = {
@@ -49,6 +50,11 @@ export const routes = {
 		view: NotFound,
 		title: '404 Not Found',
 		buttonText: 'Not Found Page'
+	},
+	'/profile': {
+		path: '/profile',
+		view: ProfilePage,
+		title: 'ProfilePage',
 	}
 };
 
