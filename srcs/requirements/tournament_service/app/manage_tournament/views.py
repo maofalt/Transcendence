@@ -10,7 +10,7 @@ from .serializers import TournamentTypeSerializer, RegistrationTypeSerializer, T
 from .serializers import PlayerSerializer, MatchParticipantsSerializer, TournamentRegistrationSerializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from .authentication import CustomJWTAuthentication
-from .permissions import  IsOwnerOrReadOnly
+from .permissions import  IsOwnerOrReadOnly, IsHostOrParticipant
 from rest_framework.decorators import api_view
 from django.contrib.auth.models import User
 
@@ -102,11 +102,17 @@ class TournamentParticipantDetail(APIView):
 # -------------------------------- Tournament Visualization --------------------------------------
 class TournamentVisualization(APIView):
     authentication_classes = [CustomJWTAuthentication]
-    permission_classes = [IsAuthenticated] 
+    permission_classes = [IsAuthenticated, IsHostOrParticipant]
+
     def get(self, request, id):
         tournament = get_object_or_404(Tournament, pk=id)
+
+        # Verify the permissions of the user object
+        self.check_object_permissions(request, tournament)
+
         matches = TournamentMatch.objects.filter(tournament_id=tournament)
-        data = {"matches": matches}
+        matches_serializer = TournamentMatchSerializer(matches, many=True)
+        data = {"matches": matches_serializer.data}
         return Response(data)
 
 
