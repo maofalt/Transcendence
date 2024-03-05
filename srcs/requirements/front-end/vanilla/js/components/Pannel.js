@@ -1,6 +1,6 @@
 import { createElement } from "@utils/createElement";
 import { htmlToElement } from "@utils/htmlToElement";
-import styles from '@css/pannel.css?raw';
+import styles from '@css/Pannel.css?raw';
 import AbstractComponent from '@components/AbstractComponent';
 
 export default class Pannel extends AbstractComponent {
@@ -11,21 +11,32 @@ export default class Pannel extends AbstractComponent {
 		styleEl.textContent = styles;
 		this.shadowRoot.appendChild(styleEl);
 
-		// Example: Set inner HTML
-		// this.shadowRoot.innerHTML += `
-		// <div>
-		// 	<p>PANNEL</p>
-		// </div>`;
-
-		const div = document.createElement('div');
 		const p = document.createElement('p');
-		p.textContent = options.content;
 		p.id = "pannelTitle";
-		div.id = "container";
-		div.appendChild(p);
-		this.shadowRoot.appendChild(div);
-		div.setAttribute('width', options.width);
-		div.setAttribute('height', options.height);
+
+		if (options.title)
+			p.textContent = options.title;
+
+		this.shadowRoot.appendChild(p);
+
+		if (options.width)
+			this.style.width = options.width;
+		if (options.height)
+			this.style.height = options.height;
+
+		this.setPannelStyle(options.dark);
+	}
+
+	setPannelStyle(dark) {
+		if (dark) {
+			this.style.background = "rgba(0, 0, 0, 0.7)";
+			this.style.borderRadius = "20px";
+			this.style.backdropFilter = "blur(12px)";
+			return ;
+		}
+		this.style.background = "rgba(255, 255, 255, 0.1)";
+		this.style.borderRadius = "20px";
+		this.style.backdropFilter = "blur(16px)";
 	}
 
 	// Implement other methods or properties as needed

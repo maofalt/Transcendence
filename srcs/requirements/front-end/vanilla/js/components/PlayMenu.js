@@ -23,6 +23,12 @@ export default class PlayMenu extends AbstractComponent {
 		Tournaments.onmouseover = (e) => this.darkenPannel(e, Tournaments);
 		Tournaments.onmouseleave = (e) => this.lightenPannel(e, Tournaments);
 
+
+
+		ClassicPong.shadowRoot.querySelector('#container').style.width = "100%";
+		OnlineRoom.shadowRoot.querySelector('#container').style.width = "100%";
+		Tournaments.shadowRoot.querySelector('#container').style.width = "100%";
+
 		const div = document.createElement('div');
 		div.id = "page";
 		div.appendChild(ClassicPong);

@@ -1,10 +1,7 @@
 import AbstractView from "./AbstractView";
-import DarkPannel from "@components/DarkPannel";
 import Pannel from "@components/Pannel";
-import HighLightButton from "@components/HighLightButton";
+import CustomButton from "@components/CustomButton";
 import BigTitle from "../components/BigTitle";
-import Navigation from "../components/Navigation";
-import ChillButton from "../components/ChillButton";
 import { createElement } from "@utils/createElement";
 import { htmlToElement } from "@utils/htmlToElement";
 import styles from '@css/Design.css?raw';
@@ -23,14 +20,31 @@ export default class Design extends HTMLElement {
 		this.shadowRoot.appendChild(styleEl);
 
 		let div = document.createElement('div');
-		const bigTitle = new BigTitle({content: "Cosmic<br>Pong"});
-		bigTitle.setAttribute("margin", "5vh 0 15vh 0");
-		bigTitle.setAttribute("margin-bottom", "300px");
-		div.appendChild(bigTitle);
-		const highLightButton = new HighLightButton({content: "Play !"});
-		div.appendChild(highLightButton);
-		const chillButton = new ChillButton({content : "Options"});
-		div.appendChild(chillButton);
+		let div1 = document.createElement('div');
+		let div2 = document.createElement('div');
+		let div3= document.createElement('div');
+		let div4 = document.createElement('div');
+
+		div1.id = "div1";
+		div2.id = "div2";
+		div3.id = "div3";
+		div4.id = "div4";
+
+		div.appendChild(div1);
+		div.appendChild(div2);
+		div.appendChild(div3);
+		div.appendChild(div4);
+
+		let glassPannel = new Pannel({title: "Pannel", dark: false});
+		let darkPannel = new Pannel({title: "Dark Pannel", dark: true});
+		let actionButton = new CustomButton({content: "Start", action: true});
+		let normalButton = new CustomButton({content: "Credits"});
+
+		div1.appendChild(glassPannel);
+		div1.appendChild(darkPannel);
+		div2.appendChild(actionButton);
+		div2.appendChild(normalButton);
+
 		this.shadowRoot.appendChild(div);
 	}
 
@@ -38,7 +52,7 @@ export default class Design extends HTMLElement {
 	connectedCallback() {
 		console.log('connectedCallback() called\n\n');
 		// this.highLightButton.onEvent((e) => this.buttonOnClick(e, "button clicked!"), "click");
-		this.highLightButton.onclick = (e) => this.buttonOnClick(e, "Play button clicked!");
+		// this.highLightButton.onclick = (e) => this.buttonOnClick(e, "Play button clicked!");
 		// this.chillButton.onclick = (e) => this.buttonOnClick(e, "Options button clicked!");
 		this.setupEventListeners(); // setup all event listeners for the page and track them
 	}

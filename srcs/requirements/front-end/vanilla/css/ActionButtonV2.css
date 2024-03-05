@@ -3,24 +3,24 @@
 	src: url('js/assets/fonts/Tk421-K7mv7.otf') format('opentype');
 }
 
-div {
+:host {
 	margin: 10px;
-	padding: 15px 50px;
+	/* padding: 15px 50px; */
+	width: 100%;
+	height: 100%;
 
-	width: 300px;
-
-	color: black;
+	display: flex;
+	flex-direction: column;
 	text-align: center;
+	justify-content: center;
+
+	color: white;
 	font-family: "tk-421";
 	font-size: 40px;
-	display: block;
 
 	/* From https://css.glass */
-	background: rgba(255, 255, 255, 1);
-	/* border-radius: 20px 0px 20px 0px; */
+	background: rgb(0, 217, 255);
 	border-radius: 20px;
-	box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-	backdrop-filter: blur(12px);
 	cursor: pointer;
 	transition: all 300ms;
 }
@@ -31,10 +31,9 @@ p {
 	/* transition: all 300ms; */
 }
 
-div:hover {
+:host(:hover) {
+	background: white;
 	color : rgb(0, 217, 255);
 	border-radius: 20px 0px 20px 0px;
 	transition: all 300ms;
-	/* font-size: 42px; */
 }
-

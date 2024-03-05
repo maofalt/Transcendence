@@ -10,4 +10,9 @@
 
 glass-pannel {
 	flex: 1;
+	border: 1px red solid;
+}
+
+glass-pannel:hover #container {
+	background: blue;
 }
