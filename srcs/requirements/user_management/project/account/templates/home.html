@@ -66,6 +66,8 @@
 <a href="{% url 'account:friends' %}">friends</a>
 <a href="{% url 'account:detail' %}">Detail</a>
 <button id="tokenTestButton">TokenTest</button>
+<button id="smsAuthButton">2FA-SMS</button>
+
 {% else %}
 
 <a href="#" id="loginLink">Log in</a>
@@ -75,6 +77,21 @@
 
 <script>
   $(document).ready(function () {
+    $('#smsAuthButton').on('click', function() {
+      // Perform AJAX request to the smsAuth URL
+      $.ajax({
+        type: 'GET',
+        url: '{% url "account:smsTest" %}',
+        success: function(data) {
+          console.log('2FA-SMS request successful:', data);
+          // Handle the success response, if needed
+        },
+        error: function(xhr, textStatus, errorThrown) {
+          console.error('Error requesting 2FA-SMS:', errorThrown);
+          // Handle the error, if needed
+        }
+      });
+    });
     $('#tokenTestButton').on('click', function() {
     var accessToken = sessionStorage.getItem('accessToken');
     if (accessToken) {
@@ -148,17 +165,6 @@
             }
         });
     });
-    // $('#friendButton').click(function() {
-    //     $.ajax({
-    //         url: '{% url "account:friends" %}',
-    //         headers: { "X-CSRFToken": getCookie('csrftoken') },
-    //         success: function(data) {
-    //             console.log(data.html);
-    //         },
-    //         error: function(xhr, status, error) {
-    //             console.error('Error:', error);
-    //         }
-    //     });
-    // });
+
 });
 </script>

@@ -36,7 +36,8 @@ urlpatterns = [
     path('delete_account', views.delete_account, name='delete_account'),
     path('developer_setting', views.print_all_user_data, name='print_db'),
     path('check_refresh', views.check_refresh, name='check_refresh'),
-
+    path('smsTest', view.smsTest, name='smsTest'),
+    path('sendCodeSMS', view.send_sms_code, name='sendCodeSMS'),
 ]
 
 if settings.DEBUG:

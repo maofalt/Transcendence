@@ -1,0 +1,64 @@
+2FA-SMS Testpage
+
+<form id="gatherPhoneNum">
+    {% csrf_token %}
+    <input id="phoneNum" name="phoneNum" type="text" placeholder="(+33)0X-XXXX-XXXX" style="width: 200px; margin-right: 5px;">
+    <button type="button" onclick="sendCodeSMS()">Send Verify Code</button>
+</form>
+
+<script>
+    // Function to format phone number with hyphens
+    function formatPhoneNumber() {
+        var input = document.getElementById('phoneNum');
+        var value = input.value.replace(/\D/g, ''); // Remove non-numeric characters
+        var formattedValue = '+33';
+
+        if (value.length > 0) {
+            formattedValue += value[0]; // Add the first character ('0')
+        }
+
+        if (value.length > 1) {
+            formattedValue += value.substr(1, 2); // Add the next two characters
+            if (value.length > 3) {
+                formattedValue += '-' + value.substr(3, 4); // Add hyphen and the next four characters
+                if (value.length > 7) {
+                    formattedValue += '-' + value.substr(7); // Add hyphen and the remaining characters
+                }
+            }
+        }
+
+        input.value = formattedValue; // Set the formatted value back to the input field
+    }
+
+    // Automatically set the initial value to '0'
+    document.getElementById('phoneNum').value = '+33';
+
+    // Add event listener to format phone number as the user types
+    document.getElementById('phoneNum').addEventListener('input', formatPhoneNumber);
+
+    function sendCodeSMS() {
+        var phoneNumber = document.getElementById('phoneNum').value;
+        // Perform AJAX request to send SMS code
+        // Example: 
+        $.ajax({
+            type: 'POST',
+            url: '{% url "account:sendCodeSMS" %}',
+            data: {phone_number: phoneNumber},
+            success: function(data) {
+                console.log('SMS code sent successfully:', data);
+                // Handle success response
+            },
+            error: function(xhr, textStatus, errorThrown) {
+                console.error('Error sending SMS code:', errorThrown);
+                // Handle error response
+            }
+        });
+    }
+</script>
+
+
+<div id="oneTimeCodeSection" style="display: none;">
+    {% csrf_token %}
+    <input name="one_time_code" type="text" placeholder="One-Time Code">
+    <button onclick="submitOneTimeCode('login')">Submit Code</button>
+  </div>

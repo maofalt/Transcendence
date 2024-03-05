@@ -52,6 +52,9 @@ from django.core.mail import send_mail
 from django.utils.crypto import get_random_string
 from django.contrib.sessions.models import Session
 from django.middleware.csrf import get_token
+import boto3
+from botocore.exceptions import ClientError
+
 
 #XSS protection
 from django.utils.html import escape
@@ -601,3 +604,44 @@ def print_all_user_data(request):
     context = {'users': all_users}
 
     return render(request, 'print_user_data.html', context)
+
+def smsTest(request):
+    return render('smsTest.html')
+
+
+sns_client = boto3.client('sns',
+                          aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+                          aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+                          region_name=settings.AWS_REGION)
+
+def is_valid_phone_number(phone_number):
+    # Regular expression to match a typical phone number format (e.g., +1234567890)
+    phone_number_pattern = r'^\+\d{1,15}$'
+    return bool(re.match(phone_number_pattern, phone_number))
+
+def send_sms_code(request, phone_number=None):
+    if request.method == 'POST':
+        if phone_number is None:
+            phone_number = request.POST.get('phone_number', None)
+        if not is_valid_phone_number(phone_number):
+            return JsonResponse({'success': False, 'error': 'Invalid phone number format'}, status=400)
+
+        one_time_code = generate_one_time_code()
+        request.session['one_time_code'] = one_time_code
+
+        print("\n\nCHECK CODE ON SESSION: ", request.session.get('one_time_code'))
+        message = f'Your one-time code is: {one_time_code}'
+        
+        try:
+            # Send the SMS message
+            response = sns_client.publish(
+                PhoneNumber=phone_number,
+                Message=message,
+            )
+            print("SMS message sent successfully:", response)
+            return JsonResponse({'success': True, 'message': 'SMS message sent successfully'})
+        except Exception as e:
+            print("Error sending SMS message:", e)
+            return JsonResponse({'success': False, 'error': 'Failed to send SMS message'})
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=400)

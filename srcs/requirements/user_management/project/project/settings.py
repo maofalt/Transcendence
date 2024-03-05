@@ -14,6 +14,10 @@ from pathlib import Path
 import os
 from datetime import timedelta
 import datetime
+import environ
+
+env = environ.Env()
+environ.Env.read_env()
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -97,6 +101,20 @@ JWT_BLACKLIST_AFTER_ROTATION = True
 SESSION_COOKIE_AGE = 3600
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
+# 2FA-EMAIL
+# email access setting
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'cscard1002@gmail.com'
+EMAIL_HOST_PASSWORD = 'dhefhwnswtqtldzz'
+
+# 2FA-SMS(AWS)
+AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY')
+AWS_REGION = env('AWS_REGION')
+
 ROOT_URLCONF = 'project.urls'
 
 TEMPLATES = [
@@ -155,13 +173,6 @@ CSRF_COOKIE_SECURE = True
 
 CSRF_COOKIE_SAMESITE = 'Lax'
 
-# email access setting
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'cscard1002@gmail.com'
-EMAIL_HOST_PASSWORD = 'dhefhwnswtqtldzz'
 
 
 SECURE_SSL_REDIRECT = True
