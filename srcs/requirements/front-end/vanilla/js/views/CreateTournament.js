@@ -23,31 +23,38 @@ export default class CreateTournament extends AbstractView {
     //         let gameSettings = this.getGameSettingsFromForm();
     //         console.log('Game Settings ANonymous:', gameSettings);
     //     });
-  
     //     let matchID = await this.createGame(gameSettings);
     //     console.log('Match ID:', matchID);
     //     this.game = new Game(matchID, 500, 830);
     //     await this.game.init();
     // }
 
+      
     async init() {
-      // Initialize the game with basic settings
-      let basicGameSettings = this.getBasicGameSettings();
-      console.log('Initializing game with basic settings:', basicGameSettings);
-      await this.initializeGame(basicGameSettings);
+      let matchID = await this.createGame(this.getBasicGameSettings());
+      console.log('Match ID:', matchID);
+      this.game = new Game(matchID, 500, 830);
+      this.game.init();
+    }
+
+  //   async init() {
+  //     // Initialize the game with basic settings
+  //     let basicGameSettings = this.getBasicGameSettings();
+  //     console.log('Initializing game with basic settings:', basicGameSettings);
+  //     await this.initializeGame(basicGameSettings);
   
-      // Add event listener for form submission
-      document.getElementById('tournament-form').addEventListener('submit', async (event) => {
-          event.preventDefault();
+  //     // Add event listener for form submission
+  //     document.getElementById('tournament-form').addEventListener('submit', async (event) => {
+  //         event.preventDefault();
           
-          // Get the game settings from the form
-          let gameSettings = this.getGameSettingsFromForm();
-          console.log('Updating game with new settings:', gameSettings);
+  //         // Get the game settings from the form
+  //         let gameSettings = this.getGameSettingsFromForm();
+  //         console.log('Updating game with new settings:', gameSettings);
           
-          // Re-initialize the game with new settings
-          await this.initializeGame(gameSettings);
-      });
-  }
+  //         // Re-initialize the game with new settings
+  //         await this.initializeGame(gameSettings);
+  //     });
+  // }
 
 // Helper method to initialize or update the game preview
     async initializeGame(gameSettings) {
