@@ -358,7 +358,7 @@ def delete_account(request):
 
 @login_required
 @csrf_protect
-def friend_view(request):
+def friends_view(request):
     user = request.user
     friends = user.friends.all()
 
@@ -386,30 +386,66 @@ def friend_view(request):
         if search_query:
             print(search_query)
             search_results = User.objects.filter(username__icontains=search_query)
-        html = render_to_string('friends.html')
-    return render(request, 'friends.html', {'friends': friend_data, 'search_query': search_query, 'search_results': search_results})
-    # return JsonResponse({'friends': friend_data, 'html': escape(html),'search_query': escape(search_query), 'search_results': search_results})
+
+    return JsonResponse({'friends': friend_data, 'search_query': escape(search_query), 'search_results': search_results})
+
+# @login_required
+# @csrf_protect
+# def detail_view(request):
+#     user = request.user
+#     game_stats = request.user.game_stats
+
+#     data = {
+#         'username': escape(user.username),
+#         'playername': escape(user.playername),
+#         # 'email': escape(user.email),
+#         'avatar': user.avatar.url if user.avatar else None,
+#         'friends_count': user.friends.count(),
+#         'game_stats': {
+#             'user': game_stats.user,
+#             'total_games_played': game_stats.total_games_played,
+#             'games_won': game_stats.games_won,
+#             'games_lost': game_stats.games_lost,
+#         }
+#     }
+#     return render(request, 'detail.html', {'data': data})
+
 
 @login_required
 @csrf_protect
 def detail_view(request):
-    user = request.user
-    game_stats = request.user.game_stats
+    access_token = request.headers.get('Authorization')  # Get the access token from the request headers
 
-    data = {
-        'username': escape(user.username),
-        'playername': escape(user.playername),
-        'email': escape(user.email),
-        'avatar': user.avatar.url if user.avatar else None,
-        'friends_count': user.friends.count(),
-        'game_stats': {
-            'user': game_stats.user,
-            'total_games_played': game_stats.total_games_played,
-            'games_won': game_stats.games_won,
-            'games_lost': game_stats.games_lost,
-        }
-    }
-    return JsonResponse(data)
+    if access_token:
+        decoded_token = jwt.decode(access_token.split()[1], settings.SECRET_KEY, algorithms=["HS256"])
+        print("\nDECODED: ", decoded_token)
+        user_id = decoded_token.get('user_id')
+
+        if user_id:
+            user = User.objects.filter(pk=user_id).first()
+
+            if user:
+                game_stats = user.game_stats
+                # Serialize user data
+                data = {
+                    'username': user.username,
+                    'playername': user.playername,
+                    'email': user.email,
+                    'avatar': user.avatar.url if user.avatar else None,
+                    'friends_count': user.friends.count(),
+                    'total_games_played': game_stats.total_games_played,
+                    'games_won': game_stats.games_won,
+                    'games_lost': game_stats.games_lost,
+                }
+
+                return JsonResponse(data)
+            else:
+                return JsonResponse({'error': 'User not found'}, status=404)
+        else:
+            return JsonResponse({'error': 'User ID not found in token'}, status=401)
+    else:
+        return JsonResponse({'error': 'Access token is missing'}, status=401)
+
 
 @login_required
 def add_friend(request, pk):
