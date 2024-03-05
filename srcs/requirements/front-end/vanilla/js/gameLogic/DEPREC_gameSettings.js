@@ -104,4 +104,3 @@ const player2 = {
 	roundState: false,
 }
 
-module.exports = { field, game, ball, paddles, paddle1, paddle2, score, player1, player2 };

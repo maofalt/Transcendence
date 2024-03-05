@@ -1,3 +1,4 @@
+
 class Vector {
 	constructor(x, y, z) {
 		this.x = x || 0;
@@ -126,4 +127,4 @@ function segmentsIntersect(p1, p2, p3, p4) {
 	return (-1);
 }
 
-module.exports = { Vector, segmentsIntersect };
+export default { Vector, segmentsIntersect };

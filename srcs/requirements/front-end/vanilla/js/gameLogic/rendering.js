@@ -1,7 +1,6 @@
-const { Vector } = require("./vectors");
-const vecs = require("./vectors");
-const init = require("./init");
-// const ioPointer = require("../app_remastered");
+import vecs from "./vectors";
+import init from "./init";
+
 
 // function ballHitsWall(data) {
 //     let potentialHitPoint, futureHitPos, hitScaler;
@@ -179,8 +178,8 @@ function updateBall(data) {
     } else {
         data.ball.sp *= 1.01;
     }
-    if (data.ball.pos.getDistFrom(new Vector(0, 0, 0)) > 100) {
-        data.ball.pos = new Vector(0, 0, 0);
+    if (data.ball.pos.getDistFrom(new vecs.Vector(0, 0, 0)) > 100) {
+        data.ball.pos = new vecs.Vector(0, 0, 0);
         data.ball.sp = data.ball.startingSp;
     }
 }
@@ -226,7 +225,7 @@ function handleScoring(data, player) {
         player.score--;
         if (player.score == 0) {
             eliminatePlayer(data, player);
-            data.ball.pos = new Vector(0, 0, 0);
+            data.ball.pos = new vecs.Vector(0, 0, 0);
             if (data.gamemode.nbrOfPlayers == 1) {
                 endGame(data, Object.values(data.players)[0]);
                 return -1;
@@ -241,7 +240,7 @@ function handleScoring(data, player) {
             return 1;
         }
     }
-    data.ball.pos = new Vector(0, 0, 0);
+    data.ball.pos = new vecs.Vector(0, 0, 0);
     return 0;
 }
 
@@ -286,4 +285,17 @@ function updateData(data) {
     return result;
 }
 
-module.exports = { updateData };
+export default { checkCorner, 
+				 ballHitsWallV2, 
+				 ballHitsPaddle,
+				 updatePaddlesPoints, 
+				 resetPaddlePoints, 
+				 handleDash, 
+				 updatePaddles, 
+				 updateBall, 
+				 endGame, 
+				 eliminatePlayer, 
+				 handleScoring, 
+				 checkForScoring, 
+				 updateData
+				};

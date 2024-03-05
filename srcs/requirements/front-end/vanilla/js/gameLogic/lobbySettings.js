@@ -47,4 +47,10 @@ function setPlayersData() {
 
 setPlayersData();
 
-module.exports = { lobbyData };
+export default { gamemodeSettings, 
+				 fieldSettings, 
+				 paddlesSettings, 
+				 ballSettings, 
+				 playerSettings, 
+				 lobbyData
+				};

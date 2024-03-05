@@ -58,5 +58,3 @@ function ballIsOut(data) {
 	}
 	return false;
 }
-
-module.exports = { ballHitsPaddle1, ballHitsPaddle2, ballHitsWall, ballIsOut };

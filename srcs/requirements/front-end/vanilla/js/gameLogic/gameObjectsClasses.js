@@ -1,5 +1,4 @@
-// const settings = require('./lobbySettings');
-const vecs = require('./vectors');
+import vecs from './vectors';
 
 class Camera {
     constructor() {
@@ -161,4 +160,12 @@ class Data {
 // Creating an instance of the Data class
 // const data = new Data(settings);
 
-module.exports = { Data };
+export default { Camera, 
+				 GameMode, 
+				 Field, 
+				 Wall, 
+				 Player, 
+				 Paddle, 
+				 Ball, 
+				 Data
+				};

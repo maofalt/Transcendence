@@ -1,10 +1,11 @@
-const objectsClasses = require('./gameObjectsClasses');
-const debugDisp = require('./debugDisplay');
-const { Vector } = require('./vectors');
+
+import objectsClasses from './gameObjectsClasses';
+import debugDisp from './debugDisplay';
+import vecs from './vectors';
 
 function initLoop(data, wallDist, goalDist, angle) {
     let startingAngle = -Math.PI/2; // the angle of the first player, each other player will be based on this, with the angle var as a step
-    let center = new Vector(0, 0, 0); // just for the code to be clearer
+    let center = new vecs.Vector(0, 0, 0); // just for the code to be clearer
 
 	let i = 0;
 	for (let player of Object.values(data.players)) {
@@ -115,4 +116,4 @@ function initLobby(lobbyData) {
     return data;
 }
 
-module.exports = { initLobby, initFieldShape };
+export default { initLoop, initWalls, initPaddles, initFieldShape, initLobby };

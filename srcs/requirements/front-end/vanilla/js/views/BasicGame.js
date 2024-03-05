@@ -9,13 +9,14 @@ import { createElement } from "@utils/createElement";
 import { htmlToElement } from "@utils/htmlToElement";
 import styles from '@css/BasicGame.css?raw';
 import AbstractComponent from '@components/AbstractComponent';
-import app_remastered from '@gameLogic/app_remastered';
+
+import gameSettings from '@gameLogic/gameSettings.json';
 
 // importing game logic code :
-import lobbySettings from '#gameLogic/lobbySettings';
-import init from '#gameLogic/init';
-import debugDisp from '#gameLogic/debugDisplay';
-import render from '#gameLogic/rendering';
+import lobbySettings from '@gameLogic/lobbySettings';
+import init from '@gameLogic/init';
+import debugDisp from '@gameLogic/debugDisplay';
+import render from '@gameLogic/rendering';
 
 
 class SpObject {
@@ -43,6 +44,7 @@ export default class BasicGame extends AbstractComponent {
 		this.shadowRoot.appendChild(styleEl);
 		
 		let div = document.createElement('div');
+		div.setAttribute("id", "gameContainer");
 		this.shadowRoot.appendChild(div);
 		// const bigTitle = new BigTitle({content: "Cosmic<br>Pong"});
 		// bigTitle.setAttribute("margin", "5vh 0 15vh 0");
@@ -55,11 +57,9 @@ export default class BasicGame extends AbstractComponent {
 		// this.shadowRoot.appendChild(div);
 		// this.highLightButton = highLightButton;
 		// // inject raw html into shadow dom
-		// // this.shadowRoot.innerHTML += `
-		// // <div>
-		// // 	<glass-pannel></glass-pannel>
-		// // 	<dark-glass-pannel></dark-glass-pannel>
-		// // </div>`;
+		// this.shadowRoot.innerHTML += `
+		// <div id="gameContainer">
+		// </div>`;
 
 
 		this.match = {};
@@ -113,18 +113,20 @@ export default class BasicGame extends AbstractComponent {
 		console.log("init Game View...");
 
 		// Set up the game container
-		this.container = document.getElementById('gameContainer');
+		this.container = this.shadowRoot.getElementById('gameContainer');
 		
 		// Your game setup logic here (init socket, create scene, etc.)
 		// this.generateScene();
 
 		// Initialize socket connection
-		this.initSocket();
+		// this.initSocket();
 
 		// Add event listeners (resize, key events, etc.)
 		window.addEventListener('resize', this.onWindowResize.bind(this), false);
 		window.addEventListener("keydown", this.handleKeyPress.bind(this));
 		window.addEventListener("keyup", this.handleKeyRelease.bind(this));
+
+		this.localconnection();
 	}
 
 	// this function gets called when the custom component is removed from the dom
@@ -159,16 +161,16 @@ export default class BasicGame extends AbstractComponent {
 	handleKeyPress(event) {
 		console.log(event.key);
 		if (event.key == "w")
-			this.socket.emit('moveUp');
+			this.localmoveUp();
 		if (event.key == "s")
-			this.socket.emit('moveDown');
+			this.localmoveDown();
 		if (event.key == "d")
-			this.socket.emit('dash');
+			this.localdash();
 	};
 
 	handleKeyRelease(event) {
 		if (event.key == "w" || event.key == "s")
-			this.socket.emit('stop');
+			this.localstop();
 	};
 
 
@@ -202,7 +204,7 @@ export default class BasicGame extends AbstractComponent {
 			this.updateScene(data);
 		// }
 		// console.log("FPS: " + 1000 / callTracker() + "fps");
-		fps = 1000 / callTracker();
+		// fps = 1000 / callTracker();
 		this.renderer.render(this.scene, this.camera);
 	};
 
@@ -263,13 +265,13 @@ export default class BasicGame extends AbstractComponent {
 		this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 		this.controls.target.set(0, 0, 0);
 
-		// get the direction to later rotate the scene relative to the current client
-		for (let i=0; i<data.playersArray.length; i++) {
-			if (data.playersArray[i].socketID == socket.id) {
-				console.log(`socket : ${data.playersArray[i].socketID}, client : ${socket.id}, ${i}, angle = ${data.playersArray[i].paddle.angle}`);
-				this.dir = i
-			}
-		}
+		// // get the direction to later rotate the scene relative to the current client
+		// for (let i=0; i<data.playersArray.length; i++) {
+		// 	if (data.playersArray[i].socketID == socket.id) {
+		// 		console.log(`socket : ${data.playersArray[i].socketID}, client : ${socket.id}, ${i}, angle = ${data.playersArray[i].paddle.angle}`);
+		// 	}
+		// }
+		this.dir = 0;
 
 		this.refreshScene(data);
 	};
@@ -277,6 +279,7 @@ export default class BasicGame extends AbstractComponent {
 	// Other methods (generateScene, updateScene, etc.) here
 	updateScene(data, socket) {
 		// console.log("Updating Scene...");
+		// console.log("data : ", data);
 		if (data.ball.model) {
 			this.ballModel.position.set(data.ball.pos.x, data.ball.pos.y, 0);
 			this.ballModel.rotateX((-Math.PI / 20) * data.ball.sp);
@@ -322,11 +325,13 @@ export default class BasicGame extends AbstractComponent {
 		this.prevScores = data.playersArray.map(player => -1);
 
 		// get the direction of the client to rotate the scores to face the client
-		for (let i = 0; i < data.playersArray.length; i++) {
-			if (data.playersArray[i].socketID === this.socket.id) {
-				this.dir = i;
-			}
-		}
+		// for (let i = 0; i < data.playersArray.length; i++) {
+		// 	if (data.playersArray[i].socketID === this.socket.id) {
+		// 		this.dir = i;
+		// 	}
+		// }
+
+		this.dir = 0;
 
 		if (!loader)
 			return console.error("FontLoader not found");
@@ -437,11 +442,11 @@ export default class BasicGame extends AbstractComponent {
 		let ballTexture;
 		let ballMaterial;
 
-		if (data.ball.model != "") {
-			console.log("LOAD STUFF");
-			this.loadBallModel(data);
-			return ;
-		}
+		// if (data.ball.model != "") {
+		// 	console.log("LOAD STUFF");
+		// 	this.loadBallModel(data);
+		// 	return ;
+		// }
 		console.log("DIDNT LOADGE");
 		if (data.ball.texture != "") {
 			ballTexture = new THREE.TextureLoader().load(`./js/assets/images/${data.ball.texture}.jpg`);
@@ -460,7 +465,7 @@ export default class BasicGame extends AbstractComponent {
 				data.ball.pos, 10, 0xff0000);
 
 		this.ball = new SpObject(new THREE.Mesh(ballGeometry, ballMaterial), dir1);
-		
+		console.log("ball: ", this.ball);
 		// add to scene
 		this.scene.add(this.ball.mesh);
 		// this.scene.add(this.ball.dirMesh);
@@ -618,17 +623,17 @@ export default class BasicGame extends AbstractComponent {
 	/* GAME LOGIC PREVIOUSLY BACKEND */
 
 	waitingLoop = () => {
-		let gameState = render.updateData(match.gameState);
+		let gameState = render.updateData(this.match.gameState);
 		if (gameState == 1) {
-			this.localdestroy(match.gameState);
-			this.localrefresh(match.gameState);
+			this.localdestroy(this.match.gameState);
+			this.localrefresh(this.match.gameState);
 		} else if (gameState == -1) {
-			this.localdestroy(match.gameState);
-			clearInterval(match.gameInterval);
+			this.localdestroy(this.match.gameState);
+			clearInterval(this.match.gameInterval);
 			return ;
 		} else {
 			// else if (gameState == 0) {
-			localrender(match.gameState);
+			this.localrender(this.match.gameState);
 		}
 	}
 
@@ -636,47 +641,49 @@ export default class BasicGame extends AbstractComponent {
 
 		console.log("\nCLIENT CONNECTED\n");
 
-		console.log('---DATA---\n', match.gameState, '\n---END---\n');
-		localgenerate(match.gameState);
+		console.log('---DATA---\n', this.match.gameState, '\n---END---\n');
+		this.localgenerate(this.match.gameState);
 		
-		match.gameInterval = setInterval(this.waitingLoop, 10);
-		match.gameState.ball.dir.y = -1;
-		match.gameState.ball.dir.x = 0.01;
+		this.match.gameInterval = setInterval(this.waitingLoop, 10);
+		this.match.gameState.ball.dir.y = -1;
+		this.match.gameState.ball.dir.x = 0.01;
 
 		console.log(`Player connected with ID: `);
 
 		// client.emit('generate', data);
-		// debugDisp.displayData(match.gameState);
+		// debugDisp.displayData(this.match.gameState);
 	}
 
 	// Set up Socket.IO event handlers
-	localconnection = (client) => {
+	localconnection = () => {
+		console.log("Socket connected");
+		this.initMatch();
 		//handle client connection and match init + players status
 		// console.log("\nclient:\n", client.decoded);
+		this.data = this.match.gameState;
 		this.handleConnectionV2();
-		data = match.gameState;
 	}
 
 	// player controls
 	localmoveUp = () => {
-		console.log(`client ${client.id} moving up`);
-		let player = data.players[client.playerID];
+		console.log(`client moving up`);
+		let player = this.data.players[0];
 		if (player && player.paddle && !player.paddle.dashSp) {
 			player.paddle.currSp = player.paddle.sp;
 		}
 	}
 
 	localmoveDown = () => {
-		console.log(`client ${client.id} moving down`);
-		let player = data.players[client.playerID];
+		console.log(`client moving down`);
+		let player = this.data.players[0];
 		if (player && player.paddle && !player.paddle.dashSp) {
 			player.paddle.currSp = -player.paddle.sp;
 		}
 	}
 
 	localdash = () => {
-		console.log(`client ${client.id} dashing`);
-		let player = data.players[client.playerID];
+		console.log(`client dashing`);
+		let player = this.data.players[0];
 		if (player && player.paddle && !player.paddle.dashSp) {
 			if (player.paddle.currSp == 0) {
 				// do something for this err case
@@ -688,8 +695,8 @@ export default class BasicGame extends AbstractComponent {
 	}
 
 	localstop = () => {
-		console.log(`client ${client.id} stopping`);
-		let player = data.players[client.playerID];
+		console.log(`client stopping`);
+		let player = this.data.players[0];
 		if (player && player.paddle && !player.paddle.dashing) {
 			player.paddle.currSp = 0;
 		}
@@ -698,36 +705,34 @@ export default class BasicGame extends AbstractComponent {
 	// disconnect event
 	localdisconnect = () => {
 		client.leave("gameRoom");
-		data.connectedPlayers--;
-		let player = data.players[client.playerID];
+		this.data.connectedPlayers--;
+		let player = this.data.players[0];
 		if (player)
 			player.connected = false;
-		if (data.connectedPlayers < 1) {
+		if (this.data.connectedPlayers < 1) {
 			console.log("CLEARING INTERVAL");
-			clearInterval(match.gameInterval);
-			matches.delete(client.matchID);
+			clearInterval(this.match.gameInterval);
+			// matches.delete(client.matchID);
 			// delete data;
 		}
 		console.log(`Client disconnected with ID: ${client.id})`);
 	}
 
-	generateMatchID = (gameSettings) => {
-		// Convert request content to a string representation
-		const string = JSON.stringify(gameSettings);
-		// Use SHA-256 to hash the string
-		return crypto.createHash('sha256').update(string).digest('hex');
-	}
+	// generateMatchID = (gameSettings) => {
+	// 	// Convert request content to a string representation
+	// 	const string = JSON.stringify(gameSettings);
+	// 	// Use SHA-256 to hash the string
+	// 	return crypto.createHash('sha256').update(string).digest('hex');
+	// }
 
 	// app.use(express.static('./public/remote/'));
-	initMatch = (gameSettings) => {
+	initMatch = () => {
 		// Convert game settings to game state
 		const gameState = init.initLobby(gameSettings);
 		
 		console.log("\nMATCH CREATED\n");
-		match = { gameState: gameState, gameInterval: 0 };
+		this.match = { gameState: gameState, gameInterval: 0 };
 	}
-
-	// module.exports = { io };
 
 }
 
