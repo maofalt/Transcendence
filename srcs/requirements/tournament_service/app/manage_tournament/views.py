@@ -119,18 +119,35 @@ class TournamentVisualization(APIView):
 # -------------------------------- Tournament Lifecycle --------------------------------------
 class TournamentStart(APIView):
     authentication_classes = [CustomJWTAuthentication]
-    permission_classes = [IsAuthenticated] 
+    permission_classes = [IsAuthenticated]
+
     def post(self, request, id):
         tournament = get_object_or_404(Tournament, pk=id)
+
+         # Verify if the user is the host of the tournament
+        if tournament.host.username != request.user:
+            return Response({"message": "Only the tournament host can start the tournament."}, status=403)
+
         # Update tournament state to start
+        tournament.state = "started"
+        tournament.save()
         return Response({"status": "Tournament started"})
+        
 
 class TournamentEnd(APIView):
     authentication_classes = [CustomJWTAuthentication]
     permission_classes = [IsAuthenticated]
+
     def post(self, request, id):
         tournament = get_object_or_404(Tournament, pk=id)
+
+        # Verify if the user is the host of the tournament
+        if tournament.host.username != request.user:
+            return Response({"message": "Only the tournament host can end the tournament."}, status=403)
+
         # Update tournament state to end
+        tournament.state = "ended"
+        tournament.save()
         return Response({"status": "Tournament ended"})
 
 
