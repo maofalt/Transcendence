@@ -49,6 +49,14 @@ http:
       service: "swagger-ui-service"
       tls:
         certResolver: "myresolver"
+    #SWAGGER EDITOR
+    swagger-editor:
+      rule: "Host(`HOST_IP`) && PathPrefix(`/api/docs-editor`)"
+      entryPoints:
+        - "websecure"
+      service: "swagger-editor-service"
+      tls:
+        certResolver: "myresolver"
     #GAMR FRONT END FOR DEVELOPMENT USING NODE.JS
     jsDev:
       rule: "Host(`HOST_IP`)"
@@ -122,6 +130,11 @@ http:
       loadBalancer:
         servers:
           - url: "http://swagger-ui:8080"
+
+    swagger-editor-service:
+      loadBalancer:
+        servers:
+          - url: "http://swagger-editor:8080"
 
     frontEnd:
       loadBalancer:

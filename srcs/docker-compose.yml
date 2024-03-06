@@ -38,7 +38,24 @@ services:
       - BASE_URL=/api/docs
     restart: unless-stopped
     volumes:
-      - ./api:/usr/share/nginx/html/spec/
+      - ./api/:/usr/share/nginx/html/spec/
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+        max-file: "3"
+
+  swagger-editor:
+    image: swaggerapi/swagger-editor
+    container_name: swagger-editor
+    networks:
+      - transcendence
+    environment:
+      - SWAGGER_JSON=/usr/share/nginx/html/spec/swagger.yaml
+      - BASE_URL=/api/docs-editor
+    restart: unless-stopped
+    volumes:
+      - ./api/:/usr/share/nginx/html/spec/
     logging:
       driver: json-file
       options:
