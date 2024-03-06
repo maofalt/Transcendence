@@ -3,6 +3,12 @@ from .models import User
 from django.contrib.auth.forms import PasswordChangeForm
 
 class ProfileUpdateForm(forms.ModelForm):
+    TWO_FACTOR_CHOICES = [
+        ('sms', 'SMS'),
+        ('email', 'Email'),
+    ]
+    two_factor_method = forms.ChoiceField(choices=TWO_FACTOR_CHOICES, required=False)
+
     class Meta:
         model = User
         fields = ['playername', 'avatar']
