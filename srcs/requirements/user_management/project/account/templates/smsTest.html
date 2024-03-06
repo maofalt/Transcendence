@@ -1,49 +1,66 @@
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
 2FA-SMS Testpage
 
 <form id="gatherPhoneNum">
     {% csrf_token %}
-    <input id="phoneNum" name="phoneNum" type="text" placeholder="(+33)0X-XXXX-XXXX" style="width: 200px; margin-right: 5px;">
+    <div style="position: relative;">
+        (+33)
+        <input name="phoneNum" type="text" placeholder="0X-XXXX-XXXX" oninput="formatPhoneNumber()">
+    </div>
     <button type="button" onclick="sendCodeSMS()">Send Verify Code</button>
 </form>
 
 <script>
-    // Function to format phone number with hyphens
+    function insertString(mainString, insertString, position) {
+        return mainString.slice(0, position) + insertString + mainString.slice(position);
+    }
     function formatPhoneNumber() {
-        var input = document.getElementById('phoneNum');
-        var value = input.value.replace(/\D/g, ''); // Remove non-numeric characters
-        var formattedValue = '+33';
+        var input = $("#gatherPhoneNum input[name='phoneNum']").val();
+        var value = input.replace(/\D/g, ''); // Remove non-numeric characters
+        var formattedValue = '';
 
-        if (value.length > 0) {
-            formattedValue += value[0]; // Add the first character ('0')
+        if (value.length == 1 && value[0] !== '0') {
+            value = '0' + value;
         }
+        formattedValue += value.substr(0, value.length);
+        if (value.length > 2) {
+            formattedValue = insertString(value, '-', 2);
+        }
+        if (value.length > 6) {
+            formattedValue = insertString(value, '-', 2);
+            formattedValue = insertString(formattedValue, '-', 7);
+        }
+        $("#gatherPhoneNum input[name='phoneNum']").val(formattedValue);// Set the formatted value back to the input field
+        console.log("[5]value: ", value, "formattedValue: ", formattedValue, "value.length: ", value.length )
 
-        if (value.length > 1) {
-            formattedValue += value.substr(1, 2); // Add the next two characters
-            if (value.length > 3) {
-                formattedValue += '-' + value.substr(3, 4); // Add hyphen and the next four characters
-                if (value.length > 7) {
-                    formattedValue += '-' + value.substr(7); // Add hyphen and the remaining characters
+    }
+    // Automatically set the initial value to '0'
+    // document.getElementById('phoneNum').value = '+33';
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
                 }
             }
         }
-
-        input.value = formattedValue; // Set the formatted value back to the input field
+    return cookieValue;
     }
 
-    // Automatically set the initial value to '0'
-    document.getElementById('phoneNum').value = '+33';
-
-    // Add event listener to format phone number as the user types
-    document.getElementById('phoneNum').addEventListener('input', formatPhoneNumber);
-
     function sendCodeSMS() {
-        var phoneNumber = document.getElementById('phoneNum').value;
-        // Perform AJAX request to send SMS code
-        // Example: 
+        var frNum = '+33'
+        var phoneNumber = frNum + $("#gatherPhoneNum input[name='phoneNum']").val().replace(/\D/g, '');
         $.ajax({
             type: 'POST',
             url: '{% url "account:sendCodeSMS" %}',
             data: {phone_number: phoneNumber},
+            headers: { "X-CSRFToken": getCookie('csrftoken') },
             success: function(data) {
                 console.log('SMS code sent successfully:', data);
                 // Handle success response

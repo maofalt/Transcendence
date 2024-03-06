@@ -62,7 +62,6 @@
 <p>Welcome {{ user.username }}</p>
 <button id="logoutButton" type="submit">Log out</button>
 {% csrf_token %}
-<!-- <button id="friendButton">Friends</button> -->
 <a href="{% url 'account:friends' %}">friends</a>
 <a href="{% url 'account:detail' %}">Detail</a>
 <button id="tokenTestButton">TokenTest</button>
@@ -78,17 +77,15 @@
 <script>
   $(document).ready(function () {
     $('#smsAuthButton').on('click', function() {
-      // Perform AJAX request to the smsAuth URL
       $.ajax({
         type: 'GET',
         url: '{% url "account:smsTest" %}',
         success: function(data) {
           console.log('2FA-SMS request successful:', data);
-          // Handle the success response, if needed
+          window.location.href = '{% url "account:smsTest" %}';
         },
         error: function(xhr, textStatus, errorThrown) {
           console.error('Error requesting 2FA-SMS:', errorThrown);
-          // Handle the error, if needed
         }
       });
     });
