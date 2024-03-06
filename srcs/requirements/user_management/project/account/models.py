@@ -11,6 +11,11 @@ class User(AbstractUser):
     friends = models.ManyToManyField('self', symmetrical=False, blank=True)
     game_stats = models.OneToOneField('gameHistory_microservice.GameStats', on_delete=models.CASCADE, null=True, blank=True, related_name='user_game_stats')
     phone = models.CharField(max_length=10, blank=True, null=True)
+    TWO_FACTOR_OPTIONS = [
+        ('sms', 'SMS'),
+        ('email', 'Email'),
+    ]
+    two_factor_method = models.CharField(max_length=10, choices=TWO_FACTOR_OPTIONS, default='email')
     # reset_token = models.CharField(max_length=100, blank=True, null=True)
 
     def add_friend(self, friend):
