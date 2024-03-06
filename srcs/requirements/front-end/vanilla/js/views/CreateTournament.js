@@ -48,10 +48,11 @@ export default class CreateTournament extends AbstractView {
     
       // Assuming the Game constructor or an update method can handle new settings
       if (!this.game) {
-          this.game = new Game(matchID, 500, 830);
+        this.game = new Game(matchID, 500, 830);
       } else {
-          this.game.destroy();
-          this.game = new Game(matchID, 500, 830);   
+        this.game.destroy();
+        this.game = new Game(matchID, 500, 830);  
+        document.getElementById('gameContainer').innerHTML = '';
       }
       await this.game.init(); // Make sure this can be safely called multiple times or after updating settings
       console.log('Game initialized');
@@ -88,13 +89,13 @@ export default class CreateTournament extends AbstractView {
                             required
                             placeholder="Enter tournament name">
 
-                        <label for="nbr_of_players">Number of Players:</label>
+                        <label for="nbr_of_players_per_tournament">Number of Players:</label>
                         <input 
                             type="range" 
                             id="nbr_of_players" 
                             name="nbr_of_players" 
                             min="2" 
-                            max="8" 
+                            max="8"
                             value="2"
                             required
                             oninput="this.nextElementSibling.value = this.value">
@@ -131,8 +132,16 @@ export default class CreateTournament extends AbstractView {
                         <span class="slider round"></span>
                       </label>
 
-                      <label for="nbr_of_players">Number of Players (2-8):</label>
-                      <input type="range" id="nbr_of_players" name="nbr_of_players" min="2" max="8" value="5">
+                      <label for="nbr_of_players_per_match">Number of Players (2-8):</label>
+                      <input 
+                        type="range" 
+                        id="nbr_of_players_per_match"
+                        name="nbr_of_players_per_match"
+                        min="2" 
+                        max="30" 
+                        value="5"
+                        oninput="this.nextElementSibling.value = this.value">
+                        >
 
                       <label for="nbr_of_rounds">Number of Rounds:</label>
                       <input type="range" id="nbr_of_rounds" name="nbr_of_rounds" min="1" max="10" value="10">
@@ -184,7 +193,7 @@ export default class CreateTournament extends AbstractView {
     getGameSettingsFromForm() {
       let gameSettings = {
         "gamemodeData": {
-          "nbrOfPlayers": parseInt(document.getElementById('nbr_of_players').value, 10),
+          "nbrOfPlayers": parseInt(document.getElementById('nbr_of_players_per_match').value, 10),
           "nbrOfRounds": parseInt(document.getElementById('nbr_of_rounds').value, 10),
           "timeLimit": parseInt(document.getElementById('time_limit').value, 10)
         },
@@ -210,6 +219,7 @@ export default class CreateTournament extends AbstractView {
         ]
       }
 
+      console.log('Game settings from form recovered');
       // Add dummy players data in gameSetting depending on the number of players
       let nbr_of_players = gameSettings.gamemodeData.nbrOfPlayers;
       let dummyPlayeName = 'banana';
@@ -221,6 +231,7 @@ export default class CreateTournament extends AbstractView {
         }
         gameSettings.playersData.push(dummyPlayer);
       }
+      console.log('Game settings automatically:', gameSettings);
       
       return gameSettings;
     }
