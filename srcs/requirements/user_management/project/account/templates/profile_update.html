@@ -16,24 +16,60 @@
   <form id="update-form" method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ user_form.as_p }}
+
+    <!-- <p>user{{ user_form.two_factor_method }}</p> -->
+    <p>2FA Setting</p>
+    <div>
+      <input type="checkbox" id="enable-2fa-on" name="two_factor_enabled" value="on">
+      <label for="enable-2fa-on">ON</label>
+      <input type="checkbox" id="enable-2fa-off" name="two_factor_enabled" value="off">
+      <label for="enable-2fa-off">OFF</label>
+    </div>
+    <div id="2fa-method-container" style="display: none;">
+      <label for="two-factor-method">2FA Method:</label>
+      <select id="two-factor-method" name="two_factor_method">
+        <option value="sms">SMS</option>
+        <option value="email">Email</option>
+      </select>
+    </div>
     <button type="submit">Update Profile</button>
   </form>
 
   <p><a href="{% url 'account:password_update' %}">Change Password</a></p>
 
   <script>
+    var enable2faOnCheckbox = document.getElementById("enable-2fa-on");
+    var enable2faOffCheckbox = document.getElementById("enable-2fa-off");
+    var methodContainer = document.getElementById("2fa-method-container");
+
+    enable2faOnCheckbox.addEventListener("change", function(event) {
+      methodContainer.style.display = enable2faOnCheckbox.checked ? "block" : "none";
+      enable2faOffCheckbox.checked = !enable2faOnCheckbox.checked;
+    });
+
+    enable2faOffCheckbox.addEventListener("change", function(event) {
+      enable2faOnCheckbox.checked = !enable2faOffCheckbox.checked;
+    });
+
     document.getElementById("update-form").addEventListener("submit", function(event) {
       event.preventDefault();
       
       var form = document.getElementById("update-form");
       var formData = new FormData(form);
       
+      // If 2FA is enabled, include the selected method in the form data
+      if (enable2faOnCheckbox.checked) {
+        var selectedMethod = document.getElementById("two-factor-method").value;
+        formData.append('two_factor_method', selectedMethod);
+      } else {
+        // If 2FA is disabled, set the method to None
+        formData.append('two_factor_method', '');
+      }
+      console.log("formData: ", formData);
       fetch("{% url 'account:profile_update' %}", {
         method: "POST",
         body: formData,
-        headers: {
-          'X-CSRFToken': '{{ csrf_token }}'
-        }
+        headers: { "X-CSRFToken": "{{ csrf_token }}" },
       })
       .then(response => response.json())
       .then(data => {
@@ -49,4 +85,5 @@
       });
     });
   </script>
+
 {% endblock %}

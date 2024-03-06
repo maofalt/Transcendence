@@ -416,6 +416,7 @@ def detail_view(request):
         # 'email': escape(user.email),
         'avatar': user.avatar.url if user.avatar else None,
         'friends_count': user.friends.count(),
+        'two_factor_method': user.two_factor_method,
         'game_stats': {
             'user': game_stats.user,
             'total_games_played': game_stats.total_games_played,
@@ -514,18 +515,19 @@ def remove_friend(request, pk):
 @login_required
 @csrf_protect
 def profile_update_view(request):
+    user = request.user
     if request.method == 'POST':
         user_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user)
-        
         if user_form.is_valid():
             user = user_form.save(commit=False)
+            if 'two_factor_method' in request.POST:
+                print("2fa method option found!", request.POST['two_factor_method'])
+                user.two_factor_method = request.POST['two_factor_method']
             if User.objects.filter(playername=user.playername).exclude(username=request.user.username).exists():
-                messages.error(request, 'Playername already exists. Please choose a different one.')
-                return redirect('account:profile_update')
+                return JsonResponse({'error': 'Playername already exists. Please choose a different one.'})
             else:
                 user.save()    
-                messages.success(request, 'Your profile has update.')
-                return redirect('account:detail')
+                return JsonResponse({'success': 'Your profile has been updated.'})
     else:
         user_form = ProfileUpdateForm(instance=request.user)
 
