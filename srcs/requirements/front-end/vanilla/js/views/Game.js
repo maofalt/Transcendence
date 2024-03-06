@@ -466,11 +466,11 @@ export default class Game extends AbstractView {
 		let ballTexture;
 		let ballMaterial;
 
-		if (data.ball.model != "") {
-			console.log("LOAD STUFF");
-			this.loadBallModel(data);
-			return ;
-		}
+		// if (data.ball.model != "") {
+		// 	console.log("LOAD STUFF");
+		// 	this.loadBallModel(data);
+		// 	return ;
+		// }
 		console.log("DIDNT LOADGE");
 		if (data.ball.texture != "") {
 			ballTexture = new THREE.TextureLoader().load(`./js/assets/images/${data.ball.texture}.jpg`);
