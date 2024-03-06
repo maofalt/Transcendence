@@ -1,0 +1,136 @@
+/* css file for login page */
+
+#signupPopup {
+	display: none;
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	background: #fff;
+	padding: 20px;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+	z-index: 9999;
+	max-width: 300px; /* Adjust the maximum width as needed */
+	width: 50%;
+	border-radius: 8px; /* Add border-radius for rounded corners */
+}
+
+#loginPopup,
+#sigupPopup {
+	display: none;
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	background: #fff;
+	padding: 20px;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+	z-index: 9999;
+	max-width: 300px; /* Adjust the maximum width as needed */
+	width: 50%;
+	border-radius: 8px; /* Add border-radius for rounded corners */
+}
+
+#loginPopup h2,
+#signupPopup h2 {
+	color: #333; /* Change the heading text color */
+	}
+
+#loginPopup input,
+#signupPopup input {
+	width: 100%;
+	padding: 10px;
+	margin-bottom: 10px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	box-sizing: border-box;
+	}
+
+#loginPopup input[type="submit"],
+#signupPopup input[type="submit"] {
+	background-color: #4CAF50;
+	color: #fff; 
+	cursor: pointer;
+	}
+
+#loginPopup input[type="submit"]:hover,
+#signupPopup input[type="submit"]:hover {
+	background-color: #45a049;
+	}
+
+#signupButton:disabled {
+	background-color: grey !important;
+	cursor: not-allowed !important;
+}
+
+#signupButton:enabled {
+	background-color: green !important;
+	cursor: pointer !important;
+}
+
+#darkLayer {
+	display: none;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.3);
+	z-index: 9998;
+}
+
+#privacyPolicyPopup {
+	display: none;
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	background: #fff;
+	padding: 20px;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+	z-index: 9999;
+	width: 300px;
+	max-height: 400px;
+	overflow-y: auto;
+}
+
+/* extracted from html */
+#darkLayer {
+}
+
+#closeLoginPopup, #closeForgotPasswordModal, #closeSignupPopup, #closePrivacyPolicyPopup {
+	float: right;
+	cursor: pointer;
+}
+
+#errorMessage, #signupPopupError, #confirmPasswordError, #successMessage {
+	color: red;
+}
+
+#successMessage {
+	color: green;
+	margin-top: 5px;
+}
+
+input[name="username_f"] {
+	width: 200px;
+	margin-right: 5px;
+}
+
+input[name="signupEmail"], input[name="access_code"] {
+	width: 200px;
+	margin-right: 5px;
+}
+
+#privacyPolicyPopup {
+}
+
+
+/* style to fade elements in and out of view (see utils/fade.js */
+.fade {
+	transition: opacity 0.5s ease;
+	opacity: 0;
+}
+.fade.in {
+	opacity: 1;
+}

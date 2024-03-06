@@ -1,4 +1,4 @@
-import '@css/tournament.css'
+// import '@css/tournament.css'
 import AbstractView from "./AbstractView";
 import DynamicTable from "@components/DynamicTable";
 import ActionButton from "@components/ActionButton";
@@ -171,7 +171,8 @@ export default class Tournament extends AbstractView {
 			"ballData": {
 			  "speed": 0.7,
 			  "radius": 1,
-			  "color": "0xffffff"
+			  "color": "0xffffff",
+			  "texture": "yridgway",
 			},
 			"playersData": [
 			  {
@@ -179,7 +180,7 @@ export default class Tournament extends AbstractView {
 				"color": "0x0000ff"
 			  },
 			  {
-				"accountID": "tata2",
+				"accountID": "yridgway",
 				"color": "0x00ff00"
 			  },
 			  {

@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 import os
 from datetime import timedelta
+import datetime
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -77,12 +79,23 @@ REST_FRAMWORK = {
 	)
 }
 
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=500),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
-    'ROTATE_REFRESH_TOKENS': False,
-    'BLACKLIST_AFTER_ROTATION': True,
-}
+
+#jwt token is realated on session, so when browser closed, session
+JWT_EXPIRATION_DELTA = datetime.timedelta(minutes=1)
+JWT_REFRESH_EXPIRATION_DELTA = datetime.timedelta(days=14)
+# Store access token in a cookie
+JWT_AUTH_COOKIE = True
+# Mark cookie containing access token as secure
+JWT_COOKIE_SECURE = True
+JWT_COOKIE_SAMESITE = 'Strict'
+JWT_ALGORITHM = 'RS256'
+JWT_AUTH_HEADER_PREFIX = 'Token'
+JWT_ROTATE_REFRESH_TOKENS = True
+JWT_BLACKLIST_AFTER_ROTATION = True
+
+# session cookie lifetime set as an hour
+SESSION_COOKIE_AGE = 3600
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 ROOT_URLCONF = 'project.urls'
 
@@ -153,6 +166,20 @@ EMAIL_HOST_PASSWORD = 'dhefhwnswtqtldzz'
 
 SECURE_SSL_REDIRECT = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Headers for security
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_BROWSER_XSS_FILTER = True
+
+SECURE_REFERRER_POLICY = 'same-origin'
+
+# HSTS(HTTP Strict Transport Security)
+SECURE_HSTS_SECONDS = 31536000  # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+
+# CSP(Content Security Policy)
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/

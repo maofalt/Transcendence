@@ -6,6 +6,8 @@ import Game from '@views/Game.js';
 import Login from '@views/Login.js';
 import NotFound from '@views/NotFound.js';
 import CreateTournament from '@views/CreateTournament.js';
+import User from '@views/User';
+import Design from '@views/Design.js';
 
 
 export const routes = {
@@ -51,6 +53,19 @@ export const routes = {
 		title: 'Login',
 		buttonText: 'Login'
 	},
+	'/user': {
+		path: '/user',
+		view: User,
+		title: 'Profile Page',
+		buttonText: 'Profile'
+	},
+	'/design': {
+		path: '/design',
+		view: Design,
+		title: 'Design',
+		buttonText: 'Design',
+		component: 'design-page'
+	},
 	'/404': {
 		path: '/404',
 		view: NotFound,
@@ -63,36 +78,37 @@ let currentView = null;
 
 export const navigateTo = (url) => {
   history.pushState(null, null, url);
+  console.log('url: ', url);
   router();
 };
 
 const router = async () => {
   const path = window.location.pathname;
   const View = routes[path] || routes['/404'];
+  const viewContainer = document.querySelector('#view');
 
-  if (currentView && currentView.destroy && currentView !== View) {
-    currentView.destroy();
-  }
+  if (View.component) {
+	viewContainer.innerHTML = `<${View.component}></${View.component}>`;
+  } else {
+	console.log('path: ', path);
 
-  currentView = new View.view();
+	if (currentView && currentView.destroy && currentView !== View) {
+		currentView.destroy();
+	}
 
-  document.querySelector('#view').innerHTML = await currentView.getHtml();
-  document.title = View.title;
-  if (currentView.init) {
-    currentView.init();
+	currentView = new View.view();
+
+	document.querySelector('#view').innerHTML = await currentView.getHtml();
+	document.title = View.title;
+    if (currentView.init) {
+        currentView.init();
+    }
   }
 };
 
 window.addEventListener("popstate", router);
 
 document.addEventListener('DOMContentLoaded', () => {
-  document.body.addEventListener('click', event => {
-    if (event.target.matches('[nav-link]')) {
-      event.preventDefault();
-      if (event.target.href !== document.URL)
-        navigateTo(event.target.href);
-    }
-  });
   router();
 });
 

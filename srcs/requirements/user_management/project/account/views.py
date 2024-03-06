@@ -13,31 +13,36 @@ from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import csrf_exempt, csrf_protect
+from django.views.decorators.csrf import csrf_exempt, csrf_protect, ensure_csrf_cookie
 from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db import transaction
+from django.utils import timezone
 from django.urls import reverse, reverse_lazy
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_decode
 from django.views.generic.edit import FormView
+from urllib.parse import urljoin
 import secrets
 import requests
-
 import logging
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 # from django.utils.encoding import force_bytes, force_str
 
 #JWT
 from rest_framework.views import APIView
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .models import User
 from .serializers import UserSerializer, AnonymousUserSerializer
+from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework_simplejwt.tokens import RefreshToken
 import jwt
+import datetime
+import pytz
 from django.conf import settings
 # 2FA
 import json
@@ -48,26 +53,74 @@ from django.utils.crypto import get_random_string
 from django.contrib.sessions.models import Session
 from django.middleware.csrf import get_token
 
+#XSS protection
+from django.utils.html import escape
+
 logger = logging.getLogger(__name__)
 User = get_user_model()
 
 def home(request):
     return render(request, 'home.html')
 
-def get_token_for_user(user):
-    refresh = RefreshToken.for_user(user)
-    refresh['username'] = user.username
+# call this function from frontend everytime user calls any API
+def check_refresh(request):
+    accessToken = request.headers.get('Authorization', None)
+    refreshToken = request.COOKIES.get('refreshToken', None)
+    print("accessToken print: ", str(accessToken))
+    # if not accessToken or not refreshToken:
+    #     return JsonResponse({'error': 'Missing tokens'}, status=400)
 
-    return str(refresh.access_token)
+    if not accessToken:
+        return JsonResponse({'error': 'Authorization header is missing'}, status=400)
+    if not refreshToken:
+        return JsonResponse({'error': 'Refresh token is missing'}, status=400)
+
+    try:
+        decoded_token = jwt.decode(accessToken.split()[1], settings.SECRET_KEY, algorithms=["HS256"])
+        exp_timestamp = decoded_token['exp']
+        exp_datetime = datetime.datetime.utcfromtimestamp(exp_timestamp).replace(tzinfo=datetime.timezone.utc)
+        print("exp_datetime: ", exp_datetime)
+        
+        return JsonResponse({'message': 'Access token is still valid'})
+
+    except jwt.ExpiredSignatureError:
+        print("Access token has expired")
+        try:
+            decoded_refresh_token = jwt.decode(refreshToken, settings.SECRET_KEY, algorithms=["HS256"])
+            print("DECODED REFRESHTOKEN: ", decoded_refresh_token)
+            uid = decoded_refresh_token['user_id']
+            user = User.objects.get(pk=uid)
+            refresh = RefreshToken(refreshToken)
+            access = refresh.access_token
+            access['username'] = user.username
+            new_accessToken = str(access)
+
+            # Set new access token in response header
+            response = JsonResponse({'message': 'New access token generated'})
+            response['Authorization'] = f'Bearer {new_accessToken}'
+            return response
+        # return JsonResponse({'error': 'Access token has expired'}, status=401)
+        except jwt.ExpiredSignatureError:
+            return JsonResponse({'error': 'Access/Refresh token has expired'}, status=401)
+
+    except jwt.InvalidTokenError:
+        print("Invalid token")
+        return JsonResponse({'error': 'Invalid token'}, status=401)
+
+    except Exception as e:
+        print("An error occurred:", e)
+        return JsonResponse({'error': 'An error occurred while processing the request'}, status=500)
 
 def privacy_policy_view(request):
     return render(request, 'privacy_policy.html')
 
+@api_view(['POST'])
+@ensure_csrf_cookie
+@csrf_protect
 def api_login_view(request):
     print("\n\n       URL:", request.build_absolute_uri())
 
-    secret_key = settings.SECRET_KEY
-    if request.method == "POST":
+    if request.method == "POST": 
         username = request.POST["username"]
         password = request.POST["password"]
         user = authenticate(username=username, password=password)
@@ -87,32 +140,50 @@ def api_login_view(request):
             
             send_one_time_code(request, user.email)
             
-            token = get_token_for_user(user)
-            response = JsonResponse({'message': 'Password Authentication successful', 'user': serializer.data, 'redirect_url': redirect_url, 'requires_2fa': True})
-            response.set_cookie(
-                key='jwtToken',
-                value=token,
-                httponly=True,
-                samesite='Lax'
-            )
-            print("\ntoken: ", token)
-            try:
-                decoded_token = jwt.decode(token, secret_key, algorithms=["HS256"])
-                print("Decoded Token:", decoded_token)
-                return response
-            except jwt.ExpiredSignatureError:
-                return JsonResponse({'error': 'Token has expired'}, status=400)
-            except jwt.InvalidTokenError:
-                return JsonResponse({'error': 'Invalid token'}, status=400)
+            return generate_tokens_and_response(user)
         else:
             print("Authentication failed")
-            return JsonResponse({'error': 'Authentication failed: Wrong user data'}, status=400)
-    return JsonResponse({'error': 'Invalid request method'}, status=400)
+            return JsonResponse({'error': escape('Authentication failed: Wrong user data')}, status=400)
+    return JsonResponse({'error': escape('Invalid request method')}, status=400)
+
+
+def generate_tokens_and_response(user):
+    accessToken = AccessToken.for_user(user)
+    accessToken['username'] = user.username
+
+    refreshToken = RefreshToken.for_user(user)
+
+    response = JsonResponse({
+        'success' : True,
+        'message': escape('Password Authentication successful'),
+        # 'redirect_url': escape(redirect_url),
+        'requires_2fa': True
+    })
+
+    response['Authorization'] = f'Bearer {str(accessToken)}'
+    response.set_cookie('refreshToken', refreshToken, httponly=True, secure=True, samesite='Strict')
+
+    try:
+        secret_key = settings.SECRET_KEY
+
+        print("original ACCESS TOKEN: ", str(accessToken))
+        print("original REFRESH TOKEN: ", str(refreshToken))
+        decodedToken = jwt.decode(str(accessToken), secret_key, algorithms=["HS256"])
+        local_tz = pytz.timezone('Europe/Paris')
+        exp_timestamp_accessToken = decodedToken['exp']
+        exp_accessToken = datetime.datetime.fromtimestamp(exp_timestamp_accessToken, tz=pytz.utc).astimezone(local_tz).strftime('%Y-%m-%d %H:%M:%S')
+        print("Expiration time of ACCESS token:", exp_accessToken)
+
+        return response
+    except jwt.ExpiredSignatureError:
+        return JsonResponse({'error': escape('Token has expired')}, status=400)
+    except jwt.InvalidTokenError:
+        return JsonResponse({'error': escape('Invalid token')}, status=400)
 
 def generate_one_time_code():
     return get_random_string(length=6, allowed_chars='1234567890')
 
-@csrf_exempt
+@csrf_protect
 def send_one_time_code(request, email=None):
     if email is None and request.method == 'POST':
         email = request.POST.get('email', None)
@@ -121,7 +192,7 @@ def send_one_time_code(request, email=None):
 
     print("\n\nCHECK CODE ON SESSION: ", request.session.get('one_time_code'))
     subject = 'Your Access Code for PONG'
-    message = f'Your one-time code is: {one_time_code}'
+    message = f'Your one-time code is: {escape(one_time_code)}'
     from_email = 'no-reply@student.42.fr' 
     to_email = email
     send_mail(subject, message, from_email, [to_email])
@@ -136,6 +207,7 @@ def verify_one_time_code(request):
         submitted_code = request.POST.get('one_time_code')
         stored_code = request.session.get('one_time_code')
         context = request.POST.get('context')
+        print("REQUEST CODE: ", request.POST)
         print("\n\ncode from Session : ", stored_code)
         print("code from User : ", submitted_code, '\n\n')
         pending_username = request.session.get('pending_username')
@@ -148,13 +220,13 @@ def verify_one_time_code(request):
                     user.is_online = True
                     print(f"Is Online: {user.is_online}")
                     user.save()
-                return JsonResponse({'success': True, 'message': 'One-time code verification successful', 'csrf_token': csrf_token})
+                return JsonResponse({'success': True, 'message': escape('One-time code verification successful'), 'csrf_token': csrf_token})
             else:
-                return JsonResponse({'success': False, 'error': 'One-time code verification failed', 'csrf_token': csrf_token}, status=400)
+                return JsonResponse({'success': False, 'error': escape('One-time code verification failed'), 'csrf_token': csrf_token}, status=400)
         else:
-            return JsonResponse({'success': False, 'error': 'User authentication not found'}, status=400)
+            return JsonResponse({'success': False, 'error': escape('User authentication not found')}, status=400)
 
-    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=400)
+    return JsonResponse({'success': False, 'error': escape('Invalid request method')}, status=400)
 
 def get_serializer(user):
     if user.is_authenticated:
@@ -162,7 +234,7 @@ def get_serializer(user):
     else:
         return AnonymousUserSerializer()
 
-@csrf_exempt
+@csrf_protect
 @login_required
 def api_logout_view(request):
     if request.method == 'POST':
@@ -173,9 +245,9 @@ def api_logout_view(request):
         serializer = get_serializer(request.user)
         return redirect('/api/user_management/')
     else:
-        return JsonResponse({'error': 'Invalid request method'}, status=400)
+        return JsonResponse({'error': escape('Invalid request method')}, status=400)
 
-@csrf_exempt
+@csrf_protect
 def api_signup_view(request):
     if request.method == "POST":
         username = request.POST["username"]
@@ -186,18 +258,18 @@ def api_signup_view(request):
         try:
             validate_password(password, user=User(username=username))
         except ValidationError as e:
-            return JsonResponse({'success': False, 'error_message': e.messages[0]})
+            return JsonResponse({'success': False, 'error': e.messages[0]})
 
         try:
             validate_email(email)
         except ValidationError:
-            return JsonResponse({'success': False, 'error_message': 'Invalid email'})
+            return JsonResponse({'success': False, 'error': escape('Invalid email')})
 
         if User.objects.filter(username=username).exists():
-            return JsonResponse({'success': False, 'error_message': 'Username already exists'})
+            return JsonResponse({'success': False, 'error': escape('Username already exists')})
 
         if User.objects.filter(playername=playername).exists():
-            return JsonResponse({'success': False, 'error_message': 'Playername already exists'})
+            return JsonResponse({'success': False, 'error': escape('Playername already exists')})
 
         user = User(
             username=username,
@@ -210,7 +282,7 @@ def api_signup_view(request):
         try:
             user.save()
         except IntegrityError as e:
-            return JsonResponse({'success': False, 'error_message': 'User creation failed.'})
+            return JsonResponse({'success': False, 'error': escape('User creation failed.')})
 
         if user.game_stats is None:
             game_stats = GameStats.objects.create(
@@ -221,12 +293,16 @@ def api_signup_view(request):
                 games_lost=0
             )
             user.game_stats = game_stats
-            print("\n\nGAMES STATS : user", user.game_stats.user)
             user.save()
         print(" >>  User created successfully.")
-        return JsonResponse({'success': True})
 
-    return JsonResponse({'success': False, 'error_message': 'Invalid request method'}, status=400)
+        login(request, user)
+        user.is_online = True
+        user.save()
+        return generate_tokens_and_response(user)
+        # return JsonResponse({'success': True})
+
+    return JsonResponse({'success': False, 'error': escape('Invalid request method')}, status=400)
 
 
 
@@ -268,34 +344,68 @@ def delete_account(request):
                 username = decoded_token.get('username')
                 send_notification_to_microservices(username)
             except jwt.ExpiredSignatureError:
-                return JsonResponse({'error': 'Token has expired'}, status=400)
+                return JsonResponse({'error': escape('Token has expired')}, status=400)
             except jwt.InvalidTokenError:
-                return JsonResponse({'error': 'Invalid token'}, status=400)
+                return JsonResponse({'error': escape('Invalid token')}, status=400)
         
-        return JsonResponse({'success': True, 'message': 'Account deleted successfully'})
+        return JsonResponse({'success': True, 'message': escape('Account deleted successfully')})
     except Exception as e:
         logger.error(f"Error deleting account: {str(e)}")
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 
 @login_required
+@csrf_protect
 def friend_view(request):
     user = request.user
     friends = user.friends.all()
+
+    friend_data = []
+    for friend in friends:
+        avatar_url = None
+        if friend.avatar:
+            avatar_url = urljoin(settings.MEDIA_URL, friend.avatar.url)
+        friend_info = {
+            'username': friend.username,
+            'playername': friend.playername,
+            'avatar': avatar_url,
+            'pk': friend.pk,
+            'game_stats': {
+                'total_games_played': friend.game_stats.total_games_played,
+                'games_won': friend.game_stats.games_won,
+                'games_lost': friend.game_stats.games_lost
+            }
+        }
+        friend_data.append(friend_info)
 
     search_query = request.GET.get('search')
     search_results = []
     if search_query:
         print(search_query)
         search_results = User.objects.filter(username__icontains=search_query)
-        # friends = friends.filter(username__icontains=search_query)
 
-    return render(request, 'friends.html', {'friends': friends, 'search_query': search_query, 'search_results': search_results})
+    return render(request, 'friends.html', {'friends': friend_data, 'search_query': search_query, 'search_results': search_results})
 
 @login_required
+@csrf_protect
 def detail_view(request):
+    user = request.user
     game_stats = request.user.game_stats
-    return render(request, 'detail.html')
+
+    data = {
+        'username': user.username,
+        'playername': user.playername,
+        'email': user.email,
+        'avatar': user.avatar.url if user.avatar else None,
+        'friends_count': user.friends.count(),
+        'game_stats': {
+            'user': game_stats.user,
+            'total_games_played': game_stats.total_games_played,
+            'games_won': game_stats.games_won,
+            'games_lost': game_stats.games_lost,
+        }
+    }
+    return render(request, 'detail.html', {'data': data})
 
 @login_required
 def add_friend(request, pk):
@@ -310,6 +420,7 @@ def remove_friend(request, pk):
     return redirect('account:friend')
 
 @login_required
+@csrf_protect
 def profile_update_view(request):
     if request.method == 'POST':
         user_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user)
@@ -358,7 +469,7 @@ def send_password_reset_link(request):
         try:
             user = User.objects.get(username=username)
         except User.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'User not found'})
+            return JsonResponse({'success': False, 'error': escape('User not found')})
 
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         token = token_generator.make_token(user)
@@ -373,11 +484,12 @@ def send_password_reset_link(request):
         to_email = user.email
         send_mail(subject, email_content, from_email, [to_email], fail_silently=False)
 
-        return JsonResponse({'success': True, 'message': 'Password reset link sent successfully'})
+        return JsonResponse({'success': True, 'message': escape('Password reset link sent successfully')})
 
     else:
-        return JsonResponse({'success': False, 'error_message': 'Invalid request method'})
+        return JsonResponse({'success': False, 'error': escape('Invalid request method')})
 
+@csrf_protect
 def password_reset_view(request, uidb64, token):
     print("uidb64: ", uidb64, "token: ", token)
     try:
@@ -393,7 +505,7 @@ def password_reset_view(request, uidb64, token):
             try:
                 validate_password(new_password1, user=User(username=user.username))
             except ValidationError as e:
-                return JsonResponse({'success': False, 'error_message': e.messages[0]}, status=400)
+                return JsonResponse({'success': False, 'error': e.messages[0]}, status=400)
 
             if new_password1 == new_password2:
                 user.set_password(new_password1)
@@ -403,7 +515,7 @@ def password_reset_view(request, uidb64, token):
                 #     login(request, user)
                 return redirect('account:password_reset_done')
             else:
-                return JsonResponse({'success': False, 'error_message': 'Passwords do not match'}, status=400)
+                return JsonResponse({'success': False, 'error': escape('Passwords do not match')}, status=400)
         else:
             return render(request, 'password_reset.html', {'uidb64': uidb64, 'token': token, 'user': user})
     else:
@@ -422,7 +534,7 @@ class UserAPIView(APIView):
             serializer = UserSerializer(user)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except User.DoesNotExist:
-            return Response({"detail": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": escape("User not found")}, status=status.HTTP_404_NOT_FOUND)
 
 
 def print_all_user_data(request):
