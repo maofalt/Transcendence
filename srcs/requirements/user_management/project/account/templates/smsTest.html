@@ -6,15 +6,14 @@
 <form id="gatherPhoneNum">
     {% csrf_token %}
     <div style="position: relative;">
-        <!-- (+33) -->
         <input name="phoneNum" type="text" placeholder="(+33)" oninput="formatPhoneNumber()">
         <button type="button" onclick="sendCodeSMS()">Send Verify Code</button>
     </div>
     
 </form>
 <div id="verifyCodeInput">
-    <input id="verificationCode" type="text" placeholder="Enter Verification Code">
-    <button type="button" onclick="submitOneTimeCode('login')">Submit</button>
+    <input name="one_time_code" type="text" placeholder="Enter Verification Code">
+    <button type="button" onclick="submitOneTimeCode('2fa')">Submit</button>
 </div>
 
 <script>
@@ -48,8 +47,7 @@
         console.log("[5]value: ", value, "formattedValue: ", formattedValue, "value.length: ", value.length )
 
     }
-    // Automatically set the initial value to '0'
-    // document.getElementById('phoneNum').value = '+33';
+
     function getCookie(name) {
         var cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -68,6 +66,7 @@
 
     function sendCodeSMS() {
         var phoneNumber = $("#gatherPhoneNum input[name='phoneNum']").val().replace(/[-()]/g, '');
+        phoneNumber = phoneNumber.slice(0, 3) + phoneNumber.slice(4);
         $.ajax({
             type: 'POST',
             url: '{% url "account:sendCodeSMS" %}',
@@ -75,17 +74,15 @@
             headers: { "X-CSRFToken": getCookie('csrftoken') },
             success: function(data) {
                 console.log('SMS code sent successfully:', data);
-                // Handle success response
             },
             error: function(xhr, textStatus, errorThrown) {
                 console.error('Error sending SMS code:', errorThrown);
-                // Handle error response
             }
         });
     }
     
     function submitOneTimeCode(context) {
-        var oneTimeCode = $('input[name="verificationCode"]').val();
+        var oneTimeCode = $('input[name="one_time_code"]').val();
         console.log('submitOneTimeCode submit');
         $.ajax({
             url: '{% url "account:verify_one_time_code" %}',
@@ -94,7 +91,6 @@
             headers: { "X-CSRFToken": getCookie('csrftoken') },
             success: function (data) {
                 console.log('One-time code verification successful:', data);
-                closeLoginPopup();
                 window.location.href = '';
             },
             error: function (xhr, textStatus, errorThrown) {
@@ -116,10 +112,3 @@
         $('#errorMessage').text(message).css('color', 'red');
     }
 </script>
-
-
-<div id="oneTimeCodeSection" style="display: none;">
-    {% csrf_token %}
-    <input name="one_time_code" type="text" placeholder="One-Time Code">
-    <button onclick="submitOneTimeCode('login')">Submit Code</button>
-  </div>

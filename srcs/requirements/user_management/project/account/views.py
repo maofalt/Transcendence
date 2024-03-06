@@ -616,7 +616,6 @@ sns_client = boto3.client('sns',
                           region_name=settings.AWS_REGION)
 
 def is_valid_phone_number(phone_number):
-    # Regular expression to match a typical phone number format (e.g., +1234567890)
     phone_number_pattern = r'^\+\d{1,15}$'
     return bool(re.match(phone_number_pattern, phone_number))
 
@@ -633,17 +632,37 @@ def send_sms_code(request, phone_number=None):
 
         print("\n\nCHECK CODE ON SESSION: ", request.session.get('one_time_code'))
         message = f'Your one-time code is: {one_time_code}'
+
+        subscription_arn = subscribe_user_to_sns_topic(phone_number)
         
-        try:
-            # Send the SMS message
-            response = sns_client.publish(
-                PhoneNumber=phone_number,
-                Message=message,
-            )
-            print("SMS message sent successfully:", response)
-            return JsonResponse({'success': True, 'message': 'SMS message sent successfully'})
-        except Exception as e:
-            print("Error sending SMS message:", e)
-            return JsonResponse({'success': False, 'error': 'Failed to send SMS message'})
+        if subscription_arn:
+            try:
+                response = sns_client.publish(
+                    PhoneNumber=phone_number,
+                    Message=message,
+                )
+                print("SMS message sent successfully:", response)
+                return JsonResponse({'success': True, 'message': 'SMS message sent successfully'})
+            except Exception as e:
+                print("Error sending SMS message:", e)
+                return JsonResponse({'success': False, 'error': 'Failed to send SMS message'})
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=400)
+    
+def subscribe_user_to_sns_topic(phone_number):
+    try:
+        topic_arn = 'arn:aws:sns:eu-west-3:637423363839:verification_code_for_Pong'
+
+        response = sns_client.subscribe(
+            TopicArn=topic_arn,
+            Protocol='sms',
+            Endpoint=phone_number
+        )
+        subscription_arn = response['SubscriptionArn']
+        print(f"User subscribed successfully! Subscription ARN: {subscription_arn}")
+
+        return subscription_arn
+
+    except Exception as e:
+        print("Error subscribing user:", e)
+        return None
