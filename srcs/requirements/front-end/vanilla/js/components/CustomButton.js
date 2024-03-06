@@ -21,6 +21,13 @@ export default class CutsomButton extends AbstractComponent {
 			p.textContent = options.content;
 		}
 
+		if (options.width) {
+			this.style.width = options.width;
+		}
+		if (options.height) {
+			this.style.height = options.height;
+		}
+
 		this.shadowRoot.appendChild(p);
 	}
 

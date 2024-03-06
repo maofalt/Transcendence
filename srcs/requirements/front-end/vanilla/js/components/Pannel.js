@@ -17,14 +17,21 @@ export default class Pannel extends AbstractComponent {
 		if (options.title)
 			p.textContent = options.title;
 
+		this.setPannelStyle(options.dark);
+
 		this.shadowRoot.appendChild(p);
 
-		if (options.width)
+		if (options.width) {
+			// console.log(options.width);
 			this.style.width = options.width;
+		}
 		if (options.height)
 			this.style.height = options.height;
 
-		this.setPannelStyle(options.dark);
+		// for (const [key, value] of Object.entries(options)) {
+		// 	if (key != "dark")
+		// 		this.style[key] = value;
+		// }
 	}
 
 	setPannelStyle(dark) {

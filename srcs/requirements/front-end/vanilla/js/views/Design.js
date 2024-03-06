@@ -1,7 +1,8 @@
 import AbstractView from "./AbstractView";
 import Pannel from "@components/Pannel";
 import CustomButton from "@components/CustomButton";
-import BigTitle from "../components/BigTitle";
+import BigTitle from "@components/BigTitle";
+import InputField from "@components/InputField";
 import { createElement } from "@utils/createElement";
 import { htmlToElement } from "@utils/htmlToElement";
 import styles from '@css/Design.css?raw';
@@ -39,11 +40,13 @@ export default class Design extends HTMLElement {
 		let darkPannel = new Pannel({title: "Dark Pannel", dark: true});
 		let actionButton = new CustomButton({content: "Start", action: true});
 		let normalButton = new CustomButton({content: "Credits"});
+		let inputField = new InputField({content: "This is a test!", width: "300px"});
 
 		div1.appendChild(glassPannel);
 		div1.appendChild(darkPannel);
 		div2.appendChild(actionButton);
 		div2.appendChild(normalButton);
+		div3.appendChild(inputField);
 
 		this.shadowRoot.appendChild(div);
 	}

@@ -5,6 +5,7 @@ import AbstractComponent from '@components/AbstractComponent';
 import Pannel from "@components/Pannel";
 import CustomButton from "@components/CustomButton";
 import BigTitle from "@components/BigTitle";
+import InputField from "../components/InputField";
 
 export default class LoginDesign extends AbstractComponent {
 	constructor(options = {}) {
@@ -14,24 +15,20 @@ export default class LoginDesign extends AbstractComponent {
 		styleEl.textContent = styles;
 		this.shadowRoot.appendChild(styleEl);
 
-		let container = document.createElement('div');
-		this.shadowRoot.appendChild(container);
-	}
+		let pannel = new Pannel({title: "Log In", width: "20vw", dark: false});
+		let usernameInput = new InputField({content: "Username"});
+		let passwordInput = new InputField({content: "Password"});
+		let loginButton = new CustomButton({content: "Log In", action: true});
+		let signUpButton = new CustomButton({content: "Sign In", action: false});
 
-	styleButtonRow(buttonRow) {
-		buttonRow.style.display = "flex";
-		buttonRow.style.flexDirection = "row";
-		buttonRow.style.alignItems = "center";
-		buttonRow.style.justifyContent = "center";
-		buttonRow.style.width = "80%";
-		buttonRow.style.border = "1px red solid";
-	}
+		pannel.shadowRoot.appendChild(usernameInput);
+		pannel.shadowRoot.appendChild(passwordInput);
+		pannel.shadowRoot.appendChild(loginButton);
+		pannel.shadowRoot.appendChild(signUpButton);
 
-	styleButton(button) {
-		button.setAttribute("width", "110px");
-		button.setAttribute("font-size", "32px");
-		button.style.border = "1px red solid";
+		this.shadowRoot.appendChild(pannel);
 	}
+	
 	// Implement other methods or properties as needed
 }
 

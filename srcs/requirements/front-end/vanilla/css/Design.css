@@ -22,6 +22,10 @@ div {
 	/* border: red 1px solid; */
 }
 
+#div3 {
+	justify-content: center;
+}
+
 glass-pannel {
 	flex: 1;
 }
@@ -32,4 +36,8 @@ dark-pannel {
 
 custom-button {
 	flex: 1;
+}
+
+input-field {
+	/* flex: 1; */
 }
