@@ -16,45 +16,29 @@ export default class CreateTournament extends AbstractView {
         this.game = new Game();
     }
     
-    // async init() {
-        
-    //     document.getElementById('tournament-form').addEventListener('submit', async(event) => {
-    //         event.preventDefault();
-    //         let gameSettings = this.getGameSettingsFromForm();
-    //         console.log('Game Settings ANonymous:', gameSettings);
-    //     });
-    //     let matchID = await this.createGame(gameSettings);
-    //     console.log('Match ID:', matchID);
-    //     this.game = new Game(matchID, 500, 830);
-    //     await this.game.init();
-    // }
 
-      
     async init() {
-      let matchID = await this.createGame(this.getBasicGameSettings());
-      console.log('Match ID:', matchID);
-      this.game = new Game(matchID, 500, 830);
-      this.game.init();
-    }
-
-  //   async init() {
-  //     // Initialize the game with basic settings
-  //     let basicGameSettings = this.getBasicGameSettings();
-  //     console.log('Initializing game with basic settings:', basicGameSettings);
-  //     await this.initializeGame(basicGameSettings);
+      // Initialize the game with basic settings
+      let basicGameSettings = this.getBasicGameSettings();
+      console.log('Initializing game with basic settings:', basicGameSettings);
+      await this.initializeGame(basicGameSettings);
   
-  //     // Add event listener for form submission
-  //     document.getElementById('tournament-form').addEventListener('submit', async (event) => {
-  //         event.preventDefault();
+      let gameSettingsForm = document.getElementById('game-settings-form');
+      gameSettingsForm.querySelectorAll('input').forEach(input => {
+        input.addEventListener('change', (event) => {
+          event.preventDefault();
+          console.log('Responiong to form changes');
           
-  //         // Get the game settings from the form
-  //         let gameSettings = this.getGameSettingsFromForm();
-  //         console.log('Updating game with new settings:', gameSettings);
+          // Get the game settings from the form
+          let gameSettings = this.getGameSettingsFromForm();
+          console.log('Updating game with new settings:', gameSettings);
           
-  //         // Re-initialize the game with new settings
-  //         await this.initializeGame(gameSettings);
-  //     });
-  // }
+          // Re-initialize the game with new settings
+          this.initializeGame(gameSettings);
+        });
+      });
+
+  }
 
 // Helper method to initialize or update the game preview
     async initializeGame(gameSettings) {
@@ -64,12 +48,13 @@ export default class CreateTournament extends AbstractView {
     
       // Assuming the Game constructor or an update method can handle new settings
       if (!this.game) {
-          this.game = new Game(matchID, gameSettings);
+          this.game = new Game(matchID, 500, 830);
       } else {
-          //this.game.destroy();
-          this.game = new Game(matchID, gameSettings);   
+          this.game.destroy();
+          this.game = new Game(matchID, 500, 830);   
       }
       await this.game.init(); // Make sure this can be safely called multiple times or after updating settings
+      console.log('Game initialized');
     }
 
 
@@ -164,7 +149,7 @@ export default class CreateTournament extends AbstractView {
 
                       <h3>Paddles Data</h3>
                         <label for="paddle_width">Paddle Width (1-12):</label>
-                        <input type="range" id="paddle_widht" name="paddle_widht" min="1" max="12" value="1">
+                        <input type="range" id="paddle_width" name="paddle_widht" min="1" max="12" value="1">
 
                         <label for="paddle_height">Paddle Height (1-12):</label>
                         <input type="range" id="paddle_height" name="paddle_height" min="1" max="12" value="10">
