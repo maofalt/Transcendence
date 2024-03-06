@@ -1,15 +1,21 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
 2FA-SMS Testpage
-
+<a></a>
+<div id="errorMessage" style="color: red;"></div>
 <form id="gatherPhoneNum">
     {% csrf_token %}
     <div style="position: relative;">
-        (+33)
-        <input name="phoneNum" type="text" placeholder="0X-XXXX-XXXX" oninput="formatPhoneNumber()">
+        <!-- (+33) -->
+        <input name="phoneNum" type="text" placeholder="(+33)" oninput="formatPhoneNumber()">
+        <button type="button" onclick="sendCodeSMS()">Send Verify Code</button>
     </div>
-    <button type="button" onclick="sendCodeSMS()">Send Verify Code</button>
+    
 </form>
+<div id="verifyCodeInput">
+    <input id="verificationCode" type="text" placeholder="Enter Verification Code">
+    <button type="button" onclick="submitOneTimeCode('login')">Submit</button>
+</div>
 
 <script>
     function insertString(mainString, insertString, position) {
@@ -19,10 +25,14 @@
         var input = $("#gatherPhoneNum input[name='phoneNum']").val();
         var value = input.replace(/\D/g, ''); // Remove non-numeric characters
         var formattedValue = '';
-
         if (value.length == 1 && value[0] !== '0') {
             value = '0' + value;
         }
+        if (value.startsWith('33')) {
+            value = value.slice(2);
+        }
+        console.log("[1]value: ", value, "formattedValue: ", formattedValue, "value.length: ", value.length )
+
         formattedValue += value.substr(0, value.length);
         if (value.length > 2) {
             formattedValue = insertString(value, '-', 2);
@@ -30,6 +40,9 @@
         if (value.length > 6) {
             formattedValue = insertString(value, '-', 2);
             formattedValue = insertString(formattedValue, '-', 7);
+        }
+        if (!formattedValue.startsWith('(+33)')) {
+            formattedValue = '(+33)' + formattedValue;
         }
         $("#gatherPhoneNum input[name='phoneNum']").val(formattedValue);// Set the formatted value back to the input field
         console.log("[5]value: ", value, "formattedValue: ", formattedValue, "value.length: ", value.length )
@@ -54,8 +67,7 @@
     }
 
     function sendCodeSMS() {
-        var frNum = '+33'
-        var phoneNumber = frNum + $("#gatherPhoneNum input[name='phoneNum']").val().replace(/\D/g, '');
+        var phoneNumber = $("#gatherPhoneNum input[name='phoneNum']").val().replace(/[-()]/g, '');
         $.ajax({
             type: 'POST',
             url: '{% url "account:sendCodeSMS" %}',
@@ -70,6 +82,38 @@
                 // Handle error response
             }
         });
+    }
+    
+    function submitOneTimeCode(context) {
+        var oneTimeCode = $('input[name="verificationCode"]').val();
+        console.log('submitOneTimeCode submit');
+        $.ajax({
+            url: '{% url "account:verify_one_time_code" %}',
+            type: 'POST',
+            data: { 'one_time_code': oneTimeCode, 'context': context },
+            headers: { "X-CSRFToken": getCookie('csrftoken') },
+            success: function (data) {
+                console.log('One-time code verification successful:', data);
+                closeLoginPopup();
+                window.location.href = '';
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                console.log('One-time code verification failed.');
+                var response;
+                try {
+                response = JSON.parse(xhr.responseText);
+                } catch (e) {
+                response = { error: 'An error occurred while processing your request.' };
+                }
+                displayErrorMessage(response.error);
+            },
+            complete: function (xhr, textStatus) {
+                console.log('Request complete. Status:', textStatus);
+            }
+        });
+    }
+    function displayErrorMessage(message) {
+        $('#errorMessage').text(message).css('color', 'red');
     }
 </script>
 

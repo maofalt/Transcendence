@@ -634,16 +634,16 @@ def send_sms_code(request, phone_number=None):
         print("\n\nCHECK CODE ON SESSION: ", request.session.get('one_time_code'))
         message = f'Your one-time code is: {one_time_code}'
         
-        # try:
-        #     # Send the SMS message
-        #     response = sns_client.publish(
-        #         PhoneNumber=phone_number,
-        #         Message=message,
-        #     )
-        # print("SMS message sent successfully:", response)
-        return JsonResponse({'success': True, 'message': 'SMS message sent successfully'})
-        # except Exception as e:
-        #     print("Error sending SMS message:", e)
-        #     return JsonResponse({'success': False, 'error': 'Failed to send SMS message'})
+        try:
+            # Send the SMS message
+            response = sns_client.publish(
+                PhoneNumber=phone_number,
+                Message=message,
+            )
+            print("SMS message sent successfully:", response)
+            return JsonResponse({'success': True, 'message': 'SMS message sent successfully'})
+        except Exception as e:
+            print("Error sending SMS message:", e)
+            return JsonResponse({'success': False, 'error': 'Failed to send SMS message'})
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=400)
