@@ -12,3 +12,7 @@ div {
 	align-items: center;
 	/* justify-content: center; */
 }
+
+big-title {
+	border: red 1px solid;
+}

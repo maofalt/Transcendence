@@ -9,7 +9,7 @@ import User from '@views/User';
 import Design from '@views/Design.js';
 import HomeDesign from '@views/HomeDesign';
 import LoginDesign from '@views/LoginDesign';
-import PlayMenu from '../components/PlayMenu';
+import HomePage from '@components/HomePage';
 
 export const routes = {
 	'/': {
@@ -75,12 +75,12 @@ export const routes = {
 		buttonText: 'login-design',
 		component: 'login-design'
 	},
-	'/play-menu': {
-		path: '/play-menu',
-		view: PlayMenu,
-		title: 'play-menu',
-		buttonText: 'play-menu',
-		component: 'play-menu'
+	'/home-page': {
+		path: '/home-page',
+		view: HomePage,
+		title: 'home-page',
+		buttonText: 'home-page',
+		component: 'home-page'
 	},
 	'/404': {
 		path: '/404',
@@ -104,7 +104,8 @@ const router = async () => {
   const viewContainer = document.querySelector('#view');
 
   if (View.component) {
-	viewContainer.innerHTML = `<${View.component}></${View.component}>`;
+	viewContainer.innerHTML = `
+		<${View.component}></${View.component}>`;
   } else {
 	console.log('path: ', path);
 

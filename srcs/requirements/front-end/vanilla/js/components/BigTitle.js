@@ -12,10 +12,15 @@ export default class BigTitle extends AbstractComponent {
 		this.shadowRoot.appendChild(styleEl);
 
 		// Example: Set inner HTML
-		this.shadowRoot.innerHTML += `
-		<div>
-			<p>${options.content}</p>
-		</div>`;
+		this.shadowRoot.innerHTML += `<p>${options.content}</p>`;
+
+		if (options.style) {
+			for (const [key, value] of Object.entries(options.style)) {
+				console.log(key);
+				console.log(value);
+				this.shadowRoot.host.style.setProperty(key, value);
+			}
+		}
 	}
 
 	// Implement other methods or properties as needed

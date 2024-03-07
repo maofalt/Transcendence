@@ -12,26 +12,19 @@ export default class Pannel extends AbstractComponent {
 		this.shadowRoot.appendChild(styleEl);
 
 		const p = document.createElement('p');
-		p.id = "pannelTitle";
+		p.textContent = options.title ? options.title : "Title";
 
-		if (options.title)
-			p.textContent = options.title;
+		if (options.style) {
+			for (const [key, value] of Object.entries(options.style)) {
+				console.log(key);
+				console.log(value);
+				this.style.setProperty(key, value);
+			}
+		}
 
 		this.setPannelStyle(options.dark);
 
 		this.shadowRoot.appendChild(p);
-
-		if (options.width) {
-			// console.log(options.width);
-			this.style.width = options.width;
-		}
-		if (options.height)
-			this.style.height = options.height;
-
-		// for (const [key, value] of Object.entries(options)) {
-		// 	if (key != "dark")
-		// 		this.style[key] = value;
-		// }
 	}
 
 	setPannelStyle(dark) {

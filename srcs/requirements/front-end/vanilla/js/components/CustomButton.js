@@ -4,39 +4,29 @@ import AbstractComponent from "./AbstractComponent";
 import actionButtonStyles from '@css/ActionButtonV2.css?raw';
 import normalButtonStyles from '@css/NormalButtonV2.css?raw';
 
-export default class CutsomButton extends AbstractComponent {
+export default class CustomButton extends AbstractComponent {
 	constructor(options = {}) {
 		super();
 
 		const styleEl = document.createElement('style');
-		styleEl.textContent = this.setButtonStyle(options.action);
+		styleEl.textContent = options.action ? actionButtonStyles : normalButtonStyles
 		this.shadowRoot.appendChild(styleEl);
 
 		let p = document.createElement('p');
 		p.id = "buttonText"
-		p.textContent = "Go !";
 
-		if (options.content) {
-			console.log(options.content);
-			p.textContent = options.content;
-		}
+		p.textContent = options.content ? options.content : "Go !";
 
-		if (options.width) {
-			this.style.width = options.width;
-		}
-		if (options.height) {
-			this.style.height = options.height;
+		if (options.style) {
+			for (const [key, value] of Object.entries(options.style)) {
+				console.log(key);
+				console.log(value);
+				this.shadowRoot.host.style.setProperty(key, value);
+			}
 		}
 
 		this.shadowRoot.appendChild(p);
 	}
-
-	setButtonStyle(action) {
-		if (action) {
-			return actionButtonStyles;
-		}
-		return normalButtonStyles;
-	}
 }
 
-customElements.define('custom-button', CutsomButton);
+customElements.define('custom-button', CustomButton);
