@@ -17,11 +17,19 @@ export default class CustomButton extends AbstractComponent {
 
 		p.textContent = options.content ? options.content : "Go !";
 
+		// if (options.style) {
+		// 	for (const [key, value] of Object.entries(options.style)) {
+		// 		console.log(key);
+		// 		console.log(value);
+		// 		this.shadowRoot.host.style.setProperty(key, value);
+		// 	}
+		// }
+
 		if (options.style) {
-			for (const [key, value] of Object.entries(options.style)) {
-				console.log(key);
-				console.log(value);
-				this.shadowRoot.host.style.setProperty(key, value);
+			for (const key in options.style) {
+				if (options.style.hasOwnProperty(key)) {
+					this.style.setProperty(key, options.style[key]);
+				}
 			}
 		}
 

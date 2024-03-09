@@ -10,8 +10,8 @@
 
 :host {
 	margin: 10px;
-	font-family: "tk-421";
-	font-size: 40px;
+	font-family: sans-serif;
+	/* font-size: 40px; */
 	height: 100%;
 	width: 100%;
 
@@ -19,7 +19,9 @@
 	text-align: center;
 }
 
-#pannelTitle {
-	margin: 0px;
-	padding: 0px;
+#pannel-title {
+	margin: 25px 0 35px 0;
+	/* padding: 24px; */
+	font-family: "tk-421", sans-serif;
+	font-size: 40px;
 }

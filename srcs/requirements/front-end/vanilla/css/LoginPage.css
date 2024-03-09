@@ -14,13 +14,18 @@
 }
 
 glass-pannel {
-	display: flex;
-	flex-direction: column;
-	height: 40vh;
+	/* display: flex;
+	flex-direction: column; */
+	/* display: block; */
+	display: block;
+	width: 500px;
+	height: 462px;
+	padding: 0px 30px 30px 30px;
 }
 
 input-field {
 	flex: 1;
+	display: block;
 }
 
 custom-button {

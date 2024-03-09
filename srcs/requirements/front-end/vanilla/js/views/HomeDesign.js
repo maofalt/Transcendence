@@ -16,7 +16,6 @@ export default class HomeDesign extends AbstractComponent {
 
 		let div = document.createElement('div');
 		const bigTitle = new BigTitle({content: "Cosmic<br>Pong"});
-		bigTitle.setAttribute("margin", "5vh 0 15vh 0");
 		bigTitle.setAttribute("margin-bottom", "300px");
 		div.appendChild(bigTitle);
 		const highLightButton = new CustomButton({content: "Play !", action: true});

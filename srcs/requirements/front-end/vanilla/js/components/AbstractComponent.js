@@ -24,12 +24,13 @@ export default class AbstractComponent extends HTMLElement {
 	attributeChangedCallback(name, oldValue, newValue) {
 		// if (name === 'width' || name === 'height') {
 			// Select an element inside the shadow root
-			let element = this.shadowRoot.querySelector('div');
+			// let element = this.shadowRoot.host;
 	
 			// Set the style of the selected element
-			if (element) {
-				element.style[name] = newValue;
-			}
+			// if (element) {
+				// this.style[name] = newValue;
+				this.style.setProperty(name, newValue);
+			// }
 		// }
 	}
 

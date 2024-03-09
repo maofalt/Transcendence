@@ -12,17 +12,17 @@ export default class InputField extends AbstractComponent {
 		this.shadowRoot.appendChild(styleEl);
 
 		let input = document.createElement('input');
-		input.setAttribute("placeholder", (options.content ? options.content : "Write something !"));
+		input.setAttribute("placeholder", (options.content ? options.content : "Input"));
+
+		this.shadowRoot.appendChild(input);
 
 		if (options.style) {
 			for (const [key, value] of Object.entries(options.style)) {
 				console.log(key);
 				console.log(value);
-				this.shadowRoot.host.style.setProperty(key, value);
+				this.shadowRoot.querySelector('input').style.setProperty(key, value);
 			}
 		}
-
-		this.shadowRoot.appendChild(input);
 	}
 }
 
