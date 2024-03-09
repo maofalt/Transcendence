@@ -10,13 +10,15 @@
 
 :host {
 	margin: 10px;
-	font-family: sans-serif;
-	/* font-size: 40px; */
 	height: 100%;
 	width: 100%;
 
 	color: white;
-	text-align: center;
+	font-family: sans-serif;
+
+	display: flex;
+	flex-direction: column;
+	align-items: center;
 }
 
 #pannel-title {

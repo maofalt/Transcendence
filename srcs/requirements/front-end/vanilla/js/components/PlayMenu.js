@@ -15,57 +15,73 @@ export default class PlayMenu extends AbstractComponent {
 		styleEl.textContent = style;
 		this.shadowRoot.appendChild(styleEl);
 
-		// let div = document.createElement('div');
         let classicPong = new Pannel({title: "Classic Pong"});
         let customGame = new Pannel({title: "Custom Game"});
         let bigTitle = new BigTitle({content: "Cosmic<br>Pong"});
-		bigTitle.style.setProperty("border", "3px green solid");
 
 		const menu = document.createElement('div');
 		menu.id = "menu";
 
-		const classicDesc = document.createElement('p');
-		classicDesc.className = "gameDesc";
-		classicDesc.textContent = "Play a game of classic Pong with a friend, on the same keyboard.";
-		classicDesc.style.setProperty("font-size", "20px");
-
-		const classicContainer = document.createElement('div');
-		classicContainer.className = "container";
-		
-		const classicPongImage = new Image();
-        classicPongImage.src = '../js/assets/images/purpleSpace.jpg'; // Replace with your image path
-        classicPongImage.className = 'pannel-image';
-		classicPong.shadowRoot.appendChild(classicDesc);
-		// classicContainer.appendChild(classicPongImage);
-        classicPong.shadowRoot.appendChild(classicContainer);
-
-
-		const customDesc = document.createElement('p');
-		customDesc.className = "gameDesc";
-		customDesc.textContent = "Create your own game of Pong and play remotely with up to 7 friends."
-		customDesc.style.setProperty("font-size", "20px");
-		
-		const customContainer = document.createElement('div');
-		customContainer.className = "container";
-
-        const customGameImage = new Image();
-        customGameImage.src = '../js/assets/images/purpleSpace.jpg'; // Replace with your image path
-        customGameImage.className = 'pannel-image';
-		customGame.shadowRoot.appendChild(customDesc);
-		// customContainer.appendChild(customGameImage);
-        customGame.shadowRoot.appendChild(customContainer);
-		
+		this.setupPannel(classicPong, "Play a game of classic Pong with a friend, on the same keyboard.",
+		"../js/assets/images/pong-intro-img.webp");
+		this.setupPannel(customGame, "Create your own game of Pong and play remotely with up to 7 friends.",
+		"../js/assets/images/redSpace.jpg");
 
 		menu.appendChild(classicPong);
         menu.appendChild(customGame);
 
-		// menu.style.setProperty("border", "1px red solid");
-		
         this.shadowRoot.appendChild(bigTitle);
         this.shadowRoot.appendChild(menu);
+	}
 
-		// this.shadowRoot.appendChild(div);
-		// this.shadowRoot.appendChild(footer);
+	setupPannel(pannel, descText, imageUrl) {
+		const desc = document.createElement('p');
+		desc.innerHTML = descText;
+		desc.style.setProperty("font-size", "20px");
+		desc.style.setProperty("padding", "0");
+		desc.style.setProperty("margin", "0");
+		desc.style.setProperty("margin-top", "7%");
+	
+		const container = document.createElement('div');
+		container.style.setProperty("width", "70%");
+		container.style.setProperty("height", "60%");
+		// container.style.setProperty("border", "1px red solid");
+
+		const imgContainer = document.createElement('div');
+		imgContainer.className = "imgContainer";
+		imgContainer.style.setProperty("width", "100%");
+		imgContainer.style.setProperty("height", "80%");
+		// imgContainer.style.setProperty("border", "1px yellow solid");
+		
+		const image = document.createElement('img');
+		image.src = imageUrl; // Replace with your image path
+		image.style.setProperty("width", "100%");
+		image.style.setProperty("height", "100%");
+		image.style.setProperty("object-fit", "cover");
+		image.style.setProperty("border-radius", "20px");
+		// image.style.setProperty("border", "1px solid rgba(255, 255, 255, 0.1)");
+		image.style.setProperty("box-shadow", "0 0 20px rgba(0, 0, 0, 0.6)");
+
+		imgContainer.appendChild(image);
+		container.appendChild(imgContainer);
+		container.appendChild(desc);
+
+		pannel.shadowRoot.appendChild(container);
+
+		pannel.onmouseover = (e) => this.pannelHover(e, pannel, "pannel HOVERED !");
+		pannel.onmouseleave = (e) => this.pannelLeave(e, pannel, "pannel LEFT !");
+	}
+
+	pannelHover = (e, pannel, arg) => {
+		console.log(arg);
+		pannel.style.setProperty("background", "rgba(0, 0, 0, 0.5)");
+		pannel.style.setProperty("backdrop-filter", "blur(6px)");
+	}
+
+	pannelLeave = (e, pannel, arg) => {
+		console.log(arg);
+		pannel.style.setProperty("background", "rgba(255, 255, 255, 0.1)");
+		pannel.style.setProperty("backdrop-filter", "blur(16px)");
 	}
 }
 

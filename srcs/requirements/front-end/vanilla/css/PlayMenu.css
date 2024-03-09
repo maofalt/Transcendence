@@ -1,56 +1,34 @@
 :host {
 	margin: 0px;
 	padding: 0px;
-	background: url("../js/assets/images/blueSpace.jpg");
 	width: 100vw;
 	height: 100vh;
+	background: url("../js/assets/images/purpleSpace.jpg");
+	background-size: contain;
     display: block;
-    /* display: flex; */
-    /* flex-direction: column; */
 }
 
 #menu {
 	height: 50%;
 	padding-bottom: 15px;
-	/* margin-top: 50px; */
 	display: flex;
 	justify-content: center;
-
-	border: solid 3px blue;
-}
-
-.container {
-	width: 100%;
-	height: 300px;
-	border: 2px solid yellow;
-}
-
-.pannelImage {
-	width: 100px;
-    height: 100px;
-    /* max-height: 100%; Ensure the image does not exceed the height of the panel */
-    /* object-fit: contain; */
 }
 
 big-title {
 	display: block;
-	padding: 50px 0 50px 0;
+	padding: 50px 0 80px 0;
 }
 
 glass-pannel {
-    display: inline-block;
     width: 600px;
-	/* object-fit: contain; */
+	margin: 0px 50px;
 	cursor: pointer;
 	transition: 300ms all;
 }
 
-.gameDesc {
-	font-size: 50px;
-}
-
 glass-pannel:hover {
-	background-color: rgba(0, 0, 0, 0.07);
+	/* background-color: rgba(0, 0, 0, 0.07); */
 	color: rgb(0, 217, 255);
-	transition: 300ms all;
+	/* transition: 300ms all; */
 }
