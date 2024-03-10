@@ -7,11 +7,12 @@ import Login from '@views/Login.js';
 import NotFound from '@views/NotFound.js';
 import User from '@views/User';
 import Design from '@views/Design.js';
+// import HomePage from '@components/HomePage';
 
 export const routes = {
 	'/': {
 		path: '/',
-		view: Home,
+		component: 'home-page',
 		title: 'Pongiverse',
 		buttonText: 'Home'
 	},
@@ -23,9 +24,9 @@ export const routes = {
 	},
 	'/game': {
 		path: '/game',
-		view: Game,
+		component: 'play-menu',
 		title: 'Game',
-		buttonText: 'Play'
+		buttonText: 'Game'
 	},
 	'/tournament': {
 		path: '/tournament',
@@ -41,7 +42,7 @@ export const routes = {
 	},
 	'/login': {
 		path: '/login',
-		view: Login,
+		component: 'login-page-v2',
 		title: 'Login',
 		buttonText: 'Login'
 	},
