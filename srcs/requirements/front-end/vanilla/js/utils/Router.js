@@ -8,6 +8,8 @@ import NotFound from '@views/NotFound.js';
 import User from '@views/User';
 import Design from '@views/Design.js';
 import BasicGame from '@views/BasicGame.js';
+import TwoFactorAuth from '@views/2fa';
+import Signup from '@views/Signup.js';
 
 export const routes = {
 	'/': {
@@ -45,6 +47,24 @@ export const routes = {
 		component: 'login-page-v2',
 		title: 'Login',
 		buttonText: 'Login'
+	},
+	'/signup': {
+		path: '/signup',
+		component: 'signup-page',
+		title: 'Signup',
+		buttonText: 'Signup'
+	},
+	'/forgot_password': {
+		path: '/forgot_password',
+		component: 'forgot-password',
+		title: 'Forgot Password',
+		buttonText: 'Forgot Password'
+	},
+	'/2fa': {
+		path: '/2fa',
+		component: 'two-factor-auth',
+		title: 'Two Factor Authentication',
+		buttonText: '2FA'
 	},
 	'/user': {
 		path: '/user',

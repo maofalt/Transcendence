@@ -27,6 +27,7 @@ export default class InputField extends AbstractComponent {
 	}
 
 	getValue = () => {
+		console.log('getValue', this.input.value);
 		return this.input.value;
 	}
 }

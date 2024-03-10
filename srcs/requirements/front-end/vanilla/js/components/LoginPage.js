@@ -8,6 +8,7 @@ import BigTitle from "@components/BigTitle";
 import InputField from "@components/InputField";
 import Router from "@utils/Router";
 import { getCookie } from "@utils/getCookie";
+import { easyFetch } from "@utils/easyFetch";
 
 export default class LoginPage extends AbstractComponent {
 	constructor(options = {}) {
@@ -50,6 +51,8 @@ export default class LoginPage extends AbstractComponent {
 				password: passwordInput.getValue()
 			});
 
+		p.onclick = () => Router.navigateTo("/forgot_password");
+
 		signUpButton.onclick = () => Router.navigateTo("/signup");
 		
 		this.shadowRoot.appendChild(bigTitle);
@@ -65,7 +68,7 @@ export default class LoginPage extends AbstractComponent {
 		if (e)
 			e.preventDefault();
 		console.log('values:', formData);
-		easyfetch('/api/user_management/auth/login', {
+		easyFetch('/api/user_management/auth/login', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/x-www-form-urlencoded',
@@ -76,13 +79,29 @@ export default class LoginPage extends AbstractComponent {
 		.then(res => {
 			let response = res.response;
 			let body = res.body;
+
 			if (!response || !body) {
-				console.error('Request Failed:', body);
+				console.error('Request Failed');
 				return ;
 			}
-			if (response.status === 200 && body !== null) {
+
+			if (response.status === 400) {
+				alert('Wrong username or password');
+				return ;
+			}
+	
+			if (!response.ok) {
+				console.error('Request Failed:', body.error || JSON.stringify(body));
+				return ;
+			}
+
+			if (response.status === 200 && body.success === true) {
+				if (body.requires_2fa) {
+					Router.navigateTo("/2fa");
+					return ;
+				}
 				console.log('Login successful:', body);
-				Router.navigateTo("/home");
+				Router.navigateTo("/");
 			}
 		})
 		.catch(error => {

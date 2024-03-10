@@ -18,11 +18,11 @@ export async function easyFetch(url, options = { method: 'GET', body: null, head
 		// Adding body for relevant methods
 		if (options.body && (options.method === 'POST' || options.method === 'PUT' || options.method === 'DELETE')) {
 			if (options.headers['Content-Type'] == 'application/x-www-form-urlencoded') {
-				const encodedBody = new URLSearchParams(body).toString();
+				const encodedBody = new URLSearchParams(options.body).toString();
 				options.body = encodedBody;
 			} else if (options.headers['Content-Type'] == 'application/json') {
 				// Assuming JSON content type
-				options.body = JSON.stringify(body);
+				options.body = JSON.stringify(options.body);
 			} else {
 				throw new Error('Invalid Content-Type');
 			}
@@ -53,7 +53,7 @@ export async function easyFetch(url, options = { method: 'GET', body: null, head
 		if (contentType && contentType.includes("application/json")) {
 			
 			const data = await response.json();
-			
+
 			return {
 				response,
 				body: data
