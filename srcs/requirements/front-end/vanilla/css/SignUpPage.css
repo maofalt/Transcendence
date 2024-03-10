@@ -1,0 +1,35 @@
+:host {
+	margin: 0px;
+	padding: 0px;
+	background: url("../js/assets/images/purpleSpace.jpg");
+	background-size: contain;
+	width: 100vw;
+	height: 100vh;
+	/* font-size: 50px; */
+
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+
+glass-pannel {
+	/* display: flex;
+	flex-direction: row; */
+
+	/* display: block; */
+	/* color: blue; */
+	/* display: block; */
+	width: 900px;
+	height: 900px;
+	padding: 0px 30px 30px 30px;
+}
+
+input-field {
+	flex: 1;
+	display: block;
+}
+
+custom-button {
+	flex: 1;
+}

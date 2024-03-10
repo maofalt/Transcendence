@@ -3,7 +3,7 @@ import AbstractView from "./AbstractView";
 import { getCookie } from "@utils/getCookie";
 import { createElement } from "@utils/createElement";
 import { htmlToElement } from "@utils/htmlToElement";
-import styles from '@css/NewLogin.css?raw';
+import styles from '@css/login.css?raw';
 // import loginPageSource from "@html/loginPageSource";
 import loginPageSource from "@html/NewLoginPageSource";
 

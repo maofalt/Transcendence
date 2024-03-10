@@ -5,6 +5,14 @@
 	/* font-style: normal; */
 }
 
+@font-face {
+	font-family: 'Space Grotesk';
+	src:  url('tk-421 path... ');
+	/* font-weight: 700; */
+	/* font-style: normal; */
+}
+
+
 /* @import url("../js/assets/fonts/Tk421-K7mv7.woff2"); */
 
 :host {
@@ -14,8 +22,6 @@
 	/* padding: 10px; */
 
 	font-weight: 300;
-	/* font-family: url('../js/assets/fonts/Tk421-K7mv7.otf') format('opentype'); */
-	
 	line-height: 76px;
 	
 	color: white;
@@ -28,7 +34,8 @@
 
 p {
 	font-size: 120px;
-	font-family: "Space Grotesk", sans-serif;
+	font-family: 'tk-421', "Anta", sans-serif;	
+	/* font-family: "Space Grotesk", sans-serif; */
 	margin: 0px;
 	padding: 0px;
 	/* text-justify: center; */

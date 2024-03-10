@@ -7,6 +7,7 @@ import { createElement } from "@utils/createElement";
 import { htmlToElement } from "@utils/htmlToElement";
 import styles from '@css/Design.css?raw';
 import LoginPage from '@components/LoginPage'
+import SignUpPage from "@components/SignUpPage";
 import HomePage from "@components/HomePage";
 import PlayMenu from "@components/PlayMenu";
 
@@ -54,9 +55,11 @@ export default class Design extends HTMLElement {
 		let loginPage = new LoginPage();
 		let homePage = new HomePage();
 		let playMenu = new PlayMenu();
+		let signupPage = new SignUpPage();
 
 		// this.shadowRoot.appendChild(loginPage);
-		this.shadowRoot.appendChild(homePage);
+		this.shadowRoot.appendChild(signupPage);
+		// this.shadowRoot.appendChild(homePage);
 		// this.shadowRoot.appendChild(playMenu);
 	}
 
