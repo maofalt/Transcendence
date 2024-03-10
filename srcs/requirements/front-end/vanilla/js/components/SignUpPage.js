@@ -24,24 +24,24 @@ export default class SignUpPage extends AbstractComponent {
 		formContainer.style.setProperty("width", "100%");
 		formContainer.style.setProperty("flex-direction", "row");
 		
-		let idBlock = this.createInputAndTitle("Unique ID", "ID", "example: GigaBoomer65", 
+		let idBlock = this.createInputAndTitle("Unique ID", "ID", "example: GigaBoomer69", 
 		"A unique ID that defines you in our Database.");
-		idBlock.style.setProperty("height", "150px");
+		idBlock.style.setProperty("height", "130px");
 
 		let passwordBlock = this.createInputAndTitle("Password", "password", "Password", 
 		"Minimum 8 characters, at least 1 digit, 1 letter, and different from your Playername and your Email.");
 
 		let confirmPasswordBlock = this.createInputAndTitle("Confirm Password", "con-password", "Password", "");
-		confirmPasswordBlock.style.setProperty("height", "140px");
+		confirmPasswordBlock.style.setProperty("height", "130px");
 
 		let playernameBlock = this.createInputAndTitle("Playername", "playername", "Playername", 
 		"Your Playername will be displayed in games and tournaments.");
 
 		let emailBlock = this.createInputAndTitle("Email", "email", "example@example.com", "");
-		emailBlock.style.setProperty("height", "220px");
+		emailBlock.style.setProperty("height", "180px");
 
 		let verifyCodeBlock = this.createInputAndTitle("Verify Code", "verif-code", "XXXXXX", "");
-		verifyCodeBlock.style.setProperty("height", "220px");
+		verifyCodeBlock.style.setProperty("height", "170px");
 		
 		const sendCode = new CustomButton({content: "Send Code", action: false});
 		emailBlock.appendChild(sendCode);
@@ -70,7 +70,8 @@ export default class SignUpPage extends AbstractComponent {
 
 		pannel.shadowRoot.appendChild(formContainer);
 		pannel.shadowRoot.appendChild(buttonsBlock);
-		
+		pannel.shadowRoot.querySelector("#pannel-title").style.setProperty("font-size", "36px");
+		pannel.shadowRoot.querySelector("#pannel-title").style.setProperty("margin", "20px 0px 34px 0px");
 		// signUpButton.onclick = (e) => this.buttonOnClick(e, "Sign Up button clicked!");
 		
 		// this.shadowRoot.appendChild(bigTitle);
@@ -86,7 +87,7 @@ export default class SignUpPage extends AbstractComponent {
 		title.id = id + "-title-id";
 		title.textContent = titleContent;
 		title.style.setProperty("font-family", "tk-421, Anta, sans-serif");
-		title.style.setProperty("font-size", "32px");
+		title.style.setProperty("font-size", "26px");
 		title.style.setProperty("margin", "0px 0px 10px 0px");
 		// title.style.setProperty("border", "1px green solid");
 
@@ -96,15 +97,15 @@ export default class SignUpPage extends AbstractComponent {
 		
 		let inputBlock = document.createElement("div");
 		inputBlock.id = id + "-block-id";
-		inputBlock.style.setProperty("height", "165px");
-		inputBlock.style.setProperty("margin", "20px 0px 0px 0px");
+		inputBlock.style.setProperty("height", "145px");
+		inputBlock.style.setProperty("margin", "0px 0px 20px 0px");
 		// inputBlock.style.setProperty("border", "1px yellow solid");
 
 		let description = document.createElement("p");
 		description.id = id + "-desc-id";
 		description.textContent = descContent;
 		description.style.setProperty("font-family", "Anta, sans-serif");
-		description.style.setProperty("font-size", "18px");
+		description.style.setProperty("font-size", "14px");
 		description.style.setProperty("margin-top", "-3px");
 
 		inputBlock.appendChild(title);
@@ -118,6 +119,8 @@ export default class SignUpPage extends AbstractComponent {
 		block.id = blockName + "-block";
 		block.style.setProperty("flex", "1");
 		block.style.setProperty("margin", "0px 15px");
+		// block.style.setProperty("padding", "0px");
+		// block.style.setProperty("border", "1px red solid");
 		return block;
 	}
 
@@ -136,15 +139,15 @@ export default class SignUpPage extends AbstractComponent {
 		
 		const checkBox = document.createElement("input");
 		checkBox.type = "checkbox";
-		checkBox.style.setProperty("width", "30px");
-		checkBox.style.setProperty("height", "30px");
+		checkBox.style.setProperty("width", "24px");
+		checkBox.style.setProperty("height", "24px");
 		checkBox.style.setProperty("margin-right", "15px");
 
 		const privacyDesc = document.createElement("p");
 		privacyDesc.id = "privacy-desc";
 		privacyDesc.textContent = "I agree to the terms and conditions.";
 		privacyDesc.style.setProperty("width", "100%");
-		privacyDesc.style.setProperty("font-size", "20px");
+		privacyDesc.style.setProperty("font-size", "14px");
 
 		const acceptPrivacyBlock = document.createElement("div");
 		acceptPrivacyBlock.style.setProperty("width", "100%");
@@ -156,7 +159,7 @@ export default class SignUpPage extends AbstractComponent {
 		acceptPrivacyBlock.style.setProperty("align-items", "center");
 		// acceptPrivacyBlock.style.setProperty("border", "1px green solid");
 		
-		const privacyPolicy = new CustomButton({content: "Open Privacy Policy", action: false});
+		const privacyPolicy = new CustomButton({content: "Privacy Policy", action: false});
 		
 		acceptPrivacyBlock.appendChild(checkBox);
 		acceptPrivacyBlock.appendChild(privacyDesc);
@@ -171,7 +174,7 @@ export default class SignUpPage extends AbstractComponent {
 		const block = document.createElement("div");
 		block.style.setProperty("width", "100%");
 		block.style.setProperty("height", "80px");
-		block.style.setProperty("margin", "30px 0px");
+		block.style.setProperty("margin", "15px 0px");
 		block.style.setProperty("display", "flex");
 		block.style.setProperty("flex-direction", "row");
 		// block.style.setProperty("border", "1px red solid");
