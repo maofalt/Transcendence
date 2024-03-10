@@ -25,22 +25,22 @@ export default class SignUpPage extends AbstractComponent {
 		formContainer.style.setProperty("flex-direction", "row");
 		
 		let idBlock = this.createInputAndTitle("Unique ID", "ID", "example: GigaBoomer69", 
-		"A unique ID that defines you in our Database.");
+		"A unique ID that defines you in our Database.", "");
 		idBlock.style.setProperty("height", "130px");
 
 		let passwordBlock = this.createInputAndTitle("Password", "password", "Password", 
-		"Minimum 8 characters, at least 1 digit, 1 letter, and different from your Playername and your Email.");
+		"Minimum 8 characters, at least 1 digit, 1 letter, and different from your Playername and your Email.", "password");
 
-		let confirmPasswordBlock = this.createInputAndTitle("Confirm Password", "con-password", "Password", "");
+		let confirmPasswordBlock = this.createInputAndTitle("Confirm Password", "con-password", "Password", "", "password");
 		confirmPasswordBlock.style.setProperty("height", "130px");
 
 		let playernameBlock = this.createInputAndTitle("Playername", "playername", "Playername", 
-		"Your Playername will be displayed in games and tournaments.");
+		"Your Playername will be displayed in games and tournaments.", "");
 
-		let emailBlock = this.createInputAndTitle("Email", "email", "example@example.com", "");
+		let emailBlock = this.createInputAndTitle("Email", "email", "example@example.com", "", "");
 		emailBlock.style.setProperty("height", "180px");
 
-		let verifyCodeBlock = this.createInputAndTitle("Verify Code", "verif-code", "XXXXXX", "");
+		let verifyCodeBlock = this.createInputAndTitle("Verify Code", "verif-code", "XXXXXX", "", "");
 		verifyCodeBlock.style.setProperty("height", "170px");
 		
 		const sendCode = new CustomButton({content: "Send Code", action: false});
@@ -82,7 +82,7 @@ export default class SignUpPage extends AbstractComponent {
 		console.log(arg);
 	}
 
-	createInputAndTitle(titleContent, id, content, descContent) {
+	createInputAndTitle(titleContent, id, content, descContent, inputType) {
 		let title = document.createElement("p");
 		title.id = id + "-title-id";
 		title.textContent = titleContent;
@@ -91,7 +91,7 @@ export default class SignUpPage extends AbstractComponent {
 		title.style.setProperty("margin", "0px 0px 10px 0px");
 		// title.style.setProperty("border", "1px green solid");
 
-		const input = new InputField({content: content});
+		const input = new InputField({content: content, type: inputType});
 		input.id = id + "-input-id";
 		input.style.setProperty("marin-bottom", "0px");
 		
