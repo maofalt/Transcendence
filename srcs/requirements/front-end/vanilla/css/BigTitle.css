@@ -1,6 +1,6 @@
 @font-face {
-	font-family: 'Anta';
-	src:  url('https://fonts.googleapis.com/css2?family=Anta&display=swap');
+	font-family: 'Space Grotesk';
+	src:  url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300&display=swap');
 	/* font-weight: 700; */
 	/* font-style: normal; */
 }
@@ -13,8 +13,7 @@
 	/* margin: 10px; */
 	/* padding: 10px; */
 
-	font-size: 120px;
-	font-family: "Anta";
+	font-weight: 300;
 	/* font-family: url('../js/assets/fonts/Tk421-K7mv7.otf') format('opentype'); */
 	
 	line-height: 76px;
@@ -28,6 +27,8 @@
 }
 
 p {
+	font-size: 120px;
+	font-family: "Space Grotesk", sans-serif;
 	margin: 0px;
 	padding: 0px;
 	/* text-justify: center; */

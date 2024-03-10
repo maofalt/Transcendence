@@ -3,9 +3,15 @@
 	src: url('js/assets/fonts/Tk421-K7mv7.otf') format('opentype');
 } */
 
+@font-face {
+	font-family: "Anta";
+	src:  url('https://fonts.googleapis.com/css2?family=Anta&display=swap');
+}
+
 :host {
 	height: 60px;
 	margin-bottom: 15px;
+	font-family: "Anta";
 }
 
 input {
@@ -17,6 +23,7 @@ input {
 	margin-bottom: 15px;
 
 	font-size: 24px;
+	font-family: "Anta";
 	color: white;
 	
 	background: rgba(0, 0, 0, 0.7);
@@ -28,5 +35,6 @@ input {
 }
 
 input::placeholder {
+	font-family: "Anta";
 	padding-left: 20px;
 }

@@ -33,15 +33,31 @@ export default class HomePage extends AbstractComponent {
 		menu.appendChild(tournamentsButton);
 		menu.appendChild(optionsButton);
 
-		const footer = new Pannel({title: " ", dark: true, style: {width: "100vw", height: "100px"}});
+		const footerContainer = document.createElement('div');
+		footerContainer.id = "footerContainer";
+		// footerContainer.style.setProperty("border", "1px red solid");
 
-		// this.shadowRoot.appendChild(playButton);
-		// this.shadowRoot.appendChild(tournamentsButton);
-		// this.shadowRoot.appendChild(optionsButton);
+		const userInfo = new Pannel({title: " ", dark: true, style: {width: "550px", height: "150px"}});
+		userInfo.id = "userInfo";
+		userInfo.shadowRoot.removeChild(userInfo.shadowRoot.querySelector("#pannel-title"));
+
+		const profilePicture = new Pannel({title: " ", dark: false, style: {width: "120px", height: "120px"}});
+		profilePicture.id = "profilePicture";
+		profilePicture.shadowRoot.removeChild(profilePicture.shadowRoot.querySelector("#pannel-title"));
+
+		const userText = document.createElement('div');
+		userText.id = 'userText';
+		// userText.style.setProperty("border", "1px blue solid");
+		userText.style.setProperty("flex", "2");
+		userText.style.setProperty("height", "100%");
+
+		userInfo.shadowRoot.appendChild(profilePicture);
+		userInfo.shadowRoot.appendChild(userText);
+
+		footerContainer.appendChild(userInfo);
+
 		this.shadowRoot.appendChild(menu);
-		this.shadowRoot.appendChild(footer);
-		// this.shadowRoot.appendChild(div);
-		// this.shadowRoot.appendChild(footer);
+		this.shadowRoot.appendChild(footerContainer);
 	}
 }
 

@@ -55,8 +55,8 @@ export default class Design extends HTMLElement {
 		let homePage = new HomePage();
 		let playMenu = new PlayMenu();
 
-		this.shadowRoot.appendChild(loginPage);
-		// this.shadowRoot.appendChild(homePage);
+		// this.shadowRoot.appendChild(loginPage);
+		this.shadowRoot.appendChild(homePage);
 		// this.shadowRoot.appendChild(playMenu);
 	}
 
