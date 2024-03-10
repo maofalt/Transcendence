@@ -11,10 +11,11 @@ export default class InputField extends AbstractComponent {
 		styleEl.textContent = inputFieldStyle;
 		this.shadowRoot.appendChild(styleEl);
 
-		let input = document.createElement('input');
-		input.setAttribute("placeholder", (options.content ? options.content : "Input"));
-
-		this.shadowRoot.appendChild(input);
+		this.input = document.createElement('input');
+		this.input.setAttribute("placeholder", (options.content ? options.content : "Input"));
+		this.input.setAttribute("type", options.type ? options.type : "text");
+		this.input.setAttribute("name", options.name ? options.name : "input");
+		this.shadowRoot.appendChild(this.input);
 
 		if (options.style) {
 			for (const [key, value] of Object.entries(options.style)) {
@@ -23,6 +24,10 @@ export default class InputField extends AbstractComponent {
 				this.shadowRoot.querySelector('input').style.setProperty(key, value);
 			}
 		}
+	}
+
+	getValue = () => {
+		return this.input.value;
 	}
 }
 

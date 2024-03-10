@@ -113,4 +113,4 @@ document.addEventListener('DOMContentLoaded', () => {
   router();
 });
 
-export default router;
+export default { routes, navigateTo, router };

@@ -6,6 +6,7 @@ import style from '@css/PlayMenu.css?raw';
 import BigTitle from '@components/BigTitle';
 import Pannel from '@components/Pannel';
 import CustomButton from '@components/CustomButton';
+import { navigateTo } from "@utils/Router";
 
 export default class PlayMenu extends AbstractComponent {
 	constructor(options = {}) {
@@ -25,11 +26,11 @@ export default class PlayMenu extends AbstractComponent {
 		this.setupPannel(classicPong, 
 			"Play a game of classic Pong with a friend, on the same keyboard.",
 			"../js/assets/images/pong-intro-img.webp",
-			() => navigateTo("/game"));
+			() => navigateTo("/basic"));
 		this.setupPannel(customGame, 
 			"Create your own game of Pong and play remotely with up to 7 friends.",
 			"../js/assets/images/redSpace.jpg",
-			() => navigateTo("/game"));
+			() => navigateTo("/play"));
 
 		menu.appendChild(classicPong);
         menu.appendChild(customGame);
