@@ -10,7 +10,7 @@ class User(AbstractUser):
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True, default='default_avatar.jpeg')
     friends = models.ManyToManyField('self', symmetrical=False, blank=True)
     game_stats = models.OneToOneField('gameHistory_microservice.GameStats', on_delete=models.CASCADE, null=True, blank=True, related_name='user_game_stats')
-    phone = models.CharField(max_length=10, blank=True, null=True)
+    phone = models.CharField(max_length=15, blank=True, null=True)
     TWO_FACTOR_METHODS = [
         ('sms', 'SMS'),
         ('email', 'Email'),

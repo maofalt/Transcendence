@@ -741,3 +741,16 @@ def subscribe_user_to_sns_topic(phone_number):
     except Exception as e:
         print("Error subscribing user:", e)
         return None
+
+def update_phone(request, phone_number=None):
+    user = request.user
+    if phone_number is None:
+        phone_number = request.POST.get('phone_number', '')
+        print("phone_number: ", phone_number)
+    try:
+        user.phone = phone_number
+        user.save()
+        return JsonResponse({})
+    except Exception as e:
+        print("Error saving phone number message:", e)
+        return JsonResponse({}, status=400) 
