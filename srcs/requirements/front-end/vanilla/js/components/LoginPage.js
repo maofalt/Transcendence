@@ -18,7 +18,7 @@ export default class LoginPage extends AbstractComponent {
 		let bigTitle = new BigTitle({content: "Cosmic<br>Pong", style: {margin: "-10vh 0 10vh 0"}});
 		let pannel = new Pannel({title: "Log In", dark: false});
 		let usernameInput = new InputField({content: "Username"});
-		let passwordInput = new InputField({content: "Password"});
+		let passwordInput = new InputField({content: "Password", type: "password"});
 		let loginButton = new CustomButton({content: "Log In", action: true, style: {margin: "15px 0px 0px 0px"}});
 		let signUpButton = new CustomButton({content: "Sign Up", action: false, style: {margin: "20px 0px 20px 0px"}});
 
