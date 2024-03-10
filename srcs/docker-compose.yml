@@ -38,7 +38,7 @@ services:
       - BASE_URL=/api/docs
     restart: unless-stopped
     volumes:
-      - ./api:/usr/share/nginx/html/spec/
+      - ./api/:/usr/share/nginx/html/spec/
     logging:
       driver: json-file
       options:

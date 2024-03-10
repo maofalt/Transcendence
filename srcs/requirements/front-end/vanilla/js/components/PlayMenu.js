@@ -22,10 +22,14 @@ export default class PlayMenu extends AbstractComponent {
 		const menu = document.createElement('div');
 		menu.id = "menu";
 
-		this.setupPannel(classicPong, "Play a game of classic Pong with a friend, on the same keyboard.",
-		"../js/assets/images/pong-intro-img.webp");
-		this.setupPannel(customGame, "Create your own game of Pong and play remotely with up to 7 friends.",
-		"../js/assets/images/redSpace.jpg");
+		this.setupPannel(classicPong, 
+			"Play a game of classic Pong with a friend, on the same keyboard.",
+			"../js/assets/images/pong-intro-img.webp",
+			() => navigateTo("/game"));
+		this.setupPannel(customGame, 
+			"Create your own game of Pong and play remotely with up to 7 friends.",
+			"../js/assets/images/redSpace.jpg",
+			() => navigateTo("/game"));
 
 		menu.appendChild(classicPong);
         menu.appendChild(customGame);
@@ -34,7 +38,7 @@ export default class PlayMenu extends AbstractComponent {
         this.shadowRoot.appendChild(menu);
 	}
 
-	setupPannel(pannel, descText, imageUrl) {
+	setupPannel(pannel, descText, imageUrl, onClick) {
 		const desc = document.createElement('p');
 		desc.innerHTML = descText;
 		desc.style.setProperty("font-size", "20px");
@@ -70,6 +74,8 @@ export default class PlayMenu extends AbstractComponent {
 
 		pannel.onmouseover = (e) => this.pannelHover(e, pannel, "pannel HOVERED !");
 		pannel.onmouseleave = (e) => this.pannelLeave(e, pannel, "pannel LEFT !");
+
+		pannel.onclick = onClick;
 	}
 
 	pannelHover = (e, pannel, arg) => {
