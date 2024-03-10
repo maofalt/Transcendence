@@ -60,10 +60,13 @@
       // If 2FA is enabled, include the selected method in the form data
       if (enable2faOnCheckbox.checked) {
         var selectedMethod = document.getElementById("two-factor-method").value;
+        console.log("selected 2fa: ", selectedMethod);
         formData.append('two_factor_method', selectedMethod);
+      } else if (enable2faOffCheckbox.checked) {
+        formData.append('two_factor_method', ''); // None
+        console.log("2fa == None");
       } else {
-        // If 2FA is disabled, set the method to None
-        formData.append('two_factor_method', '');
+        formData.delete('two_factor_method');
       }
       console.log("formData: ", formData);
       fetch("{% url 'account:profile_update' %}", {

@@ -522,7 +522,11 @@ def profile_update_view(request):
             user = user_form.save(commit=False)
             if 'two_factor_method' in request.POST:
                 print("2fa method option found!", request.POST['two_factor_method'])
-                user.two_factor_method = request.POST['two_factor_method']
+                if request.POST['two_factor_method'] == None:
+                    user.two_factor_method = None
+                else:
+                    user.two_factor_method = request.POST['two_factor_method']
+                    
             if User.objects.filter(playername=user.playername).exclude(username=request.user.username).exists():
                 return JsonResponse({'error': 'Playername already exists. Please choose a different one.'})
             else:
