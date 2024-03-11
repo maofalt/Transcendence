@@ -82,7 +82,6 @@ export default class Signup extends AbstractComponent {
 		});
 	}
 
-	// submitLoginForm = (e, formData) => {
 	submitSignup = (e, formData) => {
 		e && e.preventDefault();
 		
@@ -152,7 +151,6 @@ export default class Signup extends AbstractComponent {
 		}
 	}
 
-	// sendVerificationCode = (e) => {
 	sendCodeToEmail = (e, email) => {
 		if (e)
 			e.preventDefault();

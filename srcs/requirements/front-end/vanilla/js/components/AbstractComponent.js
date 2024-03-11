@@ -12,7 +12,7 @@ export default class AbstractComponent extends HTMLElement {
 	}
 
 	static get observedAttributes() {
-		return ['width', 'height'];
+		return ['width', 'height', 'valid', 'content'];
 	}
 
 	// this function gets called when the custom component gets added to the dom
@@ -22,7 +22,7 @@ export default class AbstractComponent extends HTMLElement {
 	}
 
 	attributeChangedCallback(name, oldValue, newValue) {
-		// if (name === 'width' || name === 'height') {
+		if (name === 'width' || name === 'height') {
 			// Select an element inside the shadow root
 			// let element = this.shadowRoot.host;
 	
@@ -31,7 +31,7 @@ export default class AbstractComponent extends HTMLElement {
 				// this.style[name] = newValue;
 				this.style.setProperty(name, newValue);
 			// }
-		// }
+		}
 	}
 
 	// this function gets called when the custom component is removed from the dom

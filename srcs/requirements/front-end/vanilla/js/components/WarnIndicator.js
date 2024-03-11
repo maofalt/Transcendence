@@ -1,14 +1,13 @@
 import { createElement } from "@utils/createElement";
 import { htmlToElement } from "@utils/htmlToElement";
 import AbstractComponent from "./AbstractComponent";
+import alertTriangle from "@public/alert-triangle.svg?raw";
+import checkCircle from "@public/check-circle.svg?raw";
+import googleAlert from "@public/google-alert.svg?raw";
 // import inputFieldStyle from '@css/warnIndicator.css?raw';
 
 var html = `
-<span>
-	<svg aria-hidden="true" fill="currentColor" focusable="false" width="16px" height="16px" viewBox="0 0 24 24" xmlns="https://www.w3.org/2000/svg">
-		<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path>
-	</svg>
-</span>
+
 `;
 
 export default class WarnIndicator extends AbstractComponent {
@@ -20,7 +19,7 @@ export default class WarnIndicator extends AbstractComponent {
 		this.shadowRoot.appendChild(styleEl);
 
 		this.div = document.createElement('div');
-		this.div.innerHTML = html;
+		this.div.innerHTML = alertTriangle;
 		this.div.style.setProperty("display", "flex");
 		this.div.style.setProperty("justify-content", "center");
 		this.shadowRoot.appendChild(this.div);
@@ -34,6 +33,19 @@ export default class WarnIndicator extends AbstractComponent {
 				console.log(key);
 				console.log(value);
 				this.div.style.setProperty(key, value);
+			}
+		}
+	}
+
+	attributeChangedCallback(name, oldValue, newValue) {
+		if (name === 'width' || name === 'height') {
+			this.style.setProperty(name, newValue);
+		}
+		if (name === 'valid') {
+			if (newValue === "false") {
+				this.div.innerHTML = `<img src="${alertTriangle}" alt="Icon">`;
+			} else {
+				this.div.innerHTML = `<img src="${checkCircle}" alt="Icon">`;
 			}
 		}
 	}

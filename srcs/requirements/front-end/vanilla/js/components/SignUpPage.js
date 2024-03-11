@@ -6,15 +6,19 @@ import Pannel from "@components/Pannel";
 import CustomButton from "@components/CustomButton";
 import BigTitle from "@components/BigTitle";
 import InputField from "@components/InputField";
+import Router from "@utils/Router";
+import { getCookie } from "@utils/getCookie";
+import { easyFetch } from "@utils/easyFetch";
+import WarnIndicator from "@components/WarnIndicator";
 
 export default class SignUpPage extends AbstractComponent {
 	constructor(options = {}) {
 		super();
-		
+
 		const styleEl = document.createElement('style');
 		styleEl.textContent = styles;
 		this.shadowRoot.appendChild(styleEl);
-		
+
 		// let bigTitle = new BigTitle({content: "Cosmic<br>Pong", style: {margin: "-10vh 0 10vh 0"}});
 		let pannel = new Pannel({title: "Sign Up", dark: false});
 
@@ -23,7 +27,7 @@ export default class SignUpPage extends AbstractComponent {
 		formContainer.style.setProperty("display", "flex");
 		formContainer.style.setProperty("width", "100%");
 		formContainer.style.setProperty("flex-direction", "row");
-		
+
 		let idBlock = this.createInputAndTitle("Unique ID", "ID", "example: GigaBoomer69", 
 		"A unique ID that defines you in our Database.", "");
 		idBlock.style.setProperty("height", "130px");
@@ -45,13 +49,13 @@ export default class SignUpPage extends AbstractComponent {
 		
 		const sendCode = new CustomButton({content: "Send Code", action: false});
 		emailBlock.appendChild(sendCode);
-
+		
 		const verifyCode = new CustomButton({content: "Verify Code", action: false});
 		verifyCodeBlock.appendChild(verifyCode);
-
+		
 		let leftBlock = this.createBlock("left");
 		let rightBlock = this.createBlock("right");
-
+		
 		const privacyBlock = this.createPrivacyBlock();
 		
 		leftBlock.appendChild(idBlock);
@@ -65,19 +69,200 @@ export default class SignUpPage extends AbstractComponent {
 		
 		formContainer.appendChild(leftBlock);
 		formContainer.appendChild(rightBlock);
-
+		
 		const buttonsBlock = this.createBottomButtons();
-
+		
 		pannel.shadowRoot.appendChild(formContainer);
 		pannel.shadowRoot.appendChild(buttonsBlock);
 		pannel.shadowRoot.querySelector("#pannel-title").style.setProperty("font-size", "36px");
 		pannel.shadowRoot.querySelector("#pannel-title").style.setProperty("margin", "20px 0px 34px 0px");
-		// signUpButton.onclick = (e) => this.buttonOnClick(e, "Sign Up button clicked!");
-		
+
+		const inicator = new WarnIndicator({style: {color: "red"}, content: "Invalid input"});
+		pannel.shadowRoot.appendChild(inicator);
 		// this.shadowRoot.appendChild(bigTitle);
 		this.shadowRoot.appendChild(pannel);
+		
+		let usernameInput = idBlock.querySelector("input-field");
+		let emailInput = emailBlock.querySelector("input-field");
+		let passwordInput = passwordBlock.querySelector("input-field");
+		let confirmPasswordInput = confirmPasswordBlock.querySelector("input-field");
+		let playerNameInput = playernameBlock.querySelector("input-field");
+		let accessCodeInput = verifyCodeBlock.querySelector("input-field");
+		
+		let signUpButton = buttonsBlock.querySelector("#signUpButton");
+		let backButton = buttonsBlock.querySelector("#backButton");
+
+		sendCode.onclick = (e) => this.sendCodeToEmail(e, emailInput.getValue());
+		verifyCode.onclick = (e) => this.verifyCode(e, emailInput, accessCodeInput);
+
+		passwordInput.oninput = (e) => this.checkPassword(e, passwordInput);
+		confirmPasswordInput.oninput = (e) => this.checkPasswordMatch(e, passwordInput, confirmPasswordInput);
+
+		signUpButton.onclick = (e) => this.submitSignup(e, {
+			username: usernameInput.getValue(),
+			password: passwordInput.getValue(),
+			confirm_password: confirmPasswordInput.getValue(),
+			playername: playerNameInput.getValue(),
+			signupEmail: emailInput.getValue(),
+			access_code: accessCodeInput.getValue()
+		});
 	}
+
+	verifyCode = (e, emailInput, verificationCodeInput) => {
+		var email = emailInput.getValue();
+		var verificationCode = verificationCodeInput.getValue();
+
+		easyFetch('/api/user_management/auth/verify_code', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded',
+				'X-CSRFToken': getCookie('csrftoken')
+			},
+			body: new URLSearchParams({ 'email': email, 'one_time_code': verificationCode, 'context': "signup" })
+		})
+		.then(res => {
+			let response = res.response;
+			let body = res.body;
+
+			if (!response || !body) {
+				alert('Request Failed');
+				return ;
+			}
+
+			if (response.status === 400) {
+				alert(body.error || JSON.stringify(body));
+				return ;
+			}
 	
+			if (!response.ok) {
+				alert('Response Error: ' + (body.error || JSON.stringify(body)));
+				return ;
+			}
+
+			if (response.status === 200 && body.success === true) {
+				alert(body.message || JSON.stringify(body));
+				return ;
+			}
+
+			alert(body.error || JSON.stringify(body));
+		})
+		.catch(error => {
+			console.error('Request Failed:', error);
+		});
+	}
+
+	submitSignup = (e, formData) => {
+		e && e.preventDefault();
+		
+		console.log('submitSignup');
+		console.log('values:', formData);
+
+		easyFetch('/api/user_management/auth/signup', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded',
+				'X-CSRFToken': getCookie('csrftoken')
+			},
+			body: new URLSearchParams(formData)
+		})
+		.then(res => {
+			let response = res.response;
+			let body = res.body;
+
+			if (!response || !body) {
+				alert('Request Failed');
+				return ;
+			}
+
+			if (response.status === 400) {
+				alert('Invalid signup data');
+				return ;
+			}
+	
+			if (!response.ok) {
+				alert('Response Error: ' + body.error || JSON.stringify(body));
+				return ;
+			}
+
+			if (response.status === 200 && body.success === true) {
+				alert('Login successful: ' + body.message || JSON.stringify(body));
+				Router.navigateTo("/");
+				return ;
+			}
+
+			alert(body.error || JSON.stringify(body));
+		})
+		.catch(error => {
+			console.error('Request Failed:', error);
+		});
+	}
+
+	checkPassword = (e, passwordInput) => {
+		e && e.preventDefault();
+		
+		let password = passwordInput.getValue();
+		let passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+		
+		if (!passwordRegex.test(password)) {
+			passwordInput.input.style.outline = "2px solid red";
+		} else {
+			passwordInput.input.style.outline = "2px solid green";
+		}
+	}
+
+	checkPasswordMatch = (e, passwordInput, confirmPasswordInput) => {
+		e && e.preventDefault();
+		
+		let password = passwordInput.getValue();
+		let confirmPassword = confirmPasswordInput.getValue();
+
+		if (password !== confirmPassword) {
+			confirmPasswordInput.input.style.outline = "2px solid red";
+		} else {
+			confirmPasswordInput.input.style.outline = "2px solid green";
+		}
+	}
+
+	sendCodeToEmail = (e, email) => {
+		if (e)
+			e.preventDefault();
+		easyFetch('/api/user_management/auth/access_code', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-CSRFToken': getCookie('csrftoken')
+			},
+			body: JSON.stringify({ 'email': email })
+		})
+		.then(res => {
+			let response = res.response;
+			let body = res.body;
+
+			if (!response || !body) {
+				console.error('Request Failed');
+				return ;
+			}
+
+			if (response.status === 400) {
+				alert(body.error || 'Invalid email');
+				return ;
+			}
+	
+			if (!response.ok) {
+				console.error('Request Failed:', body.error || JSON.stringify(body));
+				return ;
+			}
+
+			if (response.status === 200 && body.success === true) {
+				alert('Email sent to \'' + email + '\'');
+				// Router.navigateTo("/");
+			}
+		})
+		.catch(error => {
+			console.error('Request Failed:', error);
+		});
+	}
+
 	buttonOnClick = (e, arg) => {
 		console.log(arg);
 	}
@@ -187,8 +372,10 @@ export default class SignUpPage extends AbstractComponent {
 
 		let signUpButton = new CustomButton({content: "Sign Up", action: true, style: {margin: "0px 15px"}});
 		signUpButton.style.setProperty("flex", "1");
+		signUpButton.id = "signUpButton";
 		let backButton = new CustomButton({content: "< Back", action: false, style: {margin: "0px 15px", width: "200px"}});
 		backButton.style.setProperty("width", "50%");
+		backButton.id = "backButton";
 
 		leftButtonDiv.appendChild(backButton);
 		block.appendChild(leftButtonDiv);
