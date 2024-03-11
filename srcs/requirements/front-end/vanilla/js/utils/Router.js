@@ -9,7 +9,7 @@ import User from '@views/User';
 import Design from '@views/Design.js';
 import BasicGame from '@views/BasicGame.js';
 import TwoFactorAuth from '@views/2fa';
-import Signup from '@views/Signup.js';
+import SignupPage from '@components/SignUpPage.js';
 
 export const routes = {
 	'/': {
@@ -50,7 +50,7 @@ export const routes = {
 	},
 	'/signup': {
 		path: '/signup',
-		component: 'signup-page',
+		component: 'signup-page-v2',
 		title: 'Signup',
 		buttonText: 'Signup'
 	},
