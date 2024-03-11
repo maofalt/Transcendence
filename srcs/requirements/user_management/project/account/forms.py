@@ -27,16 +27,6 @@ class ProfileUpdateForm(forms.ModelForm):
             self.fields['two_factor_enabled'].widget = forms.HiddenInput()
 
 
-    # # Enable or disable the 2FA method selection field based on the user's choice for enabling/disabling 2FA
-    # def clean_two_factor_method(self):
-    #     two_factor_enabled = self.cleaned_data.get('two_factor_enabled')
-    #     two_factor_method = self.cleaned_data.get('two_factor_method')
-
-    #     if not two_factor_enabled:
-    #         return None
-        
-    #     return two_factor_method
-
     # def clean_password(self):
     #     return self.initial.get('password')
         

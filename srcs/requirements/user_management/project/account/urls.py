@@ -39,6 +39,8 @@ urlpatterns = [
     path('smsTest', views.smsTest, name='smsTest'),
     path('sendCodeSMS', views.send_sms_code, name='sendCodeSMS'),
     path('updatePhone', views.update_phone, name='updatePhone'),
+    # path('verifySandBox', views.verify_sandBox, name='verifySandBox'),
+    
     
 ]
 

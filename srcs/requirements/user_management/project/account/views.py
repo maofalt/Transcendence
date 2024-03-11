@@ -315,7 +315,7 @@ def api_signup_view(request):
         login(request, user)
         user.is_online = True
         user.save()
-        return generate_tokens_and_response(user)
+        return generate_tokens_and_response(request, user)
         # return JsonResponse({'success': True})
 
     return JsonResponse({'success': False, 'error': escape('Invalid request method')}, status=400)
@@ -416,38 +416,38 @@ def friends_view(request):
 @login_required
 @csrf_protect
 def detail_view(request):
-    access_token = request.headers.get('Authorization')  # Get the access token from the request headers
-    print("GOT IN \n")
-    if access_token:
-        decoded_token = jwt.decode(access_token.split()[1], settings.SECRET_KEY, algorithms=["HS256"])
-        print("\nDECODED from detail_view: ", decoded_token)
-        user_id = decoded_token.get('user_id')
+    # access_token = request.headers.get('Authorization')  # Get the access token from the request headers
+    # if access_token:
+    #     decoded_token = jwt.decode(access_token.split()[1], settings.SECRET_KEY, algorithms=["HS256"])
+    #     print("\nDECODED from detail_view: ", decoded_token)
+    #     user_id = decoded_token.get('user_id')
+    user = request.user
+        # if user_id:
+        #     user = User.objects.filter(pk=user_id).first()
 
-        if user_id:
-            user = User.objects.filter(pk=user_id).first()
-
-            if user:
-                game_stats = user.game_stats
-                # Serialize user data
-                data = {
-                    'username': user.username,
-                    'playername': user.playername,
-                    # 'email': user.email,
-                    'avatar': user.avatar.url if user.avatar else None,
-                    'friends_count': user.friends.count(),
-                    'total_games_played': game_stats.total_games_played,
-                    'games_won': game_stats.games_won,
-                    'games_lost': game_stats.games_lost,
-                }
-
-                return JsonResponse(data)
-            else:
-                return JsonResponse({'error': 'User not found'}, status=404)
-        else:
-            return JsonResponse({'error': 'User ID not found in token'}, status=401)
+    if user:
+        game_stats = user.game_stats
+        # Serialize user data
+        data = {
+            'username': user.username,
+            'playername': user.playername,
+            # 'email': user.email,
+            'avatar': user.avatar.url if user.avatar else None,
+            'friends_count': user.friends.count(),
+            'two_factor_method': user.two_factor_method,
+            'total_games_played': game_stats.total_games_played,
+            'games_won': game_stats.games_won,
+            'games_lost': game_stats.games_lost,
+        }
+        return render(request, 'detail.html', {'data': data})
+        # return JsonResponse(data)
     else:
-        return JsonResponse({'error': 'Access token is missing'}, status=401)
-#     return render(request, 'detail.html', {'data': data})
+        return JsonResponse({'error': 'User not found'}, status=404)
+    # else:
+    #     return JsonResponse({'error': 'User ID not found in token'}, status=401)
+    # else:
+    #     return JsonResponse({'error': 'Access token is missing'}, status=401)
+    # return render(request, 'detail.html', {'data': data})
 
 @login_required
 def add_friend(request, pk):
@@ -470,12 +470,10 @@ def profile_update_view(request):
         if user_form.is_valid():
             user = user_form.save(commit=False)
             if 'two_factor_method' in request.POST:
-                print("2fa method option found!", request.POST['two_factor_method'])
-                if request.POST['two_factor_method'] == None:
+                if request.POST['two_factor_method'] == '':
                     user.two_factor_method = None
                 else:
                     user.two_factor_method = request.POST['two_factor_method']
-                    
             if User.objects.filter(playername=user.playername).exclude(username=request.user.username).exists():
                 return JsonResponse({'error': 'Playername already exists. Please choose a different one.'})
             else:
@@ -485,9 +483,10 @@ def profile_update_view(request):
             return JsonResponse({'error': 'Form is not valid.'}, status=400)
     else:
         user_form = ProfileUpdateForm(instance=request.user)
-        serialized_form = model_to_dict(user_form)
-        html = render_to_string('profile_update.html')
-        return JsonResponse({'form': serialized_form, 'html': html})
+        # serialized_form = model_to_dict(user_form)
+        html = render_to_string('profile_update.html', {'form': user_form})
+        # return JsonResponse({'html': html})
+        return render(request, 'profile_update.html', {'user_form': user_form})
 
 @login_required
 def password_update_view(request):
@@ -672,11 +671,24 @@ def send_sms_code(request, phone_number=None):
                     PhoneNumber=phone_number,
                     Message=message,
                 )
+                # Add phone number to 'Sandbox destination phone numbers'
+                try:
+                    response = sns_client.create_sms_sandbox_phone_number(
+                        PhoneNumber=phone_number,
+                        LanguageCode='en-US'  # Adjust language code as needed
+                    )
+                    print("Phone number added to Sandbox destination phone numbers:", phone_number)
+                except Exception as e:
+                    print("Error adding phone number to Sandbox destination phone numbers:", e)
+                    return JsonResponse({'success': False, 'error': str(e)})
+
                 print("SMS message sent successfully:", response)
                 return JsonResponse({'success': True, 'message': 'SMS message sent successfully'})
             except Exception as e:
                 print("Error sending SMS message:", e)
                 return JsonResponse({'success': False, 'error': 'Failed to send SMS message'})
+        
+
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=400)
     
@@ -697,6 +709,18 @@ def subscribe_user_to_sns_topic(phone_number):
     except Exception as e:
         print("Error subscribing user:", e)
         return None
+
+def verify_sandBox(request):
+    # Verify phone number in the SMS sandbox
+    try:
+        response = sns_client.verify_sms_sandbox_phone_number(
+            PhoneNumber=phone_number,
+            OneTimePassword=one_time_code  # Replace with your actual one-time password
+        )
+        print("Phone number verified in the SMS sandbox:", phone_number)
+    except Exception as e:
+        print("Error verifying phone number in the SMS sandbox:", e)
+        return JsonResponse({'success': False, 'error': str(e)})
 
 def update_phone(request, phone_number=None):
     user = request.user
