@@ -180,8 +180,8 @@ def generate_tokens_and_response(request, user):
     try:
         secret_key = settings.SECRET_KEY
 
-        print("original ACCESS TOKEN: ", str(accessToken))
-        print("original REFRESH TOKEN: ", str(refreshToken))
+        # print("original ACCESS TOKEN: ", str(accessToken))
+        # print("original REFRESH TOKEN: ", str(refreshToken))
         decodedToken = jwt.decode(str(accessToken), secret_key, algorithms=["HS256"])
         local_tz = pytz.timezone('Europe/Paris')
         exp_timestamp_accessToken = decodedToken['exp']
@@ -653,7 +653,7 @@ def send_sms_code(request, phone_number=None):
     if request.method == 'POST':
         if phone_number is None:
             phone_number = request.POST.get('phone_number', '')
-            print("phone_number: ", phone_number)
+        print("Send SMS Func, phone_number: ", phone_number)
         if not is_valid_phone_number(phone_number):
             return JsonResponse({'success': False, 'error': 'Invalid phone number format'}, status=400)
 
@@ -661,7 +661,7 @@ def send_sms_code(request, phone_number=None):
         request.session['one_time_code'] = one_time_code
 
         print("\n\nCHECK CODE ON SESSION: ", request.session.get('one_time_code'))
-        message = f'Your one-time code is: {one_time_code}'
+        message = f'Pong! Your one-time code is: {one_time_code}'
 
         subscription_arn = subscribe_user_to_sns_topic(phone_number)
         
@@ -671,30 +671,23 @@ def send_sms_code(request, phone_number=None):
                     PhoneNumber=phone_number,
                     Message=message,
                 )
-                # Add phone number to 'Sandbox destination phone numbers'
-                try:
-                    response = sns_client.create_sms_sandbox_phone_number(
-                        PhoneNumber=phone_number,
-                        LanguageCode='en-US'  # Adjust language code as needed
-                    )
-                    print("Phone number added to Sandbox destination phone numbers:", phone_number)
-                except Exception as e:
-                    print("Error adding phone number to Sandbox destination phone numbers:", e)
-                    return JsonResponse({'success': False, 'error': str(e)})
-
-                print("SMS message sent successfully:", response)
+                print("SMS message sent successfully:")
                 return JsonResponse({'success': True, 'message': 'SMS message sent successfully'})
             except Exception as e:
                 print("Error sending SMS message:", e)
                 return JsonResponse({'success': False, 'error': 'Failed to send SMS message'})
-        
-
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=400)
-    
+
 def subscribe_user_to_sns_topic(phone_number):
     try:
         topic_arn = 'arn:aws:sns:eu-west-3:637423363839:verification_code_for_Pong'
+
+        subscriptions = sns_client.list_subscriptions_by_topic(TopicArn=topic_arn)['Subscriptions']
+        for subscription in subscriptions:
+            if subscription['Protocol'] == 'sms' and subscription['Endpoint'] == phone_number:
+                print(f"User is already subscribed with subscription ARN: {subscription['SubscriptionArn']}")
+                return subscription['SubscriptionArn']
 
         response = sns_client.subscribe(
             TopicArn=topic_arn,
@@ -710,17 +703,65 @@ def subscribe_user_to_sns_topic(phone_number):
         print("Error subscribing user:", e)
         return None
 
-def verify_sandBox(request):
-    # Verify phone number in the SMS sandbox
+def update_sandbox(request, phone_number=None):
+    if request.method == 'POST':
+        if phone_number is None:
+            phone_number = request.POST.get('phone_number', '')
+            print("phone_number: ", phone_number)
+        if phone_number == request.user.phone:
+            return JsonResponse({'success': True, 'message': 'Your number is already verified', 'verified': True})
+        if not is_valid_phone_number(phone_number):
+            return JsonResponse({'success': False, 'error': 'Invalid phone number format'}, status=400)
+        if is_phone_number_verified(phone_number):
+            return JsonResponse({'success': True, 'message': 'Your number is already verified', 'verified': True})
+        # Add phone number to 'Sandbox destination phone numbers andd send OTP'
+        try:
+            sns_client.create_sms_sandbox_phone_number(
+                PhoneNumber=phone_number,
+                LanguageCode='en-US'  # Adjust language code as needed
+            )
+            print("Phone number added to Sandbox destination phone numbers and OTP sent successfully:")
+            return JsonResponse({'success': True, 'message': 'SMS message sent successfully'})
+        except Exception as e:
+            print("Error adding phone number to Sandbox destination phone numbers:", e)
+            return JsonResponse({'success': False, 'error': str(e)})
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+def verify_sandBox(request, otp=None, phone_number=None):
+    print("\n--Verify SandBox\n")
+    if request.method == 'POST':
+        if phone_number is None:
+            phone_number = request.POST.get('phone_number', '')
+            print("phone_number: ", phone_number)
+        if otp is None:
+            otp = request.POST.get('otp', '')
+            print("otp: ", otp)
+        # Verify phone number in the SMS sandbox
+        try:
+            response = sns_client.verify_sms_sandbox_phone_number(
+                PhoneNumber=phone_number,
+                OneTimePassword=otp
+            )
+            print("Phone number verified in the SMS sandbox:", phone_number)
+            return JsonResponse({'success': True, 'message': 'Phone number verified'})
+        except Exception as e:
+            print("Error verifying phone number in the SMS sandbox:", e)
+            return JsonResponse({'success': False, 'error': str(e)})
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+def is_phone_number_verified(phone_number):
     try:
-        response = sns_client.verify_sms_sandbox_phone_number(
-            PhoneNumber=phone_number,
-            OneTimePassword=one_time_code  # Replace with your actual one-time password
-        )
-        print("Phone number verified in the SMS sandbox:", phone_number)
+        response = sns_client.list_sms_sandbox_phone_numbers()
+        phone_numbers = response.get('PhoneNumbers', [])
+        for number in phone_numbers:
+            if number['PhoneNumber'] == phone_number and number['Status'] == 'Verified':
+                return True
+        return False
     except Exception as e:
-        print("Error verifying phone number in the SMS sandbox:", e)
-        return JsonResponse({'success': False, 'error': str(e)})
+        print("Error listing SMS sandbox phone numbers:", e)
+        return False
 
 def update_phone(request, phone_number=None):
     user = request.user

@@ -55,12 +55,12 @@
         {% csrf_token %}
         <div style="position: relative;">
             <input name="phoneNum" type="text" placeholder="(+33)" oninput="formatPhoneNumber()" autocomplete="off">
-            <button type="button" onclick="sendCodeSMS()">Send Verify Code</button>
+            <button type="button" onclick="updateSandbox()">Send Verify Code</button>
         </div>
     </form>
     <div id="verifyCodeInput">
         <input name="one_time_code" type="text" placeholder="Enter Verification Code" autocomplete="off">
-        <button type="button" onclick="submitOneTimeCode('2fa')">Submit</button>
+        <button type="button" onclick="verifySandBox('2fa')">Submit</button>
     </div>
     <div id="message" style="color: green;"></div>
 
@@ -113,30 +113,36 @@
     return cookieValue;
     }
 
-    function sendCodeSMS() {
+    function updateSandbox() {
         var phoneNumber = $("#gatherPhoneNum input[name='phoneNum']").val().replace(/[-()]/g, '');
         phoneNumber = phoneNumber.slice(0, 3) + phoneNumber.slice(4);
         $.ajax({
             type: 'POST',
-            url: '{% url "account:sendCodeSMS" %}',
-            data: {phone_number: phoneNumber},
+            url: '{% url "account:updateSandbox" %}',
+            data: {'phone_number': phoneNumber},
             headers: { "X-CSRFToken": getCookie('csrftoken') },
             success: function(data) {
-                console.log('SMS code sent successfully:', data);
+                console.log('number added to sandBox destination successfully:', data);
+                if (data.verified) {
+                  updatePhoneData();
+                  displayMessage("Your Phone data updated. Don't forget to press 'Update Profile' button!!")
+                }
             },
             error: function(xhr, textStatus, errorThrown) {
-                console.error('Error sending SMS code:', errorThrown);
+                console.error('Error adding number to sandBox destinatio:', errorThrown);
             }
         });
     }
     
-    function submitOneTimeCode(context) {
+    function verifySandBox() {
         var oneTimeCode = $('input[name="one_time_code"]').val();
-        console.log('submitOneTimeCode submit');
+        var phoneNumber = $("#gatherPhoneNum input[name='phoneNum']").val().replace(/[-()]/g, '');
+        phoneNumber = phoneNumber.slice(0, 3) + phoneNumber.slice(4);
+        console.log('verifySandBox submit');
         $.ajax({
-            url: '{% url "account:verify_one_time_code" %}',
+            url: '{% url "account:verifySandBox" %}',
             type: 'POST',
-            data: { 'one_time_code': oneTimeCode, 'context': context },
+            data: { 'otp': oneTimeCode, 'phone_number': phoneNumber},
             headers: { "X-CSRFToken": getCookie('csrftoken') },
             success: function (data) {
                 console.log('One-time code verification successful:', data);
@@ -166,7 +172,7 @@
         $.ajax({
             type: 'POST',
             url: '{% url "account:updatePhone" %}',
-            data: {phone_number: phoneNumber},
+            data: {'phone_number': phoneNumber},
             headers: { "X-CSRFToken": getCookie('csrftoken') },
             success: function(data) {
                 console.log('Updated user Phone data successfully:', data);
