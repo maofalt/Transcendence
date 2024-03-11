@@ -143,27 +143,35 @@ def api_login_view(request):
             print(f"Date Joined: {user.date_joined}")
             serializer = UserSerializer(user)
             redirect_url = '/api/user_management/'
-            
-            send_one_time_code(request, user.email)
-            
-            return generate_tokens_and_response(user)
+            if (user.two_factor_method != None):
+                if (user.two_factor_method == 'email'):
+                    send_one_time_code(request, user.email)
+                elif(user.two_factor_method == 'sms'):
+                    send_sms_code(request, user.phone)
+            return generate_tokens_and_response(request, user)
         else:
             print("Authentication failed")
             return JsonResponse({'error': escape('Authentication failed: Wrong user data')}, status=400)
     return JsonResponse({'error': escape('Invalid request method')}, status=400)
 
 
-def generate_tokens_and_response(user):
+def generate_tokens_and_response(request, user):
     accessToken = AccessToken.for_user(user)
     accessToken['username'] = user.username
-
+    
+    if user.two_factor_method == '' or user.two_factor_method is None:
+        twoFA = False
+        login(request, user)
+        user.is_online = True
+        user.save()
+    else:
+        twoFA = True
     refreshToken = RefreshToken.for_user(user)
-
     response = JsonResponse({
         'success' : True,
         'message': escape('Password Authentication successful'),
         # 'redirect_url': escape(redirect_url),
-        'requires_2fa': True
+        'requires_2fa': twoFA
     })
 
     response['Authorization'] = f'Bearer {str(accessToken)}'

@@ -109,6 +109,7 @@
           $('#oneTimeCodeSection').show();
         } else {
           console.log('2FA not required');
+          window.location.href = '';
         }
       },
       error: function (xhr, textStatus, errorThrown) {
