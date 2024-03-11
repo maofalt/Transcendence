@@ -15,11 +15,13 @@
 
 glass-pannel {
 	/* display: flex;
-	flex-direction: column; */
+	flex-direction: row; */
+
 	/* display: block; */
-	display: block;
-	width: 400px;
-	height: 420px;
+	/* color: blue; */
+	/* display: block; */
+	width: 800px;
+	height: 790px;
 	padding: 0px 30px 30px 30px;
 }
 

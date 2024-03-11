@@ -30,15 +30,14 @@ export default class Pannel extends AbstractComponent {
 
 	setPannelStyle(dark) {
 		this.style.border = "rgba(255, 255, 255, 0.15) 1px solid";
+		// this.style.border = "rgba(25, 255, 255, 0.3) 1px solid";
 		if (dark) {
 			this.style.background = "rgba(0, 0, 0, 0.5)";
-			this.style.borderRadius = "20px";
 			this.style.backdropFilter = "blur(6px)";
 			// this.style.border = "rgba(0, 0, 0, 0.1) 1px solid";
 			return ;
 		}
 		this.style.background = "rgba(255, 255, 255, 0.1)";
-		this.style.borderRadius = "20px";
 		this.style.backdropFilter = "blur(16px)";
 	}
 
