@@ -10,6 +10,7 @@ import LoginPage from '@components/LoginPage'
 import SignUpPage from "@components/SignUpPage";
 import HomePage from "@components/HomePage";
 import PlayMenu from "@components/PlayMenu";
+import InputAugmented from "../components/InputAugmented";
 
 export default class Design extends HTMLElement {
 	constructor(element) {
@@ -56,11 +57,22 @@ export default class Design extends HTMLElement {
 		let homePage = new HomePage();
 		let playMenu = new PlayMenu();
 		let signupPage = new SignUpPage();
+		let inputTest = new InputAugmented({
+			title: "GigaInput",
+			content: "input content",
+			indicators: ["first warning", "second warning", "blabla hehe"],
+			button: {content: "button content", action: true}});
+		inputTest.style.setProperty("width", "500px");
 
+		let warning = inputTest.shadowRoot.querySelector("#first-warning");
+		warning.setAttribute("valid", "true");
+		warning = inputTest.shadowRoot.querySelector("#blabla-hehe");
+		warning.setAttribute("valid", "true");
 		// this.shadowRoot.appendChild(loginPage);
-		this.shadowRoot.appendChild(signupPage);
+		// this.shadowRoot.appendChild(signupPage);
 		// this.shadowRoot.appendChild(homePage);
 		// this.shadowRoot.appendChild(playMenu);
+		this.shadowRoot.appendChild(inputTest);
 	}
 
 	// this function gets called when the custom component gets added to the dom
