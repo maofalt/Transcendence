@@ -6,27 +6,27 @@ import checkCircle from "@public/check-circle.svg?raw";
 import googleAlert from "@public/google-alert.svg?raw";
 // import inputFieldStyle from '@css/warnIndicator.css?raw';
 
-var html = `
-
-`;
-
 export default class WarnIndicator extends AbstractComponent {
 	constructor(options = {}) {
 		super();
 
-		const styleEl = document.createElement('style');
-		styleEl.textContent = "";
-		this.shadowRoot.appendChild(styleEl);
+		this.options = options;
+
+		// const styleEl = document.createElement('style');
+		// styleEl.textContent = "";
+		// this.shadowRoot.appendChild(styleEl);
 
 		this.div = document.createElement('div');
-		this.div.innerHTML = alertTriangle;
+		this.div.appendChild(htmlToElement(alertTriangle));
 		this.div.style.setProperty("display", "flex");
 		this.div.style.setProperty("justify-content", "center");
+		this.div.style.setProperty("color", "red");
 		this.shadowRoot.appendChild(this.div);
 
-		if (options.content) {
-			this.div.append(options.content);
+		if (!options.content) {
+			this.options.content = "This is a warning!";
 		}
+		this.div.append(options.content);
 
 		if (options.style) {
 			for (const [key, value] of Object.entries(options.style)) {
@@ -43,9 +43,14 @@ export default class WarnIndicator extends AbstractComponent {
 		}
 		if (name === 'valid') {
 			if (newValue === "false") {
-				this.div.innerHTML = `<img src="${alertTriangle}" alt="Icon">`;
+				console.log('newValue', newValue);
+				this.div.innerHTML = alertTriangle;
+				this.div.style.setProperty("color", "red");
+				this.div.append(this.options.content);
 			} else {
-				this.div.innerHTML = `<img src="${checkCircle}" alt="Icon">`;
+				this.div.innerHTML = checkCircle;
+				this.div.style.setProperty("color", "green");
+				this.div.append(this.options.content);
 			}
 		}
 	}

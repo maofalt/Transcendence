@@ -35,6 +35,38 @@ export default class SignUpPage extends AbstractComponent {
 		let passwordBlock = this.createInputAndTitle("Password", "password", "Password", 
 		"Minimum 8 characters, at least 1 digit, 1 letter, and different from your Playername and your Email.", "password");
 
+		// Minimum 8 characters, 
+		//at least 1 digit, 
+		//1 letter, 
+		//and different from your Playername 
+		//and your Email.
+
+		let lengthIndicator = new WarnIndicator({content: "Minimum 8 characters"});
+		let digitIndicator = new WarnIndicator({content: "At least 1 digit"});
+		let letterIndicator = new WarnIndicator({content: "At least 1 letter"});
+		let differentIndicator = new WarnIndicator({content: "Different from your Playername and your Email"});
+
+		lengthIndicator.setAttribute("valid", "false");
+		digitIndicator.setAttribute("valid", "false");
+		letterIndicator.setAttribute("valid", "false");
+		differentIndicator.setAttribute("valid", "false");
+
+		let indicators = {lengthIndicator, digitIndicator, letterIndicator, differentIndicator};
+
+		let indicatorContainer = document.createElement("div");
+		indicatorContainer.style.setProperty("display", "flex");
+		indicatorContainer.style.setProperty("flex-direction", "column");
+		indicatorContainer.style.setProperty("align-items", "flex-start");
+		indicatorContainer.style.setProperty("width", "100%");
+		indicatorContainer.style.setProperty("height", "50px");
+
+		indicatorContainer.appendChild(lengthIndicator);
+		indicatorContainer.appendChild(digitIndicator);
+		indicatorContainer.appendChild(letterIndicator);
+		indicatorContainer.appendChild(differentIndicator);
+
+		passwordBlock.appendChild(indicatorContainer);
+
 		let confirmPasswordBlock = this.createInputAndTitle("Confirm Password", "con-password", "Password", "", "password");
 		confirmPasswordBlock.style.setProperty("height", "130px");
 
@@ -95,7 +127,7 @@ export default class SignUpPage extends AbstractComponent {
 		sendCode.onclick = (e) => this.sendCodeToEmail(e, emailInput.getValue());
 		verifyCode.onclick = (e) => this.verifyCode(e, emailInput, accessCodeInput);
 
-		passwordInput.oninput = (e) => this.checkPassword(e, passwordInput);
+		passwordInput.oninput = (e) => this.checkPassword(e, passwordInput, indicators);
 		confirmPasswordInput.oninput = (e) => this.checkPasswordMatch(e, passwordInput, confirmPasswordInput);
 
 		signUpButton.onclick = (e) => this.submitSignup(e, {
@@ -197,12 +229,20 @@ export default class SignUpPage extends AbstractComponent {
 		});
 	}
 
-	checkPassword = (e, passwordInput) => {
+	checkPassword = (e, passwordInput, indicators) => {
 		e && e.preventDefault();
 		
 		let password = passwordInput.getValue();
 		let passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 		
+		if (password.length >= 8) {
+			passwordInput.input.style.outline = "2px solid green";
+			indicators.lengthIndicator.setAttribute("valid", "true");
+		} else {
+			passwordInput.input.style.outline = "2px solid red";
+			indicators.lengthIndicator.setAttribute("valid", "false");
+		}
+
 		if (!passwordRegex.test(password)) {
 			passwordInput.input.style.outline = "2px solid red";
 		} else {
