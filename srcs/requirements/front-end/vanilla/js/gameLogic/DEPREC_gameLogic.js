@@ -1,6 +1,3 @@
-const settings = require('./DEPREC_gameSettings');
-const objects = require('./DEPREC_gameObjects');
-const collisions = require('./DEPREC_gameCollisions');
 
 let data = objects.data;
 
@@ -91,5 +88,3 @@ function updateData() {
     updatePaddle(data.paddle2);
     return false;
 }
-
-module.exports = { updateData, getRandomDir, initData };

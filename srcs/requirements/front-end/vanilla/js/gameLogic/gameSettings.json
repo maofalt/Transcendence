@@ -1,0 +1,32 @@
+{
+	"gamemodeData": {
+	  "gameType": 1,
+	  "nbrOfPlayers": 2,
+	  "nbrOfRounds": 5,
+	  "timeLimit": 0
+	},
+	"fieldData": {
+	  "wallsFactor": 2,
+	  "sizeOfGoals": 80
+	},
+	"paddlesData": {
+	  "width": 2,
+	  "height": 12,
+	  "speed": 0.5
+	},
+	"ballData": {
+	  "speed": 0.7,
+	  "radius": 1,
+	  "color": "0xffffff"
+	},
+	"playersData": [
+	  {
+		"accountID": "player1",
+		"color": "0x0000ff"
+	  },
+	  {
+		"accountID": "player2",
+        "color": "0x00ff00"
+      }
+	]
+}

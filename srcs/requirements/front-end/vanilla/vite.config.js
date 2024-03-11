@@ -13,7 +13,8 @@ export default defineConfig({
 	  '@public': '/public',
 	  '@components': '/js/components',
 	  '@html': '/js/html',
-	  '@assets' : '/js/assets'
+	  '@assets': '/js/assets',
+	  '@gameLogic': '/js/gameLogic'
 	}
   }
 });

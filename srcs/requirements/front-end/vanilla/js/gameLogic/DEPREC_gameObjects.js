@@ -1,4 +1,3 @@
-const	settings = require('./DEPREC_gameSettings');
 
 // global vars
 let numClients = 0;
@@ -87,5 +86,3 @@ const data = {
 	player2: player2,
 	score: score,
 }
-
-module.exports = { field, ball, paddle1, paddle2, score, player1, player2, data };
