@@ -411,65 +411,43 @@ def friends_view(request):
             search_results = User.objects.filter(username__icontains=search_query)
 
     return JsonResponse({'friends': friend_data, 'search_query': escape(search_query), 'search_results': search_results})
+#     return render(request, 'detail.html', {'data': data})
 
 @login_required
 @csrf_protect
 def detail_view(request):
-    user = request.user
-    game_stats = request.user.game_stats
+    access_token = request.headers.get('Authorization')  # Get the access token from the request headers
+    print("GOT IN \n")
+    if access_token:
+        decoded_token = jwt.decode(access_token.split()[1], settings.SECRET_KEY, algorithms=["HS256"])
+        print("\nDECODED from detail_view: ", decoded_token)
+        user_id = decoded_token.get('user_id')
 
-    data = {
-        'username': escape(user.username),
-        'playername': escape(user.playername),
-        # 'email': escape(user.email),
-        'avatar': user.avatar.url if user.avatar else None,
-        'friends_count': user.friends.count(),
-        'two_factor_method': user.two_factor_method,
-        'game_stats': {
-            'user': game_stats.user,
-            'total_games_played': game_stats.total_games_played,
-            'games_won': game_stats.games_won,
-            'games_lost': game_stats.games_lost,
-        }
-    }
-    return render(request, 'detail.html', {'data': data})
+        if user_id:
+            user = User.objects.filter(pk=user_id).first()
 
+            if user:
+                game_stats = user.game_stats
+                # Serialize user data
+                data = {
+                    'username': user.username,
+                    'playername': user.playername,
+                    # 'email': user.email,
+                    'avatar': user.avatar.url if user.avatar else None,
+                    'friends_count': user.friends.count(),
+                    'total_games_played': game_stats.total_games_played,
+                    'games_won': game_stats.games_won,
+                    'games_lost': game_stats.games_lost,
+                }
 
-# @login_required
-# @csrf_protect
-# def detail_view(request):
-#     access_token = request.headers.get('Authorization')  # Get the access token from the request headers
-#     print("GOT IN \n")
-#     if access_token:
-#         decoded_token = jwt.decode(access_token.split()[1], settings.SECRET_KEY, algorithms=["HS256"])
-#         print("\nDECODED from detail_view: ", decoded_token)
-#         user_id = decoded_token.get('user_id')
-
-#         if user_id:
-#             user = User.objects.filter(pk=user_id).first()
-
-#             if user:
-#                 game_stats = user.game_stats
-#                 # Serialize user data
-#                 data = {
-#                     'username': user.username,
-#                     'playername': user.playername,
-#                     'email': user.email,
-#                     'avatar': user.avatar.url if user.avatar else None,
-#                     'friends_count': user.friends.count(),
-#                     'total_games_played': game_stats.total_games_played,
-#                     'games_won': game_stats.games_won,
-#                     'games_lost': game_stats.games_lost,
-#                 }
-
-#                 return JsonResponse(data)
-#             else:
-#                 return JsonResponse({'error': 'User not found'}, status=404)
-#         else:
-#             return JsonResponse({'error': 'User ID not found in token'}, status=401)
-#     else:
-#         return JsonResponse({'error': 'Access token is missing'}, status=401)
-
+                return JsonResponse(data)
+            else:
+                return JsonResponse({'error': 'User not found'}, status=404)
+        else:
+            return JsonResponse({'error': 'User ID not found in token'}, status=401)
+    else:
+        return JsonResponse({'error': 'Access token is missing'}, status=401)
+#     return render(request, 'detail.html', {'data': data})
 
 @login_required
 def add_friend(request, pk):
@@ -482,43 +460,6 @@ def remove_friend(request, pk):
     friend = get_object_or_404(User, pk=pk)
     request.user.friends.remove(friend)
     return JsonResponse({})
-
-# @login_required
-# @csrf_protect
-# def profile_update_view(request):
-#     if request.method == 'POST':
-#         user_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user)
-        
-#         if user_form.is_valid():
-#             user = user_form.save(commit=False)
-#             if User.objects.filter(playername=user.playername).exclude(username=request.user.username).exists():
-#                 return JsonResponse({'error': 'Playername already exists. Please choose a different one.'})
-#             else:
-#                 user.save()    
-#                 return JsonResponse({'success': 'Your profile has been updated.'})
-#         else:
-#             return JsonResponse({'error': 'Form is not valid.'}, status=400)
-#     else:
-#         user_form = ProfileUpdateForm(instance=request.user)
-#         html = render_to_string('profile_update.html', {'form': user_form})
-#         return JsonResponse({'html': html})
-
-# @login_required
-# def password_update_view(request):
-#     if request.method == 'POST':
-#         form = PasswordUpdateForm(request.user, request.POST)
-#         if form.is_valid():
-#             form.save()
-#             request.user.save()
-#             messages.success(request, 'Your password has changed successfully. Please login again.')
-#             return JsonResponse({'success': True, 'message': "Please login again"}) # needed to redirect to login homepage
-#         else:
-#             return JsonResponse({'error': 'Form is not valid.'}, status=400)
-#     else:
-#         user_form = PasswordUpdateForm(instance=request.user)
-#         html = render_to_string('password_update.html', {'form': user_form})
-#         return JsonResponse({'html': html})
-
 
 @login_required
 @csrf_protect
@@ -540,10 +481,13 @@ def profile_update_view(request):
             else:
                 user.save()    
                 return JsonResponse({'success': 'Your profile has been updated.'})
+        else:
+            return JsonResponse({'error': 'Form is not valid.'}, status=400)
     else:
         user_form = ProfileUpdateForm(instance=request.user)
-
-    return render(request, 'profile_update.html', {'user_form': user_form})
+        serialized_form = model_to_dict(user_form)
+        html = render_to_string('profile_update.html')
+        return JsonResponse({'form': serialized_form, 'html': html})
 
 @login_required
 def password_update_view(request):
@@ -553,11 +497,15 @@ def password_update_view(request):
             form.save()
             request.user.save()
             messages.success(request, 'Your password has changed successfully. Please login again.')
-            return redirect('account:login')
+            return JsonResponse({'success': True, 'message': "Please login again"}) # needed to redirect to login homepage
+        else:
+            return JsonResponse({'error': 'Form is not valid.'}, status=400)
     else:
         form = PasswordUpdateForm(request.user)
-    
-    return render(request, 'password_update.html', {'form': form})
+        serialized_form = model_to_dict(form)
+        html = render_to_string('password_update.html')
+        # return render(request, 'password_update.html', {'form': form})
+        return JsonResponse({'form': serialized_form, 'html': html})
 
 
 class TokenGenerator(PasswordResetTokenGenerator):
