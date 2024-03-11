@@ -6,6 +6,8 @@ import CustomButton from "@components/CustomButton";
 import Router from "@utils/Router";
 import { getCookie } from "@utils/getCookie";
 import { easyFetch } from "@utils/easyFetch";
+import { htmlToElement } from "@utils/htmlToElement";
+import WarnIndicator from "@components/WarnIndicator";
 
 export default class Signup extends AbstractComponent {
 	constructor(options = {}) {
@@ -50,6 +52,8 @@ export default class Signup extends AbstractComponent {
 		let accessCodeInput = new InputField({content: "Access Code", name: "access_code", type: "text"});
 		let signUpButton = new CustomButton({content: "Sign Up", action: true});
 
+		let indicator = new WarnIndicator({style: {color: "red"}, content: "Invalid input"});
+
 		pannel.shadowRoot.appendChild(usernameInput);
 		pannel.shadowRoot.appendChild(passwordInput);
 		pannel.shadowRoot.appendChild(confirmPasswordInput);
@@ -58,6 +62,8 @@ export default class Signup extends AbstractComponent {
 		pannel.shadowRoot.appendChild(sendCodeToEmail);
 		pannel.shadowRoot.appendChild(accessCodeInput);
 		pannel.shadowRoot.appendChild(signUpButton);
+
+		pannel.shadowRoot.appendChild(indicator);
 
 		this.shadowRoot.appendChild(pannel);
 
