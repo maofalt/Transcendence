@@ -58,11 +58,38 @@ export default class Signup extends AbstractComponent {
 		this.shadowRoot.appendChild(pannel);
 
 		sendCodeToEmail.onclick = (e) => this.sendCodeToEmail(e, emailInput.getValue());
-	
+		
+		passwordInput.oninput = (e) => this.checkPassword(e, passwordInput);
+		confirmPasswordInput.oninput = (e) => this.checkPasswordMatch(e, passwordInput, confirmPasswordInput);
 		// signUpButton.onclick = (e) => this.submitSignup(e);
 
 	}
 
+	checkPassword = (e, passwordInput) => {
+		e && e.preventDefault();
+		
+		let password = passwordInput.getValue();
+		let passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+		
+		if (!passwordRegex.test(password)) {
+			passwordInput.input.style.outline = "2px solid red";
+		} else {
+			passwordInput.input.style.outline = "2px solid green";
+		}
+	}
+
+	checkPasswordMatch = (e, passwordInput, confirmPasswordInput) => {
+		e && e.preventDefault();
+		
+		let password = passwordInput.getValue();
+		let confirmPassword = confirmPasswordInput.getValue();
+
+		if (password !== confirmPassword) {
+			confirmPasswordInput.input.style.outline = "2px solid red";
+		} else {
+			confirmPasswordInput.input.style.outline = "2px solid green";
+		}
+	}
 
 	// sendVerificationCode = (e) => {
 	sendCodeToEmail = (e, email) => {
@@ -97,7 +124,7 @@ export default class Signup extends AbstractComponent {
 
 			if (response.status === 200 && body.success === true) {
 				alert('Email sent to \'' + email + '\'');
-				Router.navigateTo("/");
+				// Router.navigateTo("/");
 			}
 		})
 		.catch(error => {
