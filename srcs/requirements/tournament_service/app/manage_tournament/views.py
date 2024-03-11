@@ -143,7 +143,7 @@ class TournamentTypeList(ListAPIView):
     serializer_class = TournamentTypeSerializer
 
 class RegistrationTypeList(ListAPIView):
-    queryset = TournamentType.objects.all()
+    queryset = RegistrationType.objects.all()
     serializer_class = TournamentTypeSerializer
 
 class TournamentPlayerList(ListAPIView):

@@ -27,7 +27,7 @@ export default class CreateTournament extends AbstractView {
       gameSettingsForm.querySelectorAll('input').forEach(input => {
         input.addEventListener('change', (event) => {
           event.preventDefault();
-          console.log('Responiong to form changes');
+          console.log('Responding to form changes');
           
           // Get the game settings from the form
           let gameSettings = this.getGameSettingsFromForm();
@@ -63,7 +63,7 @@ export default class CreateTournament extends AbstractView {
 		  console.log('Create Game');
 		  //const gameSettings = this.getGameSettings();
 		  try {
-		  	const response = await makeApiRequest('https://localhost:9443/game-logic/createMatch','POST',gameSettings);
+		  	const response = await makeApiRequest('/game-logic/createMatch','POST',gameSettings);
 		  	console.log('Match created:', response.body);
               return response.body.matchID;
 		  } catch (error) {
@@ -71,9 +71,41 @@ export default class CreateTournament extends AbstractView {
               return '';
 		  }
 	  }
-
+    
+    async fetchTournamentAndRegistrationTypes() {
+      try {
+          const tournamentTypes = await makeApiRequest('path/to/tournament-types/', 'GET');
+          const registrationTypes = await makeApiRequest('path/to/registration-types/', 'GET');
+  
+          console.log('Tournament types body:', tournamentTypes.body);
+          const tournamentTypeOptionsHtml = tournamentTypes.map(type => `<option value="${type.name}">${type.name}</option>`).join('');
+          const registrationTypeOptionsHtml = registrationTypes.map(type => `<option value="${type.name}">${type.name}</option>`).join('');
+  
+          return {
+              tournamentTypeOptionsHtml,
+              registrationTypeOptionsHtml
+          };
+      } catch (error) {
+          console.error("Failed to fetch tournament or registration types:", error);
+          return {
+              tournamentTypeOptionsHtml: '<option value="">Error loading options</option>',
+              registrationTypeOptionsHtml: '<option value="">Error loading options</option>'
+          };
+      }
+    }
+  
     async getHtml() {
-        let htmlstuff = `
+    // Fetching tournament types
+    const tournamentTypes = await makeApiRequest('/api/tournament/tournament-types/', 'GET');
+    const tournamentTypeOptionsHtml = tournamentTypes.body.map(type => `<option value="${type.type_id}">${type.type_name}</option>`).join('');
+
+    // Fetching registration types
+    const registrationTypes = await makeApiRequest('/api/tournament/registration-types/', 'GET');
+    const registrationTypeOptionsHtml = registrationTypes.body.map(type => `<option value="${type.type_id}">${type.type_name}</option>`).join('');  
+    console.log ('registrationTypeOptionsHtml:', registrationTypeOptionsHtml);
+      
+      
+      let htmlstuff = `
             <section class="create-tournament">
                 <button type="submit">Create Tournament</button>
                 <div 
@@ -92,10 +124,10 @@ export default class CreateTournament extends AbstractView {
                         <label for="nbr_of_players_per_tournament">Number of Players:</label>
                         <input 
                             type="range" 
-                            id="nbr_of_players" 
-                            name="nbr_of_players" 
+                            id="nbr_of_players_per_tournament" 
+                            name="nbr_of_players_per_tournament" 
                             min="2" 
-                            max="8"
+                            max="100"
                             value="2"
                             required
                             oninput="this.nextElementSibling.value = this.value">
@@ -108,12 +140,12 @@ export default class CreateTournament extends AbstractView {
 
                         <label for="tournament_type">Tournament Type:</label>
                         <select id="tournament_type" name="tournament_type">
-                            <!-- Options will be dynamically filled -->
+                            ${tournamentTypeOptionsHtml}
                         </select>
 
                         <label for="registration">Registration:</label>
                         <select id="registration" name="registration">
-                            <!-- Options will be dynamically filled -->
+                            ${registrationTypeOptionsHtml}
                         </select>
 
                         <label for="registration_period_min">Registration Period (in minutes):</label>
@@ -132,7 +164,7 @@ export default class CreateTournament extends AbstractView {
                         <span class="slider round"></span>
                       </label>
 
-                      <label for="nbr_of_players_per_match">Number of Players (2-8):</label>
+                      <label for="nbr_of_players_per_match">Number of Players (2-30):</label>
                       <input 
                         type="range" 
                         id="nbr_of_players_per_match"
@@ -183,12 +215,17 @@ export default class CreateTournament extends AbstractView {
                 </div>                
             </section>
         `;
+
+
+
+
         var tempDiv = document.createElement('div');
         tempDiv.innerHTML = htmlstuff;
         let htmlElement = tempDiv;
         htmlElement.querySelector('.game-showcase').innerHTML = await this.game.getHtml();
         return htmlElement.innerHTML;
     }
+
 
     getGameSettingsFromForm() {
       let gameSettings = {
@@ -275,4 +312,6 @@ export default class CreateTournament extends AbstractView {
       return gameSettings;
 	}
 
+
+  
 }
