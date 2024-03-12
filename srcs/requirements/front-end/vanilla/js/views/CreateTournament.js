@@ -114,7 +114,12 @@ export default class CreateTournament extends AbstractView {
                           oninput="this.nextElementSibling.value = this.value">
                       <label for="game_type">Game Type:</label>
                       <div class="switch">
-                          <input type="checkbox" id="game_type" name="game_type">
+                          <input
+                            type="number"
+                            id="game_type"
+                            name="game_type"
+                            value="1"
+                            required>
                           <span class="slider round"></span>
                       </div>
                       <label for="tournament_type">Tournament Type:</label>
@@ -186,7 +191,7 @@ export default class CreateTournament extends AbstractView {
                       <label for="paddle_height">Paddle Height (1-12):</label>
                       <input type="range" id="paddle_height" name="paddle_height" min="1" max="12" value="10">
                       <label for="paddle_speed">Paddle Speed (1-12):</label>
-                      <input type="range" id="paddle_speed" name="paddle_speed" min="0" max="1" value="0.3">
+                      <input type="range" id="paddle_speed" name="paddle_speed" min="0.05" max="1" value="0.3">
                     <h3>Ball Data</h3>
                       <label for="ball_speed">Ball Speed:</label>
                       <input type="number" id="ball_speed" name="ball_speed" step="0.1" value="0.7">

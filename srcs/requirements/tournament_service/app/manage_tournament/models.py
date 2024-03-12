@@ -24,8 +24,8 @@ class MatchSetting(models.Model):
     duration_sec = models.IntegerField(default=210)
     max_score = models.IntegerField(default=5)
     nbr_of_sets = models.IntegerField(default=1)
-    paddle_speed = models.IntegerField(default=10)
-    ball_speed = models.IntegerField(default=10)
+    paddle_speed = models.FloatField(default=0.5)
+    ball_speed = models.FloatField(default=0.2)
     nbr_of_players = models.IntegerField(default=2)
 
 class GameType(models.Model):

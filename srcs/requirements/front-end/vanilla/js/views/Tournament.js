@@ -45,39 +45,7 @@ export default class Tournament extends AbstractView {
 			}
 		};
 		
-		this.getTournamentList();
-		this.data= [
-			{	
-				tournamentName: 'Tournament 1',
-				host: {
-					name: "<a href='https://profile.intra.42.fr/users/motero' class='host-link'>Host 1 Name</a>",
-					imageUrl: "<a href='https://cdn.intra.42.fr/users/f49a1258c4dc41d9f9e02192cc9c5e63/motero.JPG' class='host-image'>"
-				},
-				numberOfPlayers: '2/4',
-				timeRemaining: '2:00',
-				tournamentType: 'Single Elimination',
-				registrationMode: 'Open',
-				action: 'Join'
-			},
-			{	
-				tournamentName: 'Tournament 2',
-				host: 'Host 2',
-				numberOfPlayers: '5/4',
-				timeRemaining: '2:00',
-				tournamentType: 'Single Elimination',
-				registrationMode: 'Open',
-				action: 'Join'
-			},
-			{	
-				tournamentName: 'Tournament 2',
-				host: 'Host 2',
-				numberOfPlayers: '5/4',
-				timeRemaining: '2:00',
-				tournamentType: 'Single Elimination',
-				registrationMode: 'Open',
-				action: 'Join'
-			},
-		];
+		this.data = [];
 	}
 
 	async getHtml() {
@@ -108,6 +76,9 @@ export default class Tournament extends AbstractView {
 	}
 
 	async init() {
+		await this.getTournamentList();
+		
+
 		const dynamicTable =  document.querySelector('dynamic-table');
 		dynamicTable.setAttribute('data-title', this.caption);
 		dynamicTable.setAttribute('data-headers', JSON.stringify(this.headers));
@@ -128,7 +99,20 @@ export default class Tournament extends AbstractView {
 			  
 		try {
 			const response = await makeApiRequest('https://localhost:9443/api/tournament/create-and-list/','GET', {});
+			const tournaments = response.body;
 			console.log('Tournament list:', response.body);
+			
+			// Transform the data
+			this.data = tournaments.map(tournament => ({
+				tournamentName: tournament.tournament_name,
+				host: tournament.host_id,
+				numberOfPlayers: `${tournament.nbr_of_player}/${tournament.nbr_of_player}`,
+				timeRemaining: '2:00', // Assuming a placeholder value
+				tournamentType: tournament.tournament_type === 1 ? 'Single Elimination' : 'Other Type', // Adjust as necessary
+				registrationMode: tournament.registration === 1 ? 'Open' : 'invitational', // Adjust as necessary
+				action: 'Join'
+			}));
+			console.log('Transformed tournament list:', this.data);
 		} catch (error) {
 			console.error('Failed to get tournament list:', error);
 		}
@@ -140,7 +124,6 @@ export default class Tournament extends AbstractView {
 		try {
 			const response = await makeApiRequest('https://localhost:9443/game-logic/createMatch','POST',gameSettings);
 			console.log('Match created:', response.body);
-			//window.location.href = '/play?matchID=' + response.body.matchID;
 			navigateTo('/play?matchID=' + response.body.matchID);
 		} catch (error) {
 			console.error('Failed to create match:', error);
