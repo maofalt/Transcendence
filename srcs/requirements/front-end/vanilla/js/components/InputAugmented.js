@@ -35,7 +35,7 @@ export default class InputAugmented extends AbstractComponent {
 		indicatorsBox.style.setProperty("flex-direction", "column");
 		indicatorsBox.style.setProperty("align-items", "flex-start");
 		indicatorsBox.style.setProperty("width", "100%");
-		indicatorsBox.style.setProperty("height", "50px");
+		// indicatorsBox.style.setProperty("height", "50px");
 		
 		this.indicators = {};
 		if (options.indicators) {
@@ -63,8 +63,9 @@ export default class InputAugmented extends AbstractComponent {
 			this.shadowRoot.appendChild(this.button);
 		}
 		
-		this.style.setProperty("height", "145px");
+		// this.style.setProperty("height", "145px");
 		this.style.setProperty("margin", "0px 0px 20px 0px");
+
 		if (options.style) {
 			for (const [key, value] of Object.entries(options.style)) {
 				console.log(key);

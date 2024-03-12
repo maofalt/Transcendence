@@ -86,14 +86,28 @@ export default class Signup extends AbstractComponent {
 		/* Privacy Policy */
 			// put privacy policy block here
 
+		/* Define Signup flow steps/views */
+		this.flowIndex = 0;
+
+		// define input blocks in each step and functions (actions) to be called when the next button is pressed 
 		let flow = [
-			[playernameBlock, emailBlock], 
-			[idBlock, passwordBlock, confirmPasswordBlock], 
-			[verifyCodeBlock]
+			{ 
+				blocks: [playernameBlock, emailBlock], 
+				actions: [null] 
+			}, 
+			{ 
+				blocks: [idBlock, passwordBlock, confirmPasswordBlock], 
+				actions: [(e) => this.buttonOnClick(e, "wow")] 
+			}, 
+			{ 
+				blocks: [verifyCodeBlock], 
+				actions: [(e) => this.buttonOnClick(e, "wing")] 
+			}
 		];
 
-		flow.forEach((block, index) => {
-			block.forEach((inputBlock) => {
+		// hide all the steps apart from the first one
+		flow.forEach((step, index) => {
+			step.blocks.forEach((inputBlock) => {
 				formContainer.appendChild(inputBlock);
 				if (index > 0) {
 					inputBlock.style.setProperty("display", "none");
@@ -123,21 +137,9 @@ export default class Signup extends AbstractComponent {
 		emailBlock.button.onclick = (e) => this.sendCodeToEmail(e, emailInput.getValue());
 		verifyCodeBlock.button.onclick = (e) => this.verifyCode(e, emailInput, accessCodeInput);
 
-		this.flowIndex = 0;
-		nextButton.onclick = (e) => {
-			e.preventDefault();
-			if (this.flowIndex >= flow.length)
-				return ;
-			this.flowIndex++;
-			this.updateFormView(flow);
-		}
-		backButton.onclick = (e) => {
-			e.preventDefault();
-			if (this.flowIndex <= 0)
-				return ;
-			this.flowIndex--;
-			this.updateFormView(flow);
-		}
+		nextButton.onclick = (e) => this.goNext(e, flow);
+
+		backButton.onclick = (e) => this.goBack(e, flow);
 
 		signUpButton.onclick = (e) => this.submitSignup(e, {
 			username: usernameInput.getValue(),
@@ -149,15 +151,30 @@ export default class Signup extends AbstractComponent {
 		});
 	}
 
-	updateFormView = (flow) => {
-		if (this.flowIndex >= flow.length)
+	goNext = (e, flow) => {
+		e.preventDefault();
+		if (this.flowIndex >= flow.length - 1)
 			return ;
-		flow.forEach((block) => {
-			block.forEach((inputBlock) => {
+		this.flowIndex++;
+		flow[this.flowIndex].actions.forEach(action => action());
+		this.updateFormView(flow, this.flowIndex);
+	}
+
+	goBack = (e, flow) => {
+		e.preventDefault();
+		if (this.flowIndex <= 0)
+			return ;
+		this.flowIndex--;
+		this.updateFormView(flow, this.flowIndex);
+	}
+
+	updateFormView = (flow, index) => {
+		flow.forEach((step) => {
+			step.blocks.forEach((inputBlock) => {
 				inputBlock.style.setProperty("display", "none");
 			});
 		});
-		flow[this.flowIndex].forEach((inputBlock) => {
+		flow[index].blocks.forEach((inputBlock) => {
 			inputBlock.style.setProperty("display", "block");
 		});
 	}
