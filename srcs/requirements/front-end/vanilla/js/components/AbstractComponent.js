@@ -1,5 +1,5 @@
 export default class AbstractComponent extends HTMLElement {
-	constructor() {
+	constructor(options = {}) {
 		super();
 
 		this.eventListeners = []; // garbage bin for my event listeners
@@ -12,7 +12,7 @@ export default class AbstractComponent extends HTMLElement {
 	}
 
 	static get observedAttributes() {
-		return ['width', 'height', 'color', 'background', 'margin', 'font-size'];
+		return ['width', 'height', 'valid', 'content'];
 	}
 
 	// this function gets called when the custom component gets added to the dom
@@ -22,15 +22,16 @@ export default class AbstractComponent extends HTMLElement {
 	}
 
 	attributeChangedCallback(name, oldValue, newValue) {
-		// if (name === 'width' || name === 'height') {
+		if (name === 'width' || name === 'height') {
 			// Select an element inside the shadow root
-			let element = this.shadowRoot.querySelector('div');
+			// let element = this.shadowRoot.host;
 	
 			// Set the style of the selected element
-			if (element) {
-				element.style[name] = newValue;
-			}
-		// }
+			// if (element) {
+				// this.style[name] = newValue;
+				this.style.setProperty(name, newValue);
+			// }
+		}
 	}
 
 	// this function gets called when the custom component is removed from the dom

@@ -9,12 +9,13 @@ import CreateTournament from '@views/CreateTournament.js';
 import User from '@views/User';
 import Design from '@views/Design.js';
 import BasicGame from '@views/BasicGame.js';
-
+import TwoFactorAuth from '@views/2fa';
+import SignupPage from '@components/SignUpPage.js';
 
 export const routes = {
 	'/': {
 		path: '/',
-		view: Home,
+		component: 'home-page',
 		title: 'Pongiverse',
 		buttonText: 'Home'
 	},
@@ -26,9 +27,9 @@ export const routes = {
 	},
 	'/game': {
 		path: '/game',
-		view: Game,
+		component: 'play-menu',
 		title: 'Game',
-		buttonText: 'Play'
+		buttonText: 'Game'
 	},
 	'/tournament': {
 		path: '/tournament',
@@ -50,9 +51,27 @@ export const routes = {
 	},
 	'/login': {
 		path: '/login',
-		view: Login,
+		component: 'login-page-v2',
 		title: 'Login',
 		buttonText: 'Login'
+	},
+	'/signup': {
+		path: '/signup',
+		component: 'signup-page-v2',
+		title: 'Signup',
+		buttonText: 'Signup'
+	},
+	'/forgot_password': {
+		path: '/forgot_password',
+		component: 'forgot-password',
+		title: 'Forgot Password',
+		buttonText: 'Forgot Password'
+	},
+	'/2fa': {
+		path: '/2fa',
+		component: 'two-factor-auth',
+		title: 'Two Factor Authentication',
+		buttonText: '2FA'
 	},
 	'/user': {
 		path: '/user',
@@ -96,7 +115,8 @@ const router = async () => {
   const viewContainer = document.querySelector('#view');
 
   if (View.component) {
-	viewContainer.innerHTML = `<${View.component}></${View.component}>`;
+	viewContainer.innerHTML = `
+		<${View.component}></${View.component}>`;
   } else {
 	console.log('path: ', path);
 
@@ -120,4 +140,4 @@ document.addEventListener('DOMContentLoaded', () => {
   router();
 });
 
-export default router;
+export default { routes, navigateTo, router };
