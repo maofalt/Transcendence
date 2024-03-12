@@ -14,6 +14,8 @@ export default class FriendBlock extends AbstractComponent {
 		} else
 			statusColor = "red";
 
+		options.avatar = options.avatar || "../js/assets/images/default-avatar.webp";
+
 		this.shadowRoot.innerHTML += `
 		<style>
 			* {

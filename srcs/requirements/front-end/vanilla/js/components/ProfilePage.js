@@ -112,14 +112,15 @@ export default class ProfilePage extends AbstractComponent {
 		addFriend.shadowRoot.querySelector("#input-button").style.setProperty("font-size", "28px");
 
 		const friendsList = new Pannel({dark: true, title: "Friends List"});
-		let friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
+		let friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "online"});
+		friendsList.shadowRoot.querySelector("#pannel-title").style.setProperty("font-size", "28px");
 		friendsList.shadowRoot.appendChild(friend);
 
 		// TESTING
-		// friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
-		// friendsList.shadowRoot.appendChild(friend);
-		// friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
-		// friendsList.shadowRoot.appendChild(friend);
+		friend = new FriendBlock({avatar: "", userName: "Jean", status: "in game"});
+		friendsList.shadowRoot.appendChild(friend);
+		friend = new FriendBlock({avatar: "", userName: "Miguel", status: "offline"});
+		friendsList.shadowRoot.appendChild(friend);
 		// friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
 		// friendsList.shadowRoot.appendChild(friend);
 		// friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
@@ -149,4 +150,9 @@ export default class ProfilePage extends AbstractComponent {
 	}
 }
 
+/* To add :
+- Button Delete Account;
+- Button Back;
+- Pannel "User Preferences" with language, and paddle orientation, + maybe keys ?
+*/
 customElements.define('profile-page', ProfilePage);
