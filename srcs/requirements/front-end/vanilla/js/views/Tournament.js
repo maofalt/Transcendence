@@ -1,127 +1,192 @@
-import '@css/tournament.css'
+// import '@css/tournament.css'
 import AbstractView from "./AbstractView";
+import DynamicTable from "@components/DynamicTable";
+import ActionButton from "@components/ActionButton";
+import NormalButton from '@components/NormalButton';
 import { makeApiRequest } from '@utils/makeApiRequest.js';
+import { navigateTo } from '@utils/Router.js';
 
 export default class Tournament extends AbstractView {
-    constructor(element) {
-        super(element);
-        this.element = element;
-    }
 
-    appendChildren(parent, ...children) {
-        children.forEach(child => {
-            parent.appendChild(child);
-        });
-    }    
+	constructor() {
+		super();
 
-    createElement(tag, attributes, content) {
-        const element = document.createElement(tag);
-        // const tournamentElement = document.getElementById('tournamentContainer');
-        // const tournamentView = new Tournament(tournamentElement);
+		this.createMatch = this.createMatch.bind(this);
+		this.createTournament = this.createTournament.bind(this);
+		this.caption = 'Active Tournaments';
+		
+		this.headers = ['Tournament Name', 'Host', 'Number of Players', 'Time Remaining', 'Tournament Type', 'Registration Mode', 'Action'];
+		
+		this.columnStyles = {
+			tournamentName: { 
+				'font-weight': '700',
+			 	'vertical-align': 'middle;',
+				'padding': '1rem'
+			},
+			host: {
+				container: {
+					'display': 'flex',
+					'align-items': 'center'
+				},
+				name: {
+					'color': 'blue',
+					'margin-left': '1rem'
+				},
+				imageUrl: {
+					'witdh': '50px',
+					'height': '50px',
+					'border-radius': '50%'
+				}
+			},
+			action: {
+				'vertical-align': 'middle;',
+				'text-align': 'center',
+				'cursor': 'pointer'
+			}
+		};
+		
+		this.data = [];
+	}
 
-        // Ajout des attributs à l'élément
-        if (attributes) {
-            Object.keys(attributes).forEach(key => {
-                element.setAttribute(key, attributes[key]);
-            });
-        }
+	async getHtml() {
+		return `
+			<div class="tournament">
+				<div class="action-button">    
+					<action-button 
+            		    data-text=" ⚡ Play Now"
+						id="createMatchButton"
+						>
+            		</action-button>
+				</div>
+				<div class="help">
+					<start-btn
+						data-text="CREATE"
+						id="createTournamentButton"
+						>
+					</start-btn>
+					<start-btn
+						data-text="MANAGE"
+						id="manageTournamentButton"
+						>
+					</start-btn>
+				</div>
+	                <dynamic-table></dynamic-table>
+			</div>
+		`;
+	}
 
-        // Ajout du contenu à l'élément
-        if (content) {
-            element.innerHTML = content;
-        }
+	async init() {
+		await this.getTournamentList();
+		
 
-        return element;
-    }
+		const dynamicTable =  document.querySelector('dynamic-table');
+		dynamicTable.setAttribute('data-title', this.caption);
+		dynamicTable.setAttribute('data-headers', JSON.stringify(this.headers));
+		dynamicTable.setAttribute('data-style', JSON.stringify(this.columnStyles));
+		dynamicTable.setAttribute('data-rows', JSON.stringify(this.data));
 
-    // Fonction pour obtenir le HTML
-    async getHtml() {
-        const tournamentContainer = this.createElement('div', { id: 'tournamentContainer' });
+		const createMatchButton = document.getElementById('createMatchButton');
+		createMatchButton.addEventListener('click', this.createMatch);
 
-        // const elems = [];
+		const createTournamentButton = document.getElementById('createTournamentButton');
+		createTournamentButton.addEventListener('click', this.createTournament);
+		
+	}
 
-        const titleElement = this.createElement('h1', null, 'Tournament');
-        // const deleteButton = this.createElement('a', { id: 'deleteButton', class: 'deleteButton', href: '/create-and-list' }, "delete");
+	async getTournamentList() {
 
-        const tournamentListTable = this.createElement('table', { id: 'tournament-list-table' });
-        const tableHead = this.createElement('thead', { id: 'tournament-list-head' });
-        const tableBody = this.createElement('tbody', { id: 'tournament-list-body' });
-        const headRow = this.createElement('tr', { id: 'tournament-head-row' });
-        const bodyRow1 = this.createElement('tr', { id: 'tournament-body-row1' });
-        const bodyRow2 = this.createElement('tr', { id: 'tournament-body-row2' });
-        
-        this.appendChildren(headRow, 
-            this.createElement('td', null, 'Month'), 
-            this.createElement('td', null, 'Savings'));
+		console.log("Get Tournament List");
+			  
+		try {
+			const response = await makeApiRequest('https://localhost:9443/api/tournament/create-and-list/','GET', {});
+			const tournaments = response.body;
+			console.log('Tournament list:', response.body);
+			
+			// Transform the data
+			this.data = tournaments.map(tournament => ({
+				tournamentName: tournament.tournament_name,
+				host: tournament.host_id,
+				numberOfPlayers: `${tournament.nbr_of_player}/${tournament.nbr_of_player}`,
+				timeRemaining: '2:00', // Assuming a placeholder value
+				tournamentType: tournament.tournament_type === 1 ? 'Single Elimination' : 'Other Type', // Adjust as necessary
+				registrationMode: tournament.registration === 1 ? 'Open' : 'invitational', // Adjust as necessary
+				action: 'Join'
+			}));
+			console.log('Transformed tournament list:', this.data);
+		} catch (error) {
+			console.error('Failed to get tournament list:', error);
+		}
+	}
 
-        this.appendChildren(bodyRow1, 
-            this.createElement('td', null, 'January'), 
-            this.createElement('td', null, '$100'));
-        
-        this.appendChildren(bodyRow2, 
-            this.createElement('td', null, 'Febuary'), 
-            this.createElement('td', null, '$80'));
+	async createMatch() {
+		console.log('Create Match');
+		const gameSettings = this.getGameSettings();
+		try {
+			const response = await makeApiRequest('https://localhost:9443/game-logic/createMatch','POST',gameSettings);
+			console.log('Match created:', response.body);
+			navigateTo('/play?matchID=' + response.body.matchID);
+		} catch (error) {
+			console.error('Failed to create match:', error);
+		}
+	}
 
-        this.appendChildren(tableBody, bodyRow1, bodyRow2)
+	async createTournament() {
+		navigateTo('/create-tournament');
+	}
 
-        this.appendChildren(tableHead, headRow);
 
-        this.appendChildren(tournamentListTable,
-            tableHead,
-            tableBody);
-
-        // headRow.appendChild(this.createElement('td', null, 'Month'));
-        // headRow.appendChild(this.createElement('td', null, 'Savings'));
-        
-        // Ajout des éléments créés au conteneur
-        this.appendChildren(tournamentContainer, 
-            titleElement,
-            // deleteButton, 
-            tournamentListTable);
-
-        // get info from tournament api
-        try {
-            const response = await makeApiRequest('api/tournament/create-and-list/', 'GET');
-            console.log('Status Code:', response.status);
-            console.log('Response Body:', response.body);
-        } catch (error) {
-            console.error('Request Failed:', error);
-        }
-
-        const htmlContent = tournamentContainer.innerHTML;
-
-        // Retour du HTML
-        return htmlContent;
-        return `
-        <style>
-        table, th, td {
-            border: 1px solid white;
-        }
-        </style>
-        <table>
-            <thead>
-                <tr>
-                <th>Month</th>
-                <th>Savings</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                <td>January</td>
-                <td>$100</td>
-                </tr>
-                <tr>
-                <td>February</td>
-                <td>$80</td>
-                </tr>
-            </tbody>
-            <tfoot>
-                <tr>
-                <td>Sum</td>
-                <td>$180</td>
-                </tr>
-            </tfoot>
-        </table>
-        `;
-    }
+	getGameSettings() {
+		return {
+			"gamemodeData": {
+			  "nbrOfPlayers": 7,
+			  "nbrOfRounds": 1,
+			  "timeLimit": 0
+			},
+			"fieldData": {
+			  "wallsFactor": 1,
+			  "sizeOfGoals": 20
+			},
+			"paddlesData": {
+			  "width": 2,
+			  "height": 12,
+			  "speed": 0.5
+			},
+			"ballData": {
+			  "speed": 0.7,
+			  "radius": 1,
+			  "color": "0xffffff",
+			  "texture": "yridgway",
+			},
+			"playersData": [
+			  {
+				"accountID": "motero",
+				"color": "0x0000ff"
+			  },
+			  {
+				"accountID": "yridgway",
+				"color": "0x00ff00"
+			  },
+			  {
+				"accountID": "tata3",
+				"color": "0x00ff00"
+			  },
+			  {
+				"accountID": "tata4",
+				"color": "0x0000ff"
+			  },
+			  {
+				"accountID": "tata5",
+				"color": "0x00ff00"
+			  },
+			  {
+				"accountID": "tata6",
+				"color": "0x00ff00"
+			  },
+			  {
+				"accountID": "tata7",
+				"color": "0x00ff00"
+			  },
+			]
+		};
+	}
 }

@@ -25,7 +25,15 @@ class TournamentListCreate(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         # Attribue automatiquement l'utilisateur actuel comme host du tournoi créé
         serializer.save(host=self.request.user)
+    # permission_classes = [permissions.IsAuthenticated] #add more permissions if is necessary
+    
+    #from Miguel's changes
+    # def list(self, request, *args, **kwargs):
+    #     queryset = self.get_queryset()
+    #     if not queryset.exists():
+    #         return Response({"message": "NO tournament was found."}, status=status.HTTP_204_NO_CONTENT)
 
+    #Orignal code
     # def list(self, request, *args, **kwargs):
     #     queryset = self.get_queryset()
     #     if not queryset.exists():
@@ -244,6 +252,7 @@ class RegistrationTypeList(ListAPIView):
     permission_classes = [IsAuthenticated] 
 
     queryset = TournamentType.objects.all()
+    # queryset = RegistrationType.objects.all()
     serializer_class = TournamentTypeSerializer
 
 class TournamentPlayerList(ListAPIView):

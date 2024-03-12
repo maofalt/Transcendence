@@ -91,8 +91,15 @@
       type: 'POST',
       data: $('#loginForm').serialize(),
       headers: { "X-CSRFToken": "{{ csrf_token }}" },
-      success: function (data) {
+      success: function (data, textStatus, xhr) {
         console.log('Login successful:', data);
+        // Extract access token from Authorization header
+        var accessToken = xhr.getResponseHeader('Authorization');
+        if (accessToken) {
+          // Store the access token in memory
+          sessionStorage.setItem('accessToken', accessToken);
+          console.log('Access token stored:', accessToken);
+        }
         if (data.requires_2fa) {
         // closeLoginPopup();
         // window.location.href = '';

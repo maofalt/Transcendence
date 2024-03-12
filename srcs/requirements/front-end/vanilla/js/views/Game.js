@@ -48,9 +48,11 @@ class BoxObject {
 }
 
 export default class Game extends AbstractView {
-	constructor(element) {
-		super(element);
+	constructor(query='', screenWidth, screenHeight) {
+		super();
 		this.loader = new GLTFLoader();
+
+		this.query = 'matchID=' + query;
 		
         // controls
         this.controls = null;
@@ -65,7 +67,7 @@ export default class Game extends AbstractView {
 
         // objects
         this.ball = null;
-		this.banana = null;
+		this.ballModel = null;
         this.paddles = [];
         this.walls = [];
 		this.goals = [];
@@ -88,6 +90,10 @@ export default class Game extends AbstractView {
 		}
 		this.prevScores = [];
 		this.dir = 0;
+
+		this.screenWidth = screenWidth || window.innerWidth;
+		this.screenHeight = screenHeight || window.innerHeight;
+		console.log("Screen size: ", this.screenWidth, this.screenHeight);
 	};
 
 	async getHtml() {
@@ -114,9 +120,9 @@ export default class Game extends AbstractView {
 	};
 
 	onWindowResize() {
-		this.camera.aspect = window.innerWidth / window.innerHeight;
+		this.camera.aspect = this.screenWidth / this.screenHeight;
 		this.camera.updateProjectionMatrix();
-		this.renderer.setSize(window.innerWidth, window.innerHeight);
+		this.renderer.setSize(this.screenWidth, this.screenHeight);
 	};
 
 	handleKeyPress(event) {
@@ -138,7 +144,8 @@ export default class Game extends AbstractView {
 		// socket initialization and event handling logic
 		const hostname = window.location.hostname;
 		const protocol = 'wss';
-		const query = window.location.search.replace('?', '');
+		const query = window.location.search.replace('?', '') || this.query;
+		console.log("Query: ", query);
 		const io_url = hostname.includes("github.dev") ? `${protocol}://${hostname}` : `${protocol}://${hostname}:9443`;
 		console.log(`Connecting to ${io_url}`)
 		this.socket = io(`${io_url}`, {
@@ -174,8 +181,10 @@ export default class Game extends AbstractView {
 		
 		this.socket.on('render', data => {
 			data.playersArray = Object.values(data.players);
-			console.log("Rendering Frame...");
-			this.updateScene(data);
+			// if (data.ball.model && this.ballModel) {
+				//console.log("Rendering Frame...");
+				this.updateScene(data);
+			// }
 			// console.log("FPS: " + 1000 / callTracker() + "fps");
 			fps = 1000 / callTracker();
 			this.renderer.render(this.scene, this.camera);
@@ -188,45 +197,15 @@ export default class Game extends AbstractView {
 
 		this.socket.on('refresh', data => {
 			console.log("REFRESH SCENE");
-
-			delete data.playersArray;
 			data.playersArray = Object.values(data.players);
-			this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-			this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-			this.controls.target.set(0, 0, 0);
-			
-			this.camera.position.set(data.camera.pos.x, data.camera.pos.y, data.camera.pos.z);
-			this.camera.lookAt(new THREE.Vector3(data.camera.target.x, data.camera.target.y, data.camera.target.z));
-			for (let i=0; i<data.playersArray.length; i++) {
-				if (data.playersArray[i].socketID == this.socket.id) {
-					console.log(`socket : ${data.playersArray[i].socketID}, client : ${this.socket.id}, ${i}, angle = ${data.playersArray[i].paddle.angle}`);
-					this.camera.rotation.set(0, 0, 2 * Math.PI/data.gamemode.nbrOfPlayers * i);
-				}
-			}
-
-			// this.camera.rotation.set(0, 0, 90);
-			// for later : set cam rotation depending on which client this is so the player is always at the same place;
-			
-			this.renderer.setSize(window.innerWidth, window.innerHeight);
-			this.container.appendChild(this.renderer.domElement);
-
-			// generate objects
-			this.generateSkyBox(data);
-			this.generateBall(data);
-			this.generatePaddles(data);
-			this.generateWalls(data);
-			this.generateGoals(data);
-			this.generateLights(data);
-			this.generateScores(data);
-
-			// this.drawAxes();
+			this.refreshScene(data);
 		})
 
 		this.socket.on('ping', ([timestamp, latency]) => {
 			this.socket.emit('pong', timestamp);
 			let str = `Ping: ${latency}ms - FPS: ${fps.toFixed(1)}`;
 			document.title = str;
-			console.log(str);
+			//console.log(str);
 		});
 
 	};
@@ -245,29 +224,15 @@ export default class Game extends AbstractView {
 		// Additional cleanup (disposing Three.js objects, etc.)
 	};
 
-	generateScene(data, socket) {
-		console.log("Generating Scene...");
 
+	refreshScene(data) {
 		this.scene = new THREE.Scene();
-		this.scene.background = new THREE.TextureLoader().load('./js/assets/purpleSpace.jpg');
-		this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-		this.renderer = new THREE.WebGLRenderer({ alpha: true });
-		// this.renderer.setClearColor(new THREE.Color(0x110000));
-		this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-		this.controls.target.set(0, 0, 0);
+		const back = new THREE.TextureLoader().load('./js/assets/3D_Models/deepspace.jpg');
+		back.colorSpace = THREE.SRGBColorSpace;
+		this.scene.background = back;
 		
-		this.camera.position.set(data.camera.pos.x, data.camera.pos.y, data.camera.pos.z);
-		this.camera.lookAt(new THREE.Vector3(data.camera.target.x, data.camera.target.y, data.camera.target.z));
-		for (let i=0; i<data.playersArray.length; i++) {
-			if (data.playersArray[i].socketID == socket.id) {
-				console.log(`socket : ${data.playersArray[i].socketID}, client : ${socket.id}, ${i}, angle = ${data.playersArray[i].paddle.angle}`);
-				this.camera.rotation.set(0, 0, 2 * Math.PI/data.gamemode.nbrOfPlayers * i);
-			}
-		}
-		// this.camera.rotation.set(0, 0, 90);
-		// for later : set cam rotation depending on which client this is so the player is always at the same place;
-
-		this.renderer.setSize(window.innerWidth, window.innerHeight);
+		this.renderer.setSize(this.screenWidth, this.screenHeight);
+		
 		this.container.appendChild(this.renderer.domElement);
 		
 		// generate objects
@@ -278,26 +243,56 @@ export default class Game extends AbstractView {
 		this.generateGoals(data);
 		this.generateLights(data);
 		this.generateScores(data);
-
+		
+		// rotate the scene relative to the current client (so the paddle is at the bottom)
+		this.scene.rotateZ(-2 * Math.PI/data.gamemode.nbrOfPlayers * this.dir)
 
 		// this.drawAxes();
+	}
+
+	generateScene(data, socket) {
+		console.log("Generating Scene...");
+
+		this.renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+
+		// set the camera and set it to look at the center of the match
+		this.camera = new THREE.PerspectiveCamera(45, this.screenWidth / this.screenHeight, 0.1, 1000);
+		this.camera.position.set(data.camera.pos.x, data.camera.pos.y, data.camera.pos.z);
+		this.camera.lookAt(new THREE.Vector3(data.camera.target.x, data.camera.target.y, data.camera.target.z));
+		
+		// set controls to orbit around the center of the match with the mouse
+		this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+		this.controls.target.set(0, 0, 0);
+
+		// get the direction to later rotate the scene relative to the current client
+		for (let i=0; i<data.playersArray.length; i++) {
+			if (data.playersArray[i].socketID == socket.id) {
+				console.log(`socket : ${data.playersArray[i].socketID}, client : ${socket.id}, ${i}, angle = ${data.playersArray[i].paddle.angle}`);
+				this.dir = i
+			}
+		}
+
+		this.refreshScene(data);
 	};
 
 	// Other methods (generateScene, updateScene, etc.) here
 	updateScene(data, socket) {
 		// console.log("Updating Scene...");
-		this.ball.mesh.position.set(data.ball.pos.x, data.ball.pos.y, 0);
-		// this.ball.dirMesh.position.set(data.ball.pos.x, data.ball.pos.y, 0);
+		if (data.ball.model) {
+			this.ballModel.position.set(data.ball.pos.x, data.ball.pos.y, 0);
+			this.ballModel.rotateX((-Math.PI / 20) * data.ball.sp);
+			this.ballModel.rotateZ((Math.PI / 24) * data.ball.sp);
+		} else {
+			if (data.ball.texture) {
+				// this.ball.mesh.rotateX(-Math.PI / 42 * data.ball.sp);
+				this.ball.mesh.rotateZ(Math.PI / 36 * data.ball.sp);
+			}
+			this.ball.mesh.position.set(data.ball.pos.x, data.ball.pos.y, 0);
+		}
+
 		for (let i=0; i<data.playersArray.length; i++) {
 			this.paddles[i].mesh.position.set(data.playersArray[i].paddle.pos.x, data.playersArray[i].paddle.pos.y, data.playersArray[i].paddle.pos.z);
 			this.paddles[i].mesh.material.opacity = data.playersArray[i].connected ? 1.0 : 0.3;
-			// this.paddles[i].dir1Mesh.position.set(data.playersArray[i].paddle.pos.x, data.playersArray[i].paddle.pos.y, data.playersArray[i].paddle.pos.z);
-			// this.paddles[i].dir2Mesh.position.set(data.playersArray[i].paddle.pos.x, data.playersArray[i].paddle.pos.y, data.playersArray[i].paddle.pos.z);
-			// for (let i=0; i<data.playersArray.length; i++) {
-				// 	if (data.playersArray[i].socketID = socket.id) {
-					// 		this.camera.rotation.set(0, 0, data.playersArray[i].paddle.angle + Math.PI / 2);
-					// 	}
-					// }
 		}
 				
 		// update scores
@@ -394,9 +389,8 @@ export default class Game extends AbstractView {
 	}
 
 	refreshScores(data) {
-
 		if (!data || !data.playersArray || !this.textSettings || !this.textSettings.font)
-			return console.error("Data or font not found");
+			return console.log("Data or font not found");
 
 		data.playersArray.forEach((player, index) => {
 
@@ -409,40 +403,85 @@ export default class Game extends AbstractView {
 		});
 
 		this.prevScores = data.playersArray.map(player => player.score);
+	};
 
+	async loadModel(path) {
+		return new Promise((resolve, reject) => {
+			this.loader.load(
+				// Model URL
+				path,
+				// onLoad callback
+				(gltf) => {
+					resolve(gltf.scene);
+				},
+				// onProgress callback (optional)
+				undefined,
+				// onError callback (optional)
+				(error) => reject(error)
+			);
+		});
+	};
+
+	async loadBallModel(data) {
+		// Load the model
+		this.loadModel(`./js/assets/3D_Models/${data.ball.model}/scene.gltf`).then((model) => {
+			console.log("MODEL LOADED", model);
+
+			// Assign the loaded model to this.ballModel
+			this.ballModel = model;
+
+			let boundingBox = new THREE.Box3().setFromObject(this.ballModel);
+			let size = boundingBox.getSize(new THREE.Vector3()); // Returns Vector3
+			let len = size.x > size.y ? size.x : size.y;
+			let scale = data.ball.r / (len / 2);
+			this.ballModel.scale.set(scale, scale, scale);
+	
+			// Add the model to the scene
+			this.scene.add(this.ballModel);
+	
+			// Continue with other setup or rendering logic
+		}).catch((error) => {
+			console.error("Error loading model: ", error);
+		});
 	}
 
-	generateBanana(data) {
-		this.loader.load(
-			// resource URL
-			'../assets/banana/scene.gltf',
-			// called when the resource is loaded
-			function ( gltf ) {
+	// loadBallModel(model) {
+	// 	this.loader.load("./js/assets/3D_Models/" + model + "/scene.gltf", ( gltf ) => {
+	// 		this.ballModel = gltf.scene;
+	// 		this.scene.add(this.ballModel);
+	// 	});
 		
-				this.banana = gltf.scene;
-				this.banana.scale.set(5, 5, 5);
-		
-				this.scene.add(this.banana);
-		
-			},
-			// called while loading is progressing
-			function ( xhr ) {
-		
-				console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-		
-			},
-			// called when loading has errors
-			function ( error ) {
-		
-				console.log( 'An error happened while loading model' );
-		
-			}
-		);
-	}
+	// }
+
+	// scaleBallModel(data) {
+	// 	this.loadBallModel(data.ball.model);
+	// 	let boundingBox = new THREE.Box3().setFromObject(this.ballModel);
+	// 	let size = boundingBox.getSize(); // Returns Vector3
+	// 	let len = size.x > size.y ? size.x : size.y;
+	// 	let scale = len / data.ball.r;
+	// 	this.ballModel.scale.set(scale, scale, scale);
+	// }
 
 	generateBall(data) {
+		let ballTexture;
+		let ballMaterial;
+
+		// if (data.ball.model != "") {
+		// 	console.log("LOAD STUFF");
+		// 	this.loadBallModel(data);
+		// 	return ;
+		// }
+		console.log("DIDNT LOADGE");
+		if (data.ball.texture != "") {
+			ballTexture = new THREE.TextureLoader().load(`./js/assets/images/${data.ball.texture}.jpg`);
+			ballMaterial = new THREE.MeshPhongMaterial({ map: ballTexture, transparent: false, opacity: 0.7 });
+			ballTexture.wrapS = ballTexture.wrapT = THREE.RepeatWrapping;
+			ballTexture.offset.set( 0, 0 );
+			ballTexture.repeat.set( 2, 1 );
+		} else {
+			ballMaterial = new THREE.MeshPhongMaterial({ color: data.ball.col, transparent: false, opacity: 0.7 });
+		}
 		const ballGeometry = new THREE.SphereGeometry(data.ball.r, 24, 12);
-		const ballMaterial = new THREE.MeshPhongMaterial({ color: data.ball.col, transparent: false, opacity: 0.7 });
 		const dir1 = new THREE.ArrowHelper(
 			new THREE.Vector3(data.ball.dir.x,
 							data.ball.dir.y,
@@ -551,12 +590,12 @@ export default class Game extends AbstractView {
 
 	generateSkyBox(data) {
 		// Charger la texture de ciel étoilé
-		// this.starTexture = new THREE.TextureLoader().load('./js/assets/blueSpace.jpg');
-		// const starTexture1 = new THREE.TextureLoader().load('./js/assets/PurpleLayer1.png');
-		// const starTexture2 = new THREE.TextureLoader().load('./js/assets/PurpleLayer2.png');
-		// const starTexture3 = new THREE.TextureLoader().load('./js/assets/PurpleLayer3.png');
-		const starTextureBase = new THREE.TextureLoader().load('./js/assets/purpleSpace.jpg');
-		// this.starTexture = new THREE.TextureLoader().load('./js/assets/redSpace.jpg');
+		// this.starTexture = new THREE.TextureLoader().load('./js/assets/images/blueSpace.jpg');
+		// const starTexture1 = new THREE.TextureLoader().load('./js/assets/images/PurpleLayer1.png');
+		// const starTexture2 = new THREE.TextureLoader().load('./js/assets/images/PurpleLayer2.png');
+		// const starTexture3 = new THREE.TextureLoader().load('./js/assets/images/PurpleLayer3.png');
+		const starTextureBase = new THREE.TextureLoader().load('./js/assets/images/purpleSpace.jpg');
+		// this.starTexture = new THREE.TextureLoader().load('./js/assets/images/redSpace.jpg');
 
 		// Créer la géométrie de la sphère
 		// starTexture.colorSpace = THREE.SRGBColorSpace;
@@ -584,6 +623,7 @@ export default class Game extends AbstractView {
 		// 	transparent: true,
 		// 	blending: THREE.AlphaBlending,
 		// });
+		// starTextureBase.colorSpace = THREE.SRGBColorSpace;
 		const starMaterialBase = new THREE.MeshBasicMaterial({
 			map: starTextureBase,
 			side: THREE.BackSide,
