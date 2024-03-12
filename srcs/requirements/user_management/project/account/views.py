@@ -439,8 +439,8 @@ def detail_view(request):
             'games_won': game_stats.games_won,
             'games_lost': game_stats.games_lost,
         }
-        return render(request, 'detail.html', {'data': data})
-        # return JsonResponse(data)
+        # return render(request, 'detail.html', {'data': data})
+        return JsonResponse(data)
     else:
         return JsonResponse({'error': 'User not found'}, status=404)
     # else:
@@ -485,8 +485,8 @@ def profile_update_view(request):
         user_form = ProfileUpdateForm(instance=request.user)
         # serialized_form = model_to_dict(user_form)
         html = render_to_string('profile_update.html', {'form': user_form})
-        # return JsonResponse({'html': html})
-        return render(request, 'profile_update.html', {'user_form': user_form})
+        return JsonResponse({'html': html})
+        # return render(request, 'profile_update.html', {'user_form': user_form})
 
 @login_required
 def password_update_view(request):
