@@ -21,13 +21,34 @@ export default class Signup extends AbstractComponent {
 		this.shadowRoot.appendChild(styleEl);
 
 		let pannel = new Pannel({title: "Sign Up", dark: false});
+		pannel.shadowRoot.querySelector("#pannel-title").style.setProperty("font-size", "36px");
+		pannel.shadowRoot.querySelector("#pannel-title").style.setProperty("margin", "20px 0px 34px 0px");
+		this.shadowRoot.appendChild(pannel);
 
 		let formContainer = document.createElement('div');
 		formContainer.id = "form-container";
 		formContainer.style.setProperty("display", "flex");
 		formContainer.style.setProperty("width", "100%");
 		formContainer.style.setProperty("flex-direction", "row");
+	
+		pannel.shadowRoot.appendChild(formContainer);
 
+		/* Player Name and Email */
+		let playernameBlock = new InputAugmented({
+			title: "Playername",
+			content: "Playername",
+			description: "Your Playername will be displayed in games and tournaments.",
+			type: "text"
+		});
+
+		let emailBlock = new InputAugmented({
+			title: "Email",
+			content: "example@example.com",
+			type: "email",
+			button: {content: "Send Code", action: false}
+		});
+
+		/* Username and Password */
 		let idBlock = new InputAugmented({
 			title: "Unique ID",
 			content: "example: GigaBoomer69",
@@ -54,68 +75,71 @@ export default class Signup extends AbstractComponent {
 			type: "password"
 		});
 
-		let playernameBlock = new InputAugmented({
-			title: "Playername",
-			content: "Playername",
-			description: "Your Playername will be displayed in games and tournaments.",
-			type: "text"
-		});
-
-		let emailBlock = new InputAugmented({
-			title: "Email",
-			content: "example@example.com",
-			type: "email",
-			button: {content: "Send Code", action: false}
-		});
-
+		/* Verify Code */
 		let verifyCodeBlock = new InputAugmented({
 			title: "Verify Code",
 			content: "XXXXXX",
 			type: "text",
 			button: {content: "Verify Code", action: false}
 		});
-		
-		let leftBlock = this.createBlock("left");
-		let rightBlock = this.createBlock("right");
-		
-		const privacyBlock = this.createPrivacyBlock();
-		
-		leftBlock.appendChild(idBlock);
-		leftBlock.appendChild(passwordBlock);
-		leftBlock.appendChild(confirmPasswordBlock);
-		leftBlock.appendChild(playernameBlock);
-		
-		rightBlock.appendChild(emailBlock);
-		rightBlock.appendChild(verifyCodeBlock);
-		rightBlock.appendChild(privacyBlock);
-		
-		formContainer.appendChild(leftBlock);
-		formContainer.appendChild(rightBlock);
 
-		const buttonsBlock = this.createBottomButtons();
+		/* Privacy Policy */
+			// put privacy policy block here
 
-		pannel.shadowRoot.appendChild(formContainer);
-		pannel.shadowRoot.appendChild(buttonsBlock);
-		pannel.shadowRoot.querySelector("#pannel-title").style.setProperty("font-size", "36px");
-		pannel.shadowRoot.querySelector("#pannel-title").style.setProperty("margin", "20px 0px 34px 0px");
+		let flow = [
+			[playernameBlock, emailBlock], 
+			[idBlock, passwordBlock, confirmPasswordBlock], 
+			[verifyCodeBlock]
+		];
 
-		this.shadowRoot.appendChild(pannel);
+		flow.forEach((block, index) => {
+			block.forEach((inputBlock) => {
+				formContainer.appendChild(inputBlock);
+				if (index > 0) {
+					inputBlock.style.setProperty("display", "none");
+				}
+			});
+		});
 
-		let usernameInput = idBlock.input;
+		// formContainer.appendChild(emailBlock);
+
+		let nextButton = new CustomButton({content: "Next", action: true});
+		let backButton = new CustomButton({content: "< Back", action: false});
+
+		pannel.shadowRoot.appendChild(nextButton);
+		pannel.shadowRoot.appendChild(backButton);
+	
+		let playerNameInput = playernameBlock.input;
 		let emailInput = emailBlock.input;
+		let usernameInput = idBlock.input;
 		let passwordInput = passwordBlock.input;
 		let confirmPasswordInput = confirmPasswordBlock.input;
-		let playerNameInput = playernameBlock.input;
 		let accessCodeInput = verifyCodeBlock.input;
 
-		let signUpButton = buttonsBlock.querySelector("#signUpButton");
-		let backButton = buttonsBlock.querySelector("#backButton");
-
-		emailBlock.button.onclick = (e) => this.sendCodeToEmail(e, emailInput.getValue());
-		verifyCodeBlock.button.onclick = (e) => this.verifyCode(e, emailInput, accessCodeInput);
+		let signUpButton = new CustomButton({content: "Sign Up", action: true});
+		// let backButton = buttonsBlock.querySelector("#backButton");
 
 		passwordInput.oninput = (e) => this.checkPassword(e, passwordInput, PasswordIndicators);
 		confirmPasswordInput.oninput = (e) => this.checkPasswordMatch(e, passwordInput, confirmPasswordInput);
+		
+		emailBlock.button.onclick = (e) => this.sendCodeToEmail(e, emailInput.getValue());
+		verifyCodeBlock.button.onclick = (e) => this.verifyCode(e, emailInput, accessCodeInput);
+
+		this.flowIndex = 0;
+		nextButton.onclick = (e) => {
+			e.preventDefault();
+			if (this.flowIndex >= flow.length)
+				return ;
+			this.flowIndex++;
+			this.updateFormView(flow);
+		}
+		backButton.onclick = (e) => {
+			e.preventDefault();
+			if (this.flowIndex <= 0)
+				return ;
+			this.flowIndex--;
+			this.updateFormView(flow);
+		}
 
 		signUpButton.onclick = (e) => this.submitSignup(e, {
 			username: usernameInput.getValue(),
@@ -124,6 +148,19 @@ export default class Signup extends AbstractComponent {
 			playername: playerNameInput.getValue(),
 			signupEmail: emailInput.getValue(),
 			access_code: accessCodeInput.getValue()
+		});
+	}
+
+	updateFormView = (flow) => {
+		if (this.flowIndex >= flow.length)
+			return ;
+		flow.forEach((block) => {
+			block.forEach((inputBlock) => {
+				inputBlock.style.setProperty("display", "none");
+			});
+		});
+		flow[this.flowIndex].forEach((inputBlock) => {
+			inputBlock.style.setProperty("display", "block");
 		});
 	}
 
@@ -292,38 +329,6 @@ export default class Signup extends AbstractComponent {
 
 	buttonOnClick = (e, arg) => {
 		console.log(arg);
-	}
-
-	createInputAndTitle(titleContent, id, content, descContent, inputType) {
-		let title = document.createElement("p");
-		title.id = id + "-title-id";
-		title.textContent = titleContent;
-		title.style.setProperty("font-family", "tk-421, Anta, sans-serif");
-		title.style.setProperty("font-size", "26px");
-		title.style.setProperty("margin", "0px 0px 10px 0px");
-		// title.style.setProperty("border", "1px green solid");
-
-		const input = new InputField({content: content, type: inputType});
-		input.id = id + "-input-id";
-		input.style.setProperty("marin-bottom", "0px");
-		
-		let inputBlock = document.createElement("div");
-		inputBlock.id = id + "-block-id";
-		inputBlock.style.setProperty("height", "145px");
-		inputBlock.style.setProperty("margin", "0px 0px 20px 0px");
-		// inputBlock.style.setProperty("border", "1px yellow solid");
-
-		let description = document.createElement("p");
-		description.id = id + "-desc-id";
-		description.textContent = descContent;
-		description.style.setProperty("font-family", "Anta, sans-serif");
-		description.style.setProperty("font-size", "14px");
-		description.style.setProperty("margin-top", "-3px");
-
-		inputBlock.appendChild(title);
-		inputBlock.appendChild(input);
-		inputBlock.appendChild(description);
-		return inputBlock;
 	}
 
 	createBlock(blockName) {
