@@ -137,7 +137,8 @@ export default class CreateTournament extends AbstractView {
                         name="registration_period_min"
                         min="1"
                         value="30"
-                        required>
+                        required
+                      >
 
                       <label for="host_id">Host ID:</label>
                       <input
@@ -145,15 +146,9 @@ export default class CreateTournament extends AbstractView {
                         id="host_id" 
                         name="host_id"
                         value="1"
-                        required>
+                        required
+                      >
 
-                      <label for="game_type">Host ID:</label>
-                      <input
-                        type="number" 
-                        id="game_type" 
-                        name="game_type"
-                        value="1"
-                        required>
               </form>
               </div>                
               <div class="game-settings">
