@@ -11,6 +11,7 @@ import SignUpPage from "@components/SignUpPage";
 import HomePage from "@components/HomePage";
 import PlayMenu from "@components/PlayMenu";
 import InputAugmented from "@components/InputAugmented";
+import ProfilePage from "../components/ProfilePage";
 
 export default class Design extends HTMLElement {
 	constructor(element) {
@@ -57,27 +58,29 @@ export default class Design extends HTMLElement {
 		let homePage = new HomePage();
 		let playMenu = new PlayMenu();
 		let signupPage = new SignUpPage();
+		let profile = new ProfilePage();
 
 		// let inputTest = this.createInputAndTitle("Confirm Password", "con-password", "Password", "", "password");
 
-		let inputTest = new InputAugmented({
-			title: "Password",
-			content: "Password",
-			indicators: {
-				lengthIndicator: "Minimum 8 characters",
-				digitIndicator: "At least 1 digit",
-				letterIndicator: "At least 1 letter",
-				differentIndicator: "Different from your Playername and your Email"
-			},
-			type: "password"
-		});
+		// let inputTest = new InputAugmented({
+		// 	title: "Password",
+		// 	content: "Password",
+		// 	indicators: {
+		// 		lengthIndicator: "Minimum 8 characters",
+		// 		digitIndicator: "At least 1 digit",
+		// 		letterIndicator: "At least 1 letter",
+		// 		differentIndicator: "Different from your Playername and your Email"
+		// 	},
+		// 	type: "password"
+		// });
 
-		let indicators = inputTest.indicators;
+		// let indicators = inputTest.indicators;
 		// this.shadowRoot.appendChild(loginPage);
 		// this.shadowRoot.appendChild(signupPage);
 		// this.shadowRoot.appendChild(homePage);
 		// this.shadowRoot.appendChild(playMenu);
-		this.shadowRoot.appendChild(inputTest);
+		// this.shadowRoot.appendChild(inputTest);
+		this.shadowRoot.appendChild(profile);
 	}
 
 	// this function gets called when the custom component gets added to the dom

@@ -54,7 +54,7 @@ export default class UserInfo extends AbstractComponent {
     createProfilePicture(options) {
         const profilePicture = new Image();
         profilePicture.id = "profile-picture";
-        profilePicture.src = options.profilePicPath ? options.profilePicPath : "../js/assets/images/yridgway.jpg";
+        profilePicture.src = options.profilePicPath ? options.profilePicPath : "../js/assets/images/default-avatar.webp";
 		profilePicture.style.setProperty("width", "100%");
 		profilePicture.style.setProperty("height", "100%");
 		profilePicture.style.setProperty("object-fit", "cover");
@@ -72,10 +72,10 @@ export default class UserInfo extends AbstractComponent {
         userText.style.setProperty("flex", "3");
         userText.innerHTML = `
         <h2>${options.username}</h2>
-        <p id="status">"${options.status}"</p>
+        <p id="status">${options.status}</p>
         <p>${options.wins} W / ${options.losses} L</p>`;
         userText.querySelector('h2').style.setProperty("color", "rgba(0, 217, 255, 1)");
-        userText.querySelector('#status').style.setProperty("font-style", "italic");
+        // userText.querySelector('#status').style.setProperty("font-style", "italic");
         return userText;
     }
 
