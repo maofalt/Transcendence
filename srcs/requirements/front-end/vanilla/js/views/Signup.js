@@ -37,6 +37,9 @@ export default class Signup extends AbstractComponent {
 		let playernameBlock = new InputAugmented({
 			title: "Playername",
 			content: "Playername",
+			indicators: {
+				emptyIndicator: "Please enter your name"
+			},
 			description: "Your Playername will be displayed in games and tournaments.",
 			type: "text"
 		});
@@ -44,6 +47,9 @@ export default class Signup extends AbstractComponent {
 		let emailBlock = new InputAugmented({
 			title: "Email",
 			content: "example@example.com",
+			indicators: {
+				emptyIndicator: "Please enter your email"
+			},
 			type: "email",
 			button: {content: "Send Code", action: false}
 		});
@@ -52,6 +58,10 @@ export default class Signup extends AbstractComponent {
 		let idBlock = new InputAugmented({
 			title: "Unique ID",
 			content: "example: GigaBoomer69",
+			indicators: {
+				emptyIndicator: "Please enter a username",
+				uniqueIndicator: "The username you entered is already taken"
+			},
 			type: "text",
 			description: "A unique ID that defines you in our Database."
 		});
@@ -60,6 +70,7 @@ export default class Signup extends AbstractComponent {
 			title: "Password",
 			content: "Password",
 			indicators: {
+				emptyIndicator: "Please enter a password",
 				lengthIndicator: "Minimum 8 characters",
 				digitIndicator: "At least 1 digit",
 				letterIndicator: "At least 1 letter",
@@ -67,11 +78,13 @@ export default class Signup extends AbstractComponent {
 			},
 			type: "password"
 		});
-		let PasswordIndicators = passwordBlock.indicators;
 
 		let confirmPasswordBlock = new InputAugmented({
 			title: "Confirm Password",
 			content: "Password",
+			indicators: {
+				matchIndicator: "Passwords don't match"
+			},
 			type: "password"
 		});
 
@@ -93,11 +106,14 @@ export default class Signup extends AbstractComponent {
 		let flow = [
 			{ 
 				blocks: [playernameBlock, emailBlock], 
-				actions: [null] 
+				actions: [
+					() => this.validatePlayerName(playernameBlock.input), 
+					() => this.validateEmail(emailBlock.input)
+				] 
 			}, 
 			{ 
 				blocks: [idBlock, passwordBlock, confirmPasswordBlock], 
-				actions: [(e) => this.buttonOnClick(e, "wow")] 
+				actions: [() => this.validateUsername(idBlock.input)] 
 			}, 
 			{ 
 				blocks: [verifyCodeBlock], 
@@ -131,7 +147,7 @@ export default class Signup extends AbstractComponent {
 		let signUpButton = new CustomButton({content: "Sign Up", action: true});
 		// let backButton = buttonsBlock.querySelector("#backButton");
 
-		passwordInput.oninput = (e) => this.checkPassword(e, passwordInput, PasswordIndicators);
+		passwordInput.oninput = (e) => this.checkPassword(e, passwordInput, passwordBlock.indicators);
 		confirmPasswordInput.oninput = (e) => this.checkPasswordMatch(e, passwordInput, confirmPasswordInput);
 		
 		emailBlock.button.onclick = (e) => this.sendCodeToEmail(e, emailInput.getValue());
@@ -151,12 +167,49 @@ export default class Signup extends AbstractComponent {
 		});
 	}
 
+	validatePlayerName = (input) => {
+		console.log("PLAYERINPUT: ", input.getValue());
+		let inputValue = input.getValue();
+		if (inputValue == "") {
+			input.input.style.outline = "2px solid red";
+			return false;
+		}
+		/* fetch jisus thing to check if it is unique */
+		// if (is not unique):
+			// input.indicators.isUnique.style.display = "block";
+			// input.indicators.isUnique.setAttribute("valid", "false");
+
+		input.input.style.outline = "";
+		return true;
+	}
+
+	validateEmail = (input) => {
+		console.log("EMAILINPUT: ", input.getValue());
+		let inputValue = input.getValue();
+		if (inputValue == "") {
+			input.input.style.outline = "2px solid red";
+			return false;
+		}
+		input.input.style.outline = ""
+		return true;
+	}
+	
+	validateUsername = (input) => {
+		console.log("USERNAME INPUT: ", input.getValue());
+		return true;
+	}
+
 	goNext = (e, flow) => {
 		e.preventDefault();
+		let canGoNext = 1;
 		if (this.flowIndex >= flow.length - 1)
 			return ;
+		flow[this.flowIndex].actions.forEach(action => {
+			canGoNext *= action();
+		});
+		if (canGoNext == 0)
+			return;
 		this.flowIndex++;
-		flow[this.flowIndex].actions.forEach(action => action());
 		this.updateFormView(flow, this.flowIndex);
 	}
 
@@ -277,9 +330,11 @@ export default class Signup extends AbstractComponent {
 		if (password.length >= 8) {
 			passwordInput.input.style.outline = "2px solid green";
 			indicators.lengthIndicator.setAttribute("valid", "true");
+			indicators.lengthIndicator.style.display = "block";
 		} else {
 			passwordInput.input.style.outline = "2px solid red";
 			indicators.lengthIndicator.setAttribute("valid", "false");
+			indicators.lengthIndicator.style.display = "block";
 		}
 
 		if (!passwordRegex.test(password)) {
@@ -344,6 +399,7 @@ export default class Signup extends AbstractComponent {
 
 	buttonOnClick = (e, arg) => {
 		console.log(arg);
+		return true;
 	}
 
 	createBlock(blockName) {

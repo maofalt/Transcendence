@@ -41,6 +41,7 @@ export default class InputAugmented extends AbstractComponent {
 		if (options.indicators) {
 			Object.entries(options.indicators).forEach(([key, value]) => {
 				let indicator = new WarnIndicator({content: value});
+				indicator.style.display = "none";
 				indicator.id = value.replaceAll(' ', '-');
 				// indicators.push(indicator);
 				this.indicators[key] = indicator;
