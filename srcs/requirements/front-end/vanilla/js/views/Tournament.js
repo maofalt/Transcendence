@@ -21,27 +21,27 @@ export default class Tournament extends AbstractView {
 			tournamentName: { 
 				'font-weight': '700',
 			 	'vertical-align': 'middle;',
-				'padding': '1rem'
+				'padding': '1rem',
 			},
 			host: {
 				container: {
 					'display': 'flex',
-					'align-items': 'center'
+					'align-items': 'center',
 				},
 				name: {
 					'color': 'blue',
-					'margin-left': '1rem'
+					'margin-left': '1rem',
 				},
 				imageUrl: {
 					'witdh': '50px',
 					'height': '50px',
-					'border-radius': '50%'
+					'border-radius': '50%',
 				}
 			},
 			action: {
 				'vertical-align': 'middle;',
 				'text-align': 'center',
-				'cursor': 'pointer'
+				'cursor': 'pointer',
 			}
 		};
 		
@@ -93,10 +93,7 @@ export default class Tournament extends AbstractView {
 		
 	}
 
-	async getTournamentList() {
-
-		console.log("Get Tournament List");
-			  
+	async getTournamentList() { 
 		try {
 			const response = await makeApiRequest('https://localhost:9443/api/tournament/create-and-list/','GET', {});
 			const tournaments = response.body;
@@ -110,9 +107,8 @@ export default class Tournament extends AbstractView {
 				timeRemaining: '2:00', // Assuming a placeholder value
 				tournamentType: tournament.tournament_type === 1 ? 'Single Elimination' : 'Other Type', // Adjust as necessary
 				registrationMode: tournament.registration === 1 ? 'Open' : 'invitational', // Adjust as necessary
-				action: 'Join'
+				action: 'Join',
 			}));
-			console.log('Transformed tournament list:', this.data);
 		} catch (error) {
 			console.error('Failed to get tournament list:', error);
 		}
@@ -133,7 +129,6 @@ export default class Tournament extends AbstractView {
 	async createTournament() {
 		navigateTo('/create-tournament');
 	}
-
 
 	getGameSettings() {
 		return {
