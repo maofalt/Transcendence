@@ -6,8 +6,10 @@ import homePageStyle from '@css/ProfilePage.css?raw';
 import BigTitle from '@components/BigTitle';
 import Pannel from '@components/Pannel';
 import CustomButton from '@components/CustomButton';
+import InputAugmented from '@components/InputAugmented';
 import { navigateTo } from "@utils/Router";
 import UserInfo from "./UserInfo";
+import FriendBlock from "./FriendBlock";
 
 export default class ProfilePage extends AbstractComponent {
 	constructor(options = {}) {
@@ -27,7 +29,7 @@ export default class ProfilePage extends AbstractComponent {
 			losses: user.losses});
 
 		const profile = new Pannel({dark: false, title: "Profile"});
-		const friendsPannel = new Pannel({dark: false, title: "Friends", style: {padding : "0px 10px"}});
+		const friendsPannel = new Pannel({dark: false, title: "Friends"});
 		const personalInfo = new Pannel({dark: true, title: "Personal Info", style: {display: "block",  padding: "0px 0px 0px 20px"}});
 		const gameStats = new Pannel({dark: true, title: "Game Stats", style: {display: "block", padding: "0px 0px 0px 20px"}});
 
@@ -101,11 +103,36 @@ export default class ProfilePage extends AbstractComponent {
 		</div>
 		`;
 
+		const addFriend = new InputAugmented({
+			title: "Add Friend",
+			content: "Username",
+			type: "text",
+			button: {content: "+ Add Friend", action: false}
+		});
+		addFriend.shadowRoot.querySelector("#input-button").style.setProperty("font-size", "28px");
 
-		const addFriend = new CustomButton({action: false, content: "+ Add Friend", style: {width: "300px"}});
-		const friendsList = new Pannel({dark: true, title: ""});
+		const friendsList = new Pannel({dark: true, title: "Friends List"});
+		let friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
+		friendsList.shadowRoot.appendChild(friend);
 
-		// friendsList.shadowRoot.removeChild(friendsList.shadowRoot.querySelector("#pannel-title"));
+		// TESTING
+		// friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
+		// friendsList.shadowRoot.appendChild(friend);
+		// friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
+		// friendsList.shadowRoot.appendChild(friend);
+		// friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
+		// friendsList.shadowRoot.appendChild(friend);
+		// friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
+		// friendsList.shadowRoot.appendChild(friend);
+		// friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
+		// friendsList.shadowRoot.appendChild(friend);
+		// friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
+		// friendsList.shadowRoot.appendChild(friend);
+		// friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
+		// friendsList.shadowRoot.appendChild(friend);
+		// friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
+		// friendsList.shadowRoot.appendChild(friend);
+
 
 		friendsPannel.shadowRoot.appendChild(addFriend);
 		friendsPannel.shadowRoot.appendChild(friendsList);
