@@ -214,7 +214,7 @@ export default class BasicGame extends AbstractComponent {
 	localrender = (data) => {
 		data.playersArray = Object.values(data.players);
 		// if (data.ball.model && this.ballModel) {
-			console.log("Rendering Frame...");
+			//console.log("Rendering Frame...");
 			this.updateScene(data);
 		// }
 		// console.log("FPS: " + 1000 / callTracker() + "fps");
@@ -237,7 +237,7 @@ export default class BasicGame extends AbstractComponent {
 		this.socket.emit('pong', timestamp);
 		let str = `Ping: ${latency}ms - FPS: ${fps.toFixed(1)}`;
 		document.title = str;
-		console.log(str);
+		//console.log(str);
 	};
 
 	refreshScene(data) {
