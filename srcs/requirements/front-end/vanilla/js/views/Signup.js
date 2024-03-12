@@ -93,7 +93,8 @@ export default class Signup extends AbstractComponent {
 			title: "Verify Code",
 			content: "XXXXXX",
 			indicators: {
-				emptyIndicator: "Please enter the code sent to your email"
+				emptyIndicator: "Please enter the code sent to your email",
+				badCodeIndicator: "Incorrect Code"
 			},
 			type: "text",
 			button: {content: "Verify Code", action: false}
@@ -133,7 +134,8 @@ export default class Signup extends AbstractComponent {
 						finalSignupButton.style.display = "block";
 						nextButton.style.display = "none";
 						return true;
-					 }
+					},
+					(e) => this.sendCodeToEmail(e, emailInput.getValue())
 				], 
 			}, 
 			{ 
@@ -166,7 +168,7 @@ export default class Signup extends AbstractComponent {
 		confirmPasswordInput.oninput = (e) => this.checkPasswordMatch(e, passwordInput, confirmPasswordInput);
 		
 		emailBlock.button.onclick = (e) => this.sendCodeToEmail(e, emailInput.getValue());
-		verifyCodeBlock.button.onclick = (e) => this.verifyCode(e, emailInput, accessCodeInput);
+		// verifyCodeBlock.button.onclick = (e) => this.verifyCode(e, emailInput, accessCodeInput);
 
 		nextButton.onclick = (e) => this.goNext(e, flow);
 
@@ -176,17 +178,24 @@ export default class Signup extends AbstractComponent {
 			this.goBack(e, flow);
 		}
 
-		finalSignupButton.onclick = (e) => this.submitSignup(e, {
-			username: usernameInput.getValue(),
-			password: passwordInput.getValue(),
-			confirm_password: confirmPasswordInput.getValue(),
-			playername: playerNameInput.getValue(),
-			signupEmail: emailInput.getValue(),
-			access_code: accessCodeInput.getValue()
-		});
+		finalSignupButton.onclick = (e) => {
+			if (!this.validateCode(verifyCodeBlock, emailInput)) {
+				console.log("NOOOT SIGNUP"); 
+				return ;
+			}
+			console.log("SIGNUPPPPP");
+			this.submitSignup(e, {
+				username: usernameInput.getValue(),
+				password: passwordInput.getValue(),
+				confirm_password: confirmPasswordInput.getValue(),
+				playername: playerNameInput.getValue(),
+				signupEmail: emailInput.getValue(),
+				access_code: accessCodeInput.getValue()
+			});
+		}
 	}
 
-	validateCode = (block) => {
+	validateCode = (block, emailInput) => {
 		let inputValue = block.input.getValue();
 		if (inputValue == "") {
 			block.input.input.style.outline = "2px solid red";
@@ -196,7 +205,15 @@ export default class Signup extends AbstractComponent {
 		} else {
 			block.indicators.emptyIndicator.style.display = "none";
 		}
-
+		if (!this.verifyCode(emailInput, block.input)) {
+			block.input.input.style.outline = "2px solid red";
+			block.indicators.badCodeIndicator.style.display = "block";
+			block.indicators.badCodeIndicator.setAttribute("valid", "false");
+			return false;
+		} else {
+			block.indicators.badCodeIndicator.style.display = "block";
+		}
+		console.log("returning true");
 		block.input.input.style.outline = "";
 		return true;
 	}
@@ -291,7 +308,7 @@ export default class Signup extends AbstractComponent {
 		});
 	}
 
-	verifyCode = (e, emailInput, verificationCodeInput) => {
+	verifyCode = (emailInput, verificationCodeInput) => {
 		var email = emailInput.getValue();
 		var verificationCode = verificationCodeInput.getValue();
 
@@ -309,22 +326,22 @@ export default class Signup extends AbstractComponent {
 
 			if (!response || !body) {
 				alert('Request Failed');
-				return ;
+				return false;
 			}
 
 			if (response.status === 400) {
 				alert(body.error || JSON.stringify(body));
-				return ;
+				return false;
 			}
 	
 			if (!response.ok) {
 				alert('Response Error: ' + (body.error || JSON.stringify(body)));
-				return ;
+				return false;
 			}
 
 			if (response.status === 200 && body.success === true) {
 				alert(body.message || JSON.stringify(body));
-				return ;
+				return true;
 			}
 
 			alert(body.error || JSON.stringify(body));
@@ -332,6 +349,7 @@ export default class Signup extends AbstractComponent {
 		.catch(error => {
 			console.error('Request Failed:', error);
 		});
+		return false
 	}
 
 	submitSignup = (e, formData) => {
@@ -440,27 +458,29 @@ export default class Signup extends AbstractComponent {
 
 			if (!response || !body) {
 				console.error('Request Failed');
-				return ;
+				return false;
 			}
 
 			if (response.status === 400) {
 				alert(body.error || 'Invalid email');
-				return ;
+				return false;
 			}
 	
 			if (!response.ok) {
 				console.error('Request Failed:', body.error || JSON.stringify(body));
-				return ;
+				return false;
 			}
 
 			if (response.status === 200 && body.success === true) {
 				alert('Email sent to \'' + email + '\'');
+				return true;
 				// Router.navigateTo("/");
 			}
 		})
 		.catch(error => {
 			console.error('Request Failed:', error);
 		});
+		return false;
 	}
 
 	buttonOnClick = (e, arg) => {
