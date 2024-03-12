@@ -21,6 +21,35 @@ class Tournament(models.Model):
     )
     host = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='tournaments')
     players = models.ManyToManyField('Player', through='TournamentPlayer', related_name='tournaments')
+    matchs = models.ManyToManyField('TournamentMatch', related_name='tournaments')
+    nbr_of_match = models.IntegerField(default=0)
+
+    def calculate_nbr_of_match(self):
+        # Calculate the number of matches based on total players and max players per match
+        max_players_per_match = self.setting.nbr_of_player
+        total_players = self.nbr_of_player
+        add_match = total_players // max_players_per_match
+        if total_players % max_players_per_match != 0:
+            add_match += 1
+        self.nbr_of_match += add_match
+        while add_match > 1:
+        {
+            tmp = add_match
+            add_match = tmp // max_players_per_match
+            if tmp % max_players_per_match != 0:
+                add_match += 1
+            self.nbr_of_match += add_match
+        }
+
+# i set when there is a plyer left after generate the other matches,
+# it also counted as a match with a single player which means the player will win automatically
+#             (t//m + (t%m != 0)) +  ...
+# 20 / 3 => 11(3, 3, 3, 3, 3, 3, 2 > 3, 3, 1 > 3)
+# 15 / 4 => 5(4, 4, 4, 3 > 4)            
+# 8 / 2 => 7(2, 2, 2, 2 > 2, 2 > 2)
+# 8 / 3 => 4(3, 3, 2 > 3)
+# 5 / 3 => 3(3, 2 > 2)
+# 4 / 3 => 2(3, 1 > 2)
 
 class TournamentMatch(models.Model):
     match_id = models.AutoField(primary_key=True)
@@ -28,6 +57,16 @@ class TournamentMatch(models.Model):
     round_number = models.IntegerField(default=1, validators=[MinValueValidator(1)])
     match_time = models.DateTimeField(null=True) 
     match_result = models.CharField(max_length=255)
+    players = models.ManyToManyField('Player', through='TournamentPlayer', related_name='tournaments')
+    match_setting = models.ForeignKey('MatchSetting', on_delete=models.PROTECT, null=False, related_name='matches')
+    # nbr_of_player = models.IntegerField(default=1)
+    def max_number_of_players_validator(value):
+        # Get max number of players from MatchSetting instance
+        max_players = self.match_setting.nbr_of_player
+        if value < 1 or value > max_players:
+            raise ValidationError(f'Number of players must be between 2 and {max_players}.')
+
+    nbr_of_player = models.IntegerField(default=1, validators=[max_number_of_players_validator])
 
 class MatchSetting(models.Model):
     setting_id = models.AutoField(primary_key=True)

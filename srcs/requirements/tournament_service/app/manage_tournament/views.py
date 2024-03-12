@@ -26,14 +26,14 @@ class TournamentListCreate(generics.ListCreateAPIView):
         # Attribue automatiquement l'utilisateur actuel comme host du tournoi créé
         serializer.save(host=self.request.user)
 
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        if not queryset.exists():
-            return Response([], status=status.HTTP_200_OK)
+    # def list(self, request, *args, **kwargs):
+    #     queryset = self.get_queryset()
+    #     if not queryset.exists():
+    #         return Response([], status=status.HTTP_200_OK)
 
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
-
+    #     serializer = self.get_serializer(queryset, many=True)
+    #     return Response(serializer.data)
+    def generate_tree
 
 class TournamentRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     queryset = Tournament.objects.all()
