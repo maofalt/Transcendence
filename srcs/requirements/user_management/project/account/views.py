@@ -542,41 +542,6 @@ def send_password_reset_link(request):
     else:
         return JsonResponse({'success': False, 'error': escape('Invalid request method')})
 
-class TokenGenerator(PasswordResetTokenGenerator):
-    def _make_hash_value(self, user, timestamp):
-        return (
-            str(user.pk) + str(timestamp) + str(user.is_active)
-        )
-
-token_generator = TokenGenerator()
-
-def send_password_reset_link(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        print("usernamen: ", username)
-        try:
-            user = User.objects.get(username=username)
-        except User.DoesNotExist:
-            return JsonResponse({'success': False, 'error': escape('User not found')})
-
-        uid = urlsafe_base64_encode(force_bytes(user.pk))
-        token = token_generator.make_token(user)
-
-        reset_url = request.build_absolute_uri(reverse_lazy('account:password_reset', kwargs={'uidb64': uid, 'token': token}))
-        print("reset_link: ", reset_url)
-
-        print("\n\nCHECK UNIQUE TOKEN: ", token)
-        subject = 'Pong Password Reset'
-        email_content = render_to_string('password_reset_email.html', {'reset_url': reset_url, 'user': user})
-        from_email = 'no-reply@student.42.fr' 
-        to_email = user.email
-        send_mail(subject, email_content, from_email, [to_email], fail_silently=False)
-
-        return JsonResponse({'success': True, 'message': escape('Password reset link sent successfully')})
-
-    else:
-        return JsonResponse({'success': False, 'error': escape('Invalid request method')})
-
 @csrf_protect
 def password_reset_view(request, uidb64, token):
     print("uidb64: ", uidb64, "token: ", token)
@@ -607,7 +572,8 @@ def password_reset_view(request, uidb64, token):
                 return JsonResponse({'success': False, 'error': escape('Passwords do not match')}, status=400)
         else:
             # return render(request, 'password_reset.html', {'uidb64': uidb64, 'token': token, 'user': user})
-            return JsonResponse({'success': False, 'error': escape('Invalid method')}, status=405)
+            html = render_to_string('password_reset.html', {'uidb64': uidb64, 'token': token, 'user': user})
+            return JsonResponse({'html': html})
     else:
         # return HttpResponse('Invalid password reset link', status=400)
         return JsonResponse({'success': False, 'error': escape('Invalid password reset link')}, status=400)
