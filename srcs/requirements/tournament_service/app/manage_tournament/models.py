@@ -1,5 +1,6 @@
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator, ValidationError, RegexValidator
 from django.db import models
+from django.conf import settings
 
 class Tournament(models.Model):
     tournament_id = models.AutoField(primary_key=True)
@@ -12,7 +13,7 @@ class Tournament(models.Model):
         ]
     )
     tournament_type = models.ForeignKey('TournamentType', on_delete=models.PROTECT, null=False, to_field='type_id', default=1)
-    registration = models.ForeignKey('RegistrationType', on_delete=models.PROTECT, null=False, to_field='type_id', default=1)
+    re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gistration = models.ForeignKey('RegistrationType', on_delete=models.PROTECT, null=False, to_field='type_id', default=1)
     setting = models.ForeignKey('MatchSetting', on_delete=models.PROTECT, null=False, to_field='setting_id', default=0)
     registration_period_min = models.IntegerField(default=15, 
         validators=[MinValueValidator(1, message="Registration period must be at least 1 minutes."), 

@@ -41,7 +41,7 @@ class TournamentListCreate(generics.ListCreateAPIView):
 
     #     serializer = self.get_serializer(queryset, many=True)
     #     return Response(serializer.data)
-    def generate_tree
+    # def generate_tree
 
 class TournamentRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     queryset = Tournament.objects.all()
