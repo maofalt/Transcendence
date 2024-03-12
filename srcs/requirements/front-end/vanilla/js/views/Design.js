@@ -10,7 +10,7 @@ import LoginPage from '@components/LoginPage'
 import SignUpPage from "@components/SignUpPage";
 import HomePage from "@components/HomePage";
 import PlayMenu from "@components/PlayMenu";
-import InputAugmented from "../components/InputAugmented";
+import InputAugmented from "@components/InputAugmented";
 
 export default class Design extends HTMLElement {
 	constructor(element) {
@@ -57,17 +57,22 @@ export default class Design extends HTMLElement {
 		let homePage = new HomePage();
 		let playMenu = new PlayMenu();
 		let signupPage = new SignUpPage();
-		let inputTest = new InputAugmented({
-			title: "GigaInput",
-			content: "input content",
-			indicators: ["first warning", "second warning", "blabla hehe"],
-			button: {content: "button content", action: true}});
-		inputTest.style.setProperty("width", "500px");
 
-		let warning = inputTest.shadowRoot.querySelector("#first-warning");
-		warning.setAttribute("valid", "true");
-		warning = inputTest.shadowRoot.querySelector("#blabla-hehe");
-		warning.setAttribute("valid", "true");
+		// let inputTest = this.createInputAndTitle("Confirm Password", "con-password", "Password", "", "password");
+
+		let inputTest = new InputAugmented({
+			title: "Password",
+			content: "Password",
+			indicators: {
+				lengthIndicator: "Minimum 8 characters",
+				digitIndicator: "At least 1 digit",
+				letterIndicator: "At least 1 letter",
+				differentIndicator: "Different from your Playername and your Email"
+			},
+			type: "password"
+		});
+
+		let indicators = inputTest.indicators;
 		// this.shadowRoot.appendChild(loginPage);
 		// this.shadowRoot.appendChild(signupPage);
 		// this.shadowRoot.appendChild(homePage);

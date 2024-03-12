@@ -10,6 +10,7 @@ import Router from "@utils/Router";
 import { getCookie } from "@utils/getCookie";
 import { easyFetch } from "@utils/easyFetch";
 import WarnIndicator from "@components/WarnIndicator";
+import InputAugmented from "@components/InputAugmented";
 
 export default class SignUpPage extends AbstractComponent {
 	constructor(options = {}) {
@@ -32,40 +33,47 @@ export default class SignUpPage extends AbstractComponent {
 		"A unique ID that defines you in our Database.", "");
 		idBlock.style.setProperty("height", "130px");
 
-		let passwordBlock = this.createInputAndTitle("Password", "password", "Password", 
-		"Minimum 8 characters, at least 1 digit, 1 letter, and different from your Playername and your Email.", "password");
+		// let passwordBlock = this.createInputAndTitle("Password", "password", "Password", 
+		// "Minimum 8 characters, at least 1 digit, 1 letter, and different from your Playername and your Email.", "password");
 
-		// Minimum 8 characters, 
-		//at least 1 digit, 
-		//1 letter, 
-		//and different from your Playername 
-		//and your Email.
+		// let lengthIndicator = new WarnIndicator({content: "Minimum 8 characters"});
+		// let digitIndicator = new WarnIndicator({content: "At least 1 digit"});
+		// let letterIndicator = new WarnIndicator({content: "At least 1 letter"});
+		// let differentIndicator = new WarnIndicator({content: "Different from your Playername and your Email"});
 
-		let lengthIndicator = new WarnIndicator({content: "Minimum 8 characters"});
-		let digitIndicator = new WarnIndicator({content: "At least 1 digit"});
-		let letterIndicator = new WarnIndicator({content: "At least 1 letter"});
-		let differentIndicator = new WarnIndicator({content: "Different from your Playername and your Email"});
+		// lengthIndicator.setAttribute("valid", "false");
+		// digitIndicator.setAttribute("valid", "false");
+		// letterIndicator.setAttribute("valid", "false");
+		// differentIndicator.setAttribute("valid", "false");
 
-		lengthIndicator.setAttribute("valid", "false");
-		digitIndicator.setAttribute("valid", "false");
-		letterIndicator.setAttribute("valid", "false");
-		differentIndicator.setAttribute("valid", "false");
+		// // let indicators = {lengthIndicator, digitIndicator, letterIndicator, differentIndicator};
 
-		let indicators = {lengthIndicator, digitIndicator, letterIndicator, differentIndicator};
+		// let indicatorContainer = document.createElement("div");
+		// indicatorContainer.style.setProperty("display", "flex");
+		// indicatorContainer.style.setProperty("flex-direction", "column");
+		// indicatorContainer.style.setProperty("align-items", "flex-start");
+		// indicatorContainer.style.setProperty("width", "100%");
+		// indicatorContainer.style.setProperty("height", "50px");
 
-		let indicatorContainer = document.createElement("div");
-		indicatorContainer.style.setProperty("display", "flex");
-		indicatorContainer.style.setProperty("flex-direction", "column");
-		indicatorContainer.style.setProperty("align-items", "flex-start");
-		indicatorContainer.style.setProperty("width", "100%");
-		indicatorContainer.style.setProperty("height", "50px");
+		// indicatorContainer.appendChild(lengthIndicator);
+		// indicatorContainer.appendChild(digitIndicator);
+		// indicatorContainer.appendChild(letterIndicator);
+		// indicatorContainer.appendChild(differentIndicator);
+		// passwordBlock.appendChild(indicatorContainer);
 
-		indicatorContainer.appendChild(lengthIndicator);
-		indicatorContainer.appendChild(digitIndicator);
-		indicatorContainer.appendChild(letterIndicator);
-		indicatorContainer.appendChild(differentIndicator);
+		let passwordBlock = new InputAugmented({
+			title: "Password",
+			content: "Password",
+			indicators: {
+				lengthIndicator: "Minimum 8 characters",
+				digitIndicator: "At least 1 digit",
+				letterIndicator: "At least 1 letter",
+				differentIndicator: "Different from your Playername and your Email"
+			},
+			type: "password"
+		});
 
-		passwordBlock.appendChild(indicatorContainer);
+		let indicators = passwordBlock.indicators;
 
 		let confirmPasswordBlock = this.createInputAndTitle("Confirm Password", "con-password", "Password", "", "password");
 		confirmPasswordBlock.style.setProperty("height", "130px");
@@ -109,14 +117,14 @@ export default class SignUpPage extends AbstractComponent {
 		pannel.shadowRoot.querySelector("#pannel-title").style.setProperty("font-size", "36px");
 		pannel.shadowRoot.querySelector("#pannel-title").style.setProperty("margin", "20px 0px 34px 0px");
 
-		const inicator = new WarnIndicator({style: {color: "red"}, content: "Invalid input"});
-		pannel.shadowRoot.appendChild(inicator);
+		const indicator = new WarnIndicator({style: {color: "red"}, content: "Invalid input"});
+		pannel.shadowRoot.appendChild(indicator);
 		// this.shadowRoot.appendChild(bigTitle);
 		this.shadowRoot.appendChild(pannel);
 		
 		let usernameInput = idBlock.querySelector("input-field");
 		let emailInput = emailBlock.querySelector("input-field");
-		let passwordInput = passwordBlock.querySelector("input-field");
+		let passwordInput = passwordBlock.shadowRoot.querySelector("input-field");
 		let confirmPasswordInput = confirmPasswordBlock.querySelector("input-field");
 		let playerNameInput = playernameBlock.querySelector("input-field");
 		let accessCodeInput = verifyCodeBlock.querySelector("input-field");
