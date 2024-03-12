@@ -33,13 +33,11 @@ class Tournament(models.Model):
             add_match += 1
         self.nbr_of_match += add_match
         while add_match > 1:
-        {
             tmp = add_match
             add_match = tmp // max_players_per_match
             if tmp % max_players_per_match != 0:
                 add_match += 1
             self.nbr_of_match += add_match
-        }
 
 # i set when there is a plyer left after generate the other matches,
 # it also counted as a match with a single player which means the player will win automatically
