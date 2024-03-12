@@ -92,6 +92,9 @@ export default class Signup extends AbstractComponent {
 		let verifyCodeBlock = new InputAugmented({
 			title: "Verify Code",
 			content: "XXXXXX",
+			indicators: {
+				emptyIndicator: "Please enter the code sent to your email"
+			},
 			type: "text",
 			button: {content: "Verify Code", action: false}
 		});
@@ -107,17 +110,21 @@ export default class Signup extends AbstractComponent {
 			{ 
 				blocks: [playernameBlock, emailBlock], 
 				actions: [
-					() => this.validatePlayerName(playernameBlock.input), 
-					() => this.validateEmail(emailBlock.input)
+					() => this.validatePlayerName(playernameBlock), 
+					() => this.validateEmail(emailBlock)
 				] 
 			}, 
 			{ 
 				blocks: [idBlock, passwordBlock, confirmPasswordBlock], 
-				actions: [() => this.validateUsername(idBlock.input)] 
+				actions: [
+					() => this.validateUsername(idBlock),
+					(e) => this.checkPassword(e, passwordBlock.input, passwordBlock.indicators),
+					(e) => this.checkPasswordMatch(e, passwordBlock.input, confirmPasswordBlock.input)
+				], 
 			}, 
 			{ 
 				blocks: [verifyCodeBlock], 
-				actions: [(e) => this.buttonOnClick(e, "wing")] 
+				actions: [() => this.validateCode(verifyCodeBlock)] 
 			}
 		];
 
@@ -167,35 +174,70 @@ export default class Signup extends AbstractComponent {
 		});
 	}
 
-	validatePlayerName = (input) => {
-		console.log("PLAYERINPUT: ", input.getValue());
-		let inputValue = input.getValue();
+	validateCode = (block) => {
+		let inputValue = block.input.getValue();
 		if (inputValue == "") {
-			input.input.style.outline = "2px solid red";
+			block.input.input.style.outline = "2px solid red";
+			block.indicators.emptyIndicator.style.display = "block";
+			block.indicators.emptyIndicator.setAttribute("valid", "false");
 			return false;
+		} else {
+			block.indicators.emptyIndicator.style.display = "none";
+		}
+
+		block.input.input.style.outline = "";
+		return true;
+	}
+
+	validatePlayerName = (block) => {
+		console.log("PLAYERINPUT: ", block.input.getValue());
+		let inputValue = block.input.getValue();
+		if (inputValue == "") {
+			block.input.input.style.outline = "2px solid red";
+			block.indicators.emptyIndicator.style.display = "block";
+			block.indicators.emptyIndicator.setAttribute("valid", "false");
+			return false;
+		} else {
+			block.indicators.emptyIndicator.style.display = "none";
 		}
 		/* fetch jisus thing to check if it is unique */
 		// if (is not unique):
 			// input.indicators.isUnique.style.display = "block";
 			// input.indicators.isUnique.setAttribute("valid", "false");
 
-		input.input.style.outline = "";
+		block.input.input.style.outline = "";
 		return true;
 	}
 
-	validateEmail = (input) => {
-		console.log("EMAILINPUT: ", input.getValue());
-		let inputValue = input.getValue();
+	validateEmail = (block) => {
+		console.log("EMAILINPUT: ", block.input.getValue());
+		let inputValue = block.input.getValue();
 		if (inputValue == "") {
-			input.input.style.outline = "2px solid red";
+			block.input.input.style.outline = "2px solid red";
+			block.indicators.emptyIndicator.style.display = "block";
+			block.indicators.emptyIndicator.setAttribute("valid", "false");
 			return false;
+		} else {
+			block.indicators.emptyIndicator.style.display = "none";
 		}
-		input.input.style.outline = ""
+
+		block.input.input.style.outline = ""
 		return true;
 	}
 	
-	validateUsername = (input) => {
-		console.log("USERNAME INPUT: ", input.getValue());
+	validateUsername = (block) => {
+		console.log("USERNAME INPUT: ", block.input.getValue());
+		let inputValue = block.input.getValue();
+		if (inputValue == "") {
+			block.input.input.style.outline = "2px solid red";
+			block.indicators.emptyIndicator.style.display = "block";
+			block.indicators.emptyIndicator.setAttribute("valid", "false");
+			return false;
+		} else {
+			block.indicators.emptyIndicator.style.display = "none";
+		}
+
+		block.input.input.style.outline = "";
 		return true;
 	}
 
@@ -205,10 +247,14 @@ export default class Signup extends AbstractComponent {
 		if (this.flowIndex >= flow.length - 1)
 			return ;
 		flow[this.flowIndex].actions.forEach(action => {
-			canGoNext *= action();
+			let res = action();
+			console.log("actionresult: ", res);
+			canGoNext *= res;
 		});
-		if (canGoNext == 0)
+		if (canGoNext == 0) {
+			console.log("cantgonext");
 			return;
+		}
 		this.flowIndex++;
 		this.updateFormView(flow, this.flowIndex);
 	}
@@ -323,9 +369,10 @@ export default class Signup extends AbstractComponent {
 
 	checkPassword = (e, passwordInput, indicators) => {
 		e && e.preventDefault();
-		
+		var valid = true;
+
 		let password = passwordInput.getValue();
-		let passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+		// let passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 		
 		if (password.length >= 8) {
 			passwordInput.input.style.outline = "2px solid green";
@@ -335,26 +382,32 @@ export default class Signup extends AbstractComponent {
 			passwordInput.input.style.outline = "2px solid red";
 			indicators.lengthIndicator.setAttribute("valid", "false");
 			indicators.lengthIndicator.style.display = "block";
+			valid = false;
 		}
 
-		if (!passwordRegex.test(password)) {
-			passwordInput.input.style.outline = "2px solid red";
-		} else {
-			passwordInput.input.style.outline = "2px solid green";
-		}
+		// if (!passwordRegex.test(password)) {
+		// 	passwordInput.input.style.outline = "2px solid red";
+		// 	valid = false;
+		// } else {
+		// 	passwordInput.input.style.outline = "2px solid green";
+		// }
+		console.log(valid);
+		return valid;
 	}
 
 	checkPasswordMatch = (e, passwordInput, confirmPasswordInput) => {
 		e && e.preventDefault();
-		
+		let valid = true;
 		let password = passwordInput.getValue();
 		let confirmPassword = confirmPasswordInput.getValue();
 
 		if (password !== confirmPassword) {
 			confirmPasswordInput.input.style.outline = "2px solid red";
+			valid = false;
 		} else {
 			confirmPasswordInput.input.style.outline = "2px solid green";
 		}
+		return valid
 	}
 
 	sendCodeToEmail = (e, email) => {
