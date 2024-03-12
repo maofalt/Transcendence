@@ -20,6 +20,7 @@ class Tournament(models.Model):
         ]
     )
     host = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='tournaments')
+    players = models.ManyToManyField('Player', through='TournamentPlayer', related_name='tournaments')
 
 class TournamentMatch(models.Model):
     match_id = models.AutoField(primary_key=True)
