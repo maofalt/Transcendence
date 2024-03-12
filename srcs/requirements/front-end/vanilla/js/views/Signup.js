@@ -20,7 +20,6 @@ export default class Signup extends AbstractComponent {
 		styleEl.textContent = styles;
 		this.shadowRoot.appendChild(styleEl);
 
-		// let bigTitle = new BigTitle({content: "Cosmic<br>Pong", style: {margin: "-10vh 0 10vh 0"}});
 		let pannel = new Pannel({title: "Sign Up", dark: false});
 
 		let formContainer = document.createElement('div');
@@ -28,10 +27,6 @@ export default class Signup extends AbstractComponent {
 		formContainer.style.setProperty("display", "flex");
 		formContainer.style.setProperty("width", "100%");
 		formContainer.style.setProperty("flex-direction", "row");
-
-		// let idBlock = this.createInputAndTitle("Unique ID", "ID", "example: GigaBoomer69", 
-		// "A unique ID that defines you in our Database.", "");
-		// idBlock.style.setProperty("height", "130px");
 
 		let idBlock = new InputAugmented({
 			title: "Unique ID",
@@ -53,23 +48,32 @@ export default class Signup extends AbstractComponent {
 		});
 		let PasswordIndicators = passwordBlock.indicators;
 
-		let confirmPasswordBlock = this.createInputAndTitle("Confirm Password", "con-password", "Password", "", "password");
-		confirmPasswordBlock.style.setProperty("height", "130px");
+		let confirmPasswordBlock = new InputAugmented({
+			title: "Confirm Password",
+			content: "Password",
+			type: "password"
+		});
 
-		let playernameBlock = this.createInputAndTitle("Playername", "playername", "Playername", 
-		"Your Playername will be displayed in games and tournaments.", "");
+		let playernameBlock = new InputAugmented({
+			title: "Playername",
+			content: "Playername",
+			description: "Your Playername will be displayed in games and tournaments.",
+			type: "text"
+		});
 
-		let emailBlock = this.createInputAndTitle("Email", "email", "example@example.com", "", "");
-		emailBlock.style.setProperty("height", "180px");
+		let emailBlock = new InputAugmented({
+			title: "Email",
+			content: "example@example.com",
+			type: "email",
+			button: {content: "Send Code", action: false}
+		});
 
-		let verifyCodeBlock = this.createInputAndTitle("Verify Code", "verif-code", "XXXXXX", "", "");
-		verifyCodeBlock.style.setProperty("height", "170px");
-		
-		const sendCode = new CustomButton({content: "Send Code", action: false});
-		emailBlock.appendChild(sendCode);
-		
-		const verifyCode = new CustomButton({content: "Verify Code", action: false});
-		verifyCodeBlock.appendChild(verifyCode);
+		let verifyCodeBlock = new InputAugmented({
+			title: "Verify Code",
+			content: "XXXXXX",
+			type: "text",
+			button: {content: "Verify Code", action: false}
+		});
 		
 		let leftBlock = this.createBlock("left");
 		let rightBlock = this.createBlock("right");
@@ -87,31 +91,28 @@ export default class Signup extends AbstractComponent {
 		
 		formContainer.appendChild(leftBlock);
 		formContainer.appendChild(rightBlock);
-		
+
 		const buttonsBlock = this.createBottomButtons();
-		
+
 		pannel.shadowRoot.appendChild(formContainer);
 		pannel.shadowRoot.appendChild(buttonsBlock);
 		pannel.shadowRoot.querySelector("#pannel-title").style.setProperty("font-size", "36px");
 		pannel.shadowRoot.querySelector("#pannel-title").style.setProperty("margin", "20px 0px 34px 0px");
 
-		const indicator = new WarnIndicator({style: {color: "red"}, content: "Invalid input"});
-		pannel.shadowRoot.appendChild(indicator);
-		// this.shadowRoot.appendChild(bigTitle);
 		this.shadowRoot.appendChild(pannel);
-		
-		let usernameInput = idBlock.querySelector("input-field");
-		let emailInput = emailBlock.querySelector("input-field");
-		let passwordInput = passwordBlock.shadowRoot.querySelector("input-field");
-		let confirmPasswordInput = confirmPasswordBlock.querySelector("input-field");
-		let playerNameInput = playernameBlock.querySelector("input-field");
-		let accessCodeInput = verifyCodeBlock.querySelector("input-field");
-		
+
+		let usernameInput = idBlock.input;
+		let emailInput = emailBlock.input;
+		let passwordInput = passwordBlock.input;
+		let confirmPasswordInput = confirmPasswordBlock.input;
+		let playerNameInput = playernameBlock.input;
+		let accessCodeInput = verifyCodeBlock.input;
+
 		let signUpButton = buttonsBlock.querySelector("#signUpButton");
 		let backButton = buttonsBlock.querySelector("#backButton");
 
-		sendCode.onclick = (e) => this.sendCodeToEmail(e, emailInput.getValue());
-		verifyCode.onclick = (e) => this.verifyCode(e, emailInput, accessCodeInput);
+		emailBlock.button.onclick = (e) => this.sendCodeToEmail(e, emailInput.getValue());
+		verifyCodeBlock.button.onclick = (e) => this.verifyCode(e, emailInput, accessCodeInput);
 
 		passwordInput.oninput = (e) => this.checkPassword(e, passwordInput, PasswordIndicators);
 		confirmPasswordInput.oninput = (e) => this.checkPasswordMatch(e, passwordInput, confirmPasswordInput);
@@ -409,7 +410,6 @@ export default class Signup extends AbstractComponent {
 
 		return block;
 	}
-	// Implement other methods or properties as needed
 }
 
 customElements.define('signup-page', Signup);

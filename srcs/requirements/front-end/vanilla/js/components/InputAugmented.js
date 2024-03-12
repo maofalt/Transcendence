@@ -24,10 +24,10 @@ export default class InputAugmented extends AbstractComponent {
 		title.style.setProperty("margin", "0px 0px 10px 0px");
 		this.shadowRoot.appendChild(title);
 		
-		const input = new InputField({type: options.type, content: options.content});
-		input.id = "input-field";
-		input.style.setProperty("marin-bottom", "0px");
-		this.shadowRoot.appendChild(input);
+		this.input = new InputField({type: options.type, content: options.content});
+		this.input.id = "input-field";
+		this.input.style.setProperty("marin-bottom", "0px");
+		this.shadowRoot.appendChild(this.input);
 		
 		let indicatorsBox = document.createElement('div');
 		indicatorsBox.id = "indicators-box";
@@ -50,17 +50,17 @@ export default class InputAugmented extends AbstractComponent {
 		}
 
 		if (options.description) {
-			let description = document.createElement("p");
-			description.textContent = options.description;
-			description.style.setProperty("font-family", "Anta, sans-serif");
-			description.style.setProperty("font-size", "14px");
-			description.style.setProperty("margin-top", "-3px");
-			this.shadowRoot.appendChild(description);
+			this.description = document.createElement("p");
+			this.description.textContent = options.description;
+			this.description.style.setProperty("font-family", "Anta, sans-serif");
+			this.description.style.setProperty("font-size", "14px");
+			this.description.style.setProperty("margin-top", "-3px");
+			this.shadowRoot.appendChild(this.description);
 		}
 
 		if (options.button) {
-			let button = new CustomButton({content : options.button.content, action: options.button.action});
-			this.shadowRoot.appendChild(button);
+			this.button = new CustomButton({content : options.button.content, action: options.button.action});
+			this.shadowRoot.appendChild(this.button);
 		}
 		
 		this.style.setProperty("height", "145px");
