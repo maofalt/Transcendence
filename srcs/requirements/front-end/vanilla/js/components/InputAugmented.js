@@ -22,10 +22,12 @@ export default class InputAugmented extends AbstractComponent {
 		title.style.setProperty("font-family", "tk-421, Anta, sans-serif");
 		title.style.setProperty("font-size", "26px");
 		title.style.setProperty("margin", "0px 0px 10px 0px");
+		this.shadowRoot.appendChild(title);
 		
 		const input = new InputField({type: options.type, content: options.content});
 		input.id = "input-field";
 		input.style.setProperty("marin-bottom", "0px");
+		this.shadowRoot.appendChild(input);
 		
 		let indicatorsBox = document.createElement('div');
 		indicatorsBox.id = "indicators-box";
@@ -44,12 +46,25 @@ export default class InputAugmented extends AbstractComponent {
 				this.indicators[key] = indicator;
 				indicatorsBox.appendChild(indicator);
 			});
+			this.shadowRoot.appendChild(indicatorsBox);
 		}
 
-		// this.style.setProperty("font-family", "Anta");
+		if (options.description) {
+			let description = document.createElement("p");
+			description.textContent = options.description;
+			description.style.setProperty("font-family", "Anta, sans-serif");
+			description.style.setProperty("font-size", "14px");
+			description.style.setProperty("margin-top", "-3px");
+			this.shadowRoot.appendChild(description);
+		}
+
+		if (options.button) {
+			let button = new CustomButton({content : options.button.content, action: options.button.action});
+			this.shadowRoot.appendChild(button);
+		}
+		
 		this.style.setProperty("height", "145px");
 		this.style.setProperty("margin", "0px 0px 20px 0px");
-		
 		if (options.style) {
 			for (const [key, value] of Object.entries(options.style)) {
 				console.log(key);
@@ -58,14 +73,6 @@ export default class InputAugmented extends AbstractComponent {
 			}
 		}
 
-		this.shadowRoot.appendChild(title);
-		this.shadowRoot.appendChild(input);
-		this.shadowRoot.appendChild(indicatorsBox);
-
-		if (options.button) {
-			let button = new CustomButton({content : options.button.content, action: options.button.action});
-			this.shadowRoot.appendChild(button);
-		}
 	}
 
 	// Implement other methods or properties as needed
