@@ -102,6 +102,15 @@ export default class Signup extends AbstractComponent {
 		/* Privacy Policy */
 			// put privacy policy block here
 
+		let nextButton = new CustomButton({content: "Next", action: true});
+		let backButton = new CustomButton({content: "< Back", action: false});
+		let finalSignupButton = new CustomButton({content: "Sign Up", action: true});
+		finalSignupButton.style.display = "none";
+		finalSignupButton.id = "finalSignupButton";
+		pannel.shadowRoot.appendChild(nextButton);
+		pannel.shadowRoot.appendChild(finalSignupButton);
+		pannel.shadowRoot.appendChild(backButton);
+
 		/* Define Signup flow steps/views */
 		this.flowIndex = 0;
 
@@ -119,7 +128,12 @@ export default class Signup extends AbstractComponent {
 				actions: [
 					() => this.validateUsername(idBlock),
 					(e) => this.checkPassword(e, passwordBlock.input, passwordBlock.indicators),
-					(e) => this.checkPasswordMatch(e, passwordBlock.input, confirmPasswordBlock.input)
+					(e) => this.checkPasswordMatch(e, passwordBlock.input, confirmPasswordBlock.input),
+					() => { 
+						finalSignupButton.style.display = "block";
+						nextButton.style.display = "none";
+						return true;
+					 }
 				], 
 			}, 
 			{ 
@@ -137,12 +151,6 @@ export default class Signup extends AbstractComponent {
 				}
 			});
 		});
-
-		let nextButton = new CustomButton({content: "Next", action: true});
-		let backButton = new CustomButton({content: "< Back", action: false});
-
-		pannel.shadowRoot.appendChild(nextButton);
-		pannel.shadowRoot.appendChild(backButton);
 	
 		let playerNameInput = playernameBlock.input;
 		let emailInput = emailBlock.input;
@@ -151,7 +159,7 @@ export default class Signup extends AbstractComponent {
 		let confirmPasswordInput = confirmPasswordBlock.input;
 		let accessCodeInput = verifyCodeBlock.input;
 
-		let signUpButton = new CustomButton({content: "Sign Up", action: true});
+		// let signUpButton = new CustomButton({content: "Sign Up", action: true});
 		// let backButton = buttonsBlock.querySelector("#backButton");
 
 		passwordInput.oninput = (e) => this.checkPassword(e, passwordInput, passwordBlock.indicators);
@@ -162,9 +170,13 @@ export default class Signup extends AbstractComponent {
 
 		nextButton.onclick = (e) => this.goNext(e, flow);
 
-		backButton.onclick = (e) => this.goBack(e, flow);
+		backButton.onclick = (e) => {
+			finalSignupButton.style.display = "none";
+			nextButton.style.display = "block";
+			this.goBack(e, flow);
+		}
 
-		signUpButton.onclick = (e) => this.submitSignup(e, {
+		finalSignupButton.onclick = (e) => this.submitSignup(e, {
 			username: usernameInput.getValue(),
 			password: passwordInput.getValue(),
 			confirm_password: confirmPasswordInput.getValue(),
@@ -249,7 +261,8 @@ export default class Signup extends AbstractComponent {
 		flow[this.flowIndex].actions.forEach(action => {
 			let res = action();
 			console.log("actionresult: ", res);
-			canGoNext *= res;
+			if (res != undefined)
+				canGoNext *= res;
 		});
 		if (canGoNext == 0) {
 			console.log("cantgonext");
