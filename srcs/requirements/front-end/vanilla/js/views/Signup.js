@@ -29,7 +29,7 @@ export default class Signup extends AbstractComponent {
 		formContainer.id = "form-container";
 		formContainer.style.setProperty("display", "flex");
 		formContainer.style.setProperty("width", "100%");
-		formContainer.style.setProperty("flex-direction", "row");
+		formContainer.style.setProperty("flex-direction", "column");
 	
 		pannel.shadowRoot.appendChild(formContainer);
 
@@ -100,8 +100,6 @@ export default class Signup extends AbstractComponent {
 				}
 			});
 		});
-
-		// formContainer.appendChild(emailBlock);
 
 		let nextButton = new CustomButton({content: "Next", action: true});
 		let backButton = new CustomButton({content: "< Back", action: false});
