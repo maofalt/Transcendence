@@ -36,8 +36,7 @@ export default class PlayMenu extends AbstractComponent {
         menu.appendChild(customGame);
 
 		const goBack = new CustomButton({content: "< Back", style: {padding: "0px 20px", position: "absolute", left: "50px", bottom: "30px"}});
-
-		goBack.onclick = () => navigateTo("/");
+		goBack.onclick = () => navigateTo("/"); // do adapt if needed
 
 		this.shadowRoot.appendChild(goBack);
         this.shadowRoot.appendChild(bigTitle);

@@ -12,6 +12,7 @@ import TwoFactorAuth from '@views/2fa';
 import SignupPage from '@components/SignUpPage.js';
 import Signup from '@views/Signup.js';
 import ProfilePage from '@components/ProfilePage';
+import EditProfile from '@components/EditProfile';
 
 export const routes = {
 	'/': {
@@ -37,6 +38,12 @@ export const routes = {
 		component: 'profile-page',
 		title: 'Profile',
 		buttonText: 'Profile',
+	},
+	'/edit-profile': {
+		path: '/edit-profile',
+		component: EditProfile,
+		title: 'Edit Profile Page',
+		buttonText: 'Edit Profile'
 	},
 	'/tournament': {
 		path: '/tournament',

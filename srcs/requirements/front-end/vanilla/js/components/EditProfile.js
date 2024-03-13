@@ -2,7 +2,7 @@ import { createElement } from "@utils/createElement";
 import { htmlToElement } from "@utils/htmlToElement";
 import AbstractComponent from "./AbstractComponent";
 import AbstractView from "@views/AbstractView";
-import profilePageStyles from '@css/ProfilePage.css?raw';
+import editProfileStyles from '@css/EditProfile.css?raw';
 import BigTitle from '@components/BigTitle';
 import Pannel from '@components/Pannel';
 import CustomButton from '@components/CustomButton';
@@ -11,12 +11,12 @@ import { navigateTo } from "@utils/Router";
 import UserInfo from "./UserInfo";
 import FriendBlock from "./FriendBlock";
 
-export default class ProfilePage extends AbstractComponent {
+export default class EditProfile extends AbstractComponent {
 	constructor(options = {}) {
 		super();
 
 		const styleEl = document.createElement('style');
-		styleEl.textContent = profilePageStyles;
+		styleEl.textContent = editProfileStyles;
 		this.shadowRoot.appendChild(styleEl);
 
 		// let user = options.user;
@@ -121,14 +121,6 @@ export default class ProfilePage extends AbstractComponent {
 		</div>
 		`;
 
-		const addFriend = new InputAugmented({
-			title: "Add Friend",
-			content: "Username",
-			type: "text",
-			button: {content: "+ Add Friend", action: false}
-		});
-		addFriend.shadowRoot.querySelector("#input-button").style.setProperty("font-size", "28px");
-
 		// user.friends = 4;
 		const friendsList = new Pannel({dark: true, title: `Friends List  ( ${user.friends} )`});
 		const listContainer = document.createElement("div");
@@ -168,8 +160,6 @@ export default class ProfilePage extends AbstractComponent {
 		// friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
 		// listContainer.appendChild(friend);
 
-
-		friendsPannel.shadowRoot.appendChild(addFriend);
 		friendsPannel.shadowRoot.appendChild(friendsList);
 
 		personalInfo.shadowRoot.appendChild(infos);
@@ -184,6 +174,7 @@ export default class ProfilePage extends AbstractComponent {
 		profile.shadowRoot.appendChild(gameStats);
 		profile.shadowRoot.appendChild(deleteButton);
 
+
 		this.shadowRoot.appendChild(goBack);
 		this.shadowRoot.appendChild(profile);
 		this.shadowRoot.appendChild(friendsPannel);
@@ -195,4 +186,4 @@ export default class ProfilePage extends AbstractComponent {
 not sure about that one
 */
 
-customElements.define('profile-page', ProfilePage);
+customElements.define('edit-profile', EditProfile);
