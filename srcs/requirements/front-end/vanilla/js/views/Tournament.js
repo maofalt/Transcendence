@@ -158,11 +158,12 @@ export default class Tournament extends AbstractView {
 			"ballData": {
 			  "speed": 0.7,
 			  "radius": 1,
-			  "color": "0xffffff"
+			  "color": "0xffffff",
+			  "texture": "yridgway",
 			},
 			"playersData": [
 			  {
-				"accountID": "tata",
+				"accountID": "banana",
 				"color": "0x0000ff"
 			  },
 			  {

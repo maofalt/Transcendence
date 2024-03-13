@@ -1,0 +1,14 @@
+/* css file for user account page */
+
+#friendsLink,
+#profileUpdate {
+	text-decoration: underline;
+	color: blue;
+	font-size: 14px;
+}
+
+#deleteAccountLink {
+	text-decoration: underline;
+	color: red;
+	font-size: 14px;
+}
