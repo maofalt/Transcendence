@@ -11,6 +11,7 @@ import BasicGame from '@views/BasicGame.js';
 import TwoFactorAuth from '@views/2fa';
 import SignupPage from '@components/SignUpPage.js';
 import Signup from '@views/Signup.js';
+import ProfilePage from '@components/ProfilePage';
 
 export const routes = {
 	'/': {
@@ -30,6 +31,12 @@ export const routes = {
 		component: 'play-menu',
 		title: 'Game',
 		buttonText: 'Game'
+	},
+	'/profile': {
+		path: '/profile',
+		component: 'profile-page',
+		title: 'Profile',
+		buttonText: 'Profile',
 	},
 	'/tournament': {
 		path: '/tournament',

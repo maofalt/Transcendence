@@ -61,7 +61,7 @@ export default class HomePage extends AbstractComponent {
 		// footerContainer.appendChild(userInfo);
 
 		const userInfo = new UserInfo({profilePicPath: "", username: "Banana", status: "online", wins: "999", losses: "0"});
-		userInfo.style.setProperty("position", "absolute");
+		// userInfo.style.setProperty("position", "absolute");
 		userInfo.style.setProperty("bottom", "15px");
 		userInfo.style.setProperty("left", "35px");
 
@@ -75,6 +75,7 @@ export default class HomePage extends AbstractComponent {
 		tournamentsButton.onclick = () => navigateTo("/tournament");
 		// optionsButton.onclick = () => navigateTo("/options");
 		loginButton.onclick = () => navigateTo("/login");
+		userInfo.onclick = () => navigateTo("/profile");
 		// this.shadowRoot.appendChild(footerContainer);
 	}
 }
