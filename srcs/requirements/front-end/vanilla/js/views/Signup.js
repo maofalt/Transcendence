@@ -48,10 +48,11 @@ export default class Signup extends AbstractComponent {
 			title: "Email",
 			content: "example@example.com",
 			indicators: {
-				emptyIndicator: "Please enter your email"
+				emptyIndicator: "Please enter your email",
+				invalidEmailIndicator: "Invalid Email"
 			},
 			type: "email",
-			button: {content: "Send Code", action: false}
+			// button: {content: "Send Code", action: false}
 		});
 
 		/* Username and Password */
@@ -83,7 +84,8 @@ export default class Signup extends AbstractComponent {
 			title: "Confirm Password",
 			content: "Password",
 			indicators: {
-				matchIndicator: "Passwords don't match"
+				matchIndicator: "Passwords don't match",
+				emptyIndicator: "Please confirm your password"
 			},
 			type: "password"
 		});
@@ -97,7 +99,7 @@ export default class Signup extends AbstractComponent {
 				badCodeIndicator: "Incorrect Code"
 			},
 			type: "text",
-			button: {content: "Verify Code", action: false}
+			// button: {content: "Verify Code", action: false}
 		});
 
 		/* Privacy Policy */
@@ -167,7 +169,7 @@ export default class Signup extends AbstractComponent {
 		passwordInput.oninput = (e) => this.checkPassword(e, passwordInput, passwordBlock.indicators);
 		confirmPasswordInput.oninput = (e) => this.checkPasswordMatch(e, passwordInput, confirmPasswordInput);
 		
-		emailBlock.button.onclick = (e) => this.sendCodeToEmail(e, emailInput.getValue());
+		// emailBlock.button.onclick = (e) => this.sendCodeToEmail(e, emailInput.getValue());
 		// verifyCodeBlock.button.onclick = (e) => this.verifyCode(e, emailInput, accessCodeInput);
 
 		nextButton.onclick = (e) => this.goNext(e, flow);
