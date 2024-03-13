@@ -13,20 +13,99 @@ from .authentication import CustomJWTAuthentication
 from .permissions import  IsOwnerOrReadOnly, IsHostOrParticipant
 from rest_framework.decorators import api_view
 from django.contrib.auth.models import User
+from collections import defaultdict
+from django.http import JsonResponse
+from django.utils import timezone
+from django.shortcuts import get_object_or_404
+
+
+
 
 # ------------------------ Tournament -----------------------------------
 class TournamentListCreate(generics.ListCreateAPIView):
     queryset = Tournament.objects.all()
     serializer_class = TournamentSerializer
-    authentication_classes = [CustomJWTAuthentication]
-    renderer_classes = [JSONRenderer]  # Force the response to be rendered in JSON
-    permission_classes = [IsAuthenticated]  # Only authenticated users can create and list tournaments
+    # authentication_classes = [CustomJWTAuthentication]
+    # renderer_classes = [JSONRenderer]  # Force the response to be rendered in JSON
+    # permission_classes = [IsAuthenticated]  # Only authenticated users can create and list tournaments
 
-    def perform_create(self, serializer):
+    def perform_create(self, request, *args, **kwargs):
         # Attribue automatiquement l'utilisateur actuel comme host du tournoi créé
-        serializer.save(host=self.request.user)
+        data = request.data
+        tournament_name = data.get('tournament_name')
+        # settings = data.get('settings')
+        registration_type = data.get('registration_type')
+        registration_period_min = data.get('registration_period_min')
+        nbr_of_player_total = data.get('nbr_of_player_total')
+        nbr_of_player_match = data.get('nbr_of_player_match')
+        host = request.user
+
+        # Create MatchSetting instance
+        match_setting = MatchSetting.objects.create(
+            duration_sec=data.get('duration_sec', 210),
+            max_score=data.get('max_score', 5),
+            walls_factor=data.get('walls_factor', 0),
+            size_of_goals=data.get('size_of_goals', 15),
+            paddle_height=data.get('paddle_height', 10),
+            paddle_speed=data.get('paddle_speed', 0.5),
+            ball_speed=data.get('ball_speed', 0.7),
+            ball_radius=data.get('ball_radius', 1),
+            ball_color=data.get('ball_color', '#000000'),
+            nbr_of_player=data.get('nbr_of_player_match', 2)    # this is about how it set not actual played player 
+        )
+
+        # Create Tournament instance
+        tournament = Tournament.objects.create(
+            tournament_name=tournament_name,
+            registration=registration_type,
+            registration_period_min=registration_period_min,
+            nbr_of_player_total=nbr_of_player_total,
+            nbr_of_player_match=nbr_of_player_match,
+            host=host,
+            settings=match_setting,
+            created_at=timezone.now(),
+            # nbr_of_player   will be assigned when user joining the tournament
+        )
+
+        tournament.calculate_nbr_of_match()
+
+        # Create TournamentMatch instances
+        round = 1
+        added_match = nbr_of_player_total // nbr_of_player_match
+        if nbr_of_player_total % nbr_of_player_match != 0:
+            added_match += 1
+        for i in range(tournament.nbr_of_match):
+            tmp_added_match -= 1
+
+            tournament_match = TournamentMatch.objects.create(
+                tournament_id=tournament.id,
+                match_setting_id=match_setting.id,
+                round_number=round,
+                max_players=nbr_of_player_match,
+            )
+            tournament.matches.add(tournament_match)
+
+            if added_match == 0:
+                round += 1
+                winners = added_match
+                added_match = winners // nbr_of_player_match
+                if winners % nbr_of_player_match != 0:
+                    added_match += 1
+
+        serializer = self.get_serializer(tournament)
+        return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
+
+        # serializer.save(host=self.request.user)
     # permission_classes = [permissions.IsAuthenticated] #add more permissions if is necessary
     
+    def generate_tournament_tree(self, data):
+        # Generate tournament tree Data form to return to the frontend
+        pass
+
+
+
+
+
     #from Miguel's changes
     # def list(self, request, *args, **kwargs):
     #     queryset = self.get_queryset()
@@ -42,6 +121,29 @@ class TournamentListCreate(generics.ListCreateAPIView):
     #     serializer = self.get_serializer(queryset, many=True)
     #     return Response(serializer.data)
     # def generate_tree
+
+
+# ------------------------ Assigning Players on the Tournament Tree -----------------------------------
+
+class JoinTournament(APIView):
+    def post(self, request):
+        tournament_id = request.data.get('tournament_id')
+        username = request.data.get('username')
+        tournament = get_object_or_404(Tournament, id=tournament_id)
+
+        if tournament.is_full():
+            return JsonResponse({'message': 'Tournament is full'}, status=status.HTTP_400_BAD_REQUEST)
+
+        player, created = Player.objects.get_or_create(username=username) # created wiil return False if the player already exists
+        tournament.players.add(player)
+        tournament.assign_player_to_match(player)
+
+        serializer = TournamentSerializer(tournament)
+        return JsonResponse(serializer.data, status=status.HTTP_200_OK)
+
+
+
+
 
 class TournamentRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     queryset = Tournament.objects.all()
