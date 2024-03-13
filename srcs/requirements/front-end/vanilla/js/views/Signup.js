@@ -130,12 +130,12 @@ export default class Signup extends AbstractComponent {
 					() => this.validateUsername(idBlock),
 					(e) => this.checkPassword(e, passwordBlock.input, passwordBlock.indicators),
 					(e) => this.checkPasswordMatch(e, passwordBlock.input, confirmPasswordBlock.input),
-					() => { 
+					(e) => this.sendCodeToEmail(e, emailInput.getValue()),
+					() => {
 						finalSignupButton.style.display = "block";
 						nextButton.style.display = "none";
 						return true;
-					},
-					(e) => this.sendCodeToEmail(e, emailInput.getValue())
+					}
 				], 
 			}, 
 			{ 
@@ -178,8 +178,9 @@ export default class Signup extends AbstractComponent {
 			this.goBack(e, flow);
 		}
 
-		finalSignupButton.onclick = (e) => {
-			if (!this.validateCode(verifyCodeBlock, emailInput)) {
+		finalSignupButton.onclick = async (e) => {
+			let canSignup = await this.validateCode(verifyCodeBlock, emailInput);
+			if (!canSignup) {
 				console.log("NOOOT SIGNUP"); 
 				return ;
 			}
@@ -195,8 +196,9 @@ export default class Signup extends AbstractComponent {
 		}
 	}
 
-	validateCode = (block, emailInput) => {
+	validateCode = async (block, emailInput) => {
 		let inputValue = block.input.getValue();
+		let validCode = await this.verifyCode(emailInput, block.input);
 		if (inputValue == "") {
 			block.input.input.style.outline = "2px solid red";
 			block.indicators.emptyIndicator.style.display = "block";
@@ -205,13 +207,14 @@ export default class Signup extends AbstractComponent {
 		} else {
 			block.indicators.emptyIndicator.style.display = "none";
 		}
-		if (!this.verifyCode(emailInput, block.input)) {
+		if (!validCode) {
+			console.log("bad code");
 			block.input.input.style.outline = "2px solid red";
 			block.indicators.badCodeIndicator.style.display = "block";
 			block.indicators.badCodeIndicator.setAttribute("valid", "false");
 			return false;
 		} else {
-			block.indicators.badCodeIndicator.style.display = "block";
+			block.indicators.badCodeIndicator.style.display = "none";
 		}
 		console.log("returning true");
 		block.input.input.style.outline = "";
@@ -275,17 +278,22 @@ export default class Signup extends AbstractComponent {
 		let canGoNext = 1;
 		if (this.flowIndex >= flow.length - 1)
 			return ;
-		flow[this.flowIndex].actions.forEach(action => {
+		console.log("before");
+		for (const action of flow[this.flowIndex].actions) {
 			let res = action();
+			console.log("actionresulty: ", res);
+			if (!res && res != undefined) {
+				console.log("oh no");
+				return ;
+			}
 			console.log("actionresult: ", res);
-			if (res != undefined)
-				canGoNext *= res;
-		});
-		if (canGoNext == 0) {
-			console.log("cantgonext");
-			return;
 		}
+		console.log("after");
 		this.flowIndex++;
+		// if (this.flowIndex >= flow.length - 1) {
+				// finalSignupButton.style.display = "block";
+				// nextButton.style.display = "none";
+		// }
 		this.updateFormView(flow, this.flowIndex);
 	}
 
@@ -308,11 +316,13 @@ export default class Signup extends AbstractComponent {
 		});
 	}
 
-	verifyCode = (emailInput, verificationCodeInput) => {
+	verifyCode = async (emailInput, verificationCodeInput) => {
 		var email = emailInput.getValue();
 		var verificationCode = verificationCodeInput.getValue();
 
-		easyFetch('/api/user_management/auth/verify_code', {
+		let valid = false;
+
+		await easyFetch('/api/user_management/auth/verify_code', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/x-www-form-urlencoded',
@@ -326,39 +336,37 @@ export default class Signup extends AbstractComponent {
 
 			if (!response || !body) {
 				alert('Request Failed');
-				return false;
-			}
-
-			if (response.status === 400) {
+				valid = false;
+			} else if (response.status === 400) {
 				alert(body.error || JSON.stringify(body));
-				return false;
-			}
-	
-			if (!response.ok) {
+				valid = false;
+			} else if (!response.ok) {
 				alert('Response Error: ' + (body.error || JSON.stringify(body)));
-				return false;
-			}
-
-			if (response.status === 200 && body.success === true) {
+				valid = false;
+			} else if (response.status === 200 && body.success === true) {
 				alert(body.message || JSON.stringify(body));
-				return true;
+				valid = true;
+			} else {
+				alert(body.error || JSON.stringify(body));
 			}
-
-			alert(body.error || JSON.stringify(body));
 		})
 		.catch(error => {
 			console.error('Request Failed:', error);
+			valid = false;
 		});
-		return false
+		console.log("valido: ", valid);
+		return valid
 	}
 
-	submitSignup = (e, formData) => {
+	submitSignup = async (e, formData) => {
 		e && e.preventDefault();
 		
+		let valid = false;
+
 		console.log('submitSignup');
 		console.log('values:', formData);
 
-		easyFetch('/api/user_management/auth/signup', {
+		await easyFetch('/api/user_management/auth/signup', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/x-www-form-urlencoded',
@@ -372,30 +380,26 @@ export default class Signup extends AbstractComponent {
 
 			if (!response || !body) {
 				alert('Request Failed');
-				return ;
-			}
-
-			if (response.status === 400) {
+				valid = false;
+			} else if (response.status === 400) {
 				alert('Invalid signup data');
-				return ;
-			}
-	
-			if (!response.ok) {
+				valid = false;
+			} else if (!response.ok) {
 				alert('Response Error: ' + body.error || JSON.stringify(body));
-				return ;
-			}
-
-			if (response.status === 200 && body.success === true) {
+				valid = false;
+			} else if (response.status === 200 && body.success === true) {
 				alert('Login successful: ' + body.message || JSON.stringify(body));
 				Router.navigateTo("/");
-				return ;
+				valid = true;
+			} else {
+				alert(body.error || JSON.stringify(body));
 			}
-
-			alert(body.error || JSON.stringify(body));
 		})
 		.catch(error => {
 			console.error('Request Failed:', error);
+			valid = false;
 		});
+		return valid
 	}
 
 	checkPassword = (e, passwordInput, indicators) => {
@@ -441,10 +445,11 @@ export default class Signup extends AbstractComponent {
 		return valid
 	}
 
-	sendCodeToEmail = (e, email) => {
+	sendCodeToEmail = async (e, email) => {
 		if (e)
 			e.preventDefault();
-		easyFetch('/api/user_management/auth/access_code', {
+		let valid = false;
+		await easyFetch('/api/user_management/auth/access_code', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -458,29 +463,27 @@ export default class Signup extends AbstractComponent {
 
 			if (!response || !body) {
 				console.error('Request Failed');
-				return false;
-			}
-
-			if (response.status === 400) {
+				valid = false;
+			} else if (response.status === 400) {
 				alert(body.error || 'Invalid email');
-				return false;
-			}
-	
-			if (!response.ok) {
+				valid = false;
+			} else if (!response.ok) {
 				console.error('Request Failed:', body.error || JSON.stringify(body));
-				return false;
-			}
-
-			if (response.status === 200 && body.success === true) {
+				valid = false;
+			} else if (response.status === 200 && body.success === true) {
 				alert('Email sent to \'' + email + '\'');
-				return true;
-				// Router.navigateTo("/");
+				valid = true;
+				console.log("valid1: ", valid);
+			} else {
+				alert(body.error || JSON.stringify(body));
 			}
 		})
 		.catch(error => {
 			console.error('Request Failed:', error);
+			valid = false;
 		});
-		return false;
+		console.log("valid2: ", valid);
+		return valid;
 	}
 
 	buttonOnClick = (e, arg) => {
