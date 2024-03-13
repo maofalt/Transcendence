@@ -26,16 +26,16 @@ export default class HomePage extends AbstractComponent {
 	
 		const playButton = new CustomButton({content: "Play", action: true, style: {margin: "15px 0px"}});
 		const tournamentsButton = new CustomButton({content: "Tournaments", style: {margin: "15px 0px"}});
-		// const optionsButton = new CustomButton({content: "Options", style: {margin: "15px 0px"}});
-		const loginButton = new CustomButton({content: "Login", style: {margin: "15px 0px"}});
+		const profileButton = new CustomButton({content: "Profile", style: {margin: "15px 0px"}});
+		// const loginButton = new CustomButton({content: "Login", style: {margin: "15px 0px"}});
 
 		const menu = document.createElement('div');
 		menu.id = "menu";
 
 		menu.appendChild(playButton);
 		menu.appendChild(tournamentsButton);
-		// menu.appendChild(optionsButton);
-		menu.appendChild(loginButton);
+		menu.appendChild(profileButton);
+		// menu.appendChild(loginButton);
 
 		// const footerContainer = document.createElement('div');
 		// footerContainer.id = "footerContainer";
@@ -60,23 +60,25 @@ export default class HomePage extends AbstractComponent {
 
 		// footerContainer.appendChild(userInfo);
 
-		const userInfo = new UserInfo({profilePicPath: "", username: "Banana", status: "online", wins: "999", losses: "0"});
-		// userInfo.style.setProperty("position", "absolute");
+		const userInfo = new UserInfo();
+		userInfo.style.setProperty("position", "absolute");
 		userInfo.style.setProperty("bottom", "15px");
 		userInfo.style.setProperty("left", "35px");
 
 		this.shadowRoot.appendChild(menu);
-		// this.shadowRoot.appendChild(footer);
 		this.shadowRoot.appendChild(userInfo);
-		// this.shadowRoot.appendChild(div);
-		// this.shadowRoot.appendChild(footer);
 
 		playButton.onclick = () => navigateTo("/game");
 		tournamentsButton.onclick = () => navigateTo("/tournament");
-		// optionsButton.onclick = () => navigateTo("/options");
-		loginButton.onclick = () => navigateTo("/login");
+		profileButton.onclick = () => navigateTo("/profile");
 		userInfo.onclick = () => navigateTo("/profile");
-		// this.shadowRoot.appendChild(footerContainer);
+
+		// to add : method inside the user Info class that calls the navigate function corresponding
+		// if user logged in : first button -> edit profile
+		//						second button -> log out
+
+		// if user not logged in : first button -> log in
+		//							second button -> sign up
 	}
 }
 

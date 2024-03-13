@@ -26,12 +26,16 @@ export default class ProfilePage extends AbstractComponent {
 			username: user.username,
 			status: user.status,
 			wins: user.wins,
-			losses: user.losses});
+			losses: user.losses,
+			button1: {content: "Edit", action: true},
+			button2: {content: "Log out"}});
 
 		const profile = new Pannel({dark: false, title: "Profile"});
-		const friendsPannel = new Pannel({dark: false, title: "Friends"});
+		const friendsPannel = new Pannel({dark: false, title: `Friends`, style: {overflowY: "scroll"}});
 		const personalInfo = new Pannel({dark: true, title: "Personal Info", style: {display: "block",  padding: "0px 0px 0px 20px"}});
 		const gameStats = new Pannel({dark: true, title: "Game Stats", style: {display: "block", padding: "0px 0px 0px 20px"}});
+		gameStats.shadowRoot.querySelector("#pannel-title").style.setProperty("margin", "10px 0px");
+		personalInfo.shadowRoot.querySelector("#pannel-title").style.setProperty("margin", "10px 0px");
 
 		profile.shadowRoot.querySelector("#pannel-title").style.setProperty("padding", "0px 0px 0px 30px");
 		profile.style.setProperty("display", "block");
@@ -39,7 +43,13 @@ export default class ProfilePage extends AbstractComponent {
 		let infos = document.createElement("div");
 		infos.innerHTML = `
 		<style>
+			* {
+				margin: 0;
+				padding: 0;
+			}
 			.infos-container {
+				margin-top: 0;
+				padding-top: 0;
 			}
 			.titles-container {
 				display: inline-block;
@@ -48,20 +58,21 @@ export default class ProfilePage extends AbstractComponent {
 				display: inline-block;
 				margin: 0px 0px 0px 15px;
 			}
+			.titles-container h3 {
+				margin: 0px 0px 14px 0px;
+			}
 			.values-container p {
-				margin: 22px 0px 0px 0px;
+				margin: 0px 0px 18px 0px;
 			}
 		</style>
 		<div class="infos-container">
 			<div class="titles-container">
 				<h3>Playername :</h3>
 				<h3>E-Mail :</h3>
-				<h3>Friends :</h3>
 			</div>
 			<div class="values-container">
 				<p>${user.playername}</p>
 				<p>${user.email}</p>
-				<p>${user.friends}</p>
 			</div>
 		</div>
 		`;
@@ -74,6 +85,10 @@ export default class ProfilePage extends AbstractComponent {
 		let stats = document.createElement("div");
 		stats.innerHTML = `
 		<style>
+			* {
+				margin: 0;
+				padding: 0;
+			}
 			.infos-container {
 			}
 			.titles-container {
@@ -83,8 +98,11 @@ export default class ProfilePage extends AbstractComponent {
 				display: inline-block;
 				margin: 0px 0px 0px 15px;
 			}
+			.titles-container h3 {
+				margin: 0px 0px 14px 0px;
+			}
 			.values-container p {
-				margin: 22px 0px 0px 0px;
+				margin: 0px 0px 18px 0px;
 			}
 		</style>
 		<div class="infos-container">
@@ -111,9 +129,12 @@ export default class ProfilePage extends AbstractComponent {
 		});
 		addFriend.shadowRoot.querySelector("#input-button").style.setProperty("font-size", "28px");
 
-		const friendsList = new Pannel({dark: true, title: "Friends List"});
+		// user.friends = 4;
+		const friendsList = new Pannel({dark: true, title: `Friends List  ( ${user.friends} )`});
 		let friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "online"});
-		friendsList.shadowRoot.querySelector("#pannel-title").style.setProperty("font-size", "28px");
+		friendsList.shadowRoot.querySelector("#pannel-title").style.setProperty("font-size", "22px");
+		friendsList.shadowRoot.querySelector("#pannel-title").style.setProperty("font-family", "sans-serif");
+		friendsList.shadowRoot.querySelector("#pannel-title").style.setProperty("font-weight", "bold");
 		friendsList.shadowRoot.appendChild(friend);
 
 		// TESTING
@@ -121,7 +142,7 @@ export default class ProfilePage extends AbstractComponent {
 		friendsList.shadowRoot.appendChild(friend);
 		friend = new FriendBlock({avatar: "", userName: "Miguel", status: "offline"});
 		friendsList.shadowRoot.appendChild(friend);
-		// friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
+		friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
 		// friendsList.shadowRoot.appendChild(friend);
 		// friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
 		// friendsList.shadowRoot.appendChild(friend);
@@ -141,18 +162,25 @@ export default class ProfilePage extends AbstractComponent {
 		personalInfo.shadowRoot.appendChild(infos);
 		gameStats.shadowRoot.appendChild(stats);
 
+		const deleteButton = new CustomButton({content: "Delete Account", delete: true, style: {margin: "10px"}});
+		const goBack = new CustomButton({content: "< Back", style: {padding: "0px 20px", position: "absolute", left: "50px", bottom: "30px"}});
+
 		profile.shadowRoot.appendChild(userInfo);
 		profile.shadowRoot.appendChild(personalInfo);
 		profile.shadowRoot.appendChild(gameStats);
+		profile.shadowRoot.appendChild(deleteButton);
 
+		goBack.onclick = () => navigateTo("/");
+
+		this.shadowRoot.appendChild(goBack);
 		this.shadowRoot.appendChild(profile);
 		this.shadowRoot.appendChild(friendsPannel);
 	}
 }
 
 /* To add :
-- Button Delete Account;
-- Button Back;
 - Pannel "User Preferences" with language, and paddle orientation, + maybe keys ?
+not sure about that one
 */
+
 customElements.define('profile-page', ProfilePage);

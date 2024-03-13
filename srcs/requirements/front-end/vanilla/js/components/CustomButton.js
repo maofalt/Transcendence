@@ -3,13 +3,20 @@ import { htmlToElement } from "@utils/htmlToElement";
 import AbstractComponent from "./AbstractComponent";
 import actionButtonStyles from '@css/ActionButtonV2.css?raw';
 import normalButtonStyles from '@css/NormalButtonV2.css?raw';
+import deleteButtonStyles from '@css/DeleteButton.css?raw';
 
 export default class CustomButton extends AbstractComponent {
 	constructor(options = {}) {
 		super();
 
 		const styleEl = document.createElement('style');
-		styleEl.textContent = options.action ? actionButtonStyles : normalButtonStyles
+		if (options.action) {
+			styleEl.textContent = actionButtonStyles;
+		} else if (options.delete) {
+			styleEl.textContent = deleteButtonStyles;
+		} else {
+			styleEl.textContent = normalButtonStyles;
+		}
 		this.shadowRoot.appendChild(styleEl);
 
 		let p = document.createElement('p');

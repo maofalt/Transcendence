@@ -35,6 +35,8 @@ export default class UserInfo extends AbstractComponent {
         pannel.shadowRoot.appendChild(ppContainer);
         pannel.shadowRoot.appendChild(userText);
 
+        this.createButtons(options, pannel);
+
         pannel.onmouseover = (e) => this.pannelHover(e, pannel, "pannel HOVERED !");
 		pannel.onmouseleave = (e) => this.pannelLeave(e, pannel, "pannel LEFT !");
 
@@ -77,7 +79,7 @@ export default class UserInfo extends AbstractComponent {
         userText.style.setProperty("width", "100%");
         userText.style.setProperty("height", "100%");
         userText.style.setProperty("padding", "5px 15px 5px 15px");
-        userText.style.setProperty("flex", "3");
+        userText.style.setProperty("flex", "1");
         userText.innerHTML = `
         <style>
             h2 {
@@ -108,15 +110,37 @@ export default class UserInfo extends AbstractComponent {
                 padding: 0;
             }
         </style>
-        <h2>${options.username}</h2>
+        <h2>${options.username ? options.username : "Guest"}</h2>
         <div id="status">
             <div id="status-circle"></div>
-            <p>${options.status}</p>
+            <p>${options.status ? options.status : "offline"}</p>
         </div>
-        <p>${options.wins} W / ${options.losses} L</p>`;
+        <p>${options.wins ? options.wins: "-"} W / ${options.losses ? options.losses: "-"} L</p>`;
         userText.querySelector('h2').style.setProperty("color", "rgba(0, 217, 255, 1)");
         // userText.querySelector('#status').style.setProperty("font-style", "italic");
         return userText;
+    }
+
+    createButtons(options, pannel) {
+        let button1;
+        let button2;
+        if (options.button1) {
+            button1 = new CustomButton({content: options.button1.content, action: options.button1.action, style: {display: "block", margin: "15px 0px"}});
+        } else {
+            button1 = new CustomButton({content: "Log in", action: true, style: {display: "block", margin: "15px 0px"}});
+        }
+        if (options.button2) {
+            button2 = new CustomButton({content: options.button2.content, action: options.button2.action, style: {display: "block", margin: "15px 0px"}});
+        } else {
+            button2 = new CustomButton({content: "Sign Up", style: {display: "block", margin: "15px 0px"}});
+        }
+        const container = document.createElement("div");
+        container.id = "button-container";
+        container.appendChild(button1);
+        container.appendChild(button2);
+        container.style.setProperty("margin", "0px 15px 0px 15px");
+        container.style.setProperty("flex", "1");
+        pannel.shadowRoot.appendChild(container);
     }
 
     setUpImageBox(imgBox) {

@@ -35,6 +35,11 @@ export default class PlayMenu extends AbstractComponent {
 		menu.appendChild(classicPong);
         menu.appendChild(customGame);
 
+		const goBack = new CustomButton({content: "< Back", style: {padding: "0px 20px", position: "absolute", left: "50px", bottom: "30px"}});
+
+		goBack.onclick = () => navigateTo("/");
+
+		this.shadowRoot.appendChild(goBack);
         this.shadowRoot.appendChild(bigTitle);
         this.shadowRoot.appendChild(menu);
 	}
@@ -91,9 +96,5 @@ export default class PlayMenu extends AbstractComponent {
 		pannel.style.setProperty("backdrop-filter", "blur(16px)");
 	}
 }
-
-/* To add :
-- Back Button
-*/
 
 customElements.define('play-menu', PlayMenu);
