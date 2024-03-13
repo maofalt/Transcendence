@@ -106,7 +106,23 @@ export default class Signup extends AbstractComponent {
 			// put privacy policy block here
 
 		let nextButton = new CustomButton({content: "Next", action: true});
-		let backButton = new CustomButton({content: "< Back", action: false});
+		nextButton.id = "nextButton";
+		let backButton = new CustomButton(
+			{
+				content: "↩", // "⇦", // "↵", //"↶", //"↩", 
+				action: true, 
+				style: {
+					'position': 'absolute',
+					'top': '10px',
+					'left': '10px',
+					'padding': '1px',
+					'width': '40px',
+					'height': '40px',
+					'font-size': '25px',
+					// 'background-color': 'lightblue',
+				}
+			});
+		backButton.id = "backButton";
 		let finalSignupButton = new CustomButton({content: "Sign Up", action: true});
 		finalSignupButton.style.display = "none";
 		finalSignupButton.id = "finalSignupButton";
@@ -301,8 +317,10 @@ export default class Signup extends AbstractComponent {
 
 	goBack = (e, flow) => {
 		e.preventDefault();
-		if (this.flowIndex <= 0)
+		if (this.flowIndex <= 0) {
+			history.back();
 			return ;
+		}
 		this.flowIndex--;
 		this.updateFormView(flow, this.flowIndex);
 	}
