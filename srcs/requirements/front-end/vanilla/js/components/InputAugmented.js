@@ -99,7 +99,7 @@ export default class InputAugmented extends AbstractComponent {
 				this.input.input.style.outline = "";
 			}
 		});
-
+		console.log("valid::",valid);
 		return valid;
 	}
 }

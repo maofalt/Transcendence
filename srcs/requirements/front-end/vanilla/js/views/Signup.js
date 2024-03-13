@@ -61,7 +61,7 @@ export default class Signup extends AbstractComponent {
 			content: "example: GigaBoomer69",
 			indicators: {
 				emptyIndicator: ["Please enter a username", () => idBlock.input.getValue() != ""],
-				// uniqueIndicator: "The username you entered is already taken"
+				// uniqueIndicator: ["The username you entered is already taken", () => idBlock.input.getValue() != ""],
 			},
 			type: "text",
 			description: "A unique ID that defines you in our Database."
@@ -72,10 +72,10 @@ export default class Signup extends AbstractComponent {
 			content: "Password",
 			indicators: {
 				emptyIndicator: ["Please enter a password", () => passwordBlock.input.getValue() != ""],
-				// lengthIndicator: "Minimum 8 characters",
-				// digitIndicator: "At least 1 digit",
-				// letterIndicator: "At least 1 letter",
-				// differentIndicator: "Different from your Playername and your Email"
+				lengthIndicator: ["Minimum 8 characters", () => passwordBlock.input.getValue().length >= 8],
+				// digitIndicator: ["At least 1 digit", () => this.],
+				// letterIndicator: ["At least 1 letter", () => this.],
+				// differentIndicator: ["Different from your Playername and your Email" () => this.],
 			},
 			type: "password"
 		});
@@ -165,18 +165,21 @@ export default class Signup extends AbstractComponent {
 			});
 		});
 	
-		let playerNameInput = playernameBlock.input;
-		let emailInput = emailBlock.input;
-		let usernameInput = idBlock.input;
-		let passwordInput = passwordBlock.input;
-		let confirmPasswordInput = confirmPasswordBlock.input;
-		let accessCodeInput = verifyCodeBlock.input;
+		// let playerNameInput = playernameBlock.input;
+		// let emailInput = emailBlock.input;
+		// let usernameInput = idBlock.input;
+		// let passwordInput = passwordBlock.input;
+		// let confirmPasswordInput = confirmPasswordBlock.input;
+		// let accessCodeInput = verifyCodeBlock.input;
 
 		// let signUpButton = new CustomButton({content: "Sign Up", action: true});
 		// let backButton = buttonsBlock.querySelector("#backButton");
 
-		passwordInput.oninput = (e) => this.checkPassword(e, passwordInput, passwordBlock.indicators);
-		confirmPasswordInput.oninput = (e) => this.checkPasswordMatch(e, passwordInput, confirmPasswordInput);
+		passwordBlock.input.oninput = (e) => {
+			passwordBlock.validate();
+		};
+
+		confirmPasswordBlock.input.oninput = (e) => confirmPasswordBlock.validate();
 		
 		// emailBlock.button.onclick = (e) => this.sendCodeToEmail(e, emailInput.getValue());
 		// verifyCodeBlock.button.onclick = (e) => this.verifyCode(e, emailInput, accessCodeInput);
@@ -267,55 +270,46 @@ export default class Signup extends AbstractComponent {
 
 
 	/* VALIDATION CONDITION FUNCTIONS */
-
 	emailIsValid = (emailBlock) => {
 		let value = emailBlock.input.getValue();
 		let valid = value.includes('@');
 		return valid;
 	}
 
-	checkPassword = (e, passwordInput, indicators) => {
-		e && e.preventDefault();
-		var valid = true;
-
-		let password = passwordInput.getValue();
-		// let passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+	// checkPassword = (e, passwordBlock) => {
+	// 	e && e.preventDefault();
 		
-		if (password.length >= 8) {
-			passwordInput.input.style.outline = "2px solid green";
-			indicators.lengthIndicator.setAttribute("valid", "true");
-			indicators.lengthIndicator.style.display = "block";
-		} else {
-			passwordInput.input.style.outline = "2px solid red";
-			indicators.lengthIndicator.setAttribute("valid", "false");
-			indicators.lengthIndicator.style.display = "block";
-			valid = false;
-		}
+	// 	var valid = true;
 
-		// if (!passwordRegex.test(password)) {
-		// 	passwordInput.input.style.outline = "2px solid red";
-		// 	valid = false;
-		// } else {
-		// 	passwordInput.input.style.outline = "2px solid green";
-		// }
-		console.log(valid);
-		return valid;
-	}
+	// 	let input = passwordBlock.input.input;
+		
+	// 	if (indicators[lengthIndicator].condition()) {
+	// 		input.style.outline = "2px solid green";
+	// 		indicators[lengthIndicator].warning.setAttribute("valid", "true");
+	// 		indicators[lengthIndicator].warning.style.display = "block";
+	// 	} else {
+	// 		input.style.outline = "2px solid red";
+	// 		indicators[lengthIndicator].warning.setAttribute("valid", "false");
+	// 		indicators[lengthIndicator].warning.style.display = "block";
+	// 		valid = false;
+	// 	}
+	// 	return valid;
+	// }
 
-	checkPasswordMatch = (e, passwordInput, confirmPasswordInput) => {
-		e && e.preventDefault();
-		let valid = true;
-		let password = passwordInput.getValue();
-		let confirmPassword = confirmPasswordInput.getValue();
+	// checkPasswordMatch = (e, passwordBlock, confirmPasswordBlock) => {
+	// 	e && e.preventDefault();
+	// 	let valid = true;
+	// 	let password = passwordInput.getValue();
+	// 	let confirmPassword = confirmPasswordInput.getValue();
 
-		if (password !== confirmPassword) {
-			confirmPasswordInput.input.style.outline = "2px solid red";
-			valid = false;
-		} else {
-			confirmPasswordInput.input.style.outline = "2px solid green";
-		}
-		return valid
-	}
+	// 	if (password !== confirmPassword) {
+	// 		confirmPasswordInput.input.style.outline = "2px solid red";
+	// 		valid = false;
+	// 	} else {
+	// 		confirmPasswordInput.input.style.outline = "2px solid green";
+	// 	}
+	// 	return valid
+	// }
 
 	validateCode = async (block, emailInput) => {
 		let inputValue = block.input.getValue();
