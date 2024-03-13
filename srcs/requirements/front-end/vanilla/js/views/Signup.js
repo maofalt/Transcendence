@@ -38,7 +38,7 @@ export default class Signup extends AbstractComponent {
 			title: "Playername",
 			content: "Playername",
 			indicators: {
-				emptyIndicator: "Please enter your name"
+				emptyIndicator: ["Please enter your name", () => playernameBlock.input.getValue() != ""],
 			},
 			description: "Your Playername will be displayed in games and tournaments.",
 			type: "text"
@@ -48,8 +48,8 @@ export default class Signup extends AbstractComponent {
 			title: "Email",
 			content: "example@example.com",
 			indicators: {
-				emptyIndicator: "Please enter your email",
-				invalidEmailIndicator: "Invalid Email"
+				emptyIndicator: ["Please enter your email", () => emailBlock.input.getValue() != ""],
+				// invalidEmailIndicator: "Invalid Email"
 			},
 			type: "email",
 			// button: {content: "Send Code", action: false}
@@ -60,8 +60,8 @@ export default class Signup extends AbstractComponent {
 			title: "Unique ID",
 			content: "example: GigaBoomer69",
 			indicators: {
-				emptyIndicator: "Please enter a username",
-				uniqueIndicator: "The username you entered is already taken"
+				emptyIndicator: ["Please enter a username", () => idBlock.input.getValue() != ""],
+				// uniqueIndicator: "The username you entered is already taken"
 			},
 			type: "text",
 			description: "A unique ID that defines you in our Database."
@@ -71,11 +71,11 @@ export default class Signup extends AbstractComponent {
 			title: "Password",
 			content: "Password",
 			indicators: {
-				emptyIndicator: "Please enter a password",
-				lengthIndicator: "Minimum 8 characters",
-				digitIndicator: "At least 1 digit",
-				letterIndicator: "At least 1 letter",
-				differentIndicator: "Different from your Playername and your Email"
+				emptyIndicator: ["Please enter a password", () => passwordBlock.input.getValue() != ""],
+				// lengthIndicator: "Minimum 8 characters",
+				// digitIndicator: "At least 1 digit",
+				// letterIndicator: "At least 1 letter",
+				// differentIndicator: "Different from your Playername and your Email"
 			},
 			type: "password"
 		});
@@ -84,8 +84,8 @@ export default class Signup extends AbstractComponent {
 			title: "Confirm Password",
 			content: "Password",
 			indicators: {
-				matchIndicator: "Passwords don't match",
-				emptyIndicator: "Please confirm your password"
+				emptyIndicator: ["Please confirm your password", () => confirmPasswordBlock.input.getValue() != ""],
+				// matchIndicator: "Passwords don't match",
 			},
 			type: "password"
 		});
@@ -95,8 +95,8 @@ export default class Signup extends AbstractComponent {
 			title: "Verify Code",
 			content: "XXXXXX",
 			indicators: {
-				emptyIndicator: "Please enter the code sent to your email",
-				badCodeIndicator: "Incorrect Code"
+				emptyIndicator: ["Please enter the code sent to your email", () => verifyCodeBlock.input.getValue() != ""],
+				// badCodeIndicator: "Incorrect Code"
 			},
 			type: "text",
 			// button: {content: "Verify Code", action: false}
@@ -138,22 +138,22 @@ export default class Signup extends AbstractComponent {
 			{ 
 				blocks: [playernameBlock, emailBlock], 
 				actions: [
-					() => this.validatePlayerName(playernameBlock), 
-					() => this.validateEmail(emailBlock)
+					// () => this.validatePlayerName(playernameBlock), 
+					// () => this.validateEmail(emailBlock)
 				] 
 			}, 
 			{ 
 				blocks: [idBlock, passwordBlock, confirmPasswordBlock], 
 				actions: [
-					() => this.validateUsername(idBlock),
-					(e) => this.checkPassword(e, passwordBlock.input, passwordBlock.indicators),
-					(e) => this.checkPasswordMatch(e, passwordBlock.input, confirmPasswordBlock.input),
-					(e) => this.sendCodeToEmail(e, emailInput.getValue()),
-					() => {
-						finalSignupButton.style.display = "block";
-						nextButton.style.display = "none";
-						return true;
-					}
+					// () => this.validateUsername(idBlock),
+					// (e) => this.checkPassword(e, passwordBlock.input, passwordBlock.indicators),
+					// (e) => this.checkPasswordMatch(e, passwordBlock.input, confirmPasswordBlock.input),
+					// (e) => this.sendCodeToEmail(e, emailInput.getValue()),
+					// () => {
+					// 	finalSignupButton.style.display = "block";
+					// 	nextButton.style.display = "none";
+					// 	return true;
+					// }
 				], 
 			}, 
 			{ 
@@ -305,6 +305,10 @@ export default class Signup extends AbstractComponent {
 				return ;
 			}
 			console.log("actionresult: ", res);
+		}
+		
+		for (const block of flow[this.flowIndex].blocks) {
+			block.validate();
 		}
 		console.log("after");
 		this.flowIndex++;

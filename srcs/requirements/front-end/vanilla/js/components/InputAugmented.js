@@ -38,13 +38,17 @@ export default class InputAugmented extends AbstractComponent {
 		// indicatorsBox.style.setProperty("height", "50px");
 		
 		this.indicators = {};
+
 		if (options.indicators) {
-			Object.entries(options.indicators).forEach(([key, value]) => {
-				let indicator = new WarnIndicator({content: value});
+			Object.entries(options.indicators).forEach(([type, [message, condition]]) => {
+				let indicator = new WarnIndicator({content: message});
 				indicator.style.display = "none";
-				indicator.id = value.replaceAll(' ', '-');
+				indicator.id = message.replaceAll(' ', '-');
 				// indicators.push(indicator);
-				this.indicators[key] = indicator;
+				this.indicators[type] = {
+					warning: indicator,
+					condition: condition,
+				}
 				indicatorsBox.appendChild(indicator);
 			});
 			this.shadowRoot.appendChild(indicatorsBox);
@@ -78,7 +82,34 @@ export default class InputAugmented extends AbstractComponent {
 
 	}
 
-	// Implement other methods or properties as needed
+	validate = () => {
+		console.log("validated");
+		let valid = true;
+
+		Object.keys(this.indicators).forEach(type => {
+			const { warning, condition } = this.indicators[type];
+			if (!condition()) {
+				this.input.input.style.outline = "2px solid red";
+				warning.style.display = "block";
+				warning.setAttribute("valid", "false");
+				valid = false;
+			} else {
+				warning.style.display = "none";
+				warning.setAttribute("valid", "true");
+				this.input.input.style.outline = "2px solid red";
+			}
+		});
+
+		// for (const [warning, condition] of this.indicators) {
+		// 	if (!condition()) {
+		// 		this.input.style.outline = "2px solid red";
+		// 		warning.style.display = "block";
+		// 		warning.setAttribute("valid", "false");
+		// 	} else {
+		// 		warning.style.display = "none";
+		// 	}
+		// }
+	}
 }
 
 customElements.define('input-augmented', InputAugmented);
