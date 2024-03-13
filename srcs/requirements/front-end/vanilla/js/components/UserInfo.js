@@ -54,7 +54,7 @@ export default class UserInfo extends AbstractComponent {
     createProfilePicture(options) {
         const profilePicture = new Image();
         profilePicture.id = "profile-picture";
-        profilePicture.src = options.profilePicPath ? options.profilePicPath : "../js/assets/images/yridgway.jpg";
+        profilePicture.src = options.profilePicPath ? options.profilePicPath : "../js/assets/images/default-avatar.webp";
 		profilePicture.style.setProperty("width", "100%");
 		profilePicture.style.setProperty("height", "100%");
 		profilePicture.style.setProperty("object-fit", "cover");
@@ -64,6 +64,14 @@ export default class UserInfo extends AbstractComponent {
     }
 
     createUserText(options) {
+        let statusColor;
+		if (options.status == "online") {
+			statusColor = "green";
+		} else if (options.status == "in game") {
+			statusColor = "orange";
+		} else
+			statusColor = "red";
+
         const userText = document.createElement('div');
         userText.id = "user-text";
         userText.style.setProperty("width", "100%");
@@ -71,11 +79,43 @@ export default class UserInfo extends AbstractComponent {
         userText.style.setProperty("padding", "5px 15px 5px 15px");
         userText.style.setProperty("flex", "3");
         userText.innerHTML = `
+        <style>
+            h2 {
+                margin: 15px 0px;
+                padding: 0px;
+            }
+            p {
+                margin: 10px 0px;
+                padding: 0px;
+            }
+            #status {
+                margin: 0;
+                padding: 0;
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                color: ${statusColor};
+            }
+            #status-circle {
+                width: 15px;
+                height: 15px;
+                margin-right: 5px;
+                background-color: ${statusColor};
+                border-radius: 50%;
+            }
+            #status-circle p {
+                margin: 0;
+                padding: 0;
+            }
+        </style>
         <h2>${options.username}</h2>
-        <p id="status">"${options.status}"</p>
+        <div id="status">
+            <div id="status-circle"></div>
+            <p>${options.status}</p>
+        </div>
         <p>${options.wins} W / ${options.losses} L</p>`;
         userText.querySelector('h2').style.setProperty("color", "rgba(0, 217, 255, 1)");
-        userText.querySelector('#status').style.setProperty("font-style", "italic");
+        // userText.querySelector('#status').style.setProperty("font-style", "italic");
         return userText;
     }
 
@@ -101,5 +141,11 @@ export default class UserInfo extends AbstractComponent {
 
 	// Implement other methods or properties as needed
 }
+
+/* To add :
+- Buttons Edit and Log out
+- Add an option if user not logged : Buttons in home page are : log in / sign up on this block;
+Which will also make it so that they cant access the profile pannel.
+*/
 
 customElements.define('user-info', UserInfo);

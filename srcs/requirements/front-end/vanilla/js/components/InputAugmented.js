@@ -62,6 +62,7 @@ export default class InputAugmented extends AbstractComponent {
 		if (options.button) {
 			this.button = new CustomButton({content : options.button.content, action: options.button.action});
 			this.shadowRoot.appendChild(this.button);
+			this.button.id = "input-button";
 		}
 		
 		// this.style.setProperty("height", "145px");

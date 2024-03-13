@@ -26,7 +26,7 @@ export default class HomePage extends AbstractComponent {
 	
 		const playButton = new CustomButton({content: "Play", action: true, style: {margin: "15px 0px"}});
 		const tournamentsButton = new CustomButton({content: "Tournaments", style: {margin: "15px 0px"}});
-		const optionsButton = new CustomButton({content: "Options", style: {margin: "15px 0px"}});
+		// const optionsButton = new CustomButton({content: "Options", style: {margin: "15px 0px"}});
 		const loginButton = new CustomButton({content: "Login", style: {margin: "15px 0px"}});
 
 		const menu = document.createElement('div');
@@ -34,7 +34,7 @@ export default class HomePage extends AbstractComponent {
 
 		menu.appendChild(playButton);
 		menu.appendChild(tournamentsButton);
-		menu.appendChild(optionsButton);
+		// menu.appendChild(optionsButton);
 		menu.appendChild(loginButton);
 
 		// const footerContainer = document.createElement('div');
@@ -60,7 +60,7 @@ export default class HomePage extends AbstractComponent {
 
 		// footerContainer.appendChild(userInfo);
 
-		const userInfo = new UserInfo({profilePicPath: "", username: "Banana", status: "Let me cook", wins: "999", losses: "0"});
+		const userInfo = new UserInfo({profilePicPath: "", username: "Banana", status: "online", wins: "999", losses: "0"});
 		userInfo.style.setProperty("position", "absolute");
 		userInfo.style.setProperty("bottom", "15px");
 		userInfo.style.setProperty("left", "35px");
@@ -73,7 +73,7 @@ export default class HomePage extends AbstractComponent {
 
 		playButton.onclick = () => navigateTo("/game");
 		tournamentsButton.onclick = () => navigateTo("/tournament");
-		optionsButton.onclick = () => navigateTo("/options");
+		// optionsButton.onclick = () => navigateTo("/options");
 		loginButton.onclick = () => navigateTo("/login");
 		// this.shadowRoot.appendChild(footerContainer);
 	}

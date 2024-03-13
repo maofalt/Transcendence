@@ -92,4 +92,8 @@ export default class PlayMenu extends AbstractComponent {
 	}
 }
 
+/* To add :
+- Back Button
+*/
+
 customElements.define('play-menu', PlayMenu);
