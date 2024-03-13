@@ -31,7 +31,7 @@ export default class ProfilePage extends AbstractComponent {
 			button2: {content: "Log out"}});
 
 		const profile = new Pannel({dark: false, title: "Profile"});
-		const friendsPannel = new Pannel({dark: false, title: `Friends`, style: {overflowY: "scroll"}});
+		const friendsPannel = new Pannel({dark: false, title: `Friends`});
 		const personalInfo = new Pannel({dark: true, title: "Personal Info", style: {display: "block",  padding: "0px 0px 0px 20px"}});
 		const gameStats = new Pannel({dark: true, title: "Game Stats", style: {display: "block", padding: "0px 0px 0px 20px"}});
 		gameStats.shadowRoot.querySelector("#pannel-title").style.setProperty("margin", "10px 0px");
@@ -131,29 +131,42 @@ export default class ProfilePage extends AbstractComponent {
 
 		// user.friends = 4;
 		const friendsList = new Pannel({dark: true, title: `Friends List  ( ${user.friends} )`});
+		const listContainer = document.createElement("div");
+		listContainer.id = "list-container";
+		listContainer.style.setProperty("height", "350px");
+		listContainer.style.setProperty("padding-top", "10px");
+		listContainer.style.setProperty("overflow-y", "scroll");
+		listContainer.style.setProperty("border-top", "2px solid rgba(255, 255, 255, 0.1)");
+		listContainer.style.setProperty("border-radius", "0px 0px 20px 20px");
+		listContainer.style.setProperty("scrollbar-color", "rgba(255, 255, 255, 0.1) rgba(255, 255, 255, 0.1)");
+		listContainer.style.setProperty("scrollbar-width", "thin");
+
 		let friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "online"});
+
 		friendsList.shadowRoot.querySelector("#pannel-title").style.setProperty("font-size", "22px");
 		friendsList.shadowRoot.querySelector("#pannel-title").style.setProperty("font-family", "sans-serif");
 		friendsList.shadowRoot.querySelector("#pannel-title").style.setProperty("font-weight", "bold");
-		friendsList.shadowRoot.appendChild(friend);
+
+		listContainer.appendChild(friend);
+		friendsList.shadowRoot.appendChild(listContainer);
 
 		// TESTING
 		friend = new FriendBlock({avatar: "", userName: "Jean", status: "in game"});
-		friendsList.shadowRoot.appendChild(friend);
+		listContainer.appendChild(friend);
 		friend = new FriendBlock({avatar: "", userName: "Miguel", status: "offline"});
-		friendsList.shadowRoot.appendChild(friend);
-		friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
-		// friendsList.shadowRoot.appendChild(friend);
+		listContainer.appendChild(friend);
 		// friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
-		// friendsList.shadowRoot.appendChild(friend);
+		// listContainer.appendChild(friend);
 		// friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
-		// friendsList.shadowRoot.appendChild(friend);
+		// listContainer.appendChild(friend);
 		// friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
-		// friendsList.shadowRoot.appendChild(friend);
+		// listContainer.appendChild(friend);
 		// friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
-		// friendsList.shadowRoot.appendChild(friend);
+		// listContainer.appendChild(friend);
 		// friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
-		// friendsList.shadowRoot.appendChild(friend);
+		// listContainer.appendChild(friend);
+		// friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
+		// listContainer.appendChild(friend);
 
 
 		friendsPannel.shadowRoot.appendChild(addFriend);

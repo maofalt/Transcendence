@@ -50,8 +50,6 @@ export default class FriendBlock extends AbstractComponent {
 				padding: 0px 10px 0px 10px;
 			}
 			#status {
-				position: absolute;
-				right: 0;
 				display: flex;
 				flex-direction: row;
 				align-items: center;
