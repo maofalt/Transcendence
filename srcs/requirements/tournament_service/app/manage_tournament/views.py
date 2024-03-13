@@ -98,13 +98,6 @@ class TournamentListCreate(generics.ListCreateAPIView):
         # serializer.save(host=self.request.user)
     # permission_classes = [permissions.IsAuthenticated] #add more permissions if is necessary
     
-    def generate_tournament_tree(self, data):
-        # Generate tournament tree Data form to return to the frontend
-        pass
-
-
-
-
 
     #from Miguel's changes
     # def list(self, request, *args, **kwargs):
@@ -126,9 +119,12 @@ class TournamentListCreate(generics.ListCreateAPIView):
 # ------------------------ Assigning Players on the Tournament Tree -----------------------------------
 
 class JoinTournament(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
+        username = request.user.username
+        
         tournament_id = request.data.get('tournament_id')
-        username = request.data.get('username')
         tournament = get_object_or_404(Tournament, id=tournament_id)
 
         if tournament.is_full():

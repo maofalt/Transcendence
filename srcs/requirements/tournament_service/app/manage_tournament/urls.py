@@ -17,6 +17,10 @@ urlpatterns = [
     #   - DELETE /manage/{id}/ - Remove a tournament from the system.
     path('manage/<int:pk>/', views.TournamentRetrieveUpdateDestroy.as_view(), name='tournament-retrieve-update-destroy'),
 
+# JoinTournament:
+    #   - POST /add_player/{id}/ - Add a player to a specific tournament.
+    path('add-player/', views.TournamentPlayerCreate.as_view(), name='add-player'),
+
 # Tournament Participation:
     # GET /{id}/participants/ - Show the participants list for a tournament.
     path('<int:id>/participants/', views.TournamentParticipantList.as_view(), name='tournament-participants'),
