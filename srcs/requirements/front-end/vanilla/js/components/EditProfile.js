@@ -31,7 +31,7 @@ export default class EditProfile extends AbstractComponent {
 			button2: {content: "Log out"}});
 
 		const profile = new Pannel({dark: false, title: "Profile"});
-		const friendsPannel = new Pannel({dark: false, title: `Friends`});
+		const friendsPannel = new Pannel({dark: false, title: "Friends"});
 		const personalInfo = new Pannel({dark: true, title: "Personal Info", style: {display: "block",  padding: "0px 0px 0px 20px"}});
 		const gameStats = new Pannel({dark: true, title: "Game Stats", style: {display: "block", padding: "0px 0px 0px 20px"}});
 		gameStats.shadowRoot.querySelector("#pannel-title").style.setProperty("margin", "10px 0px");
