@@ -73,8 +73,8 @@ export default class Signup extends AbstractComponent {
 			indicators: {
 				emptyIndicator: ["Please enter a password", () => passwordBlock.input.getValue() != ""],
 				lengthIndicator: ["Minimum 8 characters", () => passwordBlock.input.getValue().length >= 8],
-				// digitIndicator: ["At least 1 digit", () => this.],
-				// letterIndicator: ["At least 1 letter", () => this.],
+				digitIndicator: ["At least 1 digit", () => /\d/.test(passwordBlock.input.getValue())],
+				letterIndicator: ["At least 1 letter", () => /[a-zA-Z]/.test(passwordBlock.input.getValue())],
 				// differentIndicator: ["Different from your Playername and your Email" () => this.],
 			},
 			type: "password"
@@ -85,7 +85,7 @@ export default class Signup extends AbstractComponent {
 			content: "Password",
 			indicators: {
 				emptyIndicator: ["Please confirm your password", () => confirmPasswordBlock.input.getValue() != ""],
-				// matchIndicator: "Passwords don't match",
+				matchIndicator: ["Passwords don't match", () => passwordBlock.input.getValue() == confirmPasswordBlock.input.getValue()],
 			},
 			type: "password"
 		});
@@ -96,6 +96,7 @@ export default class Signup extends AbstractComponent {
 			content: "XXXXXX",
 			indicators: {
 				emptyIndicator: ["Please enter the code sent to your email", () => verifyCodeBlock.input.getValue() != ""],
+				badCodeIndicator: ["Incorrect Code", () => this.verifyCode(emailBlock, verifyCodeBlock)],
 				// badCodeIndicator: "Incorrect Code"
 			},
 			type: "text",
@@ -141,7 +142,7 @@ export default class Signup extends AbstractComponent {
 			}, 
 			{ 
 				blocks: [idBlock, passwordBlock, confirmPasswordBlock], 
-				actions: [], 
+				actions: [async (e) => await this.sendCodeToEmail(e, emailBlock.input.getValue())],
 			}, 
 			{ 
 				blocks: [verifyCodeBlock], 
@@ -199,25 +200,27 @@ export default class Signup extends AbstractComponent {
 		}
 
 		finalSignupButton.onclick = async (e) => {
-			let canSignup = await this.validateCode(verifyCodeBlock, emailInput);
-			if (!canSignup) {
-				console.log("NOOOT SIGNUP"); 
-				return ;
-			}
-			console.log("SIGNUPPPPP");
+			let ban = await verifyCodeBlock.validate();
+			console.log("ITWOR", ban);
+			// let canSignup = await this.validateCode(verifyCodeBlock, emailInput);
+			// if (!canSignup) {
+			// 	console.log("NOOOT SIGNUP"); 
+			// 	return ;
+			// }
+			// console.log("SIGNUPPPPP");
 			this.submitSignup(e, {
-				username: usernameInput.getValue(),
-				password: passwordInput.getValue(),
-				confirm_password: confirmPasswordInput.getValue(),
-				playername: playerNameInput.getValue(),
-				signupEmail: emailInput.getValue(),
-				access_code: accessCodeInput.getValue()
+				username: idBlock.input.getValue(),
+				password: passwordBlock.input.getValue(),
+				confirm_password: confirmPasswordBlock.input.getValue(),
+				playername: playernameBlock.input.getValue(),
+				signupEmail: emailBlock.input.getValue(),
+				access_code: verifyCodeBlock.input.getValue()
 			});
 		}
 	}
 
 	/* FORM FLOW MANAGEMENT */
-	goNext = (e, flow) => { // called when next button is pressed
+	goNext = async (e, flow) => { // called when next button is pressed
 		e.preventDefault();
 		let canGoNext = 1;
 		if (this.flowIndex >= flow.length - 1)
@@ -226,9 +229,9 @@ export default class Signup extends AbstractComponent {
 
 		// call functions that are defined for this step
 		for (const action of flow[this.flowIndex].actions) {
-			let res = action();
+			let res = await action();
 			console.log("actionresulty: ", res);
-			if (!res && res != undefined) {
+			if (res == false) {
 				console.log("oh no");
 				return ;
 			}
@@ -237,7 +240,8 @@ export default class Signup extends AbstractComponent {
 		
 		// validate input blocks (show warnings and dont advance if invalid)
 		for (const block of flow[this.flowIndex].blocks) {
-			if (block.validate() == false) {
+			let res = await block.validate();
+			if (res == false) {
 				return ;
 			}
 		}
@@ -276,44 +280,9 @@ export default class Signup extends AbstractComponent {
 		return valid;
 	}
 
-	// checkPassword = (e, passwordBlock) => {
-	// 	e && e.preventDefault();
-		
-	// 	var valid = true;
-
-	// 	let input = passwordBlock.input.input;
-		
-	// 	if (indicators[lengthIndicator].condition()) {
-	// 		input.style.outline = "2px solid green";
-	// 		indicators[lengthIndicator].warning.setAttribute("valid", "true");
-	// 		indicators[lengthIndicator].warning.style.display = "block";
-	// 	} else {
-	// 		input.style.outline = "2px solid red";
-	// 		indicators[lengthIndicator].warning.setAttribute("valid", "false");
-	// 		indicators[lengthIndicator].warning.style.display = "block";
-	// 		valid = false;
-	// 	}
-	// 	return valid;
-	// }
-
-	// checkPasswordMatch = (e, passwordBlock, confirmPasswordBlock) => {
-	// 	e && e.preventDefault();
-	// 	let valid = true;
-	// 	let password = passwordInput.getValue();
-	// 	let confirmPassword = confirmPasswordInput.getValue();
-
-	// 	if (password !== confirmPassword) {
-	// 		confirmPasswordInput.input.style.outline = "2px solid red";
-	// 		valid = false;
-	// 	} else {
-	// 		confirmPasswordInput.input.style.outline = "2px solid green";
-	// 	}
-	// 	return valid
-	// }
-
-	validateCode = async (block, emailInput) => {
+	validateCode = async (verifyCodeBlock, emailBlock) => {
 		let inputValue = block.input.getValue();
-		let validCode = await this.verifyCode(emailInput, block.input);
+		let validCode = await this.verifyCode(emailBlock, verifyCodeBlock);
 		if (inputValue == "") {
 			block.input.input.style.outline = "2px solid red";
 			block.indicators.emptyIndicator.style.display = "block";
@@ -390,9 +359,9 @@ export default class Signup extends AbstractComponent {
 
 
 	/* API VALIDATION + SUBMIT FUNCTIONS */
-	verifyCode = async (emailInput, verificationCodeInput) => {
-		var email = emailInput.getValue();
-		var verificationCode = verificationCodeInput.getValue();
+	verifyCode = async (emailBlock, verifyCodeBlock) => {
+		var email = emailBlock.input.getValue();
+		var verificationCode = verifyCodeBlock.input.getValue();
 
 		let valid = false;
 

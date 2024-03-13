@@ -82,13 +82,16 @@ export default class InputAugmented extends AbstractComponent {
 
 	}
 
-	validate = () => {
+	validate = async () => {
 		console.log("validated");
 		let valid = true;
-
-		Object.keys(this.indicators).forEach(type => {
+	
+		const indicatorKeys = Object.keys(this.indicators);
+		for (const type of indicatorKeys) {
 			const { warning, condition } = this.indicators[type];
-			if (!condition()) {
+			// Ensure condition is always treated as a function returning a promise
+			const isConditionMet = await condition();
+			if (!isConditionMet) {
 				this.input.input.style.outline = "2px solid red";
 				warning.style.display = "block";
 				warning.setAttribute("valid", "false");
@@ -98,8 +101,8 @@ export default class InputAugmented extends AbstractComponent {
 				warning.setAttribute("valid", "true");
 				this.input.input.style.outline = "";
 			}
-		});
-		console.log("valid::",valid);
+		}
+		console.log("valid::", valid);
 		return valid;
 	}
 }
