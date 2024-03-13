@@ -100,15 +100,7 @@ export default class InputAugmented extends AbstractComponent {
 			}
 		});
 
-		// for (const [warning, condition] of this.indicators) {
-		// 	if (!condition()) {
-		// 		this.input.style.outline = "2px solid red";
-		// 		warning.style.display = "block";
-		// 		warning.setAttribute("valid", "false");
-		// 	} else {
-		// 		warning.style.display = "none";
-		// 	}
-		// }
+		return valid;
 	}
 }
 

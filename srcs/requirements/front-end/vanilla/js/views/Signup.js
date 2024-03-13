@@ -133,34 +133,27 @@ export default class Signup extends AbstractComponent {
 		/* Define Signup flow steps/views */
 		this.flowIndex = 0;
 
-		// define input blocks in each step and functions (actions) to be called when the next button is pressed 
+		// define input blocks to be displayed in each step and functions (actions) to be called when the next button is pressed 
 		let flow = [
 			{ 
 				blocks: [playernameBlock, emailBlock], 
-				actions: [
-					// () => this.validatePlayerName(playernameBlock), 
-					// () => this.validateEmail(emailBlock)
-				] 
+				actions: [] 
 			}, 
 			{ 
 				blocks: [idBlock, passwordBlock, confirmPasswordBlock], 
-				actions: [
-					// () => this.validateUsername(idBlock),
-					// (e) => this.checkPassword(e, passwordBlock.input, passwordBlock.indicators),
-					// (e) => this.checkPasswordMatch(e, passwordBlock.input, confirmPasswordBlock.input),
-					// (e) => this.sendCodeToEmail(e, emailInput.getValue()),
-					// () => {
-					// 	finalSignupButton.style.display = "block";
-					// 	nextButton.style.display = "none";
-					// 	return true;
-					// }
-				], 
+				actions: [], 
 			}, 
 			{ 
 				blocks: [verifyCodeBlock], 
-				actions: [() => this.validateCode(verifyCodeBlock)] 
+				actions: [] 
 			}
 		];
+
+		// let flow = [
+		// 	[playernameBlock, emailBlock],
+		// 	[idBlock, passwordBlock, confirmPasswordBlock],
+		// 	[verifyCodeBlock]
+		// ];
 
 		// hide all the steps apart from the first one
 		flow.forEach((step, index) => {
@@ -188,7 +181,13 @@ export default class Signup extends AbstractComponent {
 		// emailBlock.button.onclick = (e) => this.sendCodeToEmail(e, emailInput.getValue());
 		// verifyCodeBlock.button.onclick = (e) => this.verifyCode(e, emailInput, accessCodeInput);
 
-		nextButton.onclick = (e) => this.goNext(e, flow);
+		nextButton.onclick = (e) => {
+			this.goNext(e, flow);
+			if (this.flowIndex >= flow.length - 1) {
+				finalSignupButton.style.display = "block";
+				nextButton.style.display = "none";
+			}
+		}
 
 		backButton.onclick = (e) => {
 			finalSignupButton.style.display = "none";
@@ -212,6 +211,103 @@ export default class Signup extends AbstractComponent {
 				access_code: accessCodeInput.getValue()
 			});
 		}
+	}
+
+	/* FORM STEP MANAGEMENT */
+	goNext = (e, flow) => { // called when next button is pressed
+		e.preventDefault();
+		let canGoNext = 1;
+		if (this.flowIndex >= flow.length - 1)
+			return ;
+		console.log("before");
+
+		// call functions that are defined for this step
+		for (const action of flow[this.flowIndex].actions) {
+			let res = action();
+			console.log("actionresulty: ", res);
+			if (!res && res != undefined) {
+				console.log("oh no");
+				return ;
+			}
+			console.log("actionresult: ", res);
+		}
+		
+		// validate input blocks (show warnings and dont advance if invalid)
+		for (const block of flow[this.flowIndex].blocks) {
+			if (block.validate() == false) {
+				return ;
+			}
+		}
+
+		console.log("after");
+		this.flowIndex++;
+		this.updateFormView(flow, this.flowIndex);
+	}
+
+	goBack = (e, flow) => { // called when back button is pressed
+		e.preventDefault();
+		if (this.flowIndex <= 0) {
+			history.back();
+			return ;
+		}
+		this.flowIndex--;
+		this.updateFormView(flow, this.flowIndex);
+	}
+
+	updateFormView = (flow, index) => { // called after goBack() / goNext() to change the form step view
+		flow.forEach((step) => {
+			step.blocks.forEach((inputBlock) => {
+				inputBlock.style.setProperty("display", "none");
+			});
+		});
+		flow[index].blocks.forEach((inputBlock) => {
+			inputBlock.style.setProperty("display", "block");
+		});
+	}
+
+
+	/* VALIDATION CONDITION FUNCTIONS */
+	checkPassword = (e, passwordInput, indicators) => {
+		e && e.preventDefault();
+		var valid = true;
+
+		let password = passwordInput.getValue();
+		// let passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+		
+		if (password.length >= 8) {
+			passwordInput.input.style.outline = "2px solid green";
+			indicators.lengthIndicator.setAttribute("valid", "true");
+			indicators.lengthIndicator.style.display = "block";
+		} else {
+			passwordInput.input.style.outline = "2px solid red";
+			indicators.lengthIndicator.setAttribute("valid", "false");
+			indicators.lengthIndicator.style.display = "block";
+			valid = false;
+		}
+
+		// if (!passwordRegex.test(password)) {
+		// 	passwordInput.input.style.outline = "2px solid red";
+		// 	valid = false;
+		// } else {
+		// 	passwordInput.input.style.outline = "2px solid green";
+		// }
+		console.log(valid);
+		return valid;
+	}
+
+	checkPasswordMatch = (e, passwordInput, confirmPasswordInput) => {
+		e && e.preventDefault();
+		let valid = true;
+		let password = passwordInput.getValue();
+		let confirmPassword = confirmPasswordInput.getValue();
+
+		if (password !== confirmPassword) {
+			confirmPasswordInput.input.style.outline = "2px solid red";
+			valid = false;
+		} else {
+			confirmPasswordInput.input.style.outline = "2px solid green";
+		}
+		return valid
 	}
 
 	validateCode = async (block, emailInput) => {
@@ -291,55 +387,8 @@ export default class Signup extends AbstractComponent {
 		return true;
 	}
 
-	goNext = (e, flow) => {
-		e.preventDefault();
-		let canGoNext = 1;
-		if (this.flowIndex >= flow.length - 1)
-			return ;
-		console.log("before");
-		for (const action of flow[this.flowIndex].actions) {
-			let res = action();
-			console.log("actionresulty: ", res);
-			if (!res && res != undefined) {
-				console.log("oh no");
-				return ;
-			}
-			console.log("actionresult: ", res);
-		}
-		
-		for (const block of flow[this.flowIndex].blocks) {
-			block.validate();
-		}
-		console.log("after");
-		this.flowIndex++;
-		// if (this.flowIndex >= flow.length - 1) {
-				// finalSignupButton.style.display = "block";
-				// nextButton.style.display = "none";
-		// }
-		this.updateFormView(flow, this.flowIndex);
-	}
 
-	goBack = (e, flow) => {
-		e.preventDefault();
-		if (this.flowIndex <= 0) {
-			history.back();
-			return ;
-		}
-		this.flowIndex--;
-		this.updateFormView(flow, this.flowIndex);
-	}
-
-	updateFormView = (flow, index) => {
-		flow.forEach((step) => {
-			step.blocks.forEach((inputBlock) => {
-				inputBlock.style.setProperty("display", "none");
-			});
-		});
-		flow[index].blocks.forEach((inputBlock) => {
-			inputBlock.style.setProperty("display", "block");
-		});
-	}
-
+	/* API VALIDATION + SUBMIT FUNCTIONS */
 	verifyCode = async (emailInput, verificationCodeInput) => {
 		var email = emailInput.getValue();
 		var verificationCode = verificationCodeInput.getValue();
@@ -426,49 +475,6 @@ export default class Signup extends AbstractComponent {
 		return valid
 	}
 
-	checkPassword = (e, passwordInput, indicators) => {
-		e && e.preventDefault();
-		var valid = true;
-
-		let password = passwordInput.getValue();
-		// let passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-		
-		if (password.length >= 8) {
-			passwordInput.input.style.outline = "2px solid green";
-			indicators.lengthIndicator.setAttribute("valid", "true");
-			indicators.lengthIndicator.style.display = "block";
-		} else {
-			passwordInput.input.style.outline = "2px solid red";
-			indicators.lengthIndicator.setAttribute("valid", "false");
-			indicators.lengthIndicator.style.display = "block";
-			valid = false;
-		}
-
-		// if (!passwordRegex.test(password)) {
-		// 	passwordInput.input.style.outline = "2px solid red";
-		// 	valid = false;
-		// } else {
-		// 	passwordInput.input.style.outline = "2px solid green";
-		// }
-		console.log(valid);
-		return valid;
-	}
-
-	checkPasswordMatch = (e, passwordInput, confirmPasswordInput) => {
-		e && e.preventDefault();
-		let valid = true;
-		let password = passwordInput.getValue();
-		let confirmPassword = confirmPasswordInput.getValue();
-
-		if (password !== confirmPassword) {
-			confirmPasswordInput.input.style.outline = "2px solid red";
-			valid = false;
-		} else {
-			confirmPasswordInput.input.style.outline = "2px solid green";
-		}
-		return valid
-	}
-
 	sendCodeToEmail = async (e, email) => {
 		if (e)
 			e.preventDefault();
@@ -510,11 +516,8 @@ export default class Signup extends AbstractComponent {
 		return valid;
 	}
 
-	buttonOnClick = (e, arg) => {
-		console.log(arg);
-		return true;
-	}
 
+	/* UTIL PAGE CREATION FUNCTIONS */
 	createBlock(blockName) {
 		let block = document.createElement('div');
 		block.id = blockName + "-block";
@@ -599,6 +602,12 @@ export default class Signup extends AbstractComponent {
 
 		return block;
 	}
+
+	buttonOnClick = (e, arg) => {
+		console.log(arg);
+		return true;
+	}
+
 }
 
 customElements.define('signup-page', Signup);
