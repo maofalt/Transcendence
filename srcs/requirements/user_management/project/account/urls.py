@@ -15,7 +15,9 @@ urlpatterns = [
     path("logout", views.api_logout_view, name="logout"),
     path("signup", views.api_signup_view, name="signup"),
     path('policy', views.privacy_policy_view, name='privacy_policy'),
-    path("friend", views.friend_view, name="friend"),
+    path("friends", views.friends_view, name="friends"),
+    path("settings", views.settings_view, name="settings"),
+    path("gameHistory", views.game_history_view, name="game_history"),
     path("add_friend/<int:pk>", views.add_friend, name="add_friend"),
     path("remove_friend/<int:pk>", views.remove_friend, name="remove_friend"),
     path("detail", views.detail_view, name="detail"),
@@ -34,7 +36,13 @@ urlpatterns = [
     path('delete_account', views.delete_account, name='delete_account'),
     path('developer_setting', views.print_all_user_data, name='print_db'),
     path('check_refresh', views.check_refresh, name='check_refresh'),
-
+    path('smsTest', views.smsTest, name='smsTest'),
+    path('sendCodeSMS', views.send_sms_code, name='sendCodeSMS'),
+    path('updatePhone', views.update_phone, name='updatePhone'),
+    path('updateSandbox', views.update_sandbox, name='updateSandbox'),
+    path('verifySandBox', views.verify_sandBox, name='verifySandBox'),
+    
+    
 ]
 
 if settings.DEBUG:

@@ -17,8 +17,13 @@
     {% endif %}
     <p>Email: {{ data.email }}</p>
     <p>Playername: {{ data.playername }}</p>
+    {% if data.two_factor_method %}
+        <p>2FA: ON    ({{ data.two_factor_method }})</p>
+    {% else %}
+        <p>2FA: OFF</p>
+    {% endif %}
 
-    <p>Friends: <a href="{% url 'account:friend' %}" style="text-decoration: underline; color: blue; font-size: 14px;">{{ data.friends_count }}</a></p>
+    <p>Friends: <a href="{% url 'account:friends' %}" style="text-decoration: underline; color: blue; font-size: 14px;">{{ data.friends_count }}</a></p>
 
     <h2>GameStats</h2>
     <p>Game Player: {{ data.game_stats.user }}</p>
