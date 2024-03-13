@@ -29,7 +29,12 @@ class TournamentListCreate(generics.ListCreateAPIView):
     # renderer_classes = [JSONRenderer]  # Force the response to be rendered in JSON
     # permission_classes = [IsAuthenticated]  # Only authenticated users can create and list tournaments
 
-    def perform_create(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
+        tournaments = self.get_queryset()
+        serializer = self.get_serializer(tournaments, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, *args, **kwargs):
         # Attribue automatiquement l'utilisateur actuel comme host du tournoi créé
         data = request.data
         tournament_name = data.get('tournament_name')
@@ -74,8 +79,8 @@ class TournamentListCreate(generics.ListCreateAPIView):
         added_match = nbr_of_player_total // nbr_of_player_match
         if nbr_of_player_total % nbr_of_player_match != 0:
             added_match += 1
-        for i in range(tournament.nbr_of_match):
-            tmp_added_match -= 1
+        for _ in range(tournament.nbr_of_match):
+            added_match -= 1
 
             tournament_match = TournamentMatch.objects.create(
                 tournament_id=tournament.id,
@@ -123,7 +128,7 @@ class JoinTournament(APIView):
 
     def post(self, request):
         username = request.user.username
-        
+
         tournament_id = request.data.get('tournament_id')
         tournament = get_object_or_404(Tournament, id=tournament_id)
 
