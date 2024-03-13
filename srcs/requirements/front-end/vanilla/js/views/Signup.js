@@ -49,7 +49,7 @@ export default class Signup extends AbstractComponent {
 			content: "example@example.com",
 			indicators: {
 				emptyIndicator: ["Please enter your email", () => emailBlock.input.getValue() != ""],
-				// invalidEmailIndicator: "Invalid Email"
+				invalidEmailIndicator: ["Invalid Email", () => this.emailIsValid(emailBlock)],
 			},
 			type: "email",
 			// button: {content: "Send Code", action: false}
@@ -213,7 +213,7 @@ export default class Signup extends AbstractComponent {
 		}
 	}
 
-	/* FORM STEP MANAGEMENT */
+	/* FORM FLOW MANAGEMENT */
 	goNext = (e, flow) => { // called when next button is pressed
 		e.preventDefault();
 		let canGoNext = 1;
@@ -254,7 +254,7 @@ export default class Signup extends AbstractComponent {
 		this.updateFormView(flow, this.flowIndex);
 	}
 
-	updateFormView = (flow, index) => { // called after goBack() / goNext() to change the form step view
+	updateFormView = (flow, index) => { // called after goBack() / goNext() to change the form flow view
 		flow.forEach((step) => {
 			step.blocks.forEach((inputBlock) => {
 				inputBlock.style.setProperty("display", "none");
@@ -267,6 +267,13 @@ export default class Signup extends AbstractComponent {
 
 
 	/* VALIDATION CONDITION FUNCTIONS */
+
+	emailIsValid = (emailBlock) => {
+		let value = emailBlock.input.getValue();
+		let valid = value.includes('@');
+		return valid;
+	}
+
 	checkPassword = (e, passwordInput, indicators) => {
 		e && e.preventDefault();
 		var valid = true;

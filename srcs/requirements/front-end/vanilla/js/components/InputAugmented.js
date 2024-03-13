@@ -96,7 +96,7 @@ export default class InputAugmented extends AbstractComponent {
 			} else {
 				warning.style.display = "none";
 				warning.setAttribute("valid", "true");
-				this.input.input.style.outline = "2px solid red";
+				this.input.input.style.outline = "";
 			}
 		});
 
