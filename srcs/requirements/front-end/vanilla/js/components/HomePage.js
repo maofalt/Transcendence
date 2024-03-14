@@ -7,6 +7,7 @@ import BigTitle from '@components/BigTitle';
 import Pannel from '@components/Pannel';
 import CustomButton from '@components/CustomButton';
 import { navigateTo } from "@utils/Router";
+import { displayPopup } from "@utils/displayPopup";
 import UserInfo from "./UserInfo";
 
 export default class HomePage extends AbstractComponent {
@@ -26,16 +27,16 @@ export default class HomePage extends AbstractComponent {
 	
 		const playButton = new CustomButton({content: "Play", action: true, style: {margin: "15px 0px"}});
 		const tournamentsButton = new CustomButton({content: "Tournaments", style: {margin: "15px 0px"}});
-		const optionsButton = new CustomButton({content: "Options", style: {margin: "15px 0px"}});
-		const loginButton = new CustomButton({content: "Login", style: {margin: "15px 0px"}});
+		const profileButton = new CustomButton({content: "Profile", style: {margin: "15px 0px"}});
+		// const loginButton = new CustomButton({content: "Login", style: {margin: "15px 0px"}});
 
 		const menu = document.createElement('div');
 		menu.id = "menu";
 
 		menu.appendChild(playButton);
 		menu.appendChild(tournamentsButton);
-		menu.appendChild(optionsButton);
-		menu.appendChild(loginButton);
+		menu.appendChild(profileButton);
+		// menu.appendChild(loginButton);
 
 		// const footerContainer = document.createElement('div');
 		// footerContainer.id = "footerContainer";
@@ -60,22 +61,55 @@ export default class HomePage extends AbstractComponent {
 
 		// footerContainer.appendChild(userInfo);
 
-		const userInfo = new UserInfo({profilePicPath: "", username: "Banana", status: "Let me cook", wins: "999", losses: "0"});
+		const userInfo = new UserInfo();
 		userInfo.style.setProperty("position", "absolute");
-		userInfo.style.setProperty("bottom", "15px");
-		userInfo.style.setProperty("left", "35px");
+		userInfo.style.setProperty("top", "15px");
+		userInfo.style.setProperty("right", "35px");
 
 		this.shadowRoot.appendChild(menu);
-		// this.shadowRoot.appendChild(footer);
 		this.shadowRoot.appendChild(userInfo);
-		// this.shadowRoot.appendChild(div);
-		// this.shadowRoot.appendChild(footer);
+
+		const errorButton = new CustomButton({
+				content: "error", 
+				style: {
+					margin: "15px 0px",
+					width: "150px",
+				}
+			});
+		const infoButton = new CustomButton({
+			content: "info", 
+			style: {
+				margin: "15px 0px",
+				width: "150px",
+			}
+		});
+		const successButton = new CustomButton({
+			content: "success", 
+			style: {
+				margin: "15px 0px",
+				width: "150px",
+			}
+		});
+
+		menu.appendChild(errorButton);
+		menu.appendChild(infoButton);
+		menu.appendChild(successButton);
+
+		errorButton.onclick = () => displayPopup("this is error\nthis is a bit long message explaining things with lots of details.", "error");
+		infoButton.onclick = () => displayPopup("this is info", "info");
+		successButton.onclick = () => displayPopup("this is success", "success");
 
 		playButton.onclick = () => navigateTo("/game");
 		tournamentsButton.onclick = () => navigateTo("/tournament");
-		optionsButton.onclick = () => navigateTo("/options");
-		loginButton.onclick = () => navigateTo("/login");
-		// this.shadowRoot.appendChild(footerContainer);
+		profileButton.onclick = () => navigateTo("/profile");
+		userInfo.onclick = () => navigateTo("/profile");
+
+		// to add : method inside the user Info class that calls the navigate function corresponding
+		// if user logged in : first button -> edit profile
+		//						second button -> log out
+
+		// if user not logged in : first button -> log in
+		//							second button -> sign up
 	}
 }
 

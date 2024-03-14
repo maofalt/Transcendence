@@ -7,7 +7,7 @@
   <h2>LOG IN</h2>
 
   <a>
-  <div id="errorMessage" style="color: red;"></div> <!-- This is where the error message will be displayed -->
+  <div id="errorMessage" style="color: red;"></div> 
 
   <form id="loginForm" action="" method="POST" onsubmit="submitLoginForm(); return false;">
     {% csrf_token %}
@@ -90,7 +90,7 @@
       url: '{% url "account:login" %}',
       type: 'POST',
       data: $('#loginForm').serialize(),
-      headers: { "X-CSRFToken": "{{ csrf_token }}" },
+      headers: { "X-CSRFToken": getCookie('csrftoken') },
       success: function (data, textStatus, xhr) {
         console.log('Login successful:', data);
         // Extract access token from Authorization header
@@ -109,6 +109,7 @@
           $('#oneTimeCodeSection').show();
         } else {
           console.log('2FA not required');
+          window.location.href = '';
         }
       },
       error: function (xhr, textStatus, errorThrown) {

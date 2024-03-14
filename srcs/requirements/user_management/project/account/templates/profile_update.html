@@ -3,19 +3,258 @@
 {% block content %}
   <h1>Update Profile</h1>
   
-  {% if messages %}
-  <ul class="messages">
-    {% for message in messages %}
-      <li{% if message.tags %} class="{{ message.tags}}"{% endif %}>{{ message }}</li>
-    {% endfor %}
-    </ul>
-  {% endif %}
+  <div id="messages">
+    {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+          <li{% if message.tags %} class="{{ message.tags}}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </div>
   
-  <form method="post" enctype="multipart/form-data">
+  <form id="update-form" method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ user_form.as_p }}
+
+    <p>2FA Setting</p>
+    <div>
+      <input type="checkbox" id="enable-2fa-on" name="two_factor_enabled" value="on">
+      <label for="enable-2fa-on">ON</label>
+      <input type="checkbox" id="enable-2fa-off" name="two_factor_enabled" value="off">
+      <label for="enable-2fa-off">OFF</label>
+    </div>
+    <div id="2fa-method-container" style="display: none;">
+      <label for="two-factor-method">2FA Method:</label>
+      <select id="two-factor-method" name="two_factor_method">
+        <option value="email">Email</option>
+        <option value="sms">SMS</option>
+      </select>
+    </div>
+    <div id="phone-number-container" style="display: none;">
+      {% if user_form.instance.phone %}
+        <p>Your Phone number: {{ user_form.instance.phone }}</p>
+        <p>*If you want to change your number for 2FA, please update.</p>
+      {% else %}
+        <p>*No registered phone number for the user. Please update.</p>
+      {% endif %}
+      <button type="button" id="update-phone-button">Update Phone Number</button>
+    </div>
     <button type="submit">Update Profile</button>
   </form>
 
   <p><a href="{% url 'account:password_update' %}">Change Password</a></p>
+
+  <div id="popup-page" style="display: none;">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <h2>2FA-SMS Testpage</h2>
+    <a></a>
+    <div id="errorMessage" style="color: red;"></div>
+    <form id="gatherPhoneNum">
+        {% csrf_token %}
+        <div style="position: relative;">
+            <input name="phoneNum" type="text" placeholder="(+33)" oninput="formatPhoneNumber()" autocomplete="off">
+            <button type="button" onclick="updateSandbox()">Send Verify Code</button>
+        </div>
+    </form>
+    <div id="verifyCodeInput">
+        <input name="one_time_code" type="text" placeholder="Enter Verification Code" autocomplete="off">
+        <button type="button" onclick="verifySandBox('2fa')">Submit</button>
+    </div>
+    <div id="message" style="color: green;"></div>
+
+
+    <script>
+      function insertString(mainString, insertString, position) {
+        return mainString.slice(0, position) + insertString + mainString.slice(position);
+    }
+    function formatPhoneNumber() {
+        var input = $("#gatherPhoneNum input[name='phoneNum']").val();
+        var value = input.replace(/\D/g, ''); // Remove non-numeric characters
+        var formattedValue = '';
+        if (value.length == 1 && value[0] !== '0') {
+            value = '0' + value;
+        }
+        if (value.startsWith('33')) {
+            value = value.slice(2);
+        }
+        // console.log("[1]value: ", value, "formattedValue: ", formattedValue, "value.length: ", value.length )
+
+        formattedValue += value.substr(0, value.length);
+        if (value.length > 2) {
+            formattedValue = insertString(value, '-', 2);
+        }
+        if (value.length > 6) {
+            formattedValue = insertString(value, '-', 2);
+            formattedValue = insertString(formattedValue, '-', 7);
+        }
+        if (!formattedValue.startsWith('(+33)')) {
+            formattedValue = '(+33)' + formattedValue;
+        }
+        $("#gatherPhoneNum input[name='phoneNum']").val(formattedValue);// Set the formatted value back to the input field
+        // console.log("[5]value: ", value, "formattedValue: ", formattedValue, "value.length: ", value.length )
+
+    }
+
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+    return cookieValue;
+    }
+
+    function updateSandbox() {
+        var phoneNumber = $("#gatherPhoneNum input[name='phoneNum']").val().replace(/[-()]/g, '');
+        phoneNumber = phoneNumber.slice(0, 3) + phoneNumber.slice(4);
+        $.ajax({
+            type: 'POST',
+            url: '{% url "account:updateSandbox" %}',
+            data: {'phone_number': phoneNumber},
+            headers: { "X-CSRFToken": getCookie('csrftoken') },
+            success: function(data) {
+                console.log('number added to sandBox destination successfully:', data);
+                if (data.verified) {
+                  updatePhoneData();
+                  displayMessage("Your Phone data updated. Don't forget to press 'Update Profile' button!!")
+                }
+            },
+            error: function(xhr, textStatus, errorThrown) {
+                console.error('Error adding number to sandBox destinatio:', errorThrown);
+            }
+        });
+    }
+    
+    function verifySandBox() {
+        var oneTimeCode = $('input[name="one_time_code"]').val();
+        var phoneNumber = $("#gatherPhoneNum input[name='phoneNum']").val().replace(/[-()]/g, '');
+        phoneNumber = phoneNumber.slice(0, 3) + phoneNumber.slice(4);
+        console.log('verifySandBox submit');
+        $.ajax({
+            url: '{% url "account:verifySandBox" %}',
+            type: 'POST',
+            data: { 'otp': oneTimeCode, 'phone_number': phoneNumber},
+            headers: { "X-CSRFToken": getCookie('csrftoken') },
+            success: function (data) {
+                console.log('One-time code verification successful:', data);
+                updatePhoneData();
+                displayMessage("Your Phone data updated. Don't forget to press 'Update Profile' button!!")
+                // window.location.href = '';
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                console.log('One-time code verification failed.');
+                var response;
+                try {
+                  response = JSON.parse(xhr.responseText);
+                } catch (e) {
+                  response = { error: 'An error occurred while processing your request.' };
+                }
+                displayErrorMessage(response.error);
+            },
+            complete: function (xhr, textStatus) {
+                console.log('Request complete. Status:', textStatus);
+            }
+        });
+    }
+
+    function updatePhoneData() {
+      var phoneNumber = $("#gatherPhoneNum input[name='phoneNum']").val().replace(/[-()]/g, '');
+        phoneNumber = phoneNumber.slice(0, 3) + phoneNumber.slice(4);
+        $.ajax({
+            type: 'POST',
+            url: '{% url "account:updatePhone" %}',
+            data: {'phone_number': phoneNumber},
+            headers: { "X-CSRFToken": getCookie('csrftoken') },
+            success: function(data) {
+                console.log('Updated user Phone data successfully:', data);
+            },
+            error: function(xhr, textStatus, errorThrown) {
+                console.error('Fail to update Phone data', errorThrown);
+            }
+        });
+    }
+    function displayMessage(message) {
+        $('#message').text(message).css('color', 'green');
+    }
+    function displayErrorMessage(message) {
+        $('#errorMessage').text(message).css('color', 'red');
+    }
+    </script>
+  </div>
+
+
+  <script>
+    
+    var enable2faOnCheckbox = document.getElementById("enable-2fa-on");
+    var enable2faOffCheckbox = document.getElementById("enable-2fa-off");
+    var methodContainer = document.getElementById("2fa-method-container");
+    var phoneNumberContainer = document.getElementById("phone-number-container");
+
+
+    enable2faOnCheckbox.addEventListener("change", function(event) {
+      methodContainer.style.display = enable2faOnCheckbox.checked ? "block" : "none";
+      phoneNumberContainer.style.display = enable2faOnCheckbox.checked && document.getElementById("two-factor-method").value === "sms" ? "block" : "none";
+      enable2faOffCheckbox.checked = !enable2faOnCheckbox.checked;
+    });
+
+    enable2faOffCheckbox.addEventListener("change", function(event) {
+      enable2faOnCheckbox.checked = !enable2faOffCheckbox.checked;
+    });
+
+    document.getElementById("two-factor-method").addEventListener("change", function(event) {
+      phoneNumberContainer.style.display = enable2faOnCheckbox.checked && document.getElementById("two-factor-method").value === "sms" ? "block" : "none";
+    });
+
+    document.getElementById("update-phone-button").addEventListener("click", function(event) {
+      document.getElementById("popup-page").style.display = "block";
+    });
+
+    document.getElementById("update-form").addEventListener("submit", function(event) {
+      event.preventDefault();
+      
+      var form = document.getElementById("update-form");
+      var formData = new FormData(form);
+      
+      // If 2FA is enabled, include the selected method in the form data
+      if (enable2faOnCheckbox.checked) {
+        var selectedMethod = document.getElementById("two-factor-method").value;
+        console.log("selected 2fa: ", selectedMethod);
+        formData.append('two_factor_method', selectedMethod);
+      } else if (enable2faOffCheckbox.checked) {
+        formData.append('two_factor_method', ''); // None
+        console.log("2fa == None");
+      } else {
+        formData.delete('two_factor_method');
+      }
+      console.log("formData: ", formData);
+      fetch("{% url 'account:profile_update' %}", {
+        method: "POST",
+        body: formData,
+        headers: { "X-CSRFToken": "{{ csrf_token }}" },
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.error) {
+          document.getElementById("messages").innerHTML = '<ul class="messages"><li class="error">' + data.error + '</li></ul>';
+        } else if (data.success) {
+          document.getElementById("messages").innerHTML = '<ul class="messages"><li class="success">' + data.success + '</li></ul>';
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        document.getElementById("messages").innerHTML = '<ul class="messages"><li class="error">An error occurred. Please try again later.</li></ul>';
+      });
+    });
+    
+  </script>
+
 {% endblock %}

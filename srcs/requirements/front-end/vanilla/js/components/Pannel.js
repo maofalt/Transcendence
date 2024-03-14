@@ -23,7 +23,7 @@ export default class Pannel extends AbstractComponent {
 			}
 		}
 
-		this.setPannelStyle(options.dark);;
+		this.setPannelStyle(options.dark);
 
 		this.shadowRoot.appendChild(p);
 	}

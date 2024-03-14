@@ -7,9 +7,10 @@ import { createElement } from "@utils/createElement";
 import { htmlToElement } from "@utils/htmlToElement";
 import styles from '@css/Design.css?raw';
 import LoginPage from '@components/LoginPage'
-import SignUpPage from "@components/SignUpPage";
 import HomePage from "@components/HomePage";
 import PlayMenu from "@components/PlayMenu";
+import InputAugmented from "@components/InputAugmented";
+import ProfilePage from "../components/ProfilePage";
 
 export default class Design extends HTMLElement {
 	constructor(element) {
@@ -55,17 +56,34 @@ export default class Design extends HTMLElement {
 		let loginPage = new LoginPage();
 		let homePage = new HomePage();
 		let playMenu = new PlayMenu();
-		let signupPage = new SignUpPage();
+		let profile = new ProfilePage();
 
+		// let inputTest = this.createInputAndTitle("Confirm Password", "con-password", "Password", "", "password");
+
+		// let inputTest = new InputAugmented({
+		// 	title: "Password",
+		// 	content: "Password",
+		// 	indicators: {
+		// 		lengthIndicator: "Minimum 8 characters",
+		// 		digitIndicator: "At least 1 digit",
+		// 		letterIndicator: "At least 1 letter",
+		// 		differentIndicator: "Different from your Playername and your Email"
+		// 	},
+		// 	type: "password"
+		// });
+
+		// let indicators = inputTest.indicators;
 		// this.shadowRoot.appendChild(loginPage);
-		this.shadowRoot.appendChild(signupPage);
+		// this.shadowRoot.appendChild(signupPage);
 		// this.shadowRoot.appendChild(homePage);
 		// this.shadowRoot.appendChild(playMenu);
+		// this.shadowRoot.appendChild(inputTest);
+		this.shadowRoot.appendChild(profile);
 	}
 
 	// this function gets called when the custom component gets added to the dom
 	connectedCallback() {
-		console.log('connectedCallback() called\n\n');
+		// console.log('connectedCallback() called\n\n');
 		// this.highLightButton.onEvent((e) => this.buttonOnClick(e, "button clicked!"), "click");
 		// this.highLightButton.onclick = (e) => this.buttonOnClick(e, "Play button clicked!");
 		// this.chillButton.onclick = (e) => this.buttonOnClick(e, "Options button clicked!");
@@ -74,7 +92,7 @@ export default class Design extends HTMLElement {
 
 	// this function gets called when the custom component is removed from the dom
 	disconnectedCallback() {
-		console.log('disconnectedCallback() called\n\n');
+		// console.log('disconnectedCallback() called\n\n');
 		// remove all tracked event listeners on the page
 		this.eventListeners.forEach(({ target, type, listener }) => {
 			target.removeEventListener(type, listener);

@@ -1,3 +1,4 @@
+export default `
 <h1>Friends List</h1>
 
 <form method="get" action="{% url 'account:friends' %}">
@@ -103,3 +104,4 @@ $(document).ready(function() {
 });
 
 </script>
+`;

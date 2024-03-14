@@ -10,6 +10,18 @@ class User(AbstractUser):
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True, default='default_avatar.jpeg')
     friends = models.ManyToManyField('self', symmetrical=False, blank=True)
     game_stats = models.OneToOneField('gameHistory_microservice.GameStats', on_delete=models.CASCADE, null=True, blank=True, related_name='user_game_stats')
+    phone = models.CharField(max_length=15, blank=True, null=True)
+    TWO_FACTOR_METHODS = [
+        ('sms', 'SMS'),
+        ('email', 'Email'),
+    ]
+    
+    TWO_FACTOR_OPTIONS = [
+        (None, 'Off'),
+        *TWO_FACTOR_METHODS
+    ]
+    
+    two_factor_method = models.CharField(max_length=10, choices=TWO_FACTOR_OPTIONS, default=None, null=True, blank=True)
     # reset_token = models.CharField(max_length=100, blank=True, null=True)
 
     def add_friend(self, friend):

@@ -55,6 +55,10 @@ export default class LoginPage extends AbstractComponent {
 
 		signUpButton.onclick = () => Router.navigateTo("/signup");
 		
+		const goBack = new CustomButton({content: "< Back", style: {padding: "0px 20px", position: "absolute", left: "50px", bottom: "30px"}});
+		goBack.onclick = () => Router.navigateTo("/"); // do adapt if needed
+
+		this.shadowRoot.appendChild(goBack);
 		this.shadowRoot.appendChild(bigTitle);
 		this.shadowRoot.appendChild(pannel);
 	}

@@ -1,12 +1,12 @@
-@font-face {
+/* @font-face {
 	font-family: "tk-421";
 	src: url('js/assets/fonts/Tk421-K7mv7.otf') format('opentype');
-}
+} */
 
 :host {
 	/* margin: 15px 0px 15px 0px; */
 	/* padding: 15px 50px; */
-	width: 100%;
+	/* width: 100%; */
 	height: 50px;
 
 	display: flex;
@@ -16,7 +16,7 @@
 
 	/* color: rgb(200, 242, 255); */
 	color: white;
-	font-family: "tk-421", sans-serif;
+	/* font-family: "tk-421", sans-serif; */
 	font-size: 36px;
 
 	/* From https://css.glass */
@@ -59,9 +59,7 @@ p {
 
 /* TESTING COLORS */
 
-:host {
-	/* margin: 15px 0px 15px 0px; */
-	/* padding: 15px 50px; */
+/* :host {
 	width: 100%;
 	height: 50px;
 
@@ -70,17 +68,14 @@ p {
 	text-align: center;
 	justify-content: center;
 
-	/* color: rgb(200, 242, 255); */
 	color: white;
 	font-family: "tk-421", sans-serif;
 	font-size: 36px;
 
-	/* From https://css.glass */
 	background: rgba(0, 217, 255, 0.8);
 	border: 1px solid rgba(0, 217, 255, 0.8);
 
 	background: rgba(0, 217, 255, 0.4);
-	/* color: rgba(255, 255, 255, 0.8); */
 	color: rgba(0, 217, 255, 1);
 	border: 1px solid rgba(0, 217, 255, 0.6);
 
@@ -91,7 +86,6 @@ p {
 
 :host(:hover) {
 	background: rgba(0, 217, 255, 0.4);
-	/* color: rgba(255, 255, 255, 0.8); */
 	color: rgba(0, 217, 255, 1);
 	border: 1px solid rgba(0, 217, 255, 0.6);
 
@@ -99,8 +93,5 @@ p {
 	border: 1px solid rgba(0, 217, 255, 0.8);
 	color: white;
 
-	/* color:rgb(0, 217, 255); */
-	/* background: white; */
-	/* border-radius: 20px 0px 20px 0px; */
 	transition: all 300ms;
-}
+} */

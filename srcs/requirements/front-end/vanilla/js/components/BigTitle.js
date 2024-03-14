@@ -27,7 +27,7 @@ export default class BigTitle extends AbstractComponent {
 				this.shadowRoot.host.style.setProperty(key, value);
 			}
 		}
-		this.style.setProperty("font-family", "Anta");
+		// this.style.setProperty("font-family", "Anta");
 	}
 
 	// Implement other methods or properties as needed
