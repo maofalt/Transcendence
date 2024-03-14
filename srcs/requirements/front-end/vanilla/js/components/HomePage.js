@@ -63,7 +63,7 @@ export default class HomePage extends AbstractComponent {
 
 		const userInfo = new UserInfo();
 		userInfo.style.setProperty("position", "absolute");
-		userInfo.style.setProperty("top", "15px");
+		userInfo.style.setProperty("bottom", "15px");
 		userInfo.style.setProperty("right", "35px");
 
 		this.shadowRoot.appendChild(menu);

@@ -145,7 +145,7 @@ export default class ProfilePage extends AbstractComponent {
 		let friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "online"});
 
 		friendsList.shadowRoot.querySelector("#pannel-title").style.setProperty("font-size", "22px");
-		// friendsList.shadowRoot.querySelector("#pannel-title").style.setProperty("font-family", "sans-serif");
+		friendsList.shadowRoot.querySelector("#pannel-title").style.setProperty("font-family", "Space Grotesk, sans-serif");
 		friendsList.shadowRoot.querySelector("#pannel-title").style.setProperty("font-weight", "bold");
 
 		listContainer.appendChild(friend);
