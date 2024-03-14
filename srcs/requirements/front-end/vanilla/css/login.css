@@ -124,13 +124,3 @@ input[name="signupEmail"], input[name="access_code"] {
 
 #privacyPolicyPopup {
 }
-
-
-/* style to fade elements in and out of view (see utils/fade.js */
-.fade {
-	transition: opacity 0.5s ease;
-	opacity: 0;
-}
-.fade.in {
-	opacity: 1;
-}

@@ -16,6 +16,7 @@ import EditProfile from '@components/EditProfile';
 import LoginUserProfile from '@views/LoginUserProfile';
 
 import { fadeIn, fadeOut } from '@utils/jqueryUtils.js';
+import { fadeInjava, fadeOutjava } from './jqueryUtils';
 
 export const routes = {
 	'/': {

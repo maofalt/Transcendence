@@ -25,6 +25,32 @@ function prop(selector, property, value) {
 	});
 }
 
+function fadeInjava(element, duration) {
+	let op = 0; // initial opacity
+	element.style.opacity = op;
+	element.style.display = 'block';
+	
+	let timer = setInterval(function () {
+	  if (op >= 1) clearInterval(timer);
+	  element.style.opacity = op;
+	  op += 0.02; // adjust for smoother or faster transition
+	}, duration / 50); // adjust timing
+}
+
+function fadeOutjava(element, duration) {
+	let op = 1; // initial opacity
+	element.style.opacity = op;
+  
+	let timer = setInterval(function () {
+	  if (op <= 0) {
+		clearInterval(timer);
+		element.style.display = 'none';
+	  }
+	  element.style.opacity = op;
+	  op -= 0.02; // adjust for smoother or faster transition
+	}, duration / 50); // adjust timing
+}
+
 // add '.in' class after 10ms
 function fadeIn(element) {
 	element.style.display = ''; // reset the display property to its default value
@@ -42,4 +68,4 @@ function fadeOut(element) {
 }
 
 
-export { toggleClass, prop, fadeIn, fadeOut };
+export { toggleClass, prop, fadeIn, fadeOut, fadeInjava, fadeOutjava};

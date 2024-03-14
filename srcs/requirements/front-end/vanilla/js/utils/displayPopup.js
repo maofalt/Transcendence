@@ -5,9 +5,9 @@ export const displayPopup = (message, infoType) => {
 	info.setAttribute('message', message);
 	info.setAttribute('type', infoType);
 	fadeIn(info);
-	// info.style.display = "block";
-	setTimeout(() => {
-		fadeOut(info);
-		// info.style.display = "none";
-	}, 3000);
+	if (infoType != "error") {
+		setTimeout(() => {
+			fadeOut(info);
+		}, 3000);
+	}
 }

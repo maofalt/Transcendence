@@ -4,6 +4,8 @@ import AbstractComponent from "./AbstractComponent";
 import alertTriangle from "@public/alert-triangle.svg?raw";
 import checkCircle from "@public/check-circle.svg?raw";
 import googleAlert from "@public/google-alert.svg?raw";
+import { fadeOut } from "@utils/jqueryUtils";
+import CustomButton from "@components/CustomButton";
 
 export default class InfoPopup extends AbstractComponent {
 	constructor(options = {}) {
@@ -14,6 +16,28 @@ export default class InfoPopup extends AbstractComponent {
 		// const styleEl = document.createElement('style');
 		// styleEl.textContent = infoPopupStyle;
 		// this.shadowRoot.appendChild(styleEl);
+
+		this.closeButton = new CustomButton(
+			{
+				content: "X", // "⇦", // "↵", //"↶", //"↩", 
+				style: {
+					'font-family': 'Arial, sans-serif',
+					'position': 'absolute',
+					'top': '-5px',
+					'left': '-5px',
+					'padding': '1px',
+					'width': '15px',
+					'height': '15px',
+					'font-size': '15px',
+					'background-color': 'white',
+				}
+			});
+
+		this.closeButton.addEventListener('click', () => {
+			fadeOut(this);
+		});
+
+		this.shadowRoot.appendChild(this.closeButton);
 
 		this.div = document.createElement('div');
 

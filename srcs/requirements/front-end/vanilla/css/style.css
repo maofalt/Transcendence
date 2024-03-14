@@ -52,4 +52,16 @@ body {
 	backdrop-filter: blur(14px);
 	border-radius: 18px;
 	box-shadow: 0 0px 20px rgba(0,0,0,0.5);
-  }	
+}
+
+/* style to fade elements in and out of view (see utils/fade.js */
+.fade {
+	transition: opacity 0.5s ease, filter 0.5s ease;
+	opacity: 0;
+	/* filter: blur(40px); */
+}
+
+.fade.in {
+	opacity: 1;
+	/* filter: blur(0); */
+}
