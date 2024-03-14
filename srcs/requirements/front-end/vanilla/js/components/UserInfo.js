@@ -48,7 +48,7 @@ export default class UserInfo extends AbstractComponent {
 			}
 		}
 
-		this.style.setProperty("font-family", "Anta");
+		// this.style.setProperty("font-family", "Anta");
 
         this.shadowRoot.appendChild(pannel);
 	}

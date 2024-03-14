@@ -319,7 +319,7 @@ export default class SignUpPage extends AbstractComponent {
 		let title = document.createElement("p");
 		title.id = id + "-title-id";
 		title.textContent = titleContent;
-		title.style.setProperty("font-family", "tk-421, Anta, sans-serif");
+		// title.style.setProperty("font-family", "tk-421, Anta, sans-serif");
 		title.style.setProperty("font-size", "26px");
 		title.style.setProperty("margin", "0px 0px 10px 0px");
 		// title.style.setProperty("border", "1px green solid");
@@ -337,7 +337,7 @@ export default class SignUpPage extends AbstractComponent {
 		let description = document.createElement("p");
 		description.id = id + "-desc-id";
 		description.textContent = descContent;
-		description.style.setProperty("font-family", "Anta, sans-serif");
+		// description.style.setProperty("font-family", "Anta, sans-serif");
 		description.style.setProperty("font-size", "14px");
 		description.style.setProperty("margin-top", "-3px");
 
@@ -367,7 +367,7 @@ export default class SignUpPage extends AbstractComponent {
 		privacyTitle.id = "privacy-title";
 		privacyTitle.textContent = "Privacy Policy";
 		privacyTitle.style.setProperty("font-size", "32px");
-		privacyTitle.style.setProperty("font-family", "tk-421, Anta, sans-serif");
+		// privacyTitle.style.setProperty("font-family", "tk-421, Anta, sans-serif");
 		privacyTitle.style.setProperty("margin", "15px 0px 10px 0px");
 		
 		const checkBox = document.createElement("input");

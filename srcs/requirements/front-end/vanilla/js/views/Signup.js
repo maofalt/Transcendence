@@ -185,8 +185,8 @@ export default class Signup extends AbstractComponent {
 		// emailBlock.button.onclick = (e) => this.sendCodeToEmail(e, emailInput.getValue());
 		// verifyCodeBlock.button.onclick = (e) => this.verifyCode(e, emailInput, accessCodeInput);
 
-		nextButton.onclick = (e) => {
-			this.goNext(e, flow);
+		nextButton.onclick = async (e) => {
+			await this.goNext(e, flow);
 			if (this.flowIndex >= flow.length - 1) {
 				finalSignupButton.style.display = "block";
 				nextButton.style.display = "none";
@@ -508,7 +508,7 @@ export default class Signup extends AbstractComponent {
 		privacyTitle.id = "privacy-title";
 		privacyTitle.textContent = "Privacy Policy";
 		privacyTitle.style.setProperty("font-size", "32px");
-		privacyTitle.style.setProperty("font-family", "tk-421, Anta, sans-serif");
+		// privacyTitle.style.setProperty("font-family", "tk-421, Anta, sans-serif");
 		privacyTitle.style.setProperty("margin", "15px 0px 10px 0px");
 		
 		const checkBox = document.createElement("input");

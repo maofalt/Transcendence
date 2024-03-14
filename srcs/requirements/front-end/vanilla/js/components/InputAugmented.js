@@ -19,7 +19,7 @@ export default class InputAugmented extends AbstractComponent {
 		const title = document.createElement('p');
 		title.id = "input-title";
 		title.textContent = options.title ? options.title : "Input title";
-		title.style.setProperty("font-family", "tk-421, Anta, sans-serif");
+		// title.style.setProperty("font-family", "tk-421, Anta, sans-serif");
 		title.style.setProperty("font-size", "26px");
 		title.style.setProperty("margin", "0px 0px 10px 0px");
 		this.shadowRoot.appendChild(title);
@@ -57,7 +57,7 @@ export default class InputAugmented extends AbstractComponent {
 		if (options.description) {
 			this.description = document.createElement("p");
 			this.description.textContent = options.description;
-			this.description.style.setProperty("font-family", "Anta, sans-serif");
+			// this.description.style.setProperty("font-family", "Anta, sans-serif");
 			this.description.style.setProperty("font-size", "14px");
 			this.description.style.setProperty("margin-top", "-3px");
 			this.shadowRoot.appendChild(this.description);

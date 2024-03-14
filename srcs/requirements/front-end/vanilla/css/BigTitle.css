@@ -1,16 +1,16 @@
-@font-face {
+/* @font-face {
 	font-family: 'Space Grotesk';
 	src:  url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300&display=swap');
-	/* font-weight: 700; */
-	/* font-style: normal; */
-}
+	font-weight: 700;
+	font-style: normal;
+} */
 
-@font-face {
+/* @font-face {
 	font-family: 'Space Grotesk';
 	src:  url('tk-421 path... ');
-	/* font-weight: 700; */
-	/* font-style: normal; */
-}
+	font-weight: 700;
+	font-style: normal;
+} */
 
 
 /* @import url("../js/assets/fonts/Tk421-K7mv7.woff2"); */
@@ -34,7 +34,7 @@
 
 p {
 	font-size: 120px;
-	font-family: 'tk-421', "Anta", sans-serif;	
+	/* font-family: 'tk-421', "Anta", sans-serif;	 */
 	/* font-family: "Space Grotesk", sans-serif; */
 	margin: 0px;
 	padding: 0px;
