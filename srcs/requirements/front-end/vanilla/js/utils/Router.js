@@ -42,9 +42,9 @@ export const routes = {
 	},
 	'/edit-profile': {
 		path: '/edit-profile',
-		component: EditProfile,
-		title: 'Edit Profile Page',
-		buttonText: 'Edit Profile'
+		component: 'edit-profile',
+		title: 'Edit Profile',
+		buttonText: 'Edit Profile',
 	},
 	'/tournament': {
 		path: '/tournament',
@@ -113,12 +113,12 @@ export const routes = {
 		view: NotFound,
 		title: '404 Not Found',
 		buttonText: 'Not Found Page'
-	},
-	'/profile': {
-		path: '/profile',
-		component: 'profile-page',
-		title: 'ProfilePage',
 	}
+	// '/profile': {
+	// 	path: '/profile',
+	// 	component: 'profile-page',
+	// 	title: 'ProfilePage',
+	// }
 };
 
 let currentView = null;
