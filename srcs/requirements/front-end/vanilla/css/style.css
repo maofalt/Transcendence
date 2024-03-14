@@ -41,7 +41,7 @@ body {
 
 #info {
 	position: fixed;
-	top: 0;
+	top: 5px;
 	left: 50%;
 	transform: translate(-50%);
 	z-index: 1000;
@@ -51,4 +51,4 @@ body {
 	border: 1px solid #ccc;
 	border-radius: 8px;
 	box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-  }
+  }	

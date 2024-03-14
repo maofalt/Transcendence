@@ -152,12 +152,6 @@ export default class Signup extends AbstractComponent {
 			}
 		];
 
-		// let flow = [
-		// 	[playernameBlock, emailBlock],
-		// 	[idBlock, passwordBlock, confirmPasswordBlock],
-		// 	[verifyCodeBlock]
-		// ];
-
 		// hide all the steps apart from the first one
 		flow.forEach((step, index) => {
 			step.blocks.forEach((inputBlock) => {
@@ -259,91 +253,12 @@ export default class Signup extends AbstractComponent {
 		});
 	}
 
-
 	/* VALIDATION CONDITION FUNCTIONS */
 	emailIsValid = (emailBlock) => {
 		let value = emailBlock.input.getValue();
 		let valid = value.includes('@');
 		return valid;
 	}
-
-	validateCode = async (verifyCodeBlock, emailBlock) => {
-		let inputValue = block.input.getValue();
-		let validCode = await this.verifyCode(emailBlock, verifyCodeBlock);
-		if (inputValue == "") {
-			block.input.input.style.outline = "2px solid red";
-			block.indicators.emptyIndicator.style.display = "block";
-			block.indicators.emptyIndicator.setAttribute("valid", "false");
-			return false;
-		} else {
-			block.indicators.emptyIndicator.style.display = "none";
-		}
-		if (!validCode) {
-			console.log("bad code");
-			block.input.input.style.outline = "2px solid red";
-			block.indicators.badCodeIndicator.style.display = "block";
-			block.indicators.badCodeIndicator.setAttribute("valid", "false");
-			return false;
-		} else {
-			block.indicators.badCodeIndicator.style.display = "none";
-		}
-		console.log("returning true");
-		block.input.input.style.outline = "";
-		return true;
-	}
-
-	validatePlayerName = (block) => {
-		console.log("PLAYERINPUT: ", block.input.getValue());
-		let inputValue = block.input.getValue();
-		if (inputValue == "") {
-			block.input.input.style.outline = "2px solid red";
-			block.indicators.emptyIndicator.style.display = "block";
-			block.indicators.emptyIndicator.setAttribute("valid", "false");
-			return false;
-		} else {
-			block.indicators.emptyIndicator.style.display = "none";
-		}
-		/* fetch jisus thing to check if it is unique */
-		// if (is not unique):
-			// input.indicators.isUnique.style.display = "block";
-			// input.indicators.isUnique.setAttribute("valid", "false");
-
-		block.input.input.style.outline = "";
-		return true;
-	}
-
-	validateEmail = (block) => {
-		console.log("EMAILINPUT: ", block.input.getValue());
-		let inputValue = block.input.getValue();
-		if (inputValue == "") {
-			block.input.input.style.outline = "2px solid red";
-			block.indicators.emptyIndicator.style.display = "block";
-			block.indicators.emptyIndicator.setAttribute("valid", "false");
-			return false;
-		} else {
-			block.indicators.emptyIndicator.style.display = "none";
-		}
-
-		block.input.input.style.outline = ""
-		return true;
-	}
-	
-	validateUsername = (block) => {
-		console.log("USERNAME INPUT: ", block.input.getValue());
-		let inputValue = block.input.getValue();
-		if (inputValue == "") {
-			block.input.input.style.outline = "2px solid red";
-			block.indicators.emptyIndicator.style.display = "block";
-			block.indicators.emptyIndicator.setAttribute("valid", "false");
-			return false;
-		} else {
-			block.indicators.emptyIndicator.style.display = "none";
-		}
-
-		block.input.input.style.outline = "";
-		return true;
-	}
-
 
 	/* API VALIDATION + SUBMIT FUNCTIONS */
 	verifyCode = async (emailBlock, verifyCodeBlock) => {
