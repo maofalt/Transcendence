@@ -12,7 +12,6 @@ import Design from '@views/Design.js';
 import BasicGame from '@views/BasicGame.js';
 import TwoFactorAuth from '@views/2fa';
 import Signup from '@views/Signup.js';
-import ProfilePage from '@components/ProfilePage';
 import EditProfile from '@components/EditProfile';
 
 export const routes = {
