@@ -6,7 +6,7 @@ import Game from '@views/Game.js';
 import Login from '@views/Login.js';
 import NotFound from '@views/NotFound.js';
 import ProfilePage from '@components/ProfilePage.js';
-
+import SpaceBackground from '../components/SpaceBackground';
 import User from '@views/User';
 import Design from '@views/Design.js';
 import BasicGame from '@views/BasicGame.js';
@@ -21,6 +21,12 @@ export const routes = {
 		component: 'home-page',
 		title: 'Pongiverse',
 		buttonText: 'Home'
+	},
+	'/space-background': {
+		path: '/space-background',
+		component: 'space-background',
+		title: 'Space Background',
+		buttonText: 'Space Background'
 	},
 	'/play': {
 		path: '/play',
@@ -159,5 +165,13 @@ window.addEventListener("popstate", router);
 document.addEventListener('DOMContentLoaded', () => {
   router();
 });
+
+// const background = new SpaceBackground();
+
+// document.querySelector('#app').appendChild(background);
+// background.shadowRoot.style.setProperty("position", "absolute");
+// background.shadowRoot.style.setProperty("top", "0px");
+// background.shadowRoot.style.setProperty("left", "0px");
+// background.shadowRoot.style.setProperty("border", "3px red solid");
 
 export default { routes, navigateTo, router };
