@@ -14,7 +14,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt, csrf_protect, ensure_csrf_cookie
-from django.http import JsonResponse, HttpResponseRedirect
+from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db import transaction
 from django.utils import timezone
@@ -29,6 +29,8 @@ import secrets
 import requests
 import logging
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.forms.models import model_to_dict
+
 # from django.utils.encoding import force_bytes, force_str
 
 #JWT
@@ -52,6 +54,10 @@ from django.core.mail import send_mail
 from django.utils.crypto import get_random_string
 from django.contrib.sessions.models import Session
 from django.middleware.csrf import get_token
+import boto3
+import re
+from botocore.exceptions import ClientError
+
 
 #XSS protection
 from django.utils.html import escape
@@ -137,27 +143,35 @@ def api_login_view(request):
             print(f"Date Joined: {user.date_joined}")
             serializer = UserSerializer(user)
             redirect_url = '/api/user_management/'
-            
-            send_one_time_code(request, user.email)
-            
-            return generate_tokens_and_response(user)
+            if (user.two_factor_method != None):
+                if (user.two_factor_method == 'email'):
+                    send_one_time_code(request, user.email)
+                elif(user.two_factor_method == 'sms'):
+                    send_sms_code(request, user.phone)
+            return generate_tokens_and_response(request, user)
         else:
             print("Authentication failed")
             return JsonResponse({'error': escape('Authentication failed: Wrong user data')}, status=400)
     return JsonResponse({'error': escape('Invalid request method')}, status=400)
 
 
-def generate_tokens_and_response(user):
+def generate_tokens_and_response(request, user):
     accessToken = AccessToken.for_user(user)
     accessToken['username'] = user.username
-
+    
+    if user.two_factor_method == '' or user.two_factor_method is None:
+        twoFA = False
+        login(request, user)
+        user.is_online = True
+        user.save()
+    else:
+        twoFA = True
     refreshToken = RefreshToken.for_user(user)
-
     response = JsonResponse({
         'success' : True,
         'message': escape('Password Authentication successful'),
         # 'redirect_url': escape(redirect_url),
-        'requires_2fa': True
+        'requires_2fa': twoFA
     })
 
     response['Authorization'] = f'Bearer {str(accessToken)}'
@@ -166,8 +180,8 @@ def generate_tokens_and_response(user):
     try:
         secret_key = settings.SECRET_KEY
 
-        print("original ACCESS TOKEN: ", str(accessToken))
-        print("original REFRESH TOKEN: ", str(refreshToken))
+        # print("original ACCESS TOKEN: ", str(accessToken))
+        # print("original REFRESH TOKEN: ", str(refreshToken))
         decodedToken = jwt.decode(str(accessToken), secret_key, algorithms=["HS256"])
         local_tz = pytz.timezone('Europe/Paris')
         exp_timestamp_accessToken = decodedToken['exp']
@@ -243,7 +257,9 @@ def api_logout_view(request):
         print(request.user.username, ": is_online status", request.user.is_online)
         logout(request)
         serializer = get_serializer(request.user)
-        return redirect('/api/user_management/')
+        redirect_url = "/api/user_management/"
+        response_data = {'redirect_url': escape(redirect_url)}
+        return JsonResponse(response_data)
     else:
         return JsonResponse({'error': escape('Invalid request method')}, status=400)
 
@@ -299,7 +315,7 @@ def api_signup_view(request):
         login(request, user)
         user.is_online = True
         user.save()
-        return generate_tokens_and_response(user)
+        return generate_tokens_and_response(request, user)
         # return JsonResponse({'success': True})
 
     return JsonResponse({'success': False, 'error': escape('Invalid request method')}, status=400)
@@ -353,10 +369,19 @@ def delete_account(request):
         logger.error(f"Error deleting account: {str(e)}")
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
+@login_required
+@csrf_protect
+def settings_view(request):
+    return JsonResponse({})
 
 @login_required
 @csrf_protect
-def friend_view(request):
+def game_history_view(requset):
+    return JsonResponse({})
+
+@login_required
+@csrf_protect
+def friends_view(request):
     user = request.user
     friends = user.friends.all()
 
@@ -366,8 +391,8 @@ def friend_view(request):
         if friend.avatar:
             avatar_url = urljoin(settings.MEDIA_URL, friend.avatar.url)
         friend_info = {
-            'username': friend.username,
-            'playername': friend.playername,
+            'username': escape(friend.username),
+            'playername': escape(friend.playername),
             'avatar': avatar_url,
             'pk': friend.pk,
             'game_stats': {
@@ -380,64 +405,88 @@ def friend_view(request):
 
     search_query = request.GET.get('search')
     search_results = []
-    if search_query:
-        print(search_query)
-        search_results = User.objects.filter(username__icontains=search_query)
+    if (search_query != user.username):
+        if search_query:
+            print(search_query)
+            search_results = User.objects.filter(username__icontains=search_query)
 
-    return render(request, 'friends.html', {'friends': friend_data, 'search_query': search_query, 'search_results': search_results})
+    return JsonResponse({'friends': friend_data, 'search_query': escape(search_query), 'search_results': search_results})
+#     return render(request, 'detail.html', {'data': data})
 
 @login_required
 @csrf_protect
 def detail_view(request):
+    # access_token = request.headers.get('Authorization')  # Get the access token from the request headers
+    # if access_token:
+    #     decoded_token = jwt.decode(access_token.split()[1], settings.SECRET_KEY, algorithms=["HS256"])
+    #     print("\nDECODED from detail_view: ", decoded_token)
+    #     user_id = decoded_token.get('user_id')
     user = request.user
-    game_stats = request.user.game_stats
+        # if user_id:
+        #     user = User.objects.filter(pk=user_id).first()
 
-    data = {
-        'username': user.username,
-        'playername': user.playername,
-        'email': user.email,
-        'avatar': user.avatar.url if user.avatar else None,
-        'friends_count': user.friends.count(),
-        'game_stats': {
-            'user': game_stats.user,
+    if user:
+        game_stats = user.game_stats
+        # Serialize user data
+        data = {
+            'username': user.username,
+            'playername': user.playername,
+            # 'email': user.email,
+            'avatar': user.avatar.url if user.avatar else None,
+            'friends_count': user.friends.count(),
+            'two_factor_method': user.two_factor_method,
             'total_games_played': game_stats.total_games_played,
             'games_won': game_stats.games_won,
             'games_lost': game_stats.games_lost,
         }
-    }
-    return render(request, 'detail.html', {'data': data})
+        # return render(request, 'detail.html', {'data': data})
+        return JsonResponse(data)
+    else:
+        return JsonResponse({'error': 'User not found'}, status=404)
+    # else:
+    #     return JsonResponse({'error': 'User ID not found in token'}, status=401)
+    # else:
+    #     return JsonResponse({'error': 'Access token is missing'}, status=401)
+    # return render(request, 'detail.html', {'data': data})
 
 @login_required
 def add_friend(request, pk):
     friend = get_object_or_404(User, pk=pk)
     request.user.add_friend(friend)
-    return redirect('account:friend')
+    return JsonResponse({})
 
 @login_required
 def remove_friend(request, pk):
     friend = get_object_or_404(User, pk=pk)
     request.user.friends.remove(friend)
-    return redirect('account:friend')
+    return JsonResponse({})
 
 @login_required
 @csrf_protect
 def profile_update_view(request):
+    user = request.user
     if request.method == 'POST':
         user_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user)
-        
         if user_form.is_valid():
             user = user_form.save(commit=False)
+            if 'two_factor_method' in request.POST:
+                if request.POST['two_factor_method'] == '':
+                    user.two_factor_method = None
+                else:
+                    user.two_factor_method = request.POST['two_factor_method']
             if User.objects.filter(playername=user.playername).exclude(username=request.user.username).exists():
-                messages.error(request, 'Playername already exists. Please choose a different one.')
-                return redirect('account:profile_update')
+                return JsonResponse({'error': 'Playername already exists. Please choose a different one.'})
             else:
                 user.save()    
-                messages.success(request, 'Your profile has update.')
-                return redirect('account:detail')
+                return JsonResponse({'success': 'Your profile has been updated.'})
+        else:
+            return JsonResponse({'error': 'Form is not valid.'}, status=400)
     else:
         user_form = ProfileUpdateForm(instance=request.user)
-
-    return render(request, 'profile_update.html', {'user_form': user_form})
+        # serialized_form = model_to_dict(user_form)
+        html = render_to_string('profile_update.html', {'form': user_form})
+        return JsonResponse({'html': html})
+        # return render(request, 'profile_update.html', {'user_form': user_form})
 
 @login_required
 def password_update_view(request):
@@ -447,11 +496,15 @@ def password_update_view(request):
             form.save()
             request.user.save()
             messages.success(request, 'Your password has changed successfully. Please login again.')
-            return redirect('account:login')
+            return JsonResponse({'success': True, 'message': "Please login again"}) # needed to redirect to login homepage
+        else:
+            return JsonResponse({'error': 'Form is not valid.'}, status=400)
     else:
         form = PasswordUpdateForm(request.user)
-    
-    return render(request, 'password_update.html', {'form': form})
+        serialized_form = model_to_dict(form)
+        html = render_to_string('password_update.html')
+        # return render(request, 'password_update.html', {'form': form})
+        return JsonResponse({'form': serialized_form, 'html': html})
 
 
 class TokenGenerator(PasswordResetTokenGenerator):
@@ -513,16 +566,22 @@ def password_reset_view(request, uidb64, token):
                 user = authenticate(request, username=user.username, password=new_password1)
                 # if user is not None:
                 #     login(request, user)
-                return redirect('account:password_reset_done')
+                # return redirect('account:password_reset_done')
+                return JsonResponse({'success': True, 'message': escape('Password reset successfully')})
             else:
                 return JsonResponse({'success': False, 'error': escape('Passwords do not match')}, status=400)
         else:
-            return render(request, 'password_reset.html', {'uidb64': uidb64, 'token': token, 'user': user})
+            # return render(request, 'password_reset.html', {'uidb64': uidb64, 'token': token, 'user': user})
+            html = render_to_string('password_reset.html', {'uidb64': uidb64, 'token': token, 'user': user})
+            return JsonResponse({'html': html})
     else:
-        return HttpResponse('Invalid password reset link', status=400)
+        # return HttpResponse('Invalid password reset link', status=400)
+        return JsonResponse({'success': False, 'error': escape('Invalid password reset link')}, status=400)
 
 def password_reset_done(request):
-    return render(request, 'password_reset_done.html')
+    html = render_to_string('password_reset_done.html')
+    # return render(request, 'password_reset_done.html')
+    return JsonResponse({'html': html})
 
 class UserAPIView(APIView):
     def get(self, request, *args, **kwargs):
@@ -542,3 +601,143 @@ def print_all_user_data(request):
     context = {'users': all_users}
 
     return render(request, 'print_user_data.html', context)
+
+def smsTest(request):
+    return render(request, 'smsTest.html')
+
+
+sns_client = boto3.client('sns',
+                          aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+                          aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+                          region_name=settings.AWS_REGION)
+
+def is_valid_phone_number(phone_number):
+    phone_number_pattern = r'^\+\d{1,15}$'
+    return bool(re.match(phone_number_pattern, phone_number))
+
+def send_sms_code(request, phone_number=None):
+    if request.method == 'POST':
+        if phone_number is None:
+            phone_number = request.POST.get('phone_number', '')
+        print("Send SMS Func, phone_number: ", phone_number)
+        if not is_valid_phone_number(phone_number):
+            return JsonResponse({'success': False, 'error': 'Invalid phone number format'}, status=400)
+
+        one_time_code = generate_one_time_code()
+        request.session['one_time_code'] = one_time_code
+
+        print("\n\nCHECK CODE ON SESSION: ", request.session.get('one_time_code'))
+        message = f'Pong! Your one-time code is: {one_time_code}'
+
+        subscription_arn = subscribe_user_to_sns_topic(phone_number)
+        
+        if subscription_arn:
+            try:
+                response = sns_client.publish(
+                    PhoneNumber=phone_number,
+                    Message=message,
+                )
+                print("SMS message sent successfully:")
+                return JsonResponse({'success': True, 'message': 'SMS message sent successfully'})
+            except Exception as e:
+                print("Error sending SMS message:", e)
+                return JsonResponse({'success': False, 'error': 'Failed to send SMS message'})
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+def subscribe_user_to_sns_topic(phone_number):
+    try:
+        topic_arn = 'arn:aws:sns:eu-west-3:637423363839:verification_code_for_Pong'
+
+        subscriptions = sns_client.list_subscriptions_by_topic(TopicArn=topic_arn)['Subscriptions']
+        for subscription in subscriptions:
+            if subscription['Protocol'] == 'sms' and subscription['Endpoint'] == phone_number:
+                print(f"User is already subscribed with subscription ARN: {subscription['SubscriptionArn']}")
+                return subscription['SubscriptionArn']
+
+        response = sns_client.subscribe(
+            TopicArn=topic_arn,
+            Protocol='sms',
+            Endpoint=phone_number
+        )
+        subscription_arn = response['SubscriptionArn']
+        print(f"User subscribed successfully! Subscription ARN: {subscription_arn}")
+
+        return subscription_arn
+
+    except Exception as e:
+        print("Error subscribing user:", e)
+        return None
+
+def update_sandbox(request, phone_number=None):
+    if request.method == 'POST':
+        if phone_number is None:
+            phone_number = request.POST.get('phone_number', '')
+            print("phone_number: ", phone_number)
+        if phone_number == request.user.phone:
+            return JsonResponse({'success': True, 'message': 'Your number is already verified', 'verified': True})
+        if not is_valid_phone_number(phone_number):
+            return JsonResponse({'success': False, 'error': 'Invalid phone number format'}, status=400)
+        if is_phone_number_verified(phone_number):
+            return JsonResponse({'success': True, 'message': 'Your number is already verified', 'verified': True})
+        # Add phone number to 'Sandbox destination phone numbers andd send OTP'
+        try:
+            sns_client.create_sms_sandbox_phone_number(
+                PhoneNumber=phone_number,
+                LanguageCode='en-US'  # Adjust language code as needed
+            )
+            print("Phone number added to Sandbox destination phone numbers and OTP sent successfully:")
+            return JsonResponse({'success': True, 'message': 'SMS message sent successfully'})
+        except Exception as e:
+            print("Error adding phone number to Sandbox destination phone numbers:", e)
+            return JsonResponse({'success': False, 'error': str(e)})
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+def verify_sandBox(request, otp=None, phone_number=None):
+    print("\n--Verify SandBox\n")
+    if request.method == 'POST':
+        if phone_number is None:
+            phone_number = request.POST.get('phone_number', '')
+            print("phone_number: ", phone_number)
+        if otp is None:
+            otp = request.POST.get('otp', '')
+            print("otp: ", otp)
+        # Verify phone number in the SMS sandbox
+        try:
+            response = sns_client.verify_sms_sandbox_phone_number(
+                PhoneNumber=phone_number,
+                OneTimePassword=otp
+            )
+            print("Phone number verified in the SMS sandbox:", phone_number)
+            return JsonResponse({'success': True, 'message': 'Phone number verified'})
+        except Exception as e:
+            print("Error verifying phone number in the SMS sandbox:", e)
+            return JsonResponse({'success': False, 'error': str(e)})
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+def is_phone_number_verified(phone_number):
+    try:
+        response = sns_client.list_sms_sandbox_phone_numbers()
+        phone_numbers = response.get('PhoneNumbers', [])
+        for number in phone_numbers:
+            if number['PhoneNumber'] == phone_number and number['Status'] == 'Verified':
+                return True
+        return False
+    except Exception as e:
+        print("Error listing SMS sandbox phone numbers:", e)
+        return False
+
+def update_phone(request, phone_number=None):
+    user = request.user
+    if phone_number is None:
+        phone_number = request.POST.get('phone_number', '')
+        print("phone_number: ", phone_number)
+    try:
+        user.phone = phone_number
+        user.save()
+        return JsonResponse({})
+    except Exception as e:
+        print("Error saving phone number message:", e)
+        return JsonResponse({}, status=400) 

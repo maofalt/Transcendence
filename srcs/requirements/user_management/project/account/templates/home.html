@@ -60,21 +60,35 @@
 
 {% if user.is_authenticated %}
 <p>Welcome {{ user.username }}</p>
-<form method="post" action="{% url 'account:logout' %}">
-  {% csrf_token %}
-  <button type="submit">Log out</button>
-</form>
-<a href="{% url 'account:friend' %}">Friends</a>
+<button id="logoutButton" type="submit">Log out</button>
+{% csrf_token %}
+<a href="{% url 'account:friends' %}">friends</a>
 <a href="{% url 'account:detail' %}">Detail</a>
 <button id="tokenTestButton">TokenTest</button>
+<button id="smsAuthButton">2FA-SMS</button>
+
 {% else %}
 
 <a href="#" id="loginLink">Log in</a>
 {% include 'login.html' %}
+<!-- {% include 'friends.html' %} -->
 {% endif %}
 
 <script>
   $(document).ready(function () {
+    $('#smsAuthButton').on('click', function() {
+      $.ajax({
+        type: 'GET',
+        url: '{% url "account:smsTest" %}',
+        success: function(data) {
+          console.log('2FA-SMS request successful:', data);
+          window.location.href = '{% url "account:smsTest" %}';
+        },
+        error: function(xhr, textStatus, errorThrown) {
+          console.error('Error requesting 2FA-SMS:', errorThrown);
+        }
+      });
+    });
     $('#tokenTestButton').on('click', function() {
     var accessToken = sessionStorage.getItem('accessToken');
     if (accessToken) {
@@ -94,12 +108,10 @@
         },
         error: function(xhr, textStatus, errorThrown) {
           console.error('Error checking refresh:', errorThrown);
-          // Handle error
         }
       });
     } else {
       console.error('Access token not found in sessionStorage');
-      // Handle case where access token is not found
     }
   });
     $('#devDbButton').on('click', function () {
@@ -112,6 +124,41 @@
             },
             error: function (error) {
                 console.error('Error Cannot print user data:', error);
+            }
+        });
+    });
+
+    function getCookie(name) {
+      var cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+          var cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+
+    $('#logoutButton').on('click', function () {
+        $.ajax({
+            type: 'POST',
+            url: '{% url "account:logout" %}',
+            headers: { "X-CSRFToken": getCookie('csrftoken') },
+            success: function (data) {
+                console.log('Logout successful:', data);
+                // Handle the logout response
+                if (data.redirect_url) {
+                  window.location.href = data.redirect_url;
+                } else {
+                    console.error('Redirect URL not provided in response data');
+                }
+            },
+            error: function (error) {
+                console.error('Error logging out:', error);
             }
         });
     });
