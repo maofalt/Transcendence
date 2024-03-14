@@ -3,6 +3,11 @@
 	src: url('js/assets/fonts/Tk421-K7mv7.otf') format('opentype');
 }
 
+@font-face {
+	font-family: 'Space Grotesk';
+	src: url('../js/assets/fonts/Space_Grotesk/static/SpaceGrotesk-Bold.ttf') format('truetype');
+}
+
 :root {
 	/* font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif; */
 	font-family: "tk-421", sans-serif;
@@ -33,3 +38,17 @@ body {
 	/* overflow-x: scroll; Prevent horizontal scrolling */
 	margin: 0;
 }
+
+#info {
+	position: fixed;
+	top: 0;
+	left: 50%;
+	transform: translate(-50%);
+	z-index: 1000;
+	width: 300px;
+	/* height: 20px; */
+	background-color: white;
+	border: 1px solid #ccc;
+	border-radius: 8px;
+	box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }

@@ -90,6 +90,7 @@ export default class ProfilePage extends AbstractComponent {
 				padding: 0;
 			}
 			.infos-container {
+				font-family: "Space Grotesk", sans-serif;
 			}
 			.titles-container {
 				display: inline-block;

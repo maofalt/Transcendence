@@ -4,6 +4,7 @@ import styles from '@css/UserInfo.css?raw';
 import AbstractComponent from '@components/AbstractComponent';
 import Pannel from '@components/Pannel';
 import CustomButton from '@components/CustomButton';
+import { navigateTo } from "@utils/Router";
 
 export default class UserInfo extends AbstractComponent {
 	constructor(options = {}) {
@@ -128,11 +129,19 @@ export default class UserInfo extends AbstractComponent {
             button1 = new CustomButton({content: options.button1.content, action: options.button1.action, style: {display: "block", margin: "15px 0px"}});
         } else {
             button1 = new CustomButton({content: "Log in", action: true, style: {display: "block", margin: "15px 0px"}});
+			button1.onclick = () => { 
+				e.stopPropagation();
+				navigateTo("/login");
+			};
         }
         if (options.button2) {
             button2 = new CustomButton({content: options.button2.content, action: options.button2.action, style: {display: "block", margin: "15px 0px"}});
         } else {
             button2 = new CustomButton({content: "Sign Up", style: {display: "block", margin: "15px 0px"}});
+			button2.onclick = (e) => {
+				e.stopPropagation();
+				navigateTo("/signup");
+			};
         }
         const container = document.createElement("div");
         container.id = "button-container";

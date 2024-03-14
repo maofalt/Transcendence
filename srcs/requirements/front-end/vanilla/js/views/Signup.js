@@ -11,6 +11,8 @@ import { getCookie } from "@utils/getCookie";
 import { easyFetch } from "@utils/easyFetch";
 import WarnIndicator from "@components/WarnIndicator";
 import InputAugmented from "@components/InputAugmented";
+import InfoPopup from "@components/InfoPopup";
+import { displayPopup } from "@utils/displayPopup";
 
 export default class Signup extends AbstractComponent {
 	constructor(options = {}) {
@@ -165,25 +167,12 @@ export default class Signup extends AbstractComponent {
 				}
 			});
 		});
-	
-		// let playerNameInput = playernameBlock.input;
-		// let emailInput = emailBlock.input;
-		// let usernameInput = idBlock.input;
-		// let passwordInput = passwordBlock.input;
-		// let confirmPasswordInput = confirmPasswordBlock.input;
-		// let accessCodeInput = verifyCodeBlock.input;
-
-		// let signUpButton = new CustomButton({content: "Sign Up", action: true});
-		// let backButton = buttonsBlock.querySelector("#backButton");
 
 		passwordBlock.input.oninput = (e) => {
 			passwordBlock.validate();
 		};
 
 		confirmPasswordBlock.input.oninput = (e) => confirmPasswordBlock.validate();
-		
-		// emailBlock.button.onclick = (e) => this.sendCodeToEmail(e, emailInput.getValue());
-		// verifyCodeBlock.button.onclick = (e) => this.verifyCode(e, emailInput, accessCodeInput);
 
 		nextButton.onclick = async (e) => {
 			await this.goNext(e, flow);
@@ -200,15 +189,9 @@ export default class Signup extends AbstractComponent {
 		}
 
 		finalSignupButton.onclick = async (e) => {
-			let ban = await verifyCodeBlock.validate();
-			console.log("ITWOR", ban);
-			// let canSignup = await this.validateCode(verifyCodeBlock, emailInput);
-			// if (!canSignup) {
-			// 	console.log("NOOOT SIGNUP"); 
-			// 	return ;
-			// }
-			// console.log("SIGNUPPPPP");
-			this.submitSignup(e, {
+			if (await verifyCodeBlock.validate() == false)
+				return ;
+			let isSignedUp = await this.submitSignup(e, {
 				username: idBlock.input.getValue(),
 				password: passwordBlock.input.getValue(),
 				confirm_password: confirmPasswordBlock.input.getValue(),
@@ -216,7 +199,13 @@ export default class Signup extends AbstractComponent {
 				signupEmail: emailBlock.input.getValue(),
 				access_code: verifyCodeBlock.input.getValue()
 			});
+			if (isSignedUp) {
+				displayPopup();
+				Router.navigateTo("/");
+			}
 		}
+
+		displayPopup();
 	}
 
 	/* FORM FLOW MANAGEMENT */
