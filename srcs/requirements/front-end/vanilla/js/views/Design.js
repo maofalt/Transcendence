@@ -83,7 +83,7 @@ export default class Design extends HTMLElement {
 
 	// this function gets called when the custom component gets added to the dom
 	connectedCallback() {
-		console.log('connectedCallback() called\n\n');
+		// console.log('connectedCallback() called\n\n');
 		// this.highLightButton.onEvent((e) => this.buttonOnClick(e, "button clicked!"), "click");
 		// this.highLightButton.onclick = (e) => this.buttonOnClick(e, "Play button clicked!");
 		// this.chillButton.onclick = (e) => this.buttonOnClick(e, "Options button clicked!");
@@ -92,7 +92,7 @@ export default class Design extends HTMLElement {
 
 	// this function gets called when the custom component is removed from the dom
 	disconnectedCallback() {
-		console.log('disconnectedCallback() called\n\n');
+		// console.log('disconnectedCallback() called\n\n');
 		// remove all tracked event listeners on the page
 		this.eventListeners.forEach(({ target, type, listener }) => {
 			target.removeEventListener(type, listener);

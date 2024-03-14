@@ -7,6 +7,7 @@ import BigTitle from '@components/BigTitle';
 import Pannel from '@components/Pannel';
 import CustomButton from '@components/CustomButton';
 import { navigateTo } from "@utils/Router";
+import { displayPopup } from "@utils/displayPopup";
 import UserInfo from "./UserInfo";
 
 export default class HomePage extends AbstractComponent {
@@ -67,6 +68,36 @@ export default class HomePage extends AbstractComponent {
 
 		this.shadowRoot.appendChild(menu);
 		this.shadowRoot.appendChild(userInfo);
+
+		const errorButton = new CustomButton({
+				content: "error", 
+				style: {
+					margin: "15px 0px",
+					width: "150px",
+				}
+			});
+		const infoButton = new CustomButton({
+			content: "info", 
+			style: {
+				margin: "15px 0px",
+				width: "150px",
+			}
+		});
+		const successButton = new CustomButton({
+			content: "success", 
+			style: {
+				margin: "15px 0px",
+				width: "150px",
+			}
+		});
+
+		menu.appendChild(errorButton);
+		menu.appendChild(infoButton);
+		menu.appendChild(successButton);
+
+		errorButton.onclick = () => displayPopup("this is error\nthis is a bit long message explaining things with lots of details.", "error");
+		infoButton.onclick = () => displayPopup("this is info", "info");
+		successButton.onclick = () => displayPopup("this is success", "success");
 
 		playButton.onclick = () => navigateTo("/game");
 		tournamentsButton.onclick = () => navigateTo("/tournament");
