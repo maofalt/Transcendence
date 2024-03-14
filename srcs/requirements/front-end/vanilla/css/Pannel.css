@@ -1,4 +1,4 @@
-@font-face {
+/* @font-face {
 	font-family: "tk-421";
 	src: url('js/assets/fonts/Tk421-K7mv7.woff2') format('woff2');
 }
@@ -6,25 +6,27 @@
 @font-face {
 	font-family: "Anta";
 	src:  url('https://fonts.googleapis.com/css2?family=Anta&display=swap');
-}
+} */
 
 :host {
 	margin: 10px;
-	height: 100%;
-	width: 100%;
+	/* height: 100%; */
+	/* width: 100%; */
 
 	color: white;
-	font-family: "Anta", sans-serif;
+	/* font-family: "Anta", sans-serif; */
 
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	border-radius: 20px;
+
+	position: relative;
 }
 
 #pannel-title {
 	margin: 25px 0 35px 0;
 	/* padding: 24px; */
-	font-family: "tk-421", "Anta", sans-serif;
+	/* font-family: "tk-421", "Anta", sans-serif; */
 	font-size: 40px;
 }

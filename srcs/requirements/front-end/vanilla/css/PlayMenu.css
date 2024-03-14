@@ -2,8 +2,8 @@
 	margin: 0px;
 	padding: 0px;
 	width: 100vw;
-	height: 100vh;
-	background: url("../js/assets/images/purpleSpace.jpg");
+	/* height: 100vh; */
+	/* background: url("../js/assets/images/purpleSpace.jpg"); */
 	background-size: contain;
     display: block;
 }

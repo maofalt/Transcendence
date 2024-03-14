@@ -1,13 +1,13 @@
 /* css file for login page */
 
-@font-face {
+/* @font-face {
 	font-family: "tk-421";
 	src: url('js/assets/fonts/Tk421-K7mv7.otf') format('opentype');
-}
+} */
 
 #page {
 	background: url('js/assets/images/blueSpace.jpg');
-	height: 100vh;
+	/* height: 100vh; */
 	width: 100vw;
 	/* display: flex;
 	flex-direction: column;
@@ -17,7 +17,7 @@
 
 .popupTitle {
 	margin-top: 0px;
-	font-family: "tk-421", sans-serif;
+	/* font-family: "tk-421", sans-serif; */
 	font-size: 50px;
 	color: white;
 }
@@ -69,7 +69,7 @@
 	height: 34px;
 	color: white;
 	font-size: 20px;
-	font-family: Verdana, Geneva, Tahoma, sans-serif;
+	/* font-family: Verdana, Geneva, Tahoma, sans-serif; */
 
 	text-justify: center;
 
@@ -97,7 +97,7 @@
 #forgotPasswordLink {
 	color: white;
 	font-size: 16px;
-	font-family: Verdana, Geneva, Tahoma, sans-serif;
+	/* font-family: Verdana, Geneva, Tahoma, sans-serif; */
 	font-weight: medium;
 	cursor: pointer;
 }
@@ -113,7 +113,7 @@
 
 	color: white;
 	text-align: center;
-	font-family: "tk-421", sans-serif;
+	/* font-family: "tk-421", sans-serif; */
 	font-size: 32px;
 	width: 100%;
 	height: 70px;
@@ -130,7 +130,7 @@
 #signupLink {
 	color: black;
 	text-align: center;
-	font-family: "tk-421", sans-serif;
+	/* font-family: "tk-421", sans-serif; */
 	font-size: 32px;
 	display: block;
 	margin: 10px;

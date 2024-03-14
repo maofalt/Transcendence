@@ -1,11 +1,11 @@
-@font-face {
+/* @font-face {
     font-family: 'Press Start 2p';
     src: url('https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap');
-  }
+  } */
   body {
     background-color: black;
     font-size: 30pt;
-    font-family: 'Press Start 2p';
+    /* font-family: 'Press Start 2p'; */
   }
   .video-game-button {
       text-shadow: 1px 1px pink, -1px -1px maroon;
