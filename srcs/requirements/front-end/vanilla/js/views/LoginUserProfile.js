@@ -5,7 +5,7 @@ import loginFriendsSource from '@views/loginFriendsSource';
 
 
 // Define the ProfilePage class
-export default class ProfilePage extends HTMLElement {
+export default class LoginUserProfile extends HTMLElement {
     
     constructor() {
         console.log("constructor called()");
@@ -192,7 +192,7 @@ export default class ProfilePage extends HTMLElement {
 //     }
 // }
 
-customElements.define('profile-page', ProfilePage);
+customElements.define('login-user-profile', LoginUserProfile);
 
     
 

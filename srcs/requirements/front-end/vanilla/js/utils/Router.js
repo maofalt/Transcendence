@@ -5,7 +5,7 @@ import Options from '@views/Options.js';
 import Game from '@views/Game.js';
 import Login from '@views/Login.js';
 import NotFound from '@views/NotFound.js';
-import ProfilePage from '@views/LoginUserProfile.js';
+import ProfilePage from '@components/ProfilePage.js';
 
 import User from '@views/User';
 import Design from '@views/Design.js';
@@ -13,6 +13,7 @@ import BasicGame from '@views/BasicGame.js';
 import TwoFactorAuth from '@views/2fa';
 import Signup from '@views/Signup.js';
 import EditProfile from '@components/EditProfile';
+import LoginUserProfile from '@views/LoginUserProfile';
 
 export const routes = {
 	'/': {
@@ -115,7 +116,7 @@ export const routes = {
 	},
 	'/profile': {
 		path: '/profile',
-		view: ProfilePage,
+		component: 'profile-page',
 		title: 'ProfilePage',
 	}
 };
