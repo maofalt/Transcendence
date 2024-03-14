@@ -7,7 +7,7 @@
 
 #page {
 	background: url('js/assets/images/blueSpace.jpg');
-	height: 100vh;
+	/* height: 100vh; */
 	width: 100vw;
 	/* display: flex;
 	flex-direction: column;

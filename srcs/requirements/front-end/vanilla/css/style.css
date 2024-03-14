@@ -10,7 +10,8 @@
 
 :root {
 	/* font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif; */
-	font-family: "tk-421", sans-serif;
+	/* font-family: "tk-421", sans-serif; */
+	font-family: "Space Grotesk", sans-serif;
 	line-height: 1.5;
 	font-weight: 400;
 
@@ -29,13 +30,12 @@
 }
 
 html {
-	overflow: hidden; /* Hide scrollbars */
-	height: 100%; /* Prevent vertical scrolling */
+	/* overflow: hidden; Hide scrollbars */
+	/* height: 100%; Prevent vertical scrolling */
 }
 
 body {
-	overflow-y: scroll; /* Allow vertical content scrolling without scrollbar */
-	/* overflow-x: scroll; Prevent horizontal scrolling */
+	overflow-x: scroll;
 	margin: 0;
 }
 
