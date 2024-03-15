@@ -29,10 +29,10 @@
 	-moz-osx-font-smoothing: grayscale;
 }
 
-/* html {
-	overflow: hidden; Hide scrollbars
-	height: 100%; Prevent vertical scrolling
-} */
+html {
+	/* overflow: hidden; */
+	height: 100%;
+}
 
 body {
 	overflow-x: scroll;
@@ -55,4 +55,11 @@ info-popup {
 	display: flex;
 	flex-direction: column;
 	gap: 10px;
+}
+
+space-background {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: -1;
 }
