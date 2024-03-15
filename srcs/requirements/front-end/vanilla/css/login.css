@@ -9,7 +9,7 @@
 	background: #fff;
 	padding: 20px;
 	box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-	z-index: 9999;
+	z-index: 1000;
 	max-width: 300px; /* Adjust the maximum width as needed */
 	width: 50%;
 	border-radius: 8px; /* Add border-radius for rounded corners */
@@ -25,7 +25,7 @@
 	background: #fff;
 	padding: 20px;
 	box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-	z-index: 9999;
+	z-index: 1000;
 	max-width: 300px; /* Adjust the maximum width as needed */
 	width: 50%;
 	border-radius: 8px; /* Add border-radius for rounded corners */
@@ -76,7 +76,7 @@
 	width: 100%;
 	height: 100%;
 	background: rgba(0, 0, 0, 0.3);
-	z-index: 9998;
+	z-index: 999;
 }
 
 #privacyPolicyPopup {
@@ -88,7 +88,7 @@
 	background: #fff;
 	padding: 20px;
 	box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-	z-index: 9999;
+	z-index: 1000;
 	width: 300px;
 	max-height: 400px;
 	overflow-y: auto;
