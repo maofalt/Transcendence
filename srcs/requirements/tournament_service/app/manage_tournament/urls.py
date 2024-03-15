@@ -19,7 +19,8 @@ urlpatterns = [
 
 # JoinTournament:
     #   - POST /add_player/{id}/ - Add a player to a specific tournament.
-    path('add-player/', views.TournamentPlayerCreate.as_view(), name='add-player'),
+    # path('add-player/', views.TournamentPlayerCreate.as_view(), name='add-player'),
+    path('add-player/', views.JoinTournament.as_view(), name='add-player'),
 
 # Tournament Participation:
     # GET /{id}/participants/ - Show the participants list for a tournament.
@@ -27,7 +28,7 @@ urlpatterns = [
     # DELETE /{id}/participants/{participantId}/ - Deregister a participant from a tournament.
     path('<int:id>/participants/<int:participant_id>/', views.TournamentParticipantDetail.as_view(), name='tournament-participant-detail'),
     # POST /{id}/register/ - Register for a tournament.
-    path('<int:id>/register/', TournamentRegistrationCreate.as_view(), name='tournament-registration'),
+    # path('<int:id>/register/', TournamentRegistrationCreate.as_view(), name='tournament-registration'),
 
 # Tournament Progression:
     # GET /{id}/matches - Retrieve a list of matches for a tournament.

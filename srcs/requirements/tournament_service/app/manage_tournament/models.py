@@ -1,11 +1,12 @@
 from django.core.validators import MinValueValidator, MaxValueValidator, ValidationError, RegexValidator
 from django.db import models
+from django.contrib.auth.models import User
 from django.conf import settings
 
 class Tournament(models.Model):
     # tournament_id = models.AutoField(primary_key=True)
     tournament_name = models.CharField(max_length=255, unique=True)
-    game_type = models.ForeignKey('GameType', on_delete=models.PROTECT, null=False, to_field='type_id', default=1)
+    game_type = models.ForeignKey('GameType', on_delete=models.PROTECT, null=False, to_field='id', default=1)
     created_at = models.DateTimeField(auto_now_add=True)
     nbr_of_player_total = models.IntegerField(default=2, 
         validators=[MinValueValidator(2), 
@@ -17,15 +18,16 @@ class Tournament(models.Model):
         MaxValueValidator(100)
         ]
     )
-    tournament_type = models.ForeignKey('TournamentType', on_delete=models.PROTECT, null=False, to_field='type_id', default=1)
-    settings = models.ForeignKey('MatchSetting', on_delete=models.PROTECT, null=False, to_field='setting_id', default=0)
-    registration = models.ForeignKey('RegistrationType', on_delete=models.PROTECT, null=False, to_field='type_id', default=1)
+    tournament_type = models.ForeignKey('TournamentType', on_delete=models.PROTECT, null=False, to_field='id', default=1)
+    settings = models.ForeignKey('MatchSetting', on_delete=models.PROTECT, null=False, to_field='id', default=0)
+    registration = models.ForeignKey('RegistrationType', on_delete=models.PROTECT, null=False, to_field='id', default=1)
     registration_period_min = models.IntegerField(default=15, 
         validators=[MinValueValidator(1, message="Registration period must be at least 1 minutes."), 
         MaxValueValidator(60, message="Registration period cannot exceed 60 minutes.")
         ]
     )
-    host = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='tournaments')
+    host = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tournaments')
+    # host = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='tournaments')
     tournament_result = models.ForeignKey('Player', on_delete=models.SET_NULL, null=True, related_name='won_tournaments')
     players = models.ManyToManyField('Player', related_name='tournaments')  # Direct many-to-many relationship with Player
     matches = models.ManyToManyField('TournamentMatch', related_name='tournaments')
@@ -70,9 +72,9 @@ class TournamentMatch(models.Model):
     match_result = models.ForeignKey('Player', on_delete=models.SET_NULL, null=True, related_name='won_match')
     players = models.ManyToManyField('Player', related_name='matches')  # Direct many-to-many relationship with Player
     max_players = models.IntegerField(default=2, validators=[MinValueValidator(2), MaxValueValidator(8)])
+    nbr_of_player = models.IntegerField(default=1)
     # match_setting = models.ForeignKey('MatchSetting', on_delete=models.PROTECT, null=False, related_name='matches')
     # nbr_of_player = models.IntegerField(default=1)
-    nbr_of_player = models.IntegerField(default=1, validators=[self.max_players])
 
 class MatchSetting(models.Model):
     # setting_id = models.AutoField(primary_key=True)
@@ -128,15 +130,15 @@ class MatchSetting(models.Model):
     )
 
 class GameType(models.Model):
-    type_id = models.AutoField(primary_key=True)
+    # id = models.AutoField(primary_key=True)
     type_name = models.CharField(max_length=255)
 
 class TournamentType(models.Model):
-    type_id = models.AutoField(primary_key=True)
+    # id = models.AutoField(primary_key=True)
     type_name = models.CharField(max_length=255)
 
 class RegistrationType(models.Model):
-    type_id = models.AutoField(primary_key=True)
+    # id = models.AutoField(primary_key=True)
     type_name = models.CharField(max_length=255)
 
 # May not need this schema
@@ -148,11 +150,11 @@ class TournamentPlayer(models.Model):
         unique_together = ('tournament_id', 'player')
 
 class Player(models.Model):
-    player_id = models.AutoField(primary_key=True)
+    # player_id = models.AutoField(primary_key=True)
     username = models.CharField(max_length=255)
 
     class Meta:
-        unique_together = ('player_id', 'username')
+        unique_together = ('id', 'username')
 
 class MatchParticipants(models.Model):
     match_id = models.ForeignKey('TournamentMatch', on_delete=models.CASCADE, related_name='participants')
