@@ -1,3 +1,5 @@
+import { fadeIn, fadeOut } from "@utils/jqueryUtils";
+
 export default class AbstractComponent extends HTMLElement {
 	constructor(options = {}) {
 		super();
@@ -38,6 +40,7 @@ export default class AbstractComponent extends HTMLElement {
 	disconnectedCallback() {
 		// console.log('disconnectedCallback() called\n\n');
 		// remove all tracked event listeners on the page
+
 		this.eventListeners.forEach(({ target, type, listener }) => {
 			target.removeEventListener(type, listener);
 		});

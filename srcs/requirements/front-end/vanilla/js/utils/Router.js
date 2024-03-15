@@ -16,6 +16,9 @@ import Signup from '@views/Signup.js';
 import EditProfile from '@components/EditProfile';
 import LoginUserProfile from '@views/LoginUserProfile';
 
+import { fadeIn, fadeOut } from '@utils/jqueryUtils.js';
+import { fadeInjava, fadeOutjava } from './jqueryUtils';
+
 export const routes = {
 	'/': {
 		path: '/',
@@ -141,6 +144,7 @@ export const navigateTo = (url) => {
   console.log('url: ', url);
   router();
 };
+let previousView = null;
 
 const router = async () => {
   const path = window.location.pathname;
@@ -148,8 +152,12 @@ const router = async () => {
   const viewContainer = document.querySelector('#view');
 
   if (View.component) {
-	viewContainer.innerHTML = `
-		<${View.component}></${View.component}>`;
+	if (previousView) {
+		// fadeOut(previousView);
+	}
+	viewContainer.innerHTML = `<${View.component}></${View.component}>`;
+	previousView = viewContainer.querySelector(View.component);
+	// fadeIn(viewContainer.querySelector(View.component));
   } else {
 	console.log('path: ', path);
 

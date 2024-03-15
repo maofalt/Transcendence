@@ -1,0 +1,22 @@
+
+#popupBody {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background-color: white;
+	border-radius: 18px;
+	box-shadow: 0 0px 20px rgba(0,0,0,0.5);
+}
+
+#closePopupButton {
+	font-family: Arial, sans-serif;
+	position: absolute;
+	top: -5px;
+	left: -5px;
+	padding: 1px;
+	width: 15px;
+	height: 15px;
+	font-size: 13px;
+	background-color: white;
+	display: none;
+}

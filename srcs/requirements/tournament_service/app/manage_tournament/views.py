@@ -28,22 +28,14 @@ from django.shortcuts import get_object_or_404
 class TournamentListCreate(generics.ListCreateAPIView):
     queryset = Tournament.objects.all()
     serializer_class = TournamentSerializer
-    # authentication_classes = [CustomJWTAuthentication]
-    renderer_classes = [JSONRenderer]  # Force the response to be rendered in JSON
+    authentication_classes = [CustomJWTAuthentication]
+    # renderer_classes = [JSONRenderer]  # Force the response to be rendered in JSON
     # permission_classes = [IsAuthenticated]  # Only authenticated users can create and list tournaments
 
-    # def get(self, request, *args, **kwargs):
-    #     print(">> loading page\n")
-    #     tournaments = self.get_queryset()
-    #     serializer = self.get_serializer(tournaments, many=True)
-    #     return Response(serializer.data)
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        if not queryset.exists():
-            return Response({"message": "NO tournament was found."}, status=status.HTTP_204_NO_CONTENT)
-
-        serializer = self.get_serializer(queryset, many=True)
+    def get(self, request, *args, **kwargs):
+        print(">> loading page\n")
+        tournaments = self.get_queryset()
+        serializer = self.get_serializer(tournaments, many=True)
         return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
