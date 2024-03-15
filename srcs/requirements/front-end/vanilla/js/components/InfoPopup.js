@@ -23,7 +23,7 @@ export default class InfoPopup extends AbstractComponent {
 		this.closeButton.id = "closePopupButton";
 	
 		this.closeButton.addEventListener('click', () => {
-			anim.fadeOut(this, 500, true);
+			anim.slideOut(this, 500, true);
 		});
 		
 		this.div = document.createElement('div');
@@ -62,7 +62,8 @@ export default class InfoPopup extends AbstractComponent {
 		this.shadowRoot.appendChild(this.div);
 
 		this.onmouseenter = () => {
-			anim.fadeIn(this.closeButton, 200, 'block');
+			this.closeButton.style.setProperty("display", "flex");
+			anim.fadeIn(this.closeButton, 200, 'flex');
 		}
 		this.onmouseleave = () => {
 			anim.fadeOut(this.closeButton, 200);

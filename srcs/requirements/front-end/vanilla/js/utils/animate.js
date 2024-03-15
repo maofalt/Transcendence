@@ -4,7 +4,8 @@ let operations = {
 	"slide-virtical": ['height', 0, 'auto'],
 	"slide-horizontal": ['width', 0, 'auto'],
 	"zoom": ['transform', 'scale(0)', 'scale(1)'],
-	"blur": ['filter', 'blur(0)', 'blur(5px)'], 
+	"blur": ['filter', 'blur(0)', 'blur(5px)'],
+	"brightness": ['filter', 'brightness(100%)', 'brightness(200%)'],
 	"rotate": ['transform', 'rotate(0)', 'rotate(360deg)'],
 	"skew": ['transform', 'skew(0)', 'skew(30deg)'],
 	"translate": ['transform', 'translate(0)', 'translate(100px)'],
@@ -43,55 +44,80 @@ export const fadeOutjava = (element, duration) => {
 	}, duration / 50); // adjust timing
 }
 
-export const transition = async (element, types = [['opacity', 0, 1]],  duration = 500) => {	
+export const transition = async (element, types = [['opacity', 0, 1]], duration = 500) => {
 	let seconds = (duration / 1000).toString();
-	
-	element.style.setProperty('transition', `all ${seconds}s ease`);
-	
-	let [ property, startVal, endVal ] = types[0];
+	element.style.transition = ''; // clear transitions
+	element.style.transition = `all ${seconds}s ease`;
 
-	types.forEach((type) => {
-		[ property, startVal, endVal ] = type;
-		element.style.setProperty(property, startVal);
+	// apply initial styles
+	types.forEach(([property, startVal]) => {
+		element.style[property] = startVal.toString();
 	});
-	
-	setTimeout(() => {
-		types.forEach((type) => {
-			[ property, startVal, endVal ] = type;
-			element.style.setProperty(property, endVal);
+
+	await new Promise(resolve => requestAnimationFrame(resolve)); // wait for the next frame
+
+	// start the transition
+	requestAnimationFrame(() => {
+		types.forEach(([property, , endVal]) => {
+			element.style[property] = endVal.toString();
 		});
-	}, 10); // 10ms delay to allow the DOM to update
+	});
 
-	await new Promise((resolve) => setTimeout(resolve, duration)); // delay to allow the transition to finish
-	element.style.removeProperty('transition');
-}
+	// wait for the transition to finish
+	await new Promise(resolve => setTimeout(resolve, duration));
 
-export const fadeIn = (element, duration = 500, display = '') => {
-	element.style.display = display; // reset the display property to its default value
+	// cleanup
+	element.style.transition = '';
+};
+
+export const fadeIn = (element, duration = 500, display = 'block') => {
+	element.style.display = display; // ensure the element is visible
 	transition(element, [
-		['opacity', 0, 1], 
-		// ['height', 'auto', 0],
-		// ['transform', 'scale(0)', 'scale(1)'],
+		['opacity', 0, 1],
+		['filter', 'blur(10px)', 'blur(0)'],
 	], duration);
-}
+};
 
 export const fadeOut = (element, duration = 500, remove = false) => {
 	transition(element, [
 		['opacity', 1, 0],
-		// ['height', 0, 'auto'], 
-	], duration);
-	setTimeout(() => {
-		element.style.display = 'none'; // hide the element after the transition is done
+		['filter', 'blur(0)', 'blur(10px)'],
+	], duration).then(() => {
+		element.style.display = 'none'; // Hide after transition
 		if (remove) {
-			element.remove();
+			element.remove(); // Remove if specified
 		}
-	}, duration); // delay to allow the transition to finish
-}
+	});
+};
+
+export const slideIn = (element, duration = 500, display = 'block') => {
+	element.style.display = display; // ensure the element is visible
+	transition(element, [
+		['opacity', 0, 1],
+		['filter', 'blur(10px)', 'blur(0)'],
+		// ['height', 0, element.offsetHeight + 'px'],
+	], duration);
+};
+
+export const slideOut = (element, duration = 500, remove = false) => {
+	transition(element, [
+		['opacity', 1, 0],
+		['filter', 'blur(0)', 'blur(10px)'],
+		['height', element.offsetHeight + 'px', 0],
+	], duration).then(() => {
+		element.style.display = 'none'; // Hide after transition
+		if (remove) {
+			element.remove(); // Remove if specified
+		}
+	});
+};
 
 export default { 
 	fadeInjava, 
 	fadeOutjava,
 	fadeIn, 
 	fadeOut, 
+	slideIn,
+	slideOut,
 	transition,
 };

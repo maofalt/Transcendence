@@ -8,13 +8,10 @@ export const displayPopup = (message, infoType) => {
 	let container = document.querySelector("#popupContainer");
 	container.appendChild(info);
 	// anim.transition(info, [['transform', 'scale(0.5)', 'scale(1)'], ['opacity', 0, 1]]);
-	anim.fadeIn(info);
+	anim.slideIn(info, 500, 'block');
 	if (infoType != "error") {
 		setTimeout(() => {
-			// info.style.setProperty('position', 'absolute');
-			// info.style.setProperty('z-index', '9999');
-			// anim.transition(info, [['transform', 'scale(1)', 'scale(0.5)'], ['opacity', 1, 0]]);
-			anim.fadeOut(info, 500, true);
+			anim.slideOut(info, 500, true);
 		}, 3000);
 	}
 	// // Check if the browser supports notifications
