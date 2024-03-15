@@ -1,6 +1,7 @@
 // import '@css/tournament.css'
 import AbstractView from "./AbstractView";
 import DynamicTable from "@components/DynamicTable";
+import TournamentTable from "@components/TournamentTable";
 import ActionButton from "@components/ActionButton";
 import NormalButton from '@components/NormalButton';
 import { makeApiRequest } from '@utils/makeApiRequest.js';
@@ -12,39 +13,7 @@ export default class Tournament extends AbstractView {
 		super();
 
 		this.createMatch = this.createMatch.bind(this);
-		this.createTournament = this.createTournament.bind(this);
-		this.caption = 'Active Tournaments';
-		
-		this.headers = ['Tournament Name', 'Host', 'Number of Players', 'Time Remaining', 'Tournament Type', 'Registration Mode', 'Action'];
-		
-		this.columnStyles = {
-			tournamentName: { 
-				'font-weight': '700',
-			 	'vertical-align': 'middle;',
-				'padding': '1rem'
-			},
-			host: {
-				container: {
-					'display': 'flex',
-					'align-items': 'center'
-				},
-				name: {
-					'color': 'blue',
-					'margin-left': '1rem'
-				},
-				imageUrl: {
-					'witdh': '50px',
-					'height': '50px',
-					'border-radius': '50%'
-				}
-			},
-			action: {
-				'vertical-align': 'middle;',
-				'text-align': 'center',
-				'cursor': 'pointer'
-			}
-		};
-		
+		this.createTournament = this.createTournament.bind(this);		
 		this.data = [];
 	}
 
@@ -70,7 +39,7 @@ export default class Tournament extends AbstractView {
 						>
 					</start-btn>
 				</div>
-	                <dynamic-table></dynamic-table>
+	                <tournament-table id="tournamentTable"></tournament-table>
 			</div>
 		`;
 	}
@@ -78,12 +47,14 @@ export default class Tournament extends AbstractView {
 	async init() {
 		await this.getTournamentList();
 		
+		const tournamentTable =  document.querySelector('tournament-table');
 
-		const dynamicTable =  document.querySelector('dynamic-table');
-		dynamicTable.setAttribute('data-title', this.caption);
-		dynamicTable.setAttribute('data-headers', JSON.stringify(this.headers));
-		dynamicTable.setAttribute('data-style', JSON.stringify(this.columnStyles));
-		dynamicTable.setAttribute('data-rows', JSON.stringify(this.data));
+		for (let  i = 0; i < 5; i++) {
+			tournamentTable.addDummyRow();
+		}
+
+		//for each tournament in each data populate the table
+
 
 		const createMatchButton = document.getElementById('createMatchButton');
 		createMatchButton.addEventListener('click', this.createMatch);
@@ -93,26 +64,49 @@ export default class Tournament extends AbstractView {
 		
 	}
 
-	async getTournamentList() {
-
-		console.log("Get Tournament List");
-			  
+	async getTournamentList() { 
 		try {
 			const response = await makeApiRequest('https://localhost:9443/api/tournament/create-and-list/','GET', {});
 			const tournaments = response.body;
 			console.log('Tournament list:', response.body);
 			
 			// Transform the data
-			this.data = tournaments.map(tournament => ({
-				tournamentName: tournament.tournament_name,
-				host: tournament.host_id,
-				numberOfPlayers: `${tournament.nbr_of_player}/${tournament.nbr_of_player}`,
-				timeRemaining: '2:00', // Assuming a placeholder value
-				tournamentType: tournament.tournament_type === 1 ? 'Single Elimination' : 'Other Type', // Adjust as necessary
-				registrationMode: tournament.registration === 1 ? 'Open' : 'invitational', // Adjust as necessary
-				action: 'Join'
-			}));
-			console.log('Transformed tournament list:', this.data);
+			if (tournaments.length === 0) {
+				this.data = [];
+				return;
+			}
+			// this.data = tournaments.map(tournament => ({
+			// 	tournamentName: tournament.tournament_name,
+			// 	host: tournament.host_id,
+			// 	numberOfPlayers: `${tournament.nbr_of_player}/${tournament.nbr_of_player}`,
+			// 	timeRemaining: '2:00', // Assuming a placeholder value
+			// 	tournamentType: tournament.tournament_type === 1 ? 'Single Elimination' : 'Other Type', // Adjust as necessary
+			// 	registrationMode: tournament.registration === 1 ? 'Open' : 'invitational', // Adjust as necessary
+			// 	action: 'Join',
+			// }));
+        	// Modify how we map tournament data to table rows
+        	this.data = tournaments.map(tournament => {
+            	// Create a join button for each tournament
+            	const joinButton = document.createElement('button');
+            	joinButton.textContent = 'Join';
+            	joinButton.addEventListener('click', () => this.joinTournament(tournament.id));
+            	Object.assign(joinButton.style, this.columnStyles.action); // Apply styles
+
+            	// Create host element (could be more complex, e.g., including an image)
+            	const hostElement = document.createElement('div');
+            	hostElement.textContent = `Host: ${tournament.host_id}`; // Example content
+            	Object.assign(hostElement.style, this.columnStyles.host.container); // Apply styles
+
+            	return {
+            	    tournamentName: this.createStyledElement('div', tournament.tournament_name, this.columnStyles.tournamentName),
+            	    host: hostElement, // Assuming you might want to include more than just text
+            	    numberOfPlayers: `${tournament.nbr_of_player}/${tournament.nbr_of_player_required}`,
+            	    timeRemaining: '2:00', // Placeholder
+            	    tournamentType: tournament.tournament_type === 1 ? 'Single Elimination' : 'Other Type',
+            	    registrationMode: tournament.registration === 1 ? 'Open' : 'Invitational',
+            	    action: joinButton.outerHTML, // Assuming TournamentTable can handle HTML strings or you might append child directly
+            	};
+        	});
 		} catch (error) {
 			console.error('Failed to get tournament list:', error);
 		}
@@ -133,7 +127,6 @@ export default class Tournament extends AbstractView {
 	async createTournament() {
 		navigateTo('/create-tournament');
 	}
-
 
 	getGameSettings() {
 		return {

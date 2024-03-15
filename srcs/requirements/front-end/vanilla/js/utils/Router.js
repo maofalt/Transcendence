@@ -6,15 +6,20 @@ import Game from '@views/Game.js';
 import Login from '@views/Login.js';
 import NotFound from '@views/NotFound.js';
 import CreateTournament from '@views/CreateTournament.js';
+import ProfilePage from '@components/ProfilePage.js';
+
 import User from '@views/User';
 import Design from '@views/Design.js';
 import BasicGame from '@views/BasicGame.js';
-
+import TwoFactorAuth from '@views/2fa';
+import Signup from '@views/Signup.js';
+import EditProfile from '@components/EditProfile';
+import LoginUserProfile from '@views/LoginUserProfile';
 
 export const routes = {
 	'/': {
 		path: '/',
-		view: Home,
+		component: 'home-page',
 		title: 'Pongiverse',
 		buttonText: 'Home'
 	},
@@ -26,9 +31,21 @@ export const routes = {
 	},
 	'/game': {
 		path: '/game',
-		view: Game,
+		component: 'play-menu',
 		title: 'Game',
-		buttonText: 'Play'
+		buttonText: 'Game'
+	},
+	'/profile': {
+		path: '/profile',
+		component: 'profile-page',
+		title: 'Profile',
+		buttonText: 'Profile',
+	},
+	'/edit-profile': {
+		path: '/edit-profile',
+		component: EditProfile,
+		title: 'Edit Profile Page',
+		buttonText: 'Edit Profile'
 	},
 	'/tournament': {
 		path: '/tournament',
@@ -50,9 +67,33 @@ export const routes = {
 	},
 	'/login': {
 		path: '/login',
-		view: Login,
+		component: 'login-page-v2',
 		title: 'Login',
 		buttonText: 'Login'
+	},
+	'/signup-old': {
+		path: '/signup-old',
+		component: 'signup-page-v2',
+		title: 'Signup',
+		buttonText: 'Signup'
+	},
+	'/signup': {
+		path: '/signup',
+		component: 'signup-page',
+		title: 'Signup',
+		buttonText: 'Signup'
+	},
+	'/forgot_password': {
+		path: '/forgot_password',
+		component: 'forgot-password',
+		title: 'Forgot Password',
+		buttonText: 'Forgot Password'
+	},
+	'/2fa': {
+		path: '/2fa',
+		component: 'two-factor-auth',
+		title: 'Two Factor Authentication',
+		buttonText: '2FA'
 	},
 	'/user': {
 		path: '/user',
@@ -79,6 +120,11 @@ export const routes = {
 		view: NotFound,
 		title: '404 Not Found',
 		buttonText: 'Not Found Page'
+	},
+	'/profile': {
+		path: '/profile',
+		component: 'profile-page',
+		title: 'ProfilePage',
 	}
 };
 
@@ -96,7 +142,8 @@ const router = async () => {
   const viewContainer = document.querySelector('#view');
 
   if (View.component) {
-	viewContainer.innerHTML = `<${View.component}></${View.component}>`;
+	viewContainer.innerHTML = `
+		<${View.component}></${View.component}>`;
   } else {
 	console.log('path: ', path);
 
@@ -120,4 +167,4 @@ document.addEventListener('DOMContentLoaded', () => {
   router();
 });
 
-export default router;
+export default { routes, navigateTo, router };

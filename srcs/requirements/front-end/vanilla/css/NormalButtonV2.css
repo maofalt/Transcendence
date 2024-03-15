@@ -1,0 +1,97 @@
+/* @font-face {
+	font-family: "tk-421";
+	src: url('js/assets/fonts/Tk421-K7mv7.otf') format('opentype');
+} */
+
+:host {
+	/* width: 100%; */
+	height: 50px;
+
+	display: flex;
+	flex-direction: column;
+	text-align: center;
+	justify-content: center;
+
+	color: rgba(0, 217, 255, 1);
+	color: black;
+	/* color: rgba(0, 217, 255, 1); */
+	/* font-family: "tk-421", sans-serif, sans-serif; */
+	font-size: 36px;
+
+	/* From https://css.glass */
+	background: rgba(255, 255, 255, 0.8);
+	border: 1px solid rgba(255, 255, 255, 0.8);
+	border-radius: 20px;
+	cursor: pointer;
+	transition: all 300ms;
+}
+
+p {
+	margin: 0px;
+	padding: 0px;
+	/* transition: all 300ms; */
+}
+
+:host(:hover) {
+	background: rgba(255, 255, 255, 0.4);
+	/* color: rgba(0, 0, 0, 0.5); */
+	/* color: rgba(0, 217, 255, 1); */
+	color: rgba(255, 255, 255, 1);
+	border: 1px solid rgba(255, 255, 255, 0.6);
+
+	/* color : rgb(0, 217, 255); */
+	/* border-radius: 20px 0px 20px 0px; */
+	transition: all 300ms;
+}
+
+:host(:active) {
+	background: rgba(255, 255, 255, 0.2);
+	/* color: rgba(0, 0, 0, 0.5); */
+	/* color: rgba(0, 217, 255, 0.7); */
+	color: rgba(255, 255, 255, 0.8);
+	border: 1px solid rgba(255, 255, 255, 0.4);
+
+	/* color : rgb(0, 217, 255); */
+	/* border-radius: 20px 0px 20px 0px; */
+	transition: all 300ms;
+}
+
+/* TESTING COLORS */
+
+/* :host {
+	width: 100%;
+	height: 50px;
+
+	display: flex;
+	flex-direction: column;
+	text-align: center;
+	justify-content: center;
+
+	color: rgba(0, 217, 255, 1);
+	color: black;
+	font-family: "tk-421", sans-serif, sans-serif;
+	font-size: 36px;
+
+	background: rgba(255, 255, 255, 0.8);
+	border: 1px solid rgba(255, 255, 255, 0.8);
+
+	background: rgba(255, 255, 255, 0.4);
+	color: rgba(255, 255, 255, 1);
+	border: 1px solid rgba(255, 255, 255, 0.6);
+
+	border-radius: 20px;
+	cursor: pointer;
+	transition: all 300ms;
+}
+
+:host(:hover) {
+	background: rgba(255, 255, 255, 0.4);
+	color: rgba(255, 255, 255, 1);
+	border: 1px solid rgba(255, 255, 255, 0.6);
+	
+	color: black;
+	background: rgba(255, 255, 255, 0.8);
+	border: 1px solid rgba(255, 255, 255, 0.8);
+
+	transition: all 300ms;
+} */

@@ -36,12 +36,12 @@ export async function makeApiRequest(url, method = 'GET', body = null, headers =
 			throw new Error(`HTTP error! Status: ${response.status}`);
 		}
 
-        if (response.headers.get("content-length") === "0") {
-            return {
-                status: response.status,
-                body: null
-            };
-        }
+		if (response.headers.get("content-length") === "0") {
+			return {
+				status: response.status,
+				body: null
+			};
+		}
 
 		// Check if response is JSON
 		const contentType = response.headers.get("content-type");
@@ -68,7 +68,7 @@ export async function makeApiRequest(url, method = 'GET', body = null, headers =
 		}
 	
 		if (response) {
-            return {
+			return {
 				status: response.status,
 				body: body
 			}

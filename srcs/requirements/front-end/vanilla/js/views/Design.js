@@ -1,13 +1,16 @@
 import AbstractView from "./AbstractView";
-import DarkPannel from "@components/DarkPannel";
 import Pannel from "@components/Pannel";
-import HighLightButton from "@components/HighLightButton";
-import BigTitle from "../components/BigTitle";
-import Navigation from "../components/Navigation";
-import ChillButton from "../components/ChillButton";
+import CustomButton from "@components/CustomButton";
+import BigTitle from "@components/BigTitle";
+import InputField from "@components/InputField";
 import { createElement } from "@utils/createElement";
 import { htmlToElement } from "@utils/htmlToElement";
 import styles from '@css/Design.css?raw';
+import LoginPage from '@components/LoginPage'
+import HomePage from "@components/HomePage";
+import PlayMenu from "@components/PlayMenu";
+import InputAugmented from "@components/InputAugmented";
+import ProfilePage from "../components/ProfilePage";
 
 export default class Design extends HTMLElement {
 	constructor(element) {
@@ -21,38 +24,75 @@ export default class Design extends HTMLElement {
 		const styleEl = document.createElement('style');
 		styleEl.textContent = styles;
 		this.shadowRoot.appendChild(styleEl);
-		
-		let div = document.createElement('div');
-		const bigTitle = new BigTitle({content: "Cosmic<br>Pong"});
-		bigTitle.setAttribute("margin", "5vh 0 15vh 0");
-		bigTitle.setAttribute("margin-bottom", "300px");
-		div.appendChild(bigTitle);
-		const highLightButton = new HighLightButton({content: "Play !"});
-		div.appendChild(highLightButton);
-		const chillButton = new ChillButton({content : "Options"});
-		div.appendChild(chillButton);
-		this.shadowRoot.appendChild(div);
-		this.highLightButton = highLightButton;
-		// inject raw html into shadow dom
-		// this.shadowRoot.innerHTML += `
-		// <div>
-		// 	<glass-pannel></glass-pannel>
-		// 	<dark-glass-pannel></dark-glass-pannel>
-		// </div>`;
+
+		// let div = document.createElement('div');
+		// let div1 = document.createElement('div');
+		// let div2 = document.createElement('div');
+		// let div3= document.createElement('div');
+		// let div4 = document.createElement('div');
+
+		// div1.id = "div1";
+		// div2.id = "div2";
+		// div3.id = "div3";
+		// div4.id = "div4";
+
+		// div.appendChild(div1);
+		// div.appendChild(div2);
+		// div.appendChild(div3);
+		// div.appendChild(div4);
+
+		// let glassPannel = new Pannel({title: "Pannel", dark: false});
+		// let darkPannel = new Pannel({title: "Dark Pannel", dark: true});
+		// let actionButton = new CustomButton({content: "Start", action: true});
+		// let normalButton = new CustomButton({content: "Credits"});
+		// let inputField = new InputField({content: "This is a test!", width: "300px"});
+
+		// div1.appendChild(glassPannel);
+		// div1.appendChild(darkPannel);
+		// div2.appendChild(actionButton);
+		// div2.appendChild(normalButton);
+		// div3.appendChild(inputField);
+
+		let loginPage = new LoginPage();
+		let homePage = new HomePage();
+		let playMenu = new PlayMenu();
+		let profile = new ProfilePage();
+
+		// let inputTest = this.createInputAndTitle("Confirm Password", "con-password", "Password", "", "password");
+
+		// let inputTest = new InputAugmented({
+		// 	title: "Password",
+		// 	content: "Password",
+		// 	indicators: {
+		// 		lengthIndicator: "Minimum 8 characters",
+		// 		digitIndicator: "At least 1 digit",
+		// 		letterIndicator: "At least 1 letter",
+		// 		differentIndicator: "Different from your Playername and your Email"
+		// 	},
+		// 	type: "password"
+		// });
+
+		// let indicators = inputTest.indicators;
+		// this.shadowRoot.appendChild(loginPage);
+		// this.shadowRoot.appendChild(signupPage);
+		// this.shadowRoot.appendChild(homePage);
+		// this.shadowRoot.appendChild(playMenu);
+		// this.shadowRoot.appendChild(inputTest);
+		this.shadowRoot.appendChild(profile);
 	}
 
 	// this function gets called when the custom component gets added to the dom
 	connectedCallback() {
-		console.log('connectedCallback() called\n\n');
+		// console.log('connectedCallback() called\n\n');
 		// this.highLightButton.onEvent((e) => this.buttonOnClick(e, "button clicked!"), "click");
-		this.highLightButton.onclick = (e) => this.buttonOnClick(e, "Play button clicked!");
+		// this.highLightButton.onclick = (e) => this.buttonOnClick(e, "Play button clicked!");
 		// this.chillButton.onclick = (e) => this.buttonOnClick(e, "Options button clicked!");
 		this.setupEventListeners(); // setup all event listeners for the page and track them
 	}
 
 	// this function gets called when the custom component is removed from the dom
 	disconnectedCallback() {
-		console.log('disconnectedCallback() called\n\n');
+		// console.log('disconnectedCallback() called\n\n');
 		// remove all tracked event listeners on the page
 		this.eventListeners.forEach(({ target, type, listener }) => {
 			target.removeEventListener(type, listener);

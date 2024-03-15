@@ -1,0 +1,43 @@
+/* @font-face {
+	font-family: "tk-421";
+	src: url('js/assets/fonts/Tk421-K7mv7.otf') format('opentype');
+} */
+
+/* @font-face {
+	font-family: "Anta";
+	src:  url('https://fonts.googleapis.com/css2?family=Anta&display=swap');
+} */
+
+:host {
+	height: 60px;
+	margin-bottom: 15px;
+	/* font-family: "Anta"; */
+}
+
+input {
+	width: 100%;
+	height: 50px;
+
+	margin-bottom: 15px;
+
+	font-size: 20px;
+	/* font-family: "Anta", sans-serif; */
+	color: white;
+	
+	background: rgba(0, 0, 0, 0.7);
+	border-radius: 20px;
+	backdrop-filter: blur(12px);
+	border: none;
+	cursor: text;
+	transition: all 300ms;
+}
+
+input::placeholder {
+	/* font-family: "Anta", sans-serif; */
+	/* padding-left: 20px; */
+}
+
+input:focus {
+	background: rgba(0, 0, 0, 0.9);
+	/* outline: none; */
+}

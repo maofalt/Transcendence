@@ -136,7 +136,7 @@ export default class BasicGame extends AbstractComponent {
 
 	// this function gets called when the custom component is removed from the dom
 	disconnectedCallback() {
-		console.log('disconnectedCallback() called\n\n');
+		// console.log('disconnectedCallback() called\n\n');
 
 		if (this.socket) {
 			this.socket.disconnect();

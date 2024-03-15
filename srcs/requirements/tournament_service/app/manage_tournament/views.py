@@ -33,11 +33,13 @@ class TournamentListCreate(generics.ListCreateAPIView):
     # permission_classes = [IsAuthenticated]  # Only authenticated users can create and list tournaments
 
     def get(self, request, *args, **kwargs):
+        print(">> loading page\n")
         tournaments = self.get_queryset()
         serializer = self.get_serializer(tournaments, many=True)
         return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
+        print(">> received POST to creat a new tournament\n")
         # Attribue automatiquement l'utilisateur actuel comme host du tournoi créé
         data = request.data
         tournament_name = data.get('tournament_name')

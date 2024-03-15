@@ -1,6 +1,6 @@
 import { createElement } from "@utils/createElement";
 import { htmlToElement } from "@utils/htmlToElement";
-import styles from '@css/pannel.css?raw';
+import styles from '@css/Pannel.css?raw';
 import AbstractComponent from '@components/AbstractComponent';
 
 export default class Pannel extends AbstractComponent {
@@ -11,20 +11,34 @@ export default class Pannel extends AbstractComponent {
 		styleEl.textContent = styles;
 		this.shadowRoot.appendChild(styleEl);
 
-		// Example: Set inner HTML
-		// this.shadowRoot.innerHTML += `
-		// <div>
-		// 	<p>PANNEL</p>
-		// </div>`;
-
-		const div = document.createElement('div');
 		const p = document.createElement('p');
-		p.textContent = options.content;
-		p.id = "pannelTitle";
-		div.appendChild(p);
-		this.shadowRoot.appendChild(div);
-		div.setAttribute('width', options.width);
-		div.setAttribute('height', options.height);
+		p.id = "pannel-title";
+		p.textContent = options.title ? options.title : "Title";
+
+		if (options.style) {
+			for (const key in options.style) {
+				if (options.style.hasOwnProperty(key)) {
+					this.style.setProperty(key, options.style[key]);
+				}
+			}
+		}
+
+		this.setPannelStyle(options.dark);
+
+		this.shadowRoot.appendChild(p);
+	}
+
+	setPannelStyle(dark) {
+		this.style.border = "rgba(255, 255, 255, 0.15) 1px solid";
+		// this.style.border = "rgba(25, 255, 255, 0.3) 1px solid";
+		if (dark) {
+			this.style.background = "rgba(0, 0, 0, 0.5)";
+			this.style.backdropFilter = "blur(6px)";
+			// this.style.border = "rgba(0, 0, 0, 0.1) 1px solid";
+			return ;
+		}
+		this.style.background = "rgba(255, 255, 255, 0.1)";
+		this.style.backdropFilter = "blur(16px)";
 	}
 
 	// Implement other methods or properties as needed

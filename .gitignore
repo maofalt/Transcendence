@@ -12,3 +12,5 @@ __pycache__
 traefik.yml
 *.key
 react-app/
+.DS_Store
+srcs/.env

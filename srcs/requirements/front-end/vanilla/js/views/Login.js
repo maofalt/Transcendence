@@ -4,7 +4,8 @@ import { getCookie } from "@utils/getCookie";
 import { createElement } from "@utils/createElement";
 import { htmlToElement } from "@utils/htmlToElement";
 import styles from '@css/login.css?raw';
-import loginPageSource from "@html/loginPageSource";
+// import loginPageSource from "@html/loginPageSource";
+import loginPageSource from "@html/NewLoginPageSource";
 
 export default class Login extends HTMLElement {
 	constructor(element) {
@@ -32,13 +33,13 @@ export default class Login extends HTMLElement {
 
 	// this function gets called when the custom component gets added to the dom
 	connectedCallback() {
-		console.log('connectedCallback() called\n\n');
+		// console.log('connectedCallback() called\n\n');
 		this.setupEventListeners(); // setup all event listeners for the page and track them
 	}
 
 	// this function gets called when the custom component is removed from the dom
 	disconnectedCallback() {
-		console.log('disconnectedCallback() called\n\n');
+		// console.log('disconnectedCallback() called\n\n');
 		// remove all tracked event listeners on the page
 		this.eventListeners.forEach(({ target, type, listener }) => {
 			target.removeEventListener(type, listener);
