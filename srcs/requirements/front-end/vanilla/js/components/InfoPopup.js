@@ -4,10 +4,9 @@ import AbstractComponent from "./AbstractComponent";
 import alertTriangle from "@public/alert-triangle.svg?raw";
 import checkCircle from "@public/check-circle.svg?raw";
 import googleAlert from "@public/google-alert.svg?raw";
-import { fadeOut } from "@utils/jqueryUtils";
 import CustomButton from "@components/CustomButton";
 import infoPopupStyle from "@css/InfoPopup.css?raw";
-import { fadeIn } from "../utils/jqueryUtils";
+import anim from "@utils/animate.js";
 
 export default class InfoPopup extends AbstractComponent {
 	constructor(options = {}) {
@@ -24,7 +23,7 @@ export default class InfoPopup extends AbstractComponent {
 		this.closeButton.id = "closePopupButton";
 	
 		this.closeButton.addEventListener('click', () => {
-			fadeOut(this, 500, true);
+			anim.fadeOut(this, 500, true);
 		});
 		
 		this.div = document.createElement('div');
@@ -50,8 +49,6 @@ export default class InfoPopup extends AbstractComponent {
 		}
 
 		this.messageP = htmlToElement(`<p>${options.content}</p>`);
-		// this.messageP.style.setProperty("flex-shrink", "1");
-		// this.messageP.style.setProperty("margin", "0");
 		this.div.append(this.messageP);
 		
 		if (options.style) {
@@ -65,10 +62,10 @@ export default class InfoPopup extends AbstractComponent {
 		this.shadowRoot.appendChild(this.div);
 
 		this.onmouseenter = () => {
-			fadeIn(this.closeButton, 100, 'block');
+			anim.fadeIn(this.closeButton, 200, 'block');
 		}
 		this.onmouseleave = () => {
-			fadeOut(this.closeButton, 100);
+			anim.fadeOut(this.closeButton, 200);
 		}
 	}
 

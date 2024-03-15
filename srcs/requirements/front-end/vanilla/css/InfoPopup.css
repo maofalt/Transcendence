@@ -3,7 +3,8 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	background-color: white;
+	background-color: whitesmoke;
+	backdrop-filter: opacity(0.5);
 	border-radius: 18px;
 	box-shadow: 0 0px 20px rgba(0,0,0,0.5);
 }
@@ -19,4 +20,10 @@
 	font-size: 13px;
 	background-color: white;
 	display: none;
+	box-shadow: 0 0px 4px rgba(0,0,0,0.5);
+}
+
+#closePopupButton:hover {
+	cursor: pointer;
+	color: black;
 }
