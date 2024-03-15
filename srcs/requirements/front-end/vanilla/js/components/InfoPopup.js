@@ -4,7 +4,6 @@ import AbstractComponent from "./AbstractComponent";
 import alertTriangle from "@public/alert-triangle.svg?raw";
 import checkCircle from "@public/check-circle.svg?raw";
 import googleAlert from "@public/google-alert.svg?raw";
-// import inputFieldStyle from '@css/warnIndicator.css?raw';
 
 export default class InfoPopup extends AbstractComponent {
 	constructor(options = {}) {
@@ -13,7 +12,7 @@ export default class InfoPopup extends AbstractComponent {
 		this.options = options;
 
 		// const styleEl = document.createElement('style');
-		// styleEl.textContent = "";
+		// styleEl.textContent = infoPopupStyle;
 		// this.shadowRoot.appendChild(styleEl);
 
 		this.div = document.createElement('div');
@@ -35,6 +34,8 @@ export default class InfoPopup extends AbstractComponent {
 		this.div.style.setProperty("justify-content", "center");
 		this.div.style.setProperty("align-items", "center");
 		this.div.style.setProperty("color", "red");
+		// this.div.style.setProperty("border", "red 1px solid");
+		// this.div.style.setProperty("border-radius", "20px");
 		
 		if (!options.content) {
 			this.options.content = "This is a warning!";

@@ -30,8 +30,8 @@
 }
 
 html {
-	/* overflow: hidden; Hide scrollbars */
-	/* height: 100%; Prevent vertical scrolling */
+	/* overflow: hidden; */
+	height: 100%;
 }
 
 body {
@@ -47,8 +47,16 @@ body {
 	z-index: 1000;
 	width: 300px;
 	/* height: 20px; */
-	background-color: white;
-	border: 1px solid #ccc;
-	border-radius: 8px;
-	box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-  }	
+	background-color: rgba(255, 255, 255, 0.9);
+	border: 1px solid rgba(255, 255, 255, 1);
+	backdrop-filter: blur(14px);
+	border-radius: 18px;
+	box-shadow: 0 0px 20px rgba(0,0,0,0.5);
+}
+
+space-background {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: -1;
+}
