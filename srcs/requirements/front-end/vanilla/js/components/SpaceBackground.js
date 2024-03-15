@@ -51,10 +51,14 @@ export default class SpaceBackground extends AbstractComponent {
 		const sphereGeometry = new THREE.SphereGeometry(1, 64, 64);
 
 		// Material for sphere 1
-		const venus = textureLoader.load('../js/assets/images/8kVenus.jpg');
+		const venus = textureLoader.load('../js/assets/images/1.8kVenus.jpg');
 		venus.colorSpace = THREE.SRGBColorSpace;
-		const material1 = new THREE.MeshPhongMaterial({
-			map: venus
+		const material1 = new THREE.MeshStandardMaterial({
+			map: venus,
+			roughness: 0.6, // Adjust roughness for specular reflections
+			metalness: 0.7, // Adjust metalness for specular reflections
+			transparent: false, // Make the material transparent if needed
+			opacity: 1 // Set the opacity level if needed
 		});
 		const sphere1 = new THREE.Mesh(sphereGeometry, material1);
 		sphere1.position.x = -1.4;
@@ -66,15 +70,15 @@ export default class SpaceBackground extends AbstractComponent {
 		const atmMaterial = new THREE.MeshStandardMaterial({
 			// color: 0xbbffff, // Set color to white
 			map: atm,
-			roughness: 0.5, // Adjust roughness for specular reflections
-			metalness: 0.2, // Adjust metalness for specular reflections
+			roughness: 0.4, // Adjust roughness for specular reflections
+			metalness: 0.6, // Adjust metalness for specular reflections
 			transparent: true, // Make the material transparent if needed
 			opacity: 1 // Set the opacity level if needed
 		});
 		
 		const atmSphere = new THREE.Mesh(sphereGeometry, atmMaterial);
 
-		atmSphere.scale.set(1.007, 1.007, 1.007); // Slightly larger scale
+		atmSphere.scale.set(1.008, 1.008, 1.008); // Slightly larger scale
 		atmSphere.position.x = -1.4;
 		atmSphere.position.z = 3.7;
 		atmSphere.position.y = -0.6;
@@ -114,7 +118,7 @@ export default class SpaceBackground extends AbstractComponent {
 			
 			// Rotate spheres
 			sphere1.rotation.y += 0.00007;
-			atmSphere.rotation.y += 0.00002;
+			atmSphere.rotation.y += 0.000038;
 			// sphere2.rotation.y += 0.0001;
 			
 			renderer.render(scene, camera);
