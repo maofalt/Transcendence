@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterField(
             model_name='tournament',
-            name='setting',
+            name='settings',
             field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.PROTECT, to='manage_tournament.matchsetting'),
         ),
         migrations.RunPython(add_match_settings),

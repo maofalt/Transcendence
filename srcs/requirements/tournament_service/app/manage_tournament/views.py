@@ -28,7 +28,7 @@ from django.shortcuts import get_object_or_404
 class TournamentListCreate(generics.ListCreateAPIView):
     queryset = Tournament.objects.all()
     serializer_class = TournamentSerializer
-    authentication_classes = [CustomJWTAuthentication]
+    # authentication_classes = [CustomJWTAuthentication]
     # renderer_classes = [JSONRenderer]  # Force the response to be rendered in JSON
     # permission_classes = [IsAuthenticated]  # Only authenticated users can create and list tournaments
 

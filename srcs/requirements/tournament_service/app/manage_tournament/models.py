@@ -13,9 +13,9 @@ class Tournament(models.Model):
         MaxValueValidator(100)
         ]
     )
-    nbr_of_player_match = models.IntegerField(default=0, 
-        validators=[MinValueValidator(2), 
-        MaxValueValidator(100)
+    nbr_of_player_match = models.IntegerField(default=1, 
+        validators=[MinValueValidator(1), 
+        MaxValueValidator(8)
         ]
     )
     tournament_type = models.ForeignKey('TournamentType', on_delete=models.PROTECT, null=False, to_field='id', default=1)
@@ -26,8 +26,7 @@ class Tournament(models.Model):
         MaxValueValidator(60, message="Registration period cannot exceed 60 minutes.")
         ]
     )
-    host = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tournaments')
-    # host = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='tournaments')
+    host = models.ForeignKey(User, on_delete=models.CASCADE, related_name='hosted_tournaments')
     tournament_result = models.ForeignKey('Player', on_delete=models.SET_NULL, null=True, related_name='won_tournaments')
     players = models.ManyToManyField('Player', related_name='tournaments')  # Direct many-to-many relationship with Player
     matches = models.ManyToManyField('TournamentMatch', related_name='tournaments')
@@ -56,7 +55,7 @@ class Tournament(models.Model):
         matches = self.matches.all()
 
         for match in matches:
-            if match.players.count() < match.max_players:
+            if match.players.count() < self.nbr_of_player_match:
                 match.players.add(player)
                 match.nbr_of_player += 1
                 match.save()
@@ -71,10 +70,11 @@ class TournamentMatch(models.Model):
     match_time = models.DateTimeField(null=True) 
     match_result = models.ForeignKey('Player', on_delete=models.SET_NULL, null=True, related_name='won_match')
     players = models.ManyToManyField('Player', related_name='matches')  # Direct many-to-many relationship with Player
-    max_players = models.IntegerField(default=2, validators=[MinValueValidator(2), MaxValueValidator(8)])
-    nbr_of_player = models.IntegerField(default=1)
+    # max player form the host's setting
+    # max_players = models.IntegerField(default=2, validators=[MinValueValidator(2), MaxValueValidator(8)])
+    # actual player number for a match
+    nbr_of_player = models.IntegerField(default=1) 
     # match_setting = models.ForeignKey('MatchSetting', on_delete=models.PROTECT, null=False, related_name='matches')
-    # nbr_of_player = models.IntegerField(default=1)
 
 class MatchSetting(models.Model):
     # setting_id = models.AutoField(primary_key=True)
