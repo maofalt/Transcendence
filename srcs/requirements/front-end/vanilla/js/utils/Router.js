@@ -6,7 +6,7 @@ import Game from '@views/Game.js';
 import Login from '@views/Login.js';
 import NotFound from '@views/NotFound.js';
 import ProfilePage from '@components/ProfilePage.js';
-
+import SpaceBackground from '../components/SpaceBackground';
 import User from '@views/User';
 import Design from '@views/Design.js';
 import BasicGame from '@views/BasicGame.js';
@@ -15,12 +15,21 @@ import Signup from '@views/Signup.js';
 import EditProfile from '@components/EditProfile';
 import LoginUserProfile from '@views/LoginUserProfile';
 
+import { fadeIn, fadeOut } from '@utils/jqueryUtils.js';
+import { fadeInjava, fadeOutjava } from './jqueryUtils';
+
 export const routes = {
 	'/': {
 		path: '/',
 		component: 'home-page',
 		title: 'Pongiverse',
 		buttonText: 'Home'
+	},
+	'/space-background': {
+		path: '/space-background',
+		component: 'space-background',
+		title: 'Space Background',
+		buttonText: 'Space Background'
 	},
 	'/play': {
 		path: '/play',
@@ -42,9 +51,9 @@ export const routes = {
 	},
 	'/edit-profile': {
 		path: '/edit-profile',
-		component: EditProfile,
-		title: 'Edit Profile Page',
-		buttonText: 'Edit Profile'
+		component: 'edit-profile',
+		title: 'Edit Profile',
+		buttonText: 'Edit Profile',
 	},
 	'/tournament': {
 		path: '/tournament',
@@ -113,12 +122,12 @@ export const routes = {
 		view: NotFound,
 		title: '404 Not Found',
 		buttonText: 'Not Found Page'
-	},
-	'/profile': {
-		path: '/profile',
-		component: 'profile-page',
-		title: 'ProfilePage',
 	}
+	// '/profile': {
+	// 	path: '/profile',
+	// 	component: 'profile-page',
+	// 	title: 'ProfilePage',
+	// }
 };
 
 let currentView = null;
@@ -128,6 +137,7 @@ export const navigateTo = (url) => {
   console.log('url: ', url);
   router();
 };
+let previousView = null;
 
 const router = async () => {
   const path = window.location.pathname;
@@ -135,8 +145,12 @@ const router = async () => {
   const viewContainer = document.querySelector('#view');
 
   if (View.component) {
-	viewContainer.innerHTML = `
-		<${View.component}></${View.component}>`;
+	if (previousView) {
+		// fadeOut(previousView);
+	}
+	viewContainer.innerHTML = `<${View.component}></${View.component}>`;
+	previousView = viewContainer.querySelector(View.component);
+	// fadeIn(viewContainer.querySelector(View.component));
   } else {
 	console.log('path: ', path);
 
@@ -159,5 +173,13 @@ window.addEventListener("popstate", router);
 document.addEventListener('DOMContentLoaded', () => {
   router();
 });
+
+// const background = new SpaceBackground();
+
+// document.querySelector('#app').appendChild(background);
+// background.shadowRoot.style.setProperty("position", "absolute");
+// background.shadowRoot.style.setProperty("top", "0px");
+// background.shadowRoot.style.setProperty("left", "0px");
+// background.shadowRoot.style.setProperty("border", "3px red solid");
 
 export default { routes, navigateTo, router };

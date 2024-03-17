@@ -10,7 +10,7 @@ import { FontLoader } from 'three/addons/loaders/FontLoader.js';
 
 function createCallTracker() {
 	let lastCallTime = 0; // Timestamp of the last call
-  
+
 	// This function is called every time you want to track a call
 	return function trackCall() {
 	  const now = Date.now(); // Get current timestamp in milliseconds
@@ -139,14 +139,19 @@ export default class Game extends AbstractView {
 		const hostname = window.location.hostname;
 		const protocol = 'wss';
 		const query = window.location.search.replace('?', '');
+		let accessTok = sessionStorage.getItem('accessToken');
+		accessTok = accessTok.replace("Bearer ", ""); // replace the "Bearer " at the beginning of the value;
+
 		const io_url = hostname.includes("github.dev") ? `${protocol}://${hostname}` : `${protocol}://${hostname}:9443`;
 		console.log(`Connecting to ${io_url}`)
 		this.socket = io(`${io_url}`, {
 			path: '/game-logic/socket.io',
 			query: query,
+			accessToken: accessTok,
 			secure: hostname !== 'localhost',
 			rejectUnauthorized: false,
-			transports: ['websocket']
+			transports: ['websocket'],
+			auth: {accessToken: accessTok}
 		});
 
 		this.socket.on('error', (error) => {

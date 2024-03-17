@@ -1,0 +1,30 @@
+
+#popupBody {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background-color: white;
+	/* backdrop-filter: opacity(0.5); */
+	border-radius: 18px;
+	box-shadow: 0 0px 20px rgba(0,0,0,0.5);
+}
+
+#closePopupButton {
+	font-family: Arial, sans-serif;
+	position: absolute;
+	top: -5px;
+	left: -5px;
+	padding: 1px;
+	width: 15px;
+	height: 15px;
+	font-size: 11px;
+	background-color: white;
+	display: none;
+	box-shadow: 0 0px 4px rgba(0,0,0,0.5);
+	align-items: center;
+}
+
+#closePopupButton:hover {
+	cursor: pointer;
+	color: black;
+}

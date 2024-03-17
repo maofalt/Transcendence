@@ -4,7 +4,9 @@ import AbstractComponent from "./AbstractComponent";
 import alertTriangle from "@public/alert-triangle.svg?raw";
 import checkCircle from "@public/check-circle.svg?raw";
 import googleAlert from "@public/google-alert.svg?raw";
-// import inputFieldStyle from '@css/warnIndicator.css?raw';
+import CustomButton from "@components/CustomButton";
+import infoPopupStyle from "@css/InfoPopup.css?raw";
+import anim from "@utils/animate.js";
 
 export default class InfoPopup extends AbstractComponent {
 	constructor(options = {}) {
@@ -12,11 +14,22 @@ export default class InfoPopup extends AbstractComponent {
 
 		this.options = options;
 
-		// const styleEl = document.createElement('style');
-		// styleEl.textContent = "";
-		// this.shadowRoot.appendChild(styleEl);
+		const styleEl = document.createElement('style');
+		styleEl.textContent = infoPopupStyle;
+		this.shadowRoot.appendChild(styleEl);
 
+		this.closeButton = new CustomButton({content: "X"});
+		this.closeButton.textContent = "X";
+		this.closeButton.id = "closePopupButton";
+	
+		this.closeButton.addEventListener('click', () => {
+			anim.slideOut(this, 500, true);
+		});
+		
 		this.div = document.createElement('div');
+		this.div.id = "popupBody";
+
+		this.div.appendChild(this.closeButton);
 
 		this.icons = {
 			alertTriangle: htmlToElement(alertTriangle),
@@ -30,19 +43,12 @@ export default class InfoPopup extends AbstractComponent {
 		}
 
 		this.div.appendChild(this.icons.alertTriangle);
-
-		this.div.style.setProperty("display", "flex");
-		this.div.style.setProperty("justify-content", "center");
-		this.div.style.setProperty("align-items", "center");
-		this.div.style.setProperty("color", "red");
 		
 		if (!options.content) {
 			this.options.content = "This is a warning!";
 		}
 
 		this.messageP = htmlToElement(`<p>${options.content}</p>`);
-		// this.messageP.style.setProperty("flex-shrink", "1");
-		// this.messageP.style.setProperty("margin", "0");
 		this.div.append(this.messageP);
 		
 		if (options.style) {
@@ -54,6 +60,14 @@ export default class InfoPopup extends AbstractComponent {
 		}
 
 		this.shadowRoot.appendChild(this.div);
+
+		this.onmouseenter = () => {
+			this.closeButton.style.setProperty("display", "flex");
+			anim.fadeIn(this.closeButton, 200, 'flex');
+		}
+		this.onmouseleave = () => {
+			anim.fadeOut(this.closeButton, 200);
+		}
 	}
 
 	static get observedAttributes() {

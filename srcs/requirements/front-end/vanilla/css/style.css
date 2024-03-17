@@ -30,8 +30,8 @@
 }
 
 html {
-	/* overflow: hidden; Hide scrollbars */
-	/* height: 100%; Prevent vertical scrolling */
+	/* overflow: hidden; */
+	height: 100%;
 }
 
 body {
@@ -39,16 +39,27 @@ body {
 	margin: 0;
 }
 
-#info {
-	position: fixed;
+info-popup {
+	position: relative;
+	z-index: 1000;
+	width: 300px;
+}
+
+#popupContainer {
+	position: absolute;
 	top: 5px;
 	left: 50%;
 	transform: translate(-50%);
-	z-index: 1000;
 	width: 300px;
-	/* height: 20px; */
-	background-color: white;
-	border: 1px solid #ccc;
-	border-radius: 8px;
-	box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-  }	
+	z-index: 9000;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+space-background {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: -1;
+}
