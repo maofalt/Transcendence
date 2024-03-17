@@ -19,8 +19,7 @@ urlpatterns = [
 
 # JoinTournament:
     #   - POST /add_player/{id}/ - Add a player to a specific tournament.
-    # path('add-player/', views.TournamentPlayerCreate.as_view(), name='add-player'),
-    path('add-player/', views.JoinTournament.as_view(), name='add-player'),
+    path('add-player/<int:id>/', views.JoinTournament.as_view(), name='add-player'),
 
 # Tournament Participation:
     # GET /{id}/participants/ - Show the participants list for a tournament.

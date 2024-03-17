@@ -9,10 +9,11 @@ class MatchSettingSerializer(serializers.ModelSerializer):
 
 class TournamentSerializer(serializers.ModelSerializer):
     settings = MatchSettingSerializer()
+    is_full = serializers.SerializerMethodField()
 
     class Meta:
         model = Tournament
-        fields = ['tournament_name', 'nbr_of_player_total', 'nbr_of_player_match', 'game_type', 'tournament_type', 'registration', 'settings', 'registration_period_min', 'host_id' ]
+        fields = ['tournament_name', 'nbr_of_player_total', 'nbr_of_player_match', 'game_type', 'tournament_type', 'registration', 'settings', 'registration_period_min', 'host_id', 'is_full' ]
 
     def create(self, validated_data):
         setting_data = validated_data.pop('settings')  # Extract data from MatchSetting
@@ -40,6 +41,10 @@ class TournamentSerializer(serializers.ModelSerializer):
         settings.save()
 
         return instance
+
+    def get_is_full(self, obj):
+        # Serialize the result of the `is_full` method
+        return obj.is_full()
 
 class TournamentRegistrationSerializer(serializers.ModelSerializer):
     class Meta:

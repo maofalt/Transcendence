@@ -9,7 +9,7 @@ from django.http import JsonResponse
 class CustomJWTAuthentication(authentication.BaseAuthentication):
     def authenticate(self, request):
         accessToken = request.headers.get('Authorization', None)
-        refreshToken = request.COOKIES.get('refreshToken', None)
+        # refreshToken = request.COOKIES.get('refreshToken', None)
         print("accessToken print: ", str(accessToken))
         # if not accessToken or not refreshToken:
         #     return JsonResponse({'error': 'Missing tokens'}, status=400)
