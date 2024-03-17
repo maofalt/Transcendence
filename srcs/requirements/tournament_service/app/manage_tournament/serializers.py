@@ -8,24 +8,25 @@ class MatchSettingSerializer(serializers.ModelSerializer):
         fields = fields = '__all__'
 
 class TournamentSerializer(serializers.ModelSerializer):
-    setting = MatchSettingSerializer()
+    settings = MatchSettingSerializer()
 
     class Meta:
         model = Tournament
-        fields = ['tournament_name', 'nbr_of_player', 'game_type', 'tournament_type', 'registration', 'setting', 'registration_period_min', 'host_id' ]
+        fields = ['tournament_name', 'nbr_of_player_total', 'nbr_of_player_match', 'game_type', 'tournament_type', 'registration', 'settings', 'registration_period_min', 'host_id' ]
 
     def create(self, validated_data):
-        setting_data = validated_data.pop('setting')  # Extract data from MatchSetting
-        setting = MatchSetting.objects.create(**setting_data)  # Create a new MatchSetting object
-        tournament = Tournament.objects.create(setting=setting, **validated_data)  # Create a new Tournament object
+        setting_data = validated_data.pop('settings')  # Extract data from MatchSetting
+        settings = MatchSetting.objects.create(**setting_data)  # Create a new MatchSetting object
+        tournament = Tournament.objects.create(settings=settings, **validated_data)  # Create a new Tournament object
         return tournament
 
     def update(self, instance, validated_data):
-        setting_data = validated_data.pop('setting')
-        setting = instance.setting
+        setting_data = validated_data.pop('settings')
+        settings = instance.settings
 
         instance.tournament_name = validated_data.get('tournament_name', instance.tournament_name)
-        instance.nbr_of_player = validated_data.get('nbr_of_player', instance.nbr_of_player)
+        instance.nbr_of_player_total = validated_data.get('nbr_of_player_total', instance.nbr_of_player_total)
+        instance.nbr_of_player_match = validated_data.get('nbr_of_player_match', instance.nbr_of_player_match)
         instance.game_type = validated_data.get('game_type', instance.game_type)
         instance.tournament_type = validated_data.get('tournament_type', instance.tournament_type)
         instance.registration = validated_data.get('registration', instance.registration)
@@ -35,8 +36,8 @@ class TournamentSerializer(serializers.ModelSerializer):
 
         # `MatchSetting` is a one-to-one relationship with `Tournament`
         for field, value in setting_data.items():
-            setattr(setting, field, value)
-        setting.save()
+            setattr(settings, field, value)
+        settings.save()
 
         return instance
 

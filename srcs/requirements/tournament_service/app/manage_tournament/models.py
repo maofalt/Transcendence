@@ -13,8 +13,8 @@ class Tournament(models.Model):
         MaxValueValidator(100)
         ]
     )
-    nbr_of_player_match = models.IntegerField(default=1, 
-        validators=[MinValueValidator(1), 
+    nbr_of_player_match = models.IntegerField(default=2, 
+        validators=[MinValueValidator(2), 
         MaxValueValidator(8)
         ]
     )
