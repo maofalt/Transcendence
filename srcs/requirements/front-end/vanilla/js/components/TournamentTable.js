@@ -7,8 +7,25 @@ class TournamentTable extends BaseTable {
     }
 
     //Method apply styles to the hable columns
-    applyColumnStyles(styles) {
-        this.columnStyles = styles;
+    applyColumnStyles() {
+        this.columnStyles = {
+            tournamentName: {
+                'font-weight': '700',
+                'vertical-align': 'middle',
+                'padding': '1rem',
+            },
+            host: {
+                'display': 'flex',
+                'align-items': 'center',
+                'color': 'blue',
+                'margin-left': '1rem',
+            },
+            action: {
+                'vertical-align': 'middle',
+                'text-align': 'center',
+                'cursor': 'pointer',
+            },
+        };
     }
 
     //Method to create a style HTMl object (e.g. a button)

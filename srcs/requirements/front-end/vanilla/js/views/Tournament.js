@@ -49,9 +49,9 @@ export default class Tournament extends AbstractView {
 		
 		const tournamentTable =  document.querySelector('tournament-table');
 
-		for (let  i = 0; i < 5; i++) {
-			tournamentTable.addDummyRow();
-		}
+		// for (let  i = 0; i < 0; i++) {
+		// 	tournamentTable.addDummyRow();
+		// }
 
 		//for each tournament in each data populate the table
 
@@ -66,7 +66,7 @@ export default class Tournament extends AbstractView {
 
 	async getTournamentList() { 
 		try {
-			const response = await makeApiRequest('https://localhost:9443/api/tournament/create-and-list/','GET', {});
+			const response = await makeApiRequest('/api/tournament/create-and-list/','GET', {});
 			const tournaments = response.body;
 			console.log('Tournament list:', response.body);
 			
@@ -75,38 +75,35 @@ export default class Tournament extends AbstractView {
 				this.data = [];
 				return;
 			}
-			// this.data = tournaments.map(tournament => ({
-			// 	tournamentName: tournament.tournament_name,
-			// 	host: tournament.host_id,
-			// 	numberOfPlayers: `${tournament.nbr_of_player}/${tournament.nbr_of_player}`,
-			// 	timeRemaining: '2:00', // Assuming a placeholder value
-			// 	tournamentType: tournament.tournament_type === 1 ? 'Single Elimination' : 'Other Type', // Adjust as necessary
-			// 	registrationMode: tournament.registration === 1 ? 'Open' : 'invitational', // Adjust as necessary
-			// 	action: 'Join',
-			// }));
-        	// Modify how we map tournament data to table rows
-        	this.data = tournaments.map(tournament => {
-            	// Create a join button for each tournament
-            	const joinButton = document.createElement('button');
-            	joinButton.textContent = 'Join';
-            	joinButton.addEventListener('click', () => this.joinTournament(tournament.id));
-            	Object.assign(joinButton.style, this.columnStyles.action); // Apply styles
 
-            	// Create host element (could be more complex, e.g., including an image)
-            	const hostElement = document.createElement('div');
-            	hostElement.textContent = `Host: ${tournament.host_id}`; // Example content
-            	Object.assign(hostElement.style, this.columnStyles.host.container); // Apply styles
+			 // Map API data to table rows and add them to the table
+			 tournaments.forEach(tournament => {
+				console.log('Tournament:', tournament);
+				const Styles = tournamentTable.columnStyles;
+				const tournamentNameElement = tournamentTable.createStyledHTMLObject('div', tournament.tournament_name, Styles.tournamentName);
+				const hostElement = tournamentTable.createStyledHTMLObject('div', `Host ${tournament.host_id}`, Styles.host);
+				//64
+				const numberOfPlayersElement = tournamentTable.createStyledHTMLObject('div', `${tournament.nbr_of_player}/64`, {}); 
+				const timeRemainingElement = tournamentTable.createStyledHTMLObject('div', '2:00', {}); // Placeholder for time remaining
+				const tournamentTypeElement = tournamentTable.createStyledHTMLObject('div', tournament.tournament_type === 1 ? 'Single Elimination' : 'Other Type', {});
+				const registrationModeElement = tournamentTable.createStyledHTMLObject('div', tournament.registration === 1 ? 'Open' : 'Invitational', {});
+				const joinButtonElement = document.createElement('button');
+				joinButtonElement.textContent = 'Join';
+				Object.assign(joinButtonElement.style, Styles.action);
+				joinButtonElement.addEventListener('click', () => this.joinTournament(tournament.id));
+			
+				// Add the constructed row to the table
+				tournamentTable.addRow([
+					tournamentNameElement.outerHTML, 
+					hostElement.outerHTML, 
+					numberOfPlayersElement.outerHTML, 
+					timeRemainingElement.outerHTML, 
+					tournamentTypeElement.outerHTML, 
+					registrationModeElement.outerHTML, 
+					joinButtonElement.outerHTML
+				]);
+			});
 
-            	return {
-            	    tournamentName: this.createStyledElement('div', tournament.tournament_name, this.columnStyles.tournamentName),
-            	    host: hostElement, // Assuming you might want to include more than just text
-            	    numberOfPlayers: `${tournament.nbr_of_player}/${tournament.nbr_of_player_required}`,
-            	    timeRemaining: '2:00', // Placeholder
-            	    tournamentType: tournament.tournament_type === 1 ? 'Single Elimination' : 'Other Type',
-            	    registrationMode: tournament.registration === 1 ? 'Open' : 'Invitational',
-            	    action: joinButton.outerHTML, // Assuming TournamentTable can handle HTML strings or you might append child directly
-            	};
-        	});
 		} catch (error) {
 			console.error('Failed to get tournament list:', error);
 		}
