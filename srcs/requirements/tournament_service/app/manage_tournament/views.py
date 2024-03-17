@@ -74,7 +74,7 @@ class TournamentListCreate(generics.ListCreateAPIView):
             nbr_of_player_total=nbr_of_player_total,
             nbr_of_player_match=nbr_of_player_match,
             host=host,
-            settings=match_setting,
+            setting=match_setting,
             created_at=timezone.now(),
             # nbr_of_player   will be assigned when user joining the tournament
         )

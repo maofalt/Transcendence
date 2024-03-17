@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from rest_framework import authentication, exceptions
 import time
 from django.http import JsonResponse
-
+from django.conf import settings
 
 # ------------------------ Authentication -----------------------------------
 class CustomJWTAuthentication(authentication.BaseAuthentication):
@@ -17,12 +17,10 @@ class CustomJWTAuthentication(authentication.BaseAuthentication):
         if not accessToken:
             return None, None
             # return JsonResponse({'error': 'Authorization header is missing'}, status=400)
-        if not refreshToken:
-            return None, None
             # return JsonResponse({'error': 'Refresh token is missing'}, status=400)
 
         try:
-            decoded_token = jwt.decode(accessToken.split()[1], settings.SECRET_KEY, algorithms=["HS256"])
+            decoded_token = jwt.decode(accessToken.split()[1], SECRET_KEY, algorithms=["HS256"])
             exp_timestamp = decoded_token['exp']
             exp_datetime = datetime.datetime.utcfromtimestamp(exp_timestamp).replace(tzinfo=datetime.timezone.utc)
             print("exp_datetime: ", exp_datetime)
