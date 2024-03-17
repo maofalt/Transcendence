@@ -29,7 +29,7 @@ const init = require("./init");
 //     return false;
 // }
 
-function checkCorner(ball, corner, center) {
+function checkCorner(ball, corner, center, paddle) {
     let distToCorner, vecCornerDist, cornerHitPoint = 0;
 
     distToCorner = corner.sub(ball.pos).mag;
@@ -37,6 +37,8 @@ function checkCorner(ball, corner, center) {
         return false;
     if (distToCorner < ball.r) {
         ball.dir = ball.pos.getDirFrom(center);
+        if (paddle)
+            ball.sp += paddle.currSp * 0.7;
         return false;
     }
     vecCornerDist = ball.dir.scale(distToCorner);
@@ -46,6 +48,8 @@ function checkCorner(ball, corner, center) {
         let scaler = Math.sqrt(ball.r ** 2 - cornerToHitPointDist ** 2);
         ball.pos = cornerHitPoint.add(ball.dir.scale(-scaler));
         ball.dir = ball.pos.getDirFrom(center);
+        if (paddle)
+            ball.sp += paddle.currSp * 0.7;
         return true;
     }
     return false;
@@ -107,7 +111,7 @@ function ballHitsWallV2(data) {
 }
 
 
-function ballHitsPaddleSide (paddle, ball, segP1, segP2, scaledNormalVec) {
+function ballHitsPaddleSide (paddle, ball, segP1, segP2, scaledNormalVec, side) {
     let potentialHitPoint, futureHitPos, hitScaler;
 
     potentialHitPoint = ball.pos.sub(scaledNormalVec);
@@ -117,6 +121,8 @@ function ballHitsPaddleSide (paddle, ball, segP1, segP2, scaledNormalVec) {
         let ballPath = futureHitPos.sub(potentialHitPoint);
         ball.pos = ball.pos.add(ballPath.scale(hitScaler));
         ball.dir = ball.pos.getDirFrom(paddle.pos).normalize();
+        if (side)
+            ball.sp += paddle.currSp * 0.7;
         return true;
     }
 }
@@ -128,14 +134,14 @@ function ballHitsPaddle(data) {
 	for (let player of Object.values(data.players)) {
         paddle = player.paddle;
         if (ball.pos.getDistFrom(paddle.pos) < ball.sp + ball.r + paddle.h / 2) {
-            if (ballHitsPaddleSide(paddle, ball, paddle.top, paddle.bottom, paddle.dirToCenter.scale(ball.r)) ||
-                ballHitsPaddleSide(paddle, ball, paddle.top, paddle.topBack, paddle.dirToTop.scale(ball.r)) ||
-                ballHitsPaddleSide(paddle, ball, paddle.bottom, paddle.bottomBack, paddle.dirToTop.scale(-ball.r))) {
+            if (ballHitsPaddleSide(paddle, ball, paddle.top, paddle.bottom, paddle.dirToCenter.scale(ball.r), false) ||
+                ballHitsPaddleSide(paddle, ball, paddle.top, paddle.topBack, paddle.dirToTop.scale(ball.r), true) ||
+                ballHitsPaddleSide(paddle, ball, paddle.bottom, paddle.bottomBack, paddle.dirToTop.scale(-ball.r), true)) {
                 return true;
             }
-            if (checkCorner(ball, paddle.top, paddle.pos))
+            if (checkCorner(ball, paddle.top, paddle.pos, paddle))
                 return true;
-            if (checkCorner(ball, paddle.bottom, paddle.pos))
+            if (checkCorner(ball, paddle.bottom, paddle.pos, paddle))
                 return true;
         }
     }
@@ -201,7 +207,7 @@ function updateBall(data) {
     if (!paddleHit && !wallHit) {
         data.ball.pos = data.ball.pos.add(data.ball.dir.scale(data.ball.sp));
     } else if (paddleHit) {
-        data.ball.sp *= 1.01;
+        // data.ball.sp *= 1.01;
     }
     if (data.ball.pos.getDistFrom(new Vector(0, 0, 0)) > 120) {
         data.ball.pos = new Vector(0, 0, 0);
