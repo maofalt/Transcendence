@@ -10,7 +10,7 @@ import { FontLoader } from 'three/addons/loaders/FontLoader.js';
 
 function createCallTracker() {
 	let lastCallTime = 0; // Timestamp of the last call
-  
+
 	// This function is called every time you want to track a call
 	return function trackCall() {
 	  const now = Date.now(); // Get current timestamp in milliseconds

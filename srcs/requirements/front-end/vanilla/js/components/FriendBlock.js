@@ -1,6 +1,7 @@
 import { createElement } from "@utils/createElement";
 import { htmlToElement } from "@utils/htmlToElement";
 import AbstractComponent from "./AbstractComponent";
+import CustomButton from "./CustomButton";
 
 export default class FriendBlock extends AbstractComponent {
 	constructor(options = {}) {
@@ -76,6 +77,17 @@ export default class FriendBlock extends AbstractComponent {
 			</div>
 		</div>
 		`;
+
+		if (options.remove) {
+			this.shadowRoot.querySelector("#info-container").removeChild(this.shadowRoot.querySelector("#status"));
+			const trashBin = document.createElement('p');
+			trashBin.id = "trash-bin"
+			trashBin.textContent = "🗑";
+			trashBin.style.setProperty("color", "red");
+			trashBin.style.setProperty("font-size", "22px");
+			trashBin.style.setProperty("cursor", "pointer");
+			this.shadowRoot.querySelector("#info-container").appendChild(trashBin);
+		}
 
 		if (options.style) {
 			for (const key in options.style) {

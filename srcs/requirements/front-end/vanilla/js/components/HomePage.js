@@ -63,7 +63,7 @@ export default class HomePage extends AbstractComponent {
 
 		const userInfo = new UserInfo();
 		userInfo.style.setProperty("position", "absolute");
-		userInfo.style.setProperty("top", "15px");
+		userInfo.style.setProperty("bottom", "15px");
 		userInfo.style.setProperty("right", "35px");
 
 		this.shadowRoot.appendChild(menu);
@@ -91,9 +91,9 @@ export default class HomePage extends AbstractComponent {
 			}
 		});
 
-		menu.appendChild(errorButton);
-		menu.appendChild(infoButton);
-		menu.appendChild(successButton);
+		// menu.appendChild(errorButton);
+		// menu.appendChild(infoButton);
+		// menu.appendChild(successButton);
 
 		errorButton.onclick = () => displayPopup("this is error\nthis is a bit long message explaining things with lots of details.", "error");
 		infoButton.onclick = () => displayPopup("this is info", "info");

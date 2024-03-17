@@ -17,11 +17,18 @@ urlpatterns = [
     #   - DELETE /manage/{id}/ - Remove a tournament from the system.
     path('manage/<int:pk>/', views.TournamentRetrieveUpdateDestroy.as_view(), name='tournament-retrieve-update-destroy'),
 
+# JoinTournament:
+    #   - POST /add_player/{id}/ - Add a player to a specific tournament.
+    # path('add-player/', views.TournamentPlayerCreate.as_view(), name='add-player'),
+    path('add-player/', views.JoinTournament.as_view(), name='add-player'),
+
 # Tournament Participation:
-    # POST /{id}/participants/ - Register a participant for a tournament.
+    # GET /{id}/participants/ - Show the participants list for a tournament.
     path('<int:id>/participants/', views.TournamentParticipantList.as_view(), name='tournament-participants'),
     # DELETE /{id}/participants/{participantId}/ - Deregister a participant from a tournament.
     path('<int:id>/participants/<int:participant_id>/', views.TournamentParticipantDetail.as_view(), name='tournament-participant-detail'),
+    # POST /{id}/register/ - Register for a tournament.
+    # path('<int:id>/register/', TournamentRegistrationCreate.as_view(), name='tournament-registration'),
 
 # Tournament Progression:
     # GET /{id}/matches - Retrieve a list of matches for a tournament.
@@ -50,6 +57,7 @@ urlpatterns = [
 # All tournament types
     # Get aLL TOURNAMENT types
     path('tournament-types/', views.TournamentTypeList.as_view(), name='tournament-type-list'),
+    
 # All registration types
     # Get aLL registration types
     path('registration-types/', views.RegistrationTypeList.as_view(), name='resgistration-type-list'),

@@ -4,7 +4,10 @@ import AbstractComponent from "./AbstractComponent";
 import alertTriangle from "@public/alert-triangle.svg?raw";
 import checkCircle from "@public/check-circle.svg?raw";
 import googleAlert from "@public/google-alert.svg?raw";
-// import inputFieldStyle from '@css/warnIndicator.css?raw';
+import { fadeOut } from "@utils/jqueryUtils";
+import CustomButton from "@components/CustomButton";
+import infoPopupStyle from "@css/InfoPopup.css?raw";
+import { fadeIn } from "../utils/jqueryUtils";
 
 export default class InfoPopup extends AbstractComponent {
 	constructor(options = {}) {
@@ -12,11 +15,22 @@ export default class InfoPopup extends AbstractComponent {
 
 		this.options = options;
 
-		// const styleEl = document.createElement('style');
-		// styleEl.textContent = "";
-		// this.shadowRoot.appendChild(styleEl);
+		const styleEl = document.createElement('style');
+		styleEl.textContent = infoPopupStyle;
+		this.shadowRoot.appendChild(styleEl);
 
+		this.closeButton = new CustomButton({content: "X"});
+		this.closeButton.textContent = "X";
+		this.closeButton.id = "closePopupButton";
+	
+		this.closeButton.addEventListener('click', () => {
+			fadeOut(this, 500, true);
+		});
+		
 		this.div = document.createElement('div');
+		this.div.id = "popupBody";
+
+		this.div.appendChild(this.closeButton);
 
 		this.icons = {
 			alertTriangle: htmlToElement(alertTriangle),
@@ -30,11 +44,6 @@ export default class InfoPopup extends AbstractComponent {
 		}
 
 		this.div.appendChild(this.icons.alertTriangle);
-
-		this.div.style.setProperty("display", "flex");
-		this.div.style.setProperty("justify-content", "center");
-		this.div.style.setProperty("align-items", "center");
-		this.div.style.setProperty("color", "red");
 		
 		if (!options.content) {
 			this.options.content = "This is a warning!";
@@ -54,6 +63,13 @@ export default class InfoPopup extends AbstractComponent {
 		}
 
 		this.shadowRoot.appendChild(this.div);
+
+		this.onmouseenter = () => {
+			fadeIn(this.closeButton, 100, 'block');
+		}
+		this.onmouseleave = () => {
+			fadeOut(this.closeButton, 100);
+		}
 	}
 
 	static get observedAttributes() {
