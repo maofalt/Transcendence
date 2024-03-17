@@ -35,7 +35,7 @@ class Tournament(models.Model):
     def calculate_nbr_of_match(self):
         # Calculate the number of matches based on total players and max players per match
         max_players_per_match = self.nbr_of_player_match
-        total_players = self.nbr_of_player_total
+        total_players = self.players.count()
         added_match = total_players // max_players_per_match
         if total_players % max_players_per_match != 0:
             added_match += 1
@@ -51,13 +51,13 @@ class Tournament(models.Model):
         # Check if the tournament is full (all player slots are filled).
         return self.players.count() >= self.nbr_of_player_total
 
-    def assign_player_to_match(self, player):
-        matches = self.matches.all()
+    def assign_player_to_match(self, player, round):
+        matches = self.matches.all().filter(round_number=round).order_by('id')
 
-        for match in matches:
+        for match in matches: 
             if match.players.count() < self.nbr_of_player_match:
                 match.players.add(player)
-                match.nbr_of_player += 1
+                # match.nbr_of_player += 1
                 match.save()
                 return match 
         return None
@@ -68,13 +68,10 @@ class TournamentMatch(models.Model):
     match_setting_id = models.ForeignKey('MatchSetting', on_delete=models.PROTECT, null=False, related_name='matches')
     round_number = models.IntegerField(default=1, validators=[MinValueValidator(1)])
     match_time = models.DateTimeField(null=True) 
-    match_result = models.ForeignKey('Player', on_delete=models.SET_NULL, null=True, related_name='won_match')
     players = models.ManyToManyField('Player', related_name='matches')  # Direct many-to-many relationship with Player
-    # max player form the host's setting
-    # max_players = models.IntegerField(default=2, validators=[MinValueValidator(2), MaxValueValidator(8)])
-    # actual player number for a match
-    nbr_of_player = models.IntegerField(default=1) 
-    # match_setting = models.ForeignKey('MatchSetting', on_delete=models.PROTECT, null=False, related_name='matches')
+    participants = models.ForeignKey('MatchParticipants', on_delete=models.CASCADE, null=False, related_name='match_participants') 
+    # match_result = models.ForeignKey('Player', on_delete=models.SET_NULL, null=True, related_name='won_match')
+
 
 class MatchSetting(models.Model):
     # setting_id = models.AutoField(primary_key=True)
@@ -157,7 +154,7 @@ class Player(models.Model):
         unique_together = ('id', 'username')
 
 class MatchParticipants(models.Model):
-    match_id = models.ForeignKey('TournamentMatch', on_delete=models.CASCADE, related_name='participants')
+    match_id = models.ForeignKey('TournamentMatch', on_delete=models.CASCADE, related_name='match_participants')
     player_id = models.ForeignKey('Player', on_delete=models.CASCADE, related_name='playeridfrommatch')
     is_winner = models.BooleanField(default=False)
     participant_score = models.IntegerField(default=0)
