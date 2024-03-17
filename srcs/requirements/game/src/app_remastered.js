@@ -176,31 +176,26 @@ function handleConnectionV2(client) {
 // authenticate user before establishing websocket connection
 io.use((client, next) => {
 	try {
-		console.log("\nquery:\n", client.handshake.query);
 		client.matchID = client.handshake.query.matchID;
-		client.playerID = client.handshake.query.playerid;
 		if (!client.matchID) {
 			console.error('Authentication error: Missing matchID');
 			next(new Error('Authentication error: Missing matchID.'));
 		}
-		if (client.handshake.headers && client.handshake.headers.cookie) {
-			// Parse the cookies from the handshake headers
-			const cookies = cookie.parse(client.handshake.headers.cookie);
-			const token = cookies.jwtToken;
+		if (client.handshake.headers && client.handshake.auth) {
+			// Parse the auth from the handshake
+			const token = client.handshake.auth.accessToken;
 			console.log("\ntoken:\n", token);
-			console.log("\ncookies:\n", cookies);
 	
 			// Verify the token
 			jwt.verify(token, SECRET_KEY, function(err, decoded) {
 				if (err) {
-					console.error('Authentication error: Could not verify token.', err);
-					return next(new Error('Authentication error: Could not verify token.'));
+					console.error('HEHE Authentication error: Could not verify token.', err);
+					return next(new Error('WAWA Authentication error: Could not verify token.'));
 				}
 				client.decoded = decoded;
+				// get the playerID from the decoded token
 				client.playerID = decoded.username;
-				// console.log("JWT: ", decoded);
-				// client.username = decoded.replace('jwtToken=', '')
-				console.log("\ndecoded:\n", decoded);
+				// console.log("\ndecoded:\n", decoded);
 				next();
 			});
 		} else {
@@ -209,7 +204,7 @@ io.use((client, next) => {
 		}
 	} catch (error) {
 		console.error('Error connecting websocket: ', error);
-		next(new Error('Authentication error: ' + error));
+		next(new Error('BLABLA Authentication error: ' + error));
 	}
 });
 

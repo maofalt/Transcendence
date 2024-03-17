@@ -117,8 +117,8 @@ export default class SpaceBackground extends AbstractComponent {
 			requestAnimationFrame(animate);
 			
 			// Rotate spheres
-			sphere1.rotation.y += 0.00007;
-			atmSphere.rotation.y += 0.000038;
+			sphere1.rotation.y += 0.0001;
+			atmSphere.rotation.y += 0.00006;
 			// sphere2.rotation.y += 0.0001;
 			
 			renderer.render(scene, camera);
