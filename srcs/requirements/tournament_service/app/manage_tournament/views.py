@@ -370,21 +370,21 @@ class MatchEnd(APIView):
 
 class GameTypeList(ListAPIView):
     authentication_classes = [CustomJWTAuthentication]
-    permission_classes = [IsAuthenticated] 
+    # permission_classes = [IsAuthenticated] 
 
     queryset = GameType.objects.all()
     serializer_class = GameTypeSerializer
 
 class TournamentTypeList(ListAPIView):
     authentication_classes = [CustomJWTAuthentication]
-    permission_classes = [IsAuthenticated] 
+    # permission_classes = [IsAuthenticated] 
 
     queryset = TournamentType.objects.all()
     serializer_class = TournamentTypeSerializer
 
 class RegistrationTypeList(ListAPIView):
     authentication_classes = [CustomJWTAuthentication]
-    permission_classes = [IsAuthenticated] 
+    # permission_classes = [IsAuthenticated] 
 
     queryset = TournamentType.objects.all()
     # queryset = RegistrationType.objects.all()
@@ -392,21 +392,21 @@ class RegistrationTypeList(ListAPIView):
 
 class TournamentPlayerList(ListAPIView):
     authentication_classes = [CustomJWTAuthentication]
-    permission_classes = [IsAuthenticated] 
+    # permission_classes = [IsAuthenticated] 
 
     queryset = TournamentPlayer.objects.all()
     serializer_class = TournamentPlayerSerializer
 
 class PlayerList(ListAPIView):
     authentication_classes = [CustomJWTAuthentication]
-    permission_classes = [IsAuthenticated] 
+    # permission_classes = [IsAuthenticated] 
 
     queryset = Player.objects.all()
     serializer_class = PlayerSerializer
 
 class MatchParticipantsList(ListAPIView):
     authentication_classes = [CustomJWTAuthentication]
-    permission_classes = [IsAuthenticated] 
+    # permission_classes = [IsAuthenticated] 
     
     queryset = MatchParticipants.objects.all()
     serializer_class = MatchParticipantsSerializer

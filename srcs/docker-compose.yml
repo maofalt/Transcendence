@@ -205,6 +205,8 @@ services:
       dockerfile: Dockerfile
     networks:
       - transcendence
+    env_file:
+      - .env
     volumes:
       - ./requirements/tournament_service/app:/app
     #ports:

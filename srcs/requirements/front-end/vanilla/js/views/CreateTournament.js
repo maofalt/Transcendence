@@ -78,8 +78,11 @@ export default class CreateTournament extends AbstractView {
 
   
   async getHtml() {
-    // Fetching tournament types
-    const tournamentTypes = await makeApiRequest('/api/tournament/tournament-types/', 'GET');
+    // Fetching tournament types0
+    const accessToken = sessionStorage.getItem('accessToken');
+
+    const tournamentTypes = await makeApiRequest('/api/tournament/tournament-types/', 'GET', null, {},  accessToken);
+    console.log('tournamentTypes:', tournamentTypes);
     const tournamentTypeOptionsHtml = tournamentTypes.body.map(type => `<option value="${type.type_id}">${type.type_name}</option>`).join('');
     // Fetching registration types
     const registrationTypes = await makeApiRequest('/api/tournament/registration-types/', 'GET');

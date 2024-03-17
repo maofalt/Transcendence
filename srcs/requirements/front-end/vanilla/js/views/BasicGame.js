@@ -194,7 +194,7 @@ export default class BasicGame extends AbstractComponent {
 	}
 
 	localconnect_error = (error) => {
-		console.error("Socket connection error: ", error);
+		console.error("Socket connection error we are here: ", error);
 		alert("Socket connection error: " + error);
 	}
 
