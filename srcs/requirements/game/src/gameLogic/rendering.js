@@ -67,6 +67,22 @@ function ballHitsWallSide (ball, segP1, segP2, perpVec, scaledNormalVec) {
     }
 }
 
+function ballClipsWallSide (ball, segP1, segP2, perpVec, scaledNormalVec) {
+    let potentialHitPoint, futureHitPos, hitScaler;
+
+    potentialHitPoint = ball.pos;
+    futureHitPos = potentialHitPoint.add(ball.dir.scale(ball.sp));
+    hitScaler = vecs.segmentsIntersect(potentialHitPoint, futureHitPos, segP1, segP2);
+    if (hitScaler > 0) {
+        let ballPath = futureHitPos.sub(potentialHitPoint);
+        ball.pos = ball.pos.add(ballPath.scale(hitScaler));
+        let dot = ball.dir.dotProduct(perpVec);
+        let a = Math.acos(dot / ball.dir.mag * perpVec.mag);
+        ball.dir = ball.dir.rotateAroundZ(2 * a);
+        return true;
+    }
+}
+
 function ballHitsWallV2(data) {
     let ball, wall;
 
@@ -81,6 +97,9 @@ function ballHitsWallV2(data) {
             if (checkCorner(ball, wall.top, wall.pos))
                 return true;
             if (checkCorner(ball, wall.bottom, wall.pos))
+                return true;
+
+            if (ballClipsWallSide(ball, wall.top, wall.bottom, wall.dirToTop, wall.dirToCenter.scale(ball.r)))
                 return true;
         }
     }
@@ -123,7 +142,10 @@ function ballHitsPaddle(data) {
     return false;
 }
 
-function updatePaddlesPoints(currPaddle, dir) {
+function updatePaddlesPoints(ball, currPaddle, dir) {
+    if (currPaddle.top.add(dir).sub(ball.pos).mag <= ball.r || currPaddle.bottom.add(dir).sub(ball.pos).mag <= ball.r) {
+        return;
+    }
     currPaddle.pos = currPaddle.pos.add(dir);
     currPaddle.top = currPaddle.top.add(dir);
     currPaddle.bottom = currPaddle.bottom.add(dir);
@@ -158,8 +180,8 @@ function updatePaddles(data) {
         let dir = 0;
         
         dir = (currPaddle.dashSp != 0) ? currPaddle.dirToTop.scale(currPaddle.dashSp) : currPaddle.dirToTop.scale(currPaddle.currSp);
-        updatePaddlesPoints(currPaddle, dir);
-        handleDash(currPaddle);
+            updatePaddlesPoints(data.ball, currPaddle, dir);
+            handleDash(currPaddle);
 
         let vecToStart = currPaddle.pos.sub(currPaddle.startingPos);
         let limitDist = (data.field.goalsSize - currPaddle.h - currPaddle.w) / 2;
@@ -174,12 +196,14 @@ function updatePaddles(data) {
 }
 
 function updateBall(data) {
-    if (!ballHitsWallV2(data) && !ballHitsPaddle(data)) {
+    paddleHit = ballHitsPaddle(data);
+    wallHit = ((data.gamemode.wallsSize || data.gamemode.nbrOfPlayers == 2) ? ballHitsWallV2(data) : 0);
+    if (!paddleHit && !wallHit) {
         data.ball.pos = data.ball.pos.add(data.ball.dir.scale(data.ball.sp));
-    } else {
+    } else if (paddleHit) {
         data.ball.sp *= 1.01;
     }
-    if (data.ball.pos.getDistFrom(new Vector(0, 0, 0)) > 100) {
+    if (data.ball.pos.getDistFrom(new Vector(0, 0, 0)) > 120) {
         data.ball.pos = new Vector(0, 0, 0);
         data.ball.sp = data.ball.startingSp;
     }
@@ -231,12 +255,12 @@ function handleScoring(data, player) {
                 endGame(data, Object.values(data.players)[0]);
                 return -1;
             }
-            if (data.gamemode.nbrOfPlayers == 2 && data.field.wallsSize < data.field.goalsSize * 1.5) {
-                data.field.wallsSize = data.field.goalsSize * 1.5;
-                for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
-                    data.field.walls[i].h = data.field.wallsSize;
-                }
-            }
+            // if (data.gamemode.nbrOfPlayers == 2 && data.field.wallsSize < data.field.goalsSize * 1.5) {
+            //     data.field.wallsSize = data.field.goalsSize * 1.5;
+            //     for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
+            //         data.field.walls[i].h = data.field.wallsSize;
+            //     }
+            // }
             init.initFieldShape(data);
             return 1;
         }

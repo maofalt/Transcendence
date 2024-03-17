@@ -108,6 +108,12 @@ function initLobby(lobbyData) {
             player.score = data.gamemode.nbrOfRounds;
         }
     }
+    if (data.gamemode.nbrOfPlayers == 2 && data.field.wallsSize < data.field.goalsSize * 1.5) {
+        data.field.wallsSize = data.field.goalsSize * 1.5;
+        for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
+            data.field.walls[i].h = data.field.wallsSize;
+        }
+    }
 
     // debugDisp.displayData(data); // display the game data
     initFieldShape(data); // init angles + positions of players and walls;
