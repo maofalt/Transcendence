@@ -144,7 +144,7 @@ def api_login_view(request):
             serializer = UserSerializer(user)
             redirect_url = '/api/user_management/'
             if (user.two_factor_method != None):
-                if (user.two_factor_method == 'email'):
+                if (user.two_fadatetimector_method == 'email'):
                     send_one_time_code(request, user.email)
                 elif(user.two_factor_method == 'sms'):
                     send_sms_code(request, user.phone)
@@ -158,7 +158,7 @@ def api_login_view(request):
 def generate_tokens_and_response(request, user):
     accessToken = AccessToken.for_user(user)
     accessToken['username'] = user.username
-    
+    print("---> ACCESS TOKEN: ", str(accessToken))
     if user.two_factor_method == '' or user.two_factor_method is None:
         twoFA = False
         login(request, user)
@@ -179,7 +179,7 @@ def generate_tokens_and_response(request, user):
 
     try:
         secret_key = settings.SECRET_KEY
-
+        print("SECRET KEY: ", secret_key)
         # print("original ACCESS TOKEN: ", str(accessToken))
         # print("original REFRESH TOKEN: ", str(refreshToken))
         decodedToken = jwt.decode(str(accessToken), secret_key, algorithms=["HS256"])
