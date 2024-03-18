@@ -96,7 +96,7 @@ function ballClipsWallSide (ball, segP1, segP2, perpVec, scaledNormalVec) {
 }
 
 function ballHitsWallV2(data) {
-    let ball, wall;
+    let ball;
 
     ball = data.ball;
 	for (let wall of data.field.walls) {
@@ -215,7 +215,7 @@ function updatePaddles(data) {
 
 function updateBall(data) {
     paddleHit = ballHitsPaddle(data);
-    wallHit = ((data.gamemode.wallsSize || data.gamemode.nbrOfPlayers == 2) ? ballHitsWallV2(data) : 0);
+    wallHit = ((data.field.wallsSize || data.gamemode.nbrOfPlayers == 2) ? ballHitsWallV2(data) : 0);
     if (paddleHit) {
         console.log("paddle hit");
     }
