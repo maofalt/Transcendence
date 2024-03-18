@@ -29,6 +29,14 @@ const init = require("./init");
 //     return false;
 // }
 
+// to make the collisions system actually bullet proof, I should check for collisions each time I
+// change the ball's position according to a collision. Calculating the result of a collision shouldn't
+// create objects clipping through each other, hence each collision with a wall should check for collision with paddles too,
+// and each collision with a paddle should check for collisions with walls
+
+// Actually a better way to do that would be to return the result of each collision, or more accurately store them somewhere,
+// and then if the ball hit a wall and a paddle during the same 'turn' I add both vectors in order to get the new ball's position.
+
 function checkCorner(ball, corner, center, paddle) {
     let distToCorner, vecCornerDist, cornerHitPoint = 0;
 
@@ -38,7 +46,7 @@ function checkCorner(ball, corner, center, paddle) {
     if (distToCorner < ball.r) {
         ball.dir = ball.pos.getDirFrom(center);
         if (paddle)
-            ball.sp += paddle.currSp * 0.7;
+            ball.sp += Math.abs(paddle.currSp) * 0.5;
         return false;
     }
     vecCornerDist = ball.dir.scale(distToCorner);
@@ -49,7 +57,7 @@ function checkCorner(ball, corner, center, paddle) {
         ball.pos = cornerHitPoint.add(ball.dir.scale(-scaler));
         ball.dir = ball.pos.getDirFrom(center);
         if (paddle)
-            ball.sp += paddle.currSp * 0.7;
+            ball.sp += Math.abs(paddle.currSp) * 0.5;
         return true;
     }
     return false;
@@ -79,7 +87,7 @@ function ballClipsWallSide (ball, segP1, segP2, perpVec, scaledNormalVec) {
     hitScaler = vecs.segmentsIntersect(potentialHitPoint, futureHitPos, segP1, segP2);
     if (hitScaler > 0) {
         let ballPath = futureHitPos.sub(potentialHitPoint);
-        ball.pos = ball.pos.add(ballPath.scale(hitScaler));
+        ball.pos = ball.pos.add(ballPath.scale(hitScaler)).add(scaledNormalVec);
         let dot = ball.dir.dotProduct(perpVec);
         let a = Math.acos(dot / ball.dir.mag * perpVec.mag);
         ball.dir = ball.dir.rotateAroundZ(2 * a);
@@ -122,7 +130,7 @@ function ballHitsPaddleSide (paddle, ball, segP1, segP2, scaledNormalVec, side) 
         ball.pos = ball.pos.add(ballPath.scale(hitScaler));
         ball.dir = ball.pos.getDirFrom(paddle.pos).normalize();
         if (side)
-            ball.sp += paddle.currSp * 0.7;
+            ball.sp += Math.abs(paddle.currSp) * 0.5;
         return true;
     }
 }
@@ -148,8 +156,9 @@ function ballHitsPaddle(data) {
     return false;
 }
 
-function updatePaddlesPoints(ball, currPaddle, dir) {
-    if (currPaddle.top.add(dir).sub(ball.pos).mag <= ball.r || currPaddle.bottom.add(dir).sub(ball.pos).mag <= ball.r) {
+function updatePaddlesPoints(ball, currPaddle, dir, dist, toStart) {
+    if ((currPaddle.top.add(dir).sub(ball.pos).mag <= ball.r || currPaddle.bottom.add(dir).sub(ball.pos).mag <= ball.r) && 
+    (dist.mag >= toStart.mag - ball.r * 2)) {
         return;
     }
     currPaddle.pos = currPaddle.pos.add(dir);
@@ -185,12 +194,15 @@ function updatePaddles(data) {
         currPaddle = player.paddle;
         let dir = 0;
         
-        dir = (currPaddle.dashSp != 0) ? currPaddle.dirToTop.scale(currPaddle.dashSp) : currPaddle.dirToTop.scale(currPaddle.currSp);
-            updatePaddlesPoints(data.ball, currPaddle, dir);
-            handleDash(currPaddle);
-
         let vecToStart = currPaddle.pos.sub(currPaddle.startingPos);
         let limitDist = (data.field.goalsSize - currPaddle.h - currPaddle.w) / 2;
+ 
+        dir = (currPaddle.dashSp != 0) ? currPaddle.dirToTop.scale(currPaddle.dashSp) : currPaddle.dirToTop.scale(currPaddle.currSp);
+        updatePaddlesPoints(data.ball, currPaddle, dir, limitDist, vecToStart);
+        handleDash(currPaddle);
+
+        vecToStart = currPaddle.pos.sub(currPaddle.startingPos);
+        limitDist = (data.field.goalsSize - currPaddle.h - currPaddle.w) / 2;
 
         if (vecToStart.mag > limitDist) {
             vecToStart = vecToStart.normalize();
@@ -204,10 +216,16 @@ function updatePaddles(data) {
 function updateBall(data) {
     paddleHit = ballHitsPaddle(data);
     wallHit = ((data.gamemode.wallsSize || data.gamemode.nbrOfPlayers == 2) ? ballHitsWallV2(data) : 0);
+    if (paddleHit) {
+        console.log("paddle hit");
+    }
+    if (wallHit) {
+        console.log("wall hit");
+    }
     if (!paddleHit && !wallHit) {
         data.ball.pos = data.ball.pos.add(data.ball.dir.scale(data.ball.sp));
     } else if (paddleHit) {
-        // data.ball.sp *= 1.01;
+        data.ball.sp *= 1.01;
     }
     if (data.ball.pos.getDistFrom(new Vector(0, 0, 0)) > 120) {
         data.ball.pos = new Vector(0, 0, 0);
