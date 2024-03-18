@@ -192,6 +192,7 @@ io.use((client, next) => {
 	
 			// Verify the token
 			jwt.verify(token, SECRET_KEY, function(err, decoded) {
+			// jwt.verify(token, SECRET_KEY, function(err, decoded) {
 				if (err) {
 					console.error('Authentication error: Could not verify token.', err);
 					return next(new Error('Authentication error: Could not verify token.'));

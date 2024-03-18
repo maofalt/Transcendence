@@ -144,7 +144,7 @@ def api_login_view(request):
             serializer = UserSerializer(user)
             redirect_url = '/api/user_management/'
             if (user.two_factor_method != None):
-                if (user.two_fadatetimector_method == 'email'):
+                if (user.two_factor_method == 'email'):
                     send_one_time_code(request, user.email)
                 elif(user.two_factor_method == 'sms'):
                     send_sms_code(request, user.phone)
