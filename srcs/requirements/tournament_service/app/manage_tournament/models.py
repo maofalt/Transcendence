@@ -141,7 +141,10 @@ class MatchSetting(models.Model):
     validators=[RegexValidator(r'^#(?:[0-9a-fA-F]{3}){1,2}$', message="Invalid color format.")])
     nbr_of_player = models.IntegerField(default=2, 
         validators=[MinValueValidator(2), 
-        MaxValueValidator(8)round robin 
+        MaxValueValidator(8)
+        ]
+    )
+
 class GameType(models.Model):
     # id = models.AutoField(primary_key=True)
     type_name = models.CharField(max_length=255)

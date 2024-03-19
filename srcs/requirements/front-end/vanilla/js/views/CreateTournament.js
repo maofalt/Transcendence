@@ -79,16 +79,20 @@ export default class CreateTournament extends AbstractView {
   
   async getHtml() {
     // Fetching tournament types0
-    const accessToken = sessionStorage.getItem('accessToken');
-
-    const tournamentTypes = await makeApiRequest('/api/tournament/tournament-types/', 'GET', null, {},  accessToken);
-    console.log('tournamentTypes:', tournamentTypes);
-    const tournamentTypeOptionsHtml = tournamentTypes.body.map(type => `<option value="${type.type_id}">${type.type_name}</option>`).join('');
-    // Fetching registration types
-    const registrationTypes = await makeApiRequest('/api/tournament/registration-types/', 'GET', null, {},  accessToken);
-    const registrationTypeOptionsHtml = registrationTypes.body.map(type => `<option value="${type.type_id}">${type.type_name}</option>`).join('');  
-    console.log ('registrationTypeOptionsHtml:', registrationTypes);
-    
+    try {
+      const accessToken = sessionStorage.getItem('accessToken');
+      const tournamentTypes = await makeApiRequest('/api/tournament/tournament-types/', 'GET', null, {},  accessToken);
+      console.log('tournamentTypes:', tournamentTypes);
+      const tournamentTypeOptionsHtml = tournamentTypes.body.map(type => `<option value="${type.type_id}">${type.type_name}</option>`).join('');
+      // Fetching registration types
+      const registrationTypes = await makeApiRequest('/api/tournament/registration-types/', 'GET', null, {},  accessToken);
+      const registrationTypeOptionsHtml = registrationTypes.body.map(type => `<option value="${type.type_id}">${type.type_name}</option>`).join('');  
+      console.log ('registrationTypeOptionsHtml:', registrationTypes);        
+    } catch (error) {
+      console.error('Failed to fetch types:', error);
+      tournamentTypeOptionsHtml = `<option value="1">Knockout</option>`;
+      registrationTypeOptionsHtml = '<option value="1">Open</option>';
+    }
     
     let htmlstuff = `
           <section class="create-tournament">
