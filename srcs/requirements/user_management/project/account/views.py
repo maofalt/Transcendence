@@ -74,14 +74,15 @@ def get_user(request):
         decoded_refresh_token = jwt.decode(refreshToken, settings.SECRET_KEY, algorithms=["HS256"])
         print("DECODED REFRESHTOKEN: ", decoded_refresh_token)
         uid = decoded_refresh_token['user_id']
-        user = User.objects.get(pk=uid)
-        user_data = {
-            'user_id': user.id,
-            'username': user.username
-        }
-
-        # Return the user data as JsonResponse
-        return JsonResponse(user_data)
+        try:
+            user = User.objects.get(pk=uid)
+            user_data = {
+                'user_id': user.id,
+                'username': user.username
+            }
+            return JsonResponse(user_data)
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'User not found'}, status=404)
 
     except jwt.ExpiredSignatureError:
         return JsonResponse({'error': 'Refresh token has expired'}, status=400)

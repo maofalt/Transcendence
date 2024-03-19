@@ -6,8 +6,8 @@ from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from rest_framework.permissions import IsAuthenticated
 from .models import Tournament, TournamentMatch, MatchSetting, GameType, TournamentType, RegistrationType, TournamentPlayer, Player, MatchParticipants
-from .serializers import TournamentSerializer, TournamentMatchSerializer, MatchSettingSerializer, GameTypeSerializer
-from .serializers import TournamentTypeSerializer, RegistrationTypeSerializer, TournamentPlayerSerializer
+from .serializers import TournamentSerializer, TournamentMatchSerializer, MatchSettingSerializer
+from .serializers import TournamentPlayerSerializer
 from .serializers import PlayerSerializer, MatchParticipantsSerializer, TournamentRegistrationSerializer
 from .serializers import MatchGeneratorSerializer
 from django.conf import settings
@@ -272,7 +272,7 @@ class TournamentRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
 class TournamentParticipantList(APIView):
     authentication_classes = [CustomJWTAuthentication]
     permission_classes = [IsAuthenticated] # Only authenticated users can view the participant list
-    
+
     def get(self, request, id):
         tournament = get_object_or_404(Tournament, pk=id)
         
@@ -426,27 +426,27 @@ class MatchEnd(APIView):
 #     def perform_create(self, serializer):
 #         serializer.save()
 
-class GameTypeList(ListAPIView):
-    authentication_classes = [CustomJWTAuthentication]
-    # permission_classes = [IsAuthenticated] 
+# class GameTypeList(ListAPIView):
+#     authentication_classes = [CustomJWTAuthentication]
+#     # permission_classes = [IsAuthenticated] 
 
-    queryset = GameType.objects.all()
-    serializer_class = GameTypeSerializer
+#     queryset = GameType.objects.all()
+#     serializer_class = GameTypeSerializer
 
-class TournamentTypeList(ListAPIView):
-    authentication_classes = [CustomJWTAuthentication]
-    # permission_classes = [IsAuthenticated] 
+# class TournamentTypeList(ListAPIView):
+#     authentication_classes = [CustomJWTAuthentication]
+#     # permission_classes = [IsAuthenticated] 
 
-    queryset = TournamentType.objects.all()
-    serializer_class = TournamentTypeSerializer
+#     queryset = TournamentType.objects.all()
+#     serializer_class = TournamentTypeSerializer
 
-class RegistrationTypeList(ListAPIView):
-    authentication_classes = [CustomJWTAuthentication]
-    # permission_classes = [IsAuthenticated] 
+# class RegistrationTypeList(ListAPIView):
+#     authentication_classes = [CustomJWTAuthentication]
+#     # permission_classes = [IsAuthenticated] 
 
-    queryset = TournamentType.objects.all()
-    # queryset = RegistrationType.objects.all()
-    serializer_class = TournamentTypeSerializer
+#     queryset = TournamentType.objects.all()
+#     # queryset = RegistrationType.objects.all()
+#     serializer_class = TournamentTypeSerializer
 
 class TournamentPlayerList(ListAPIView):
     authentication_classes = [CustomJWTAuthentication]

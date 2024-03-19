@@ -9,11 +9,14 @@ class MatchSettingSerializer(serializers.ModelSerializer):
 
 class TournamentSerializer(serializers.ModelSerializer):
     setting = MatchSettingSerializer()
+    # game_type = serializers.PrimaryKeyRelatedField(queryset=GameType.objects.all())  # Add this line
+    # tournament_type = serializers.PrimaryKeyRelatedField(queryset=TournamentType.objects.all())  # Add this line
+    # registration = serializers.PrimaryKeyRelatedField(queryset=RegistrationType.objects.all())  # Add this line
     is_full = serializers.SerializerMethodField()
 
     class Meta:
         model = Tournament
-        fields = ['tournament_name', 'nbr_of_player_total', 'nbr_of_player_match', 'setting', 'registration_period_min', 'host_id', 'is_full' ]
+        fields = ['tournament_name', 'nbr_of_player_total', 'nbr_of_player_match', 'setting', 'game_type', 'tournament_type', 'registration', 'registration_period_min', 'host_id', 'is_full' ]
 
     def create(self, validated_data):
         setting_data = validated_data.pop('setting')  # Extract data from MatchSetting
@@ -80,10 +83,10 @@ class MatchGeneratorSerializer(serializers.Serializer):
         instance.tournament_id = validated_data.get('tournament_id', instance.tournament_id)
         return instance
 
-class GameTypeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = GameType
-        fields = ['type_id', 'type_name']
+# class GameTypeSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = GameType
+#         fields = ['id', 'type_name']
 
 class TournamentMatchSerializer(serializers.ModelSerializer):
     players = PlayerSerializer(many=True)
@@ -94,15 +97,15 @@ class TournamentMatchSerializer(serializers.ModelSerializer):
         fields = ['id', 'tournament_id', 'round_number', 'match_time', 'players', 'participants']
 
 
-class TournamentTypeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TournamentType
-        fields = ['type_id', 'type_name']
+# class TournamentTypeSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = TournamentType
+#         fields = ['id', 'type_name']
 
-class RegistrationTypeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RegistrationType
-        fields = ['type_id', 'type_name']
+# class RegistrationTypeSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = RegistrationType
+#         fields = ['id', 'type_name']
 
 class TournamentPlayerSerializer(serializers.ModelSerializer):
     username = serializers.CharField()

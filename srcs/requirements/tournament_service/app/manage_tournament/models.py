@@ -31,6 +31,20 @@ class Tournament(models.Model):
     players = models.ManyToManyField('Player', related_name='tournaments')  # Direct many-to-many relationship with Player
     matches = models.ManyToManyField('TournamentMatch', related_name='tournaments')
     nbr_of_match = models.IntegerField(default=0)
+    TOURNAMENT_TYPE = [
+        ('tournament', 'Tournament'),
+        ('league', 'League'),
+    ]
+    tournament_type = models.CharField(max_length=15, choices=TOURNAMENT_TYPE, default='tournament', null=False)
+    REGISTRATION_TYPE = [
+        ('public', 'Opened game'),
+        ('private', 'Invitaion required'),
+    ]
+    registration = models.CharField(max_length=15, choices=REGISTRATION_TYPE, default='public', null=False)
+    GAME_TYPE = [
+        ('pong', 'Pong'),
+    ]
+    game_type = models.CharField(max_length=15, choices=GAME_TYPE, default='pong', null=False)
 
     def calculate_nbr_of_match(self):
         # Calculate the number of matches based on total players and max players per match
