@@ -66,7 +66,11 @@ export default class Tournament extends AbstractView {
 
 	async getTournamentList() { 
 		try {
-			const response = await makeApiRequest('/api/tournament/create-and-list/','GET', {});
+
+			const accessToken = localStorage.getItem('accessToken');
+			
+
+			const response = await makeApiRequest('/api/tournament/create-and-list/','GET', null, {}, accessToken);
 			const tournaments = response.body;
 			console.log('Tournament list:', response.body);
 			
@@ -83,9 +87,9 @@ export default class Tournament extends AbstractView {
 				const tournamentNameElement = tournamentTable.createStyledHTMLObject('div', tournament.tournament_name, Styles.tournamentName);
 				const hostElement = tournamentTable.createStyledHTMLObject('div', `Host ${tournament.host_id}`, Styles.host);
 				//64
-				const numberOfPlayersElement = tournamentTable.createStyledHTMLObject('div', `${tournament.nbr_of_player}/64`, {}); 
+				const numberOfPlayersElement = tournamentTable.createStyledHTMLObject('div', `${tournament.joined}/${tournament.nbr_of_player_total}`, {}); 
 				const timeRemainingElement = tournamentTable.createStyledHTMLObject('div', '2:00', {}); // Placeholder for time remaining
-				const tournamentTypeElement = tournamentTable.createStyledHTMLObject('div', tournament.tournament_type === 1 ? 'Single Elimination' : 'Other Type', {});
+				const tournamentTypeElement = tournamentTable.createStyledHTMLObject('div', `${tournament.tournament_type}`);
 				const registrationModeElement = tournamentTable.createStyledHTMLObject('div', tournament.registration === 1 ? 'Open' : 'Invitational', {});
 				const joinButtonElement = document.createElement('button');
 				joinButtonElement.textContent = 'Join';
