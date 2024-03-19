@@ -50,7 +50,7 @@ class TournamentListCreate(generics.ListCreateAPIView):
         registration_period_min = data.get('registration_period_min')
         nbr_of_player_total = data.get('nbr_of_player_total')
         nbr_of_player_match = data.get('nbr_of_player_match')
-        username = 'test_user'
+        username = 'tempHost'
         host, created = Player.objects.get_or_create(username=username) # created wiil return False if the player already exists
 
         # print("host username: ", host.username)
@@ -60,7 +60,7 @@ class TournamentListCreate(generics.ListCreateAPIView):
         match_setting = MatchSetting.objects.create(
             duration_sec=data.get('duration_sec', 210),
             max_score=data.get('max_score', 5),
-            walls_factor=data.gserializer_classet('walls_factor', 0),
+            walls_factor=data.get('walls_factor', 0),
             size_of_goals=data.get('size_of_goals', 15),
             paddle_height=data.get('paddle_height', 10),
             paddle_speed=data.get('paddle_speed', 0.5),
@@ -205,32 +205,31 @@ class MatchGenerator(generics.ListCreateAPIView):
                 if winners % players_match != 0:
                     added_match += 1
                 tmp = added_match
-        
-        serializer = self.get_serializer(data={'tournament_id': tournament.id})
-        serializer.is_valid(raise_exception=True)
-
 
         players = tournament.players.all().order_by('id')
         print("all player: ", tournament.players.count())
-        i = 0
         for player in players:
             match = tournament.assign_player_to_match(player, 0)
             if match:
                 print(f"Player {player} added to match {match}")
-                participant, created = MatchParticipants.objects.get_or_create(match_id=match.id)
-                if participant:
-                    participant.player_id = player.id
-                    participant.save()
-                    print(f"Participant {participant} updated with player ID: {player.id}")
-                    print("i: ", i)
-                    i += 1
+                participant, created = MatchParticipants.objects.get_or_create(
+                    match_id=match.id,
+                    player_id=player.id
+                )       
+                if created:
+                    print(f"Participant {participant} created with player ID: {player.id}")
+                else:
+                    print(f"Participant {participant} already exists for match {match.id}")            
+                match.participants.add(participant)
+                match.save()
             else:
                 print(f"No available matches for player {player}")
 
-        
+        tournament_matches = TournamentMatch.objects.filter(tournament_id=tournament.id).order_by('id')
+        serializer = TournamentMatchSerializer(tournament_matches, many=True)
 
-        return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
-
+        return JsonResponse(serializer.data, status=status.HTTP_201_CREATED, safe=False)
+    
 
 class WinnerAssignToNextMatch(APIView):
     def post(self, request):

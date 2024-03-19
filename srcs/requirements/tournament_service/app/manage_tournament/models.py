@@ -71,10 +71,12 @@ class TournamentMatch(models.Model):
     # match_setting_id = models.ForeignKey('MatchSetting', on_delete=models.PROTECT, null=False, related_name='matches')
     round_number = models.IntegerField(default=1, validators=[MinValueValidator(1)])
     match_time = models.DateTimeField(null=True) 
-    players = models.ManyToManyField('Player', related_name='matches')  # Direct many-to-many relationship with Player
-    participants = models.ForeignKey('MatchParticipants', on_delete=models.CASCADE, null=True, related_name='match_participants') 
+    players = models.ManyToManyField('Player', related_name='matches')
+    participants = models.ManyToManyField('MatchParticipants', related_name='matches')
+
     def __str__(self):
-        return f"Tournament: {self.tournament_id}, Match Setting: {self.match_setting_id}, Round Number: {self.round_number}"
+        player_count = self.players.count()
+        return f"ID: {self.id}, Tournament: {self.tournament_id}, Match Setting: {self.match_setting_id}, Round Number: {self.round_number}, Count Players: {player_count}"
 
 class MatchSetting(models.Model):
     # setting_id = models.AutoField(primary_key=True)
@@ -150,7 +152,6 @@ class TournamentPlayer(models.Model):
         unique_together = ('tournament_id', 'player')
 
 class Player(models.Model):
-    # player_id = models.AutoField(primary_key=True)
     username = models.CharField(max_length=255)
 
     class Meta:

@@ -56,6 +56,16 @@ class TournamentRegistrationSerializer(serializers.ModelSerializer):
         tournament_player = TournamentPlayer.objects.create(**validated_data)
         return tournament_player
 
+class PlayerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Player
+        fields = ['id', 'username']
+
+class MatchParticipantsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MatchParticipants
+        fields = ['id', 'match_id', 'player_id', 'is_winner', 'participant_score']
+
 class MatchGeneratorSerializer(serializers.Serializer):
     tournament_id = serializers.IntegerField()
     class Meta:
@@ -76,9 +86,12 @@ class GameTypeSerializer(serializers.ModelSerializer):
         fields = ['type_id', 'type_name']
 
 class TournamentMatchSerializer(serializers.ModelSerializer):
+    players = PlayerSerializer(many=True)
+    participants = MatchParticipantsSerializer(many=True)
+
     class Meta:
         model = TournamentMatch
-        fields = ['match_id', 'tournament_id', 'round_number', 'match_time', 'match_result']
+        fields = ['id', 'tournament_id', 'round_number', 'match_time', 'players', 'participants']
 
 
 class TournamentTypeSerializer(serializers.ModelSerializer):
@@ -96,13 +109,3 @@ class TournamentPlayerSerializer(serializers.ModelSerializer):
     class Meta:
         model = TournamentPlayer
         fields = ['tournament_id', 'player', 'username']
-
-class PlayerSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Player
-        fields = ['player_id', 'username']
-
-class MatchParticipantsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = MatchParticipants
-        fields = ['match_id', 'player_id', 'is_winner', 'participant_score']
