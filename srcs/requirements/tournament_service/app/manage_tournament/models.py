@@ -144,10 +144,7 @@ class MatchSetting(models.Model):
         MaxValueValidator(8)
         ]
     )
-<<<<<<< HEAD
 
-=======
->>>>>>> 279b93df3d425d8b91fe0d7e03fac16694ec52d7
 class GameType(models.Model):
     # id = models.AutoField(primary_key=True)
     type_name = models.CharField(max_length=255)
