@@ -426,20 +426,19 @@ class MatchEnd(APIView):
 #     queryset = GameType.objects.all()
 #     serializer_class = GameTypeSerializer
 
-# class TournamentTypeList(ListAPIView):
-#     authentication_classes = [CustomJWTAuthentication]
-#     # permission_classes = [IsAuthenticated] 
+class TournamentTypeList(ListAPIView):
+    # authentication_classes = [CustomJWTAuthentication]
+    # permission_classes = [IsAuthenticated] 
+    def list(self, request, *args, **kwargs):
+        tournament_types = Tournament.TOURNAMENT_TYPE
+        return JsonResponse({'tournament_types': tournament_types})
 
-#     queryset = TournamentType.objects.all()
-#     serializer_class = TournamentTypeSerializer
-
-# class RegistrationTypeList(ListAPIView):
-#     authentication_classes = [CustomJWTAuthentication]
-#     # permission_classes = [IsAuthenticated] 
-
-#     queryset = TournamentType.objects.all()
-#     # queryset = RegistrationType.objects.all()
-#     serializer_class = TournamentTypeSerializer
+class RegistrationTypeList(ListAPIView):
+    # authentication_classes = [CustomJWTAuthentication]
+    # permission_classes = [IsAuthenticated] 
+    def list(self, request, *args, **kwargs):
+        registration_types = Tournament.REGISTRATION_TYPE
+        return JsonResponse({'registration_types': registration_types})
 
 class TournamentPlayerList(ListAPIView):
     authentication_classes = [CustomJWTAuthentication]
