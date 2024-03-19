@@ -1,11 +1,16 @@
 
-export async function makeApiRequest(url, method = 'GET', body = null, headers = {}) {
+export async function makeApiRequest(url, method = 'GET', body = null, headers = {}, jwt = null) {
 	let response;
 	
 	try {
 		// Setting up headers dynamically based on Content-Type
 		if (headers['Content-Type'] != 'application/x-www-form-urlencoded')
 			headers['Content-Type'] = 'application/json';
+
+		if (jwt) {
+			headers['Authorization'] = `${jwt}`;
+		}
+
 		const defaultHeaders = {
 			'Accept': 'application/json',
 			...headers,
@@ -42,6 +47,7 @@ export async function makeApiRequest(url, method = 'GET', body = null, headers =
 				body: null
 			};
 		}
+
 		// Check if response is JSON
 		const contentType = response.headers.get("content-type");
 		if (contentType && contentType.includes("application/json")) {

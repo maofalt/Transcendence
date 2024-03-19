@@ -188,6 +188,7 @@ io.use((client, next) => {
 	
 			// Verify the token
 			jwt.verify(token, SECRET_KEY, function(err, decoded) {
+			// jwt.verify(token, SECRET_KEY, function(err, decoded) {
 				if (err) {
 					console.error('HEHE Authentication error: Could not verify token.', err);
 					return next(new Error('WAWA Authentication error: Could not verify token.'));
@@ -264,8 +265,8 @@ io.on('connection', (client) => {
 			if (data.connectedPlayers < 1) {
 				console.log("CLEARING INTERVAL");
 				clearInterval(match.gameInterval);
-				matches.delete(client.matchID);
-				delete data;
+				// matches.delete(client.matchID);
+				// delete data;
 			}
 			console.log(`Client disconnected with ID: ${client.id} (num clients: ${io.engine.clientsCount})`);
 		});

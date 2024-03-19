@@ -17,16 +17,23 @@ urlpatterns = [
     #   - DELETE /manage/{id}/ - Remove a tournament from the system.
     path('manage/<int:pk>/', views.TournamentRetrieveUpdateDestroy.as_view(), name='tournament-retrieve-update-destroy'),
 
+# JoinTournament:
+    #   - POST /add_player/{id}/ - Add a player to a specific tournament.
+    path('add-player/<int:id>/', views.JoinTournament.as_view(), name='add-player'),
+
 # Tournament Participation:
-    # POST /{id}/participants/ - Register a participant for a tournament.
+    # GET /{id}/participants/ - Show the participants list for a tournament.
     path('<int:id>/participants/', views.TournamentParticipantList.as_view(), name='tournament-participants'),
     # DELETE /{id}/participants/{participantId}/ - Deregister a participant from a tournament.
     path('<int:id>/participants/<int:participant_id>/', views.TournamentParticipantDetail.as_view(), name='tournament-participant-detail'),
+    # POST /{id}/register/ - Register for a tournament.
+    # path('<int:id>/register/', TournamentRegistrationCreate.as_view(), name='tournament-registration'),
 
 # Tournament Progression:
     # GET /{id}/matches - Retrieve a list of matches for a tournament.
     # POST /{id}/matches - Create a new match within a tournament.
-    path('<int:id>/matches/', views.TournamentMatchList.as_view(), name='tournament-matches'),
+    path('mathch_generator/', views.MatchGenerator.as_view(), name='mathch_generator'),
+    # path('<int:id>/matches/', views.TournamentMatchList.as_view(), name='tournament-matches'),
     # PUT /tournaments/{id}/matches/{matchId} - Update the status or result of a match.
     # DELETE /tournaments/{id}/matches/{matchId} - Cancel a scheduled match.
     path('<int:id>/matches/<int:match_id>/', views.TournamentMatchDetail.as_view(), name='tournament-match-detail'),
@@ -47,12 +54,19 @@ urlpatterns = [
     # POST /tournaments/{id}/end - End the tournament, finalizing its state and possibly triggering the calculation of rankings.
     path('matches/<int:match_id>/end/', views.MatchEnd.as_view(), name='match-end'),
 
+# All tournament types
+    # Get aLL TOURNAMENT types
+    # path('tournament-types/', views.TournamentTypeList.as_view(), name='tournament-type-list'),
+    
+# All registration types
+    # Get aLL registration types
+    # path('registration-types/', views.RegistrationTypeList.as_view(), name='resgistration-type-list'),
     
     # path('<int:tournament_id>/matches/', views.TournamentMatchList.as_view(), name='tournament-match-list'),
     # path('<int:tournament_id>/match-settings/', views.MatchSettingList.as_view(), name='match-setting-list'),
-    path('<int:tournament_id>/game-types/', views.GameTypeList.as_view(), name='game-type-list'),
-    path('<int:tournament_id>/tournament-types/', views.TournamentTypeList.as_view(), name='tournament-type-list'),
-    path('<int:tournament_id>/registration-types/', views.RegistrationTypeList.as_view(), name='resgistration-type-list'),
+    # path('<int:tournament_id>/game-types/', views.GameTypeList.as_view(), name='game-type-list'),
+    # path('<int:tournament_id>/tournament-types/', views.TournamentTypeList.as_view(), name='tournament-type-list'),
+    # path('<int:tournament_id>/registration-types/', views.RegistrationTypeList.as_view(), name='resgistration-type-list'),
     path('<int:tournament_id>/tournament-players/', views.TournamentPlayerList.as_view(), name='tournament-player-list'),
     path('<int:tournament_id>/tournament-players/player/', views.TournamentPlayerList.as_view(), name='player-list'),
     path('<int:tournament_id>/matches/participants/', views.MatchParticipantsList.as_view(), name='matches-participants-list'),
