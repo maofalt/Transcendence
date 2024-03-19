@@ -178,7 +178,9 @@ io.use((client, next) => {
 	try {
 		console.log("\nquery:\n", client.handshake.query);
 		client.matchID = client.handshake.query.matchID;
-		client.playerID = client.handshake.query.playerid;
+		//client.playerID = client.handshake.query.cookie;
+		console.log("\n======================================================================== \n[USE] client handshake:\n", client.handshake);
+		console.log("\n================================================================\n");
 		if (!client.matchID) {
 			console.error('Authentication error: Missing matchID');
 			next(new Error('Authentication error: Missing matchID.'));
@@ -186,18 +188,22 @@ io.use((client, next) => {
 		if (client.handshake.headers && client.handshake.headers.cookie) {
 			// Parse the cookies from the handshake headers
 			const cookies = cookie.parse(client.handshake.headers.cookie);
-			const token = cookies.jwtToken;
+			//const token = cookies.jwtToken;
+			const token = cookies.refreshToken;
 			console.log("\ntoken:\n", token);
 			console.log("\ncookies:\n", cookies);
 	
 			// Verify the token
+			console.log("\nFRONT END SECRET_KEY:\n", SECRET_KEY);
 			jwt.verify(token, SECRET_KEY, function(err, decoded) {
 				if (err) {
 					console.error('Authentication error: Could not verify token.', err);
 					return next(new Error('Authentication error: Could not verify token.'));
 				}
+				console.log("\n decoded \n", decoded);
 				client.decoded = decoded;
-				client.playerID = decoded.username;
+				//client.playerID = decoded.user_id;
+				client.playerID = "motero";
 				// console.log("JWT: ", decoded);
 				// client.username = decoded.replace('jwtToken=', '')
 				console.log("\ndecoded:\n", decoded);

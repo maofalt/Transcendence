@@ -87,7 +87,7 @@ export default class CreateTournament extends AbstractView {
     // Fetching registration types
     const registrationTypes = await makeApiRequest('/api/tournament/registration-types/', 'GET', null, {},  accessToken);
     const registrationTypeOptionsHtml = registrationTypes.body.map(type => `<option value="${type.type_id}">${type.type_name}</option>`).join('');  
-    console.log ('registrationTypeOptionsHtml:', registrationTypeOptionsHtml);
+    console.log ('registrationTypeOptionsHtml:', registrationTypes);
     
     
     let htmlstuff = `
