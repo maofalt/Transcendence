@@ -178,9 +178,6 @@ io.use((client, next) => {
 	try {
 		console.log("\nquery:\n", client.handshake.query);
 		client.matchID = client.handshake.query.matchID;
-		//client.playerID = client.handshake.query.cookie;
-		console.log("\n======================================================================== \n[USE] client handshake:\n", client.handshake);
-		console.log("\n================================================================\n");
 		if (!client.matchID) {
 			console.error('Authentication error: Missing matchID');
 			next(new Error('Authentication error: Missing matchID.'));

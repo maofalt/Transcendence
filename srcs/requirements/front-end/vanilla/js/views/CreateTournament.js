@@ -18,7 +18,7 @@ export default class CreateTournament extends AbstractView {
   
   async init() {
     // Initialize the game with basic settings
-    let basicGameSettings = this.getBasicGameSettings();
+    let basicGameSettings = await this.getBasicGameSettings();
     console.log('Initializing game with basic settings:', basicGameSettings);
     await this.initializeGame(basicGameSettings);
 
@@ -242,7 +242,8 @@ export default class CreateTournament extends AbstractView {
       ]
     }
     console.log('Game settings from form recovered');
-    // Add dummy players data in gameSetting depending on the number of players
+    
+    //this.addPlayerDataToGameSettings(gameSettings, [], gameSettings.gamemodeData.nbrOfPlayers);
     let nbr_of_players = gameSettings.gamemodeData.nbrOfPlayers;
     let dummyPlayeName = 'banana';
     let dummyPlayerColor = '0x00ff00';
@@ -258,8 +259,29 @@ export default class CreateTournament extends AbstractView {
     return gameSettings;
   }
 
-  getBasicGameSettings() {
-	  let gameSettings = {
+  // Add dummy players data in gameSetting depending on the number of players
+  addPlayerDataToGameSettings(gameSettings, playerNames=[], nbrOfPlayers=3) {
+
+    let dummyPlayeName = 'banana';
+    let dummyPlayerColor = '0x00ff00';
+
+    while (playerNames.length != nbrOfPlayers){
+      playerNames.push(dummyPlayeName + playerNames.length);
+    }
+    playerNames.forEach((playerName) => {
+      let dummyPlayer = {
+        "accountID": playerName,
+        "color": dummyPlayerColor
+      }
+      gameSettings.playersData.push(dummyPlayer);
+    });
+  }
+
+  async getBasicGameSettings() {
+    const accessToken = sessionStorage.getItem('accessToken');
+    const response = await makeApiRequest('/api/user_management/auth/getUser', 'GET', null, {}, accessToken);
+    console.log('Basic game settings:', response.body);
+    let gameSettings = {
 	  	"gamemodeData": {
 	  	  "nbrOfPlayers": 3,
 	  	  "nbrOfRounds": 1,
