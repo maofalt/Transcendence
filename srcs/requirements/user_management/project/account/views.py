@@ -68,6 +68,26 @@ User = get_user_model()
 def home(request):
     return render(request, 'home.html')
 
+def get_user(request):
+    refreshToken = request.COOKIES.get('refreshToken', None)
+    try:
+        decoded_refresh_token = jwt.decode(refreshToken, settings.SECRET_KEY, algorithms=["HS256"])
+        print("DECODED REFRESHTOKEN: ", decoded_refresh_token)
+        uid = decoded_refresh_token['user_id']
+        user = User.objects.get(pk=uid)
+        user_data = {
+            'user_id': user.id,
+            'username': user.username
+        }
+
+        # Return the user data as JsonResponse
+        return JsonResponse(user_data)
+
+    except jwt.ExpiredSignatureError:
+        return JsonResponse({'error': 'Refresh token has expired'}, status=400)
+    except jwt.InvalidTokenError:
+        return JsonResponse({'error': 'Invalid refresh token'}, status=400)
+
 # call this function from frontend everytime user calls any API
 def check_refresh(request):
     accessToken = request.headers.get('Authorization', None)
@@ -83,8 +103,9 @@ def check_refresh(request):
 
     try:
         decoded_token = jwt.decode(accessToken.split()[1], settings.SECRET_KEY, algorithms=["HS256"])
+        local_tz = pytz.timezone('Europe/Paris')
         exp_timestamp = decoded_token['exp']
-        exp_datetime = datetime.datetime.utcfromtimestamp(exp_timestamp).replace(tzinfo=datetime.timezone.utc)
+        exp_datetime = datetime.datetime.fromtimestamp(exp_timestamp, tz=pytz.utc).astimezone(local_tz).strftime('%Y-%m-%d %H:%M:%S')
         print("exp_datetime: ", exp_datetime)
         
         return JsonResponse({'message': 'Access token is still valid'})
