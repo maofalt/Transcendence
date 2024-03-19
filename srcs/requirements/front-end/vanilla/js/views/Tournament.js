@@ -87,7 +87,7 @@ export default class Tournament extends AbstractView {
 				const tournamentNameElement = tournamentTable.createStyledHTMLObject('div', tournament.tournament_name, Styles.tournamentName);
 				const hostElement = tournamentTable.createStyledHTMLObject('div', `Host ${tournament.host_id}`, Styles.host);
 				//64
-				const numberOfPlayersElement = tournamentTable.createStyledHTMLObject('div', `${tournament.nbr_of_player}/64`, {}); 
+				const numberOfPlayersElement = tournamentTable.createStyledHTMLObject('div', `0/${tournament.nbr_of_player_total}`, {}); 
 				const timeRemainingElement = tournamentTable.createStyledHTMLObject('div', '2:00', {}); // Placeholder for time remaining
 				const tournamentTypeElement = tournamentTable.createStyledHTMLObject('div', tournament.tournament_type === 1 ? 'Single Elimination' : 'Other Type', {});
 				const registrationModeElement = tournamentTable.createStyledHTMLObject('div', tournament.registration === 1 ? 'Open' : 'Invitational', {});
