@@ -66,7 +66,7 @@ export default class CreateTournament extends AbstractView {
 	  console.log('Create Game');
 	  //const gameSettings = this.getGameSettings();
 	  try {
-	  	const response = await makeApiRequest('/game-logic/createMatch','POST',gameSettings);
+	  	const response = await makeApiRequest('/game-logic/createMatch','POST',gameSettings, {}, sessionStorage.getItem('accessToken'));
 	  	console.log('Match created:', response.body);
             return response.body.matchID;
 	  } catch (error) {
@@ -85,7 +85,7 @@ export default class CreateTournament extends AbstractView {
     console.log('tournamentTypes:', tournamentTypes);
     const tournamentTypeOptionsHtml = tournamentTypes.body.map(type => `<option value="${type.type_id}">${type.type_name}</option>`).join('');
     // Fetching registration types
-    const registrationTypes = await makeApiRequest('/api/tournament/registration-types/', 'GET');
+    const registrationTypes = await makeApiRequest('/api/tournament/registration-types/', 'GET', null, {},  accessToken);
     const registrationTypeOptionsHtml = registrationTypes.body.map(type => `<option value="${type.type_id}">${type.type_name}</option>`).join('');  
     console.log ('registrationTypeOptionsHtml:', registrationTypeOptionsHtml);
     
@@ -316,7 +316,8 @@ export default class CreateTournament extends AbstractView {
 
     console.log('Submitting tournament:', tournamentAndGameSettings);
     try {
-      const response = await makeApiRequest('/api/tournament/create-and-list/', 'POST', tournamentAndGameSettings);
+      const accessToken = sessionStorage.getItem('accessToken');
+      const response = await makeApiRequest('/api/tournament/create-and-list/', 'POST', tournamentAndGameSettings, {}, accessToken);
     } catch (error) {
       console.error('Failed to create tournament:', error);
     }

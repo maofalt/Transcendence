@@ -66,7 +66,11 @@ export default class Tournament extends AbstractView {
 
 	async getTournamentList() { 
 		try {
-			const response = await makeApiRequest('/api/tournament/create-and-list/','GET', {});
+
+			const accessToken = localStorage.getItem('accessToken');
+			
+
+			const response = await makeApiRequest('/api/tournament/create-and-list/','GET', null, {}, accessToken);
 			const tournaments = response.body;
 			console.log('Tournament list:', response.body);
 			
