@@ -6,7 +6,6 @@ import datetime
 from django.http import JsonResponse
 from django.conf import settings
 
-
 # ------------------------ Authentication -----------------------------------
 class CustomJWTAuthentication(authentication.BaseAuthentication):
     def authenticate(self, request):
@@ -22,7 +21,6 @@ class CustomJWTAuthentication(authentication.BaseAuthentication):
             # return JsonResponse({'error': 'Refresh token is missing'}, status=400)
 
         try:
-            print("SECRET KEY: ", settings.SECRET_KEY)
             decoded_token = jwt.decode(accessToken.split()[1], settings.SECRET_KEY, algorithms=["HS256"])
             exp_timestamp = decoded_token['exp']
             exp_datetime = datetime.datetime.utcfromtimestamp(exp_timestamp).replace(tzinfo=datetime.timezone.utc)

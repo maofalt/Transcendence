@@ -9,6 +9,7 @@ from .models import Tournament, TournamentMatch, MatchSetting, GameType, Tournam
 from .serializers import TournamentSerializer, TournamentMatchSerializer, MatchSettingSerializer, GameTypeSerializer
 from .serializers import TournamentTypeSerializer, RegistrationTypeSerializer, TournamentPlayerSerializer
 from .serializers import PlayerSerializer, MatchParticipantsSerializer, TournamentRegistrationSerializer
+from .serializers import MatchGeneratorSerializer
 from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -33,7 +34,7 @@ class TournamentListCreate(generics.ListCreateAPIView):
     # permission_classes = [IsAuthenticated]  # Only authenticated users can create and list tournaments
 
     def get(self, request, *args, **kwargs):
-        print(">> loading page\n")
+        print(">> GET: loading page\n")
         tournaments = self.get_queryset()
         serializer = self.get_serializer(tournaments, many=True)
         return Response(serializer.data)
@@ -42,14 +43,17 @@ class TournamentListCreate(generics.ListCreateAPIView):
         print(">> received POST to creat a new tournament\n")
         # Attribue automatiquement l'utilisateur actuel comme host du tournoi créé
         data = request.data
+        print("POSTED DATA: ", data)
         tournament_name = data.get('tournament_name')
         # settings = data.get('settings')
-        registration_type = data.get('registration_type')
+        # registration_type = data.get('registration_type')
         registration_period_min = data.get('registration_period_min')
         nbr_of_player_total = data.get('nbr_of_player_total')
         nbr_of_player_match = data.get('nbr_of_player_match')
-        host = request.user
-        print("host username: ", host.username)
+        username = 'tempHost'
+        host, created = Player.objects.get_or_create(username=username) # created wiil return False if the player already exists
+
+        # print("host username: ", host.username)
 
 
         # Create MatchSetting instance
@@ -69,21 +73,21 @@ class TournamentListCreate(generics.ListCreateAPIView):
         # Create Tournament instance
         tournament = Tournament.objects.create(
             tournament_name=tournament_name,
-            registration=registration_type,
+            # registration=registration_type,
             registration_period_min=registration_period_min,
             nbr_of_player_total=nbr_of_player_total,
             nbr_of_player_match=nbr_of_player_match,
             host=host,
-            settings=match_setting,
+            setting=match_setting,
             created_at=timezone.now(),
             # nbr_of_player   will be assigned when user joining the tournament
         )
         
-        player, created = Player.objects.get_or_create(username=username) # created wiil return False if the player already exists
-        tournament.players.add(player)
+        tournament.players.add(host)
 
         serializer = TournamentSerializer(tournament)
         # tournament.calculate_nbr_of_match()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
         # serializer.save(host=self.request.user)
@@ -109,13 +113,24 @@ class TournamentListCreate(generics.ListCreateAPIView):
 
 # ------------------------ Assigning Players on the Tournament Tree -----------------------------------
 
-class JoinTournament(APIView):
-    permission_classes = [IsAuthenticated]
+class JoinTournament(generics.ListCreateAPIView):
+    # permission_classes = [IsAuthenticated]
+    queryset = TournamentPlayer.objects.all()
+    serializer_class = TournamentPlayerSerializer
 
-    def createUser(self, request):
-        username = request.user.username
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+    def post(self, request, id):
+        print("All Tournaments:")
+        for tournament in Tournament.objects.all():
+            print(tournament.id)
+        print("POSTED DATA: ", request.data)
+        username = request.data.get('username')
 
         tournament_id = request.data.get('tournament_id')
+        print("tournament_id: ", tournament_id)
+
         tournament = get_object_or_404(Tournament, id=tournament_id)
 
         if tournament.is_full():
@@ -123,55 +138,98 @@ class JoinTournament(APIView):
 
         player, created = Player.objects.get_or_create(username=username) # created wiil return False if the player already exists
         tournament.players.add(player)
+        if created:
+            print("New Player joined\n")
+        
+        print("Players in the tournament:")
+        for player in tournament.players.all():
+            print(player.username)
+
         # tournament.assign_player_to_match(player)
 
         serializer = TournamentSerializer(tournament)
         return JsonResponse(serializer.data, status=status.HTTP_200_OK)
 
 
-class MatchGenerator(APIView):
+class MatchGenerator(generics.ListCreateAPIView):
+    # def get_serializer_class(self):
+    #     if self.request.method == 'GET':
+    #         print("GET")
+    #         return MatchGeneratorSerializer
+    #     elif self.request.method == 'POST':
+    #         print("POST")
+    #         return TournamentSerializer
+    serializer_class = MatchGeneratorSerializer
 
-    def generate_tree(self, request):
+    def get(self, request, *args, **kwargs):
+        form_data = {
+            "tournament_id": None
+        }
+        return Response(form_data)
+
+    def post(self, request):
 
         tournament_id = request.data.get('tournament_id')
+        print("Tournament id: ", tournament_id)
         tournament = get_object_or_404(Tournament, id=tournament_id)
         match_setting = tournament.setting
         tournament.calculate_nbr_of_match()
+        print("nbr_of_match of T: ", tournament.nbr_of_match)
 
         # Create TournamentMatch instances
         round = 0
         players_total = tournament.players.count()
+        print("players_total: ", players_total)
         players_match = tournament.nbr_of_player_match
+        print("players_match: ", players_match)
         added_match = players_total // players_match
-        if nbr_of_player_total % players_match != 0:
+        if players_total % players_match != 0:
             added_match += 1
+        tmp = added_match
         for _ in range(tournament.nbr_of_match):
+            print("round: ", round, "mathches: ", added_match)
             added_match -= 1
 
             tournament_match = TournamentMatch.objects.create(
                 tournament_id=tournament.id,
                 match_setting_id=match_setting.id,
                 round_number=round,
-                max_players=players_match,
-
             )
+            print("created Match: ", tournament_match)
             tournament.matches.add(tournament_match)
 
             if added_match == 0:
                 round += 1
-                winners = added_match
+                winners = tmp
                 added_match = winners // players_match
                 if winners % players_match != 0:
                     added_match += 1
-
-        serializer = self.get_serializer(tournament)
+                tmp = added_match
 
         players = tournament.players.all().order_by('id')
+        print("all player: ", tournament.players.count())
         for player in players:
-            tournament.assign_player_to_match(player, 0)
+            match = tournament.assign_player_to_match(player, 0)
+            if match:
+                print(f"Player {player} added to match {match}")
+                participant, created = MatchParticipants.objects.get_or_create(
+                    match_id=match.id,
+                    player_id=player.id
+                )       
+                if created:
+                    print(f"Participant {participant} created with player ID: {player.id}")
+                else:
+                    print(f"Participant {participant} already exists for match {match.id}")            
+                match.participants.add(participant)
+                match.save()
+            else:
+                print(f"No available matches for player {player}")
 
-        # return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
+        tournament_matches = TournamentMatch.objects.filter(tournament_id=tournament.id).order_by('id')
+        serializer = TournamentMatchSerializer(tournament_matches, many=True)
 
+        return JsonResponse(serializer.data, status=status.HTTP_201_CREATED, safe=False)
+    
 
 class WinnerAssignToNextMatch(APIView):
     def post(self, request):
