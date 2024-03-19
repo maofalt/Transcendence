@@ -13,10 +13,11 @@ class TournamentSerializer(serializers.ModelSerializer):
     # tournament_type = serializers.PrimaryKeyRelatedField(queryset=TournamentType.objects.all())  # Add this line
     # registration = serializers.PrimaryKeyRelatedField(queryset=RegistrationType.objects.all())  # Add this line
     is_full = serializers.SerializerMethodField()
+    joined = serializers.SerializerMethodField()
 
     class Meta:
         model = Tournament
-        fields = ['tournament_name', 'nbr_of_player_total', 'nbr_of_player_match', 'setting', 'game_type', 'tournament_type', 'registration', 'registration_period_min', 'host_id', 'is_full' ]
+        fields = ['tournament_name', 'nbr_of_player_total', 'nbr_of_player_match', 'setting', 'game_type', 'tournament_type', 'registration', 'registration_period_min', 'host_id', 'joined', 'is_full' ]
 
     def create(self, validated_data):
         setting_data = validated_data.pop('setting')  # Extract data from MatchSetting
@@ -45,8 +46,10 @@ class TournamentSerializer(serializers.ModelSerializer):
 
         return instance
 
+    def get_joined(self, obj):
+        return obj.players.count()
+
     def get_is_full(self, obj):
-        # Serialize the result of the `is_full` method
         return obj.is_full()
 
 class TournamentRegistrationSerializer(serializers.ModelSerializer):

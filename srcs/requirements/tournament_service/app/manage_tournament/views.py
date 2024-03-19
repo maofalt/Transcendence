@@ -152,13 +152,6 @@ class JoinTournament(generics.ListCreateAPIView):
 
 
 class MatchGenerator(generics.ListCreateAPIView):
-    # def get_serializer_class(self):
-    #     if self.request.method == 'GET':
-    #         print("GET")
-    #         return MatchGeneratorSerializer
-    #     elif self.request.method == 'POST':
-    #         print("POST")
-    #         return TournamentSerializer
     serializer_class = MatchGeneratorSerializer
 
     def get(self, request, *args, **kwargs):
