@@ -97,7 +97,7 @@ class TournamentMatchSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TournamentMatch
-        fields = ['id', 'tournament_id', 'round_number', 'match_time', 'players', 'participants']
+        fields = ['id', 'state', 'tournament_id', 'round_number', 'match_time', 'players', 'participants']
 
 
 # class TournamentTypeSerializer(serializers.ModelSerializer):

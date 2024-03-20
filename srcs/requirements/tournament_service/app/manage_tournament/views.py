@@ -223,10 +223,13 @@ class MatchGenerator(generics.ListCreateAPIView):
 
         return JsonResponse(serializer.data, status=status.HTTP_201_CREATED, safe=False)
     
+class MatchResult(APIView):
+    authentication_classes = [CustomJWTAuthentication]
 
-class WinnerAssignToNextMatch(APIView):
-    def post(self, request):
-        kk
+    def post(self, request, id):
+        match = get_object_or_404(TournamentMatch, id=id)
+        winner = request.gameResult.get('winner')
+
 
 
 class TournamentRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
@@ -267,7 +270,7 @@ class TournamentParticipantList(APIView):
     permission_classes = [IsAuthenticated] # Only authenticated users can view the participant list
 
     def get(self, request, id):
-        tournament = get_object_or_404(Tournament, pk=id)
+        tournament = get_object_or_404(Tournament, id=id)
         
         # Check if the user is the tournament host or a registered participant
         if tournament.host != request.user and not TournamentPlayer.objects.filter(tournament_id=tournament, player=request.user).exists():
@@ -283,7 +286,7 @@ class TournamentParticipantDetail(APIView):
     permission_classes = [IsAuthenticated]
 
     def delete(self, request, id, participant_id):
-        tournament = get_object_or_404(Tournament, pk=id)
+        tournament = get_object_or_404(Tournament, id=id)
         participant = get_object_or_404(TournamentPlayer, tournament_id=tournament, player__player_id=participant_id)
 
         if request.user != tournament.host.username and request.user != participant.player.username:
@@ -299,7 +302,7 @@ class TournamentVisualization(APIView):
     permission_classes = [IsAuthenticated, IsHostOrParticipant]
 
     def get(self, request, id):
-        tournament = get_object_or_404(Tournament, pk=id)
+        tournament = get_object_or_404(Tournament, id=id)
 
         # Verify the permissions of the user object
         self.check_object_permissions(request, tournament)
@@ -316,7 +319,7 @@ class TournamentStart(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, id):
-        tournament = get_object_or_404(Tournament, pk=id)
+        tournament = get_object_or_404(Tournament, id=id)
 
          # Verify if the user is the host of the tournament
         if tournament.host.username != request.user:
@@ -351,7 +354,7 @@ class TournamentMatchList(APIView):
     permission_classes = [IsAuthenticated, IsHostOrParticipant]
 
     def get(self, request, id):
-        tournament = get_object_or_404(Tournament, pk=id)
+        tournament = get_object_or_404(Tournament, id=id)
         self.check_object_permissions(request, tournament)
         matches = TournamentMatch.objects.filter(tournament_id=tournament)
         serializer = TournamentMatchSerializer(matches, many=True)
@@ -370,7 +373,7 @@ class TournamentMatchDetail(APIView):
     permission_classes = [IsAuthenticated]
     
     def put(self, request, id, match_id):
-        match = get_object_or_404(TournamentMatch, pk=match_id, tournament_id=id)
+        match = get_object_or_404(TournamentMatch, id=match_id, tournament_id=id)
         serializer = TournamentMatchSerializer(match, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -378,13 +381,13 @@ class TournamentMatchDetail(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, id, match_id):
-        match = get_object_or_404(TournamentMatch, pk=match_id, tournament_id=id)
+        match = get_object_or_404(TournamentMatch, id=match_id, tournament_id=id)
         match.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 class TournamentMatchList(ListAPIView):
     authentication_classes = [CustomJWTAuthentication]
-    permission_classes = [IsAuthenticated] 
+    # permission_classes = [IsAuthenticated] 
     serializer_class = TournamentMatchSerializer
 
     def get_queryset(self):
@@ -395,10 +398,12 @@ class TournamentMatchList(ListAPIView):
 # ---------------------------- Match Operations -------------------------------
 class MatchStart(APIView):
     authentication_classes = [CustomJWTAuthentication]
-    permission_classes = [IsAuthenticated] 
+    # permission_classes = [IsAuthenticated] 
 
     def post(self, request, match_id):
-        match = get_object_or_404(TournamentMatch, pk=match_id)
+        match = get_object_or_404(TournamentMatch, id=match_id)
+        match.state = "palying"
+        match.save()
         # Mettre à jour l'état du match pour le démarrer
         return Response({"status": "Match started"})
 
@@ -407,7 +412,9 @@ class MatchEnd(APIView):
     permission_classes = [IsAuthenticated] 
 
     def post(self, request, match_id):
-        match = get_object_or_404(TournamentMatch, pk=match_id)
+        match = get_object_or_404(TournamentMatch, id=match_id)
+        match.state="ended"
+        match.save()
         # Enregistrer les résultats du match et mettre à jour son état
         return Response({"status": "Match ended"})
 

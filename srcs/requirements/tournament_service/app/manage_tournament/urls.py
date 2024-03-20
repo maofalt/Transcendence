@@ -32,7 +32,8 @@ urlpatterns = [
 # Tournament Progression:
     # GET /{id}/matches - Retrieve a list of matches for a tournament.
     # POST /{id}/matches - Create a new match within a tournament.
-    path('mathch_generator/', views.MatchGenerator.as_view(), name='mathch_generator'),
+    path('mathch-generator/', views.MatchGenerator.as_view(), name='mathch-generator'),
+    path('<int:match_id>/match/result', views.MatchResult.as_view(), name='match-result'),
     # path('<int:id>/matches/', views.TournamentMatchList.as_view(), name='tournament-matches'),
     # PUT /tournaments/{id}/matches/{matchId} - Update the status or result of a match.
     # DELETE /tournaments/{id}/matches/{matchId} - Cancel a scheduled match.
@@ -62,7 +63,7 @@ urlpatterns = [
     # Get aLL registration types
     path('registration-types/', views.RegistrationTypeList.as_view(), name='resgistration-type-list'),
     
-    # path('<int:tournament_id>/matches/', views.TournamentMatchList.as_view(), name='tournament-match-list'),
+    path('<int:tournament_id>/matches/', views.TournamentMatchList.as_view(), name='tournament-match-list'),
     # path('<int:tournament_id>/match-settings/', views.MatchSettingList.as_view(), name='match-setting-list'),
     # path('<int:tournament_id>/game-types/', views.GameTypeList.as_view(), name='game-type-list'),
     # path('<int:tournament_id>/tournament-types/', views.TournamentTypeList.as_view(), name='tournament-type-list'),

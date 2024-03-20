@@ -45,6 +45,8 @@ class Tournament(models.Model):
         ('pong', 'Pong'),
     ]
     game_type = models.CharField(max_length=15, choices=GAME_TYPE, default='pong', null=False)
+    state = models.CharField(max_length=15, default="waiting")
+
 
     def calculate_nbr_of_match(self):
         # Calculate the number of matches based on total players and max players per match
@@ -87,10 +89,11 @@ class TournamentMatch(models.Model):
     match_time = models.DateTimeField(null=True) 
     players = models.ManyToManyField('Player', related_name='matches')
     participants = models.ManyToManyField('MatchParticipants', related_name='matches')
+    state = models.CharField(max_length=15, default="waiting")
 
     def __str__(self):
         player_count = self.players.count()
-        return f"ID: {self.id}, Tournament: {self.tournament_id}, Match Setting: {self.match_setting_id}, Round Number: {self.round_number}, Count Players: {player_count}"
+        return f"ID: {self.id}, Tournament: {self.tournament_id}, State: {self.state}, Match Setting: {self.match_setting_id}, Round Number: {self.round_number}, Count Players: {player_count}"
 
 class MatchSetting(models.Model):
     # setting_id = models.AutoField(primary_key=True)
