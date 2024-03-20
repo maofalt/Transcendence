@@ -289,6 +289,9 @@ export default class Game extends AbstractView {
 		} else {
 			if (data.ball.texture) {
 				// this.ball.mesh.rotateX(-Math.PI / 42 * data.ball.sp);
+				// this.ball.mesh.rotateX((-Math.PI / 20) * data.ball.sp);
+				// this.ball.mesh.rotateZ((Math.PI / 24) * data.ball.sp);
+				this.ball.mesh.rotateY(Math.PI / 42 * data.ball.sp);
 				this.ball.mesh.rotateZ(Math.PI / 36 * data.ball.sp);
 			}
 			this.ball.mesh.position.set(data.ball.pos.x, data.ball.pos.y, 0);
@@ -364,31 +367,78 @@ export default class Game extends AbstractView {
 		let dir = 0; // used to rotate scores to face client
 
 		// generate scores for each player
+		const profilePic = new THREE.TextureLoader().load(`./js/assets/images/default-avatar.webp`);
+		profilePic.wrapS = profilePic.wrapT = THREE.RepeatWrapping;
+		profilePic.offset.set( 0, 0 );
+		profilePic.repeat.set( 2, 1 );
+		const loginText = player.accountID;
 		const scoreText = player.score.toString();
+
 		console.log("Creating score: " + scoreText + " for player " + i + " with dir: " + this.dir);
+		
+		const profilePicGeo = new THREE.SphereGeometry(2, 12, 24);
+		const loginGeo = new TextGeometry(loginText, this.textSettings);
+		const scoreGeo = new TextGeometry(scoreText, this.textSettings);
 
-		const geometry = new TextGeometry(scoreText, this.textSettings);
+		const profilePicMaterial = new THREE.MeshBasicMaterial({ map:profilePic });
+		var scoreMaterial = new THREE.MeshBasicMaterial({ color: data.gamemode.gameType ? 0xff0000 : 0x000000 });
+		var loginMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
 
-		var material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-		this.scores[i] = new THREE.Mesh(geometry, material);
+		const loginMesh = new THREE.Mesh(loginGeo, loginMaterial);
+		const scoreMesh = new THREE.Mesh(scoreGeo, scoreMaterial);
+		const profilePicMesh = new THREE.Mesh(profilePicGeo, profilePicMaterial);
 
-		// calculate bounds of score
-		geometry.computeBoundingBox();
-		const scoreWidth = this.scores[i].geometry.boundingBox.max.x - this.scores[i].geometry.boundingBox.min.x;
-		const scoreHeight = this.scores[i].geometry.boundingBox.max.y - this.scores[i].geometry.boundingBox.min.y;
-		const scoreThickness = this.scores[i].geometry.boundingBox.max.z - this.scores[i].geometry.boundingBox.min.z;
+		// Compute bounding boxes
+		profilePicGeo.computeBoundingBox();
+		loginGeo.computeBoundingBox();
+		scoreGeo.computeBoundingBox();
+	
+		// const profileWidth = profilePicGeo.boundingBox.max.x - profilePicGeo.boundingBox.min.x;
+		const loginWidth = loginGeo.boundingBox.max.x - loginGeo.boundingBox.min.x;
+		const scoreWidth = scoreGeo.boundingBox.max.x - scoreGeo.boundingBox.min.x;
+	
+		// Position loginMesh and scoreMesh relative to each other
+		const spaceBetween = 2; // Change this to the amount of space you want between the meshes
+		// loginMesh.position.set(0, 0, 0);
+		profilePicMesh.position.set(0, 5, 0);
+		scoreMesh.position.set(((i < data.gamemode.nbrOfPlayers / 2) ? (loginWidth + spaceBetween) : (-scoreWidth - spaceBetween)), 0, 0);
+
+		const group = new THREE.Group();
+		group.add(profilePicMesh);
+		group.add(loginMesh);
+		group.add(scoreMesh);
+
+		// this.scores[i] = group;
+
+		// Compute the bounding box of the group
+		const box = new THREE.Box3().setFromObject(group);
+
+		// Store the group and its bounding box
+		this.scores[i] = {
+			group: group,
+			box: box
+		};
+		console.log(this.scores[i].box.max.x);
+		console.log(this.scores[i].box.min.x);
+
+		// calculate bounds of score block
+		// this.scores[i].computeBoundingBox();
+		// const groupWidth = this.scores[i].box.max.x - this.scores[i].box.min.x;
+		const groupHeight = this.scores[i].box.max.y - this.scores[i].box.min.y;
+		const groupThickness = this.scores[i].box.max.z - this.scores[i].box.min.z;
 
 		// set center of score to center of paddle
-		const centerX = data.playersArray[i].scorePos.x - scoreWidth / 2;
-		const centerY = data.playersArray[i].scorePos.y - scoreHeight / 2;
-		const centerZ = data.playersArray[i].scorePos.z - scoreThickness / 2;
+		const centerX = data.playersArray[i].scorePos.x - loginWidth / 2;
+		const centerY = data.playersArray[i].scorePos.y - groupHeight / 2;
+		const centerZ = data.playersArray[i].scorePos.z - groupThickness / 2;
 
-		this.scores[i].position.set(centerX, centerY, centerZ);
+		profilePicMesh.position.set(loginWidth / 2, 5, 0);
+		this.scores[i].group.position.set(centerX, centerY, centerZ);
 
-		this.scene.add(this.scores[i]);
+		this.scene.add(this.scores[i].group);
 
 		// rotate the score to face client
-		this.scores[i].rotation.set(0, 0, 2 * Math.PI/data.gamemode.nbrOfPlayers * this.dir);
+		this.scores[i].group.rotation.set(0, 0, 2 * Math.PI/data.gamemode.nbrOfPlayers * this.dir);
 		
 	}
 
@@ -400,7 +450,9 @@ export default class Game extends AbstractView {
 
 			if (this.prevScores[index] != player.score) {
 				console.log("Refreshing score: " + player.score + " for player " + index);
-				this.scene.remove( this.scores[index] );
+				if (this.scores[index])
+					this.scene.remove(this.scores[index].group);
+				// this.scene.remove( this.scores[index]);
 				this.createScore(data, player, index);
 			}
 		
@@ -437,7 +489,7 @@ export default class Game extends AbstractView {
 			let boundingBox = new THREE.Box3().setFromObject(this.ballModel);
 			let size = boundingBox.getSize(new THREE.Vector3()); // Returns Vector3
 			let len = size.x > size.y ? size.x : size.y;
-			let scale = data.ball.r / (len / 2);
+			let scale = data.ball.r / (len / 2.2);
 			this.ballModel.scale.set(scale, scale, scale);
 	
 			// Add the model to the scene
@@ -449,39 +501,22 @@ export default class Game extends AbstractView {
 		});
 	}
 
-	// loadBallModel(model) {
-	// 	this.loader.load("./js/assets/3D_Models/" + model + "/scene.gltf", ( gltf ) => {
-	// 		this.ballModel = gltf.scene;
-	// 		this.scene.add(this.ballModel);
-	// 	});
-		
-	// }
-
-	// scaleBallModel(data) {
-	// 	this.loadBallModel(data.ball.model);
-	// 	let boundingBox = new THREE.Box3().setFromObject(this.ballModel);
-	// 	let size = boundingBox.getSize(); // Returns Vector3
-	// 	let len = size.x > size.y ? size.x : size.y;
-	// 	let scale = len / data.ball.r;
-	// 	this.ballModel.scale.set(scale, scale, scale);
-	// }
-
 	generateBall(data) {
 		let ballTexture;
 		let ballMaterial;
 
-		if (data.ball.model != "") {
+		if (data.ball.model) {
 			console.log("LOAD STUFF");
 			this.loadBallModel(data);
 			return ;
 		}
 		console.log("DIDNT LOADGE");
 		if (data.ball.texture != "") {
-			ballTexture = new THREE.TextureLoader().load(`./js/assets/images/${data.ball.texture}.jpg`);
+			ballTexture = new THREE.TextureLoader().load(`./js/assets/images/${data.ball.texture}`);
 			ballMaterial = new THREE.MeshPhongMaterial({ map: ballTexture, transparent: false, opacity: 0.7 });
-			ballTexture.wrapS = ballTexture.wrapT = THREE.RepeatWrapping;
-			ballTexture.offset.set( 0, 0 );
-			ballTexture.repeat.set( 2, 1 );
+			// ballTexture.wrapS = ballTexture.wrapT = THREE.RepeatWrapping;
+			// ballTexture.offset.set( 0, 0 );
+			// ballTexture.repeat.set( 2, 1 );
 		} else {
 			ballMaterial = new THREE.MeshPhongMaterial({ color: data.ball.col, transparent: false, opacity: 0.7 });
 		}
@@ -502,6 +537,9 @@ export default class Game extends AbstractView {
 	}
 
 	generateWalls(data) {
+		if (data.field.wallsSize == 0) {
+			return ;
+		}
 		const wallGeometry = new THREE.BoxGeometry(data.field.wallsSize, 1, 2);
 		const wallMaterial = new THREE.MeshPhongMaterial({ color: data.ball.col, transparent: true, opacity: 1, reflectivity: 0.5 });
 		// console.log("number of players : ", data.gamemode.nbrOfPlayers);
@@ -599,6 +637,7 @@ export default class Game extends AbstractView {
 		// const starTexture2 = new THREE.TextureLoader().load('./js/assets/images/PurpleLayer2.png');
 		// const starTexture3 = new THREE.TextureLoader().load('./js/assets/images/PurpleLayer3.png');
 		const starTextureBase = new THREE.TextureLoader().load('./js/assets/images/purpleSpace.jpg');
+		starTextureBase.colorSpace = THREE.SRGBColorSpace;
 		// this.starTexture = new THREE.TextureLoader().load('./js/assets/images/redSpace.jpg');
 
 		// Créer la géométrie de la sphère

@@ -27,7 +27,7 @@ function initLoop(data, wallDist, goalDist, angle) {
         player.paddle.dirToTop = player.paddle.dirToCenter.rotateAroundZ(-Math.PI / 2);
         // player.paddle.dirToCenter = something; // need to add the other direction vector but will check out best formula for this
 
-        player.scorePos = player.paddle.startingPos.sub(player.paddle.dirToCenter.scale(5));
+        player.scorePos = player.paddle.startingPos.sub(player.paddle.dirToCenter.scale(10));
 
         /*--------------------------------------------------------------------------------------------*/
 
@@ -81,6 +81,19 @@ function initPaddles(data) {
 }
 
 function initFieldShape(data) {
+    if (data.gamemode.nbrOfPlayers == 2 && data.field.wallsSize < data.field.goalsSize * 1.5) {
+        data.field.wallsSize = data.field.goalsSize * 1.5;
+        for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
+            data.field.walls[i].h = data.field.wallsSize;
+        }
+    }
+    if (data.gamemode.nbrOfPlayers == 3 && data.field.wallsSize < data.field.goalsSize * 0.5) {
+        data.field.wallsSize = data.field.goalsSize * 0.5;
+        for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
+            data.field.walls[i].h = data.field.wallsSize;
+        }
+    }
+
     let angle = 2 * Math.PI/data.gamemode.nbrOfPlayers; // angle between two players fields or positions
     let a = angle / 2; // saving calculations for pythagore
 
@@ -90,7 +103,7 @@ function initFieldShape(data) {
     let wallDist = gs / Math.sin(a) + ws / Math.tan(a); // pythagore to find the dist the walls have to be from the center
     let goalDist = gs / Math.tan(a) + ws / Math.sin(a); // same but for goals;
 
-    data.camera.pos.z = wallDist < (goalDist + 5) ? ((goalDist + 5) * 3) : (wallDist * 3);
+    data.camera.pos.z = wallDist < (goalDist + 20) ? ((goalDist + 20) * 3) : (wallDist * 3);
 
     initLoop(data, wallDist, goalDist, angle); // looping through the players array and the walls array to init their pos and dir;
     initWalls(data);
@@ -108,12 +121,12 @@ function initLobby(lobbyData) {
             player.score = data.gamemode.nbrOfRounds;
         }
     }
-    if (data.gamemode.nbrOfPlayers == 2 && data.field.wallsSize < data.field.goalsSize * 1.5) {
-        data.field.wallsSize = data.field.goalsSize * 1.5;
-        for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
-            data.field.walls[i].h = data.field.wallsSize;
-        }
-    }
+    // if (data.gamemode.nbrOfPlayers == 2 && data.field.wallsSize < data.field.goalsSize * 1.5) {
+    //     data.field.wallsSize = data.field.goalsSize * 1.5;
+    //     for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
+    //         data.field.walls[i].h = data.field.wallsSize;
+    //     }
+    // }
 
     // debugDisp.displayData(data); // display the game data
     initFieldShape(data); // init angles + positions of players and walls;
