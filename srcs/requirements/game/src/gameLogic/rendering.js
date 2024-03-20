@@ -227,16 +227,17 @@ function updateBall(data) {
     } else if (paddleHit) {
         data.ball.sp *= 1.01;
     }
-    if (data.ball.pos.getDistFrom(new Vector(0, 0, 0)) > 120) {
+    if (data.ball.pos.getDistFrom(new Vector(0, 0, 0)) > 
+        (data.field.wallDist < data.field.goalDist ? data.field.goalDist: data.field.wallDist) + 20) {
         data.ball.pos = new Vector(0, 0, 0);
         data.ball.sp = data.ball.startingSp;
     }
 }
 
-function endGame(data, winner) {
+function endGame(data) {
     // display scores + display winner's name
     console.log("!!!!!!!!!!!!!!!!!!!!!! GAME OVER !!!!!!!!!!!!!!!!!!!");
-    console.log(`${winner.accountID} WON !`);
+    console.log(`${data.winner.accountID} WON !`);
     // send result of the game back to tournament or some place else;
     // stop the interval
 
@@ -248,7 +249,6 @@ function eliminatePlayer(data, player) {
     // it should be the only required additional exchange since the client
     // receives everything else it needs to display properly the game in each
     // "render" socket emission
-
     console.log("!!!!!!!!!!!!!!!!!!!!!! ELIMINATED !!!!!!!!!!!!!!!!!!!");
     console.log(`${data.gamemode.nbrOfPlayers}`);
     // get rid of this player in the map of players;
@@ -266,7 +266,8 @@ function handleScoring(data, player) {
                 continue ;
             otherPlayer.score++;
             if (otherPlayer.score == data.gamemode.nbrOfRounds) {
-                endGame(data, otherPlayer);
+                // endGame(data, otherPlayer);
+                data.winner = otherPlayer;
                 return -1;
             }
         }
@@ -276,15 +277,10 @@ function handleScoring(data, player) {
             eliminatePlayer(data, player);
             data.ball.pos = new Vector(0, 0, 0);
             if (data.gamemode.nbrOfPlayers == 1) {
-                endGame(data, Object.values(data.players)[0]);
+                // endGame(data, Object.values(data.players)[0]);
+                data.winner = Object.values(data.players)[0];
                 return -1;
             }
-            // if (data.gamemode.nbrOfPlayers == 2 && data.field.wallsSize < data.field.goalsSize * 1.5) {
-            //     data.field.wallsSize = data.field.goalsSize * 1.5;
-            //     for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
-            //         data.field.walls[i].h = data.field.wallsSize;
-            //     }
-            // }
             init.initFieldShape(data);
             return 1;
         }
@@ -334,4 +330,4 @@ function updateData(data) {
     return result;
 }
 
-module.exports = { updateData };
+module.exports = { updateData, endGame };

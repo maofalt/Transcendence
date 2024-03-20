@@ -88,6 +88,11 @@ export default class Game extends AbstractView {
 			height: 0.2,
 			curveSegments: 12,
 		}
+		this.TKtext = {
+			size: 5,
+			height: 0.2,
+			curveSegments: 12,
+		}
 		this.prevScores = [];
 		this.dir = 0;
 
@@ -339,13 +344,23 @@ export default class Game extends AbstractView {
 		if (!loader)
 			return console.error("FontLoader not found");
 
+		loader.load( 'js/assets/fonts/Tk421-K7mv7.json', ( response ) => {
+
+		this.TKtext.font = response;
+
+		this.refreshScores(data);
+
+		console.log("Font TK loaded");
+
+		} );
+
 		loader.load( 'https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', ( response ) => {
 
 			this.textSettings.font = response;
 
 			this.refreshScores(data);
 
-			console.log("Font loaded");
+			console.log("Normal Font loaded");
 
 		} );
 
@@ -375,13 +390,15 @@ export default class Game extends AbstractView {
 		const scoreText = player.score.toString();
 
 		console.log("Creating score: " + scoreText + " for player " + i + " with dir: " + this.dir);
-		
+		// this.textSettings.font = this.textSettings.fontNormal;
 		const profilePicGeo = new THREE.SphereGeometry(2, 12, 24);
 		const loginGeo = new TextGeometry(loginText, this.textSettings);
+		// const loginGeo = new TextGeometry(loginText, this.TKtext);
 		const scoreGeo = new TextGeometry(scoreText, this.textSettings);
+		// const scoreGeo = new TextGeometry(scoreText, this.TKtext);
 
 		const profilePicMaterial = new THREE.MeshBasicMaterial({ map:profilePic });
-		var scoreMaterial = new THREE.MeshBasicMaterial({ color: data.gamemode.gameType ? 0xff0000 : 0x000000 });
+		var scoreMaterial = new THREE.MeshBasicMaterial({ color: data.gamemode.gameType ? 0xff0000 : 0xffffff });
 		var loginMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
 
 		const loginMesh = new THREE.Mesh(loginGeo, loginMaterial);
