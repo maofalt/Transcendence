@@ -66,7 +66,7 @@ export default class CreateTournament extends AbstractView {
 	  console.log('Create Game');
 	  //const gameSettings = this.getGameSettings();
 	  try {
-	  	const response = await makeApiRequest('/game-logic/createMatch','POST',gameSettings, {}, sessionStorage.getItem('accessToken'));
+	  	const response = await makeApiRequest('/game-logic/createMatch','POST',gameSettings);
 	  	console.log('Match created:', response.body);
             return response.body.matchID;
 	  } catch (error) {
@@ -78,16 +78,18 @@ export default class CreateTournament extends AbstractView {
 
   
   async getHtml() {
-    // Fetching tournament types0
+    let tournamentTypeOptionsHtml = '';
+    let registrationTypeOptionsHtml = '';
     try {
-      const accessToken = sessionStorage.getItem('accessToken');
-      const tournamentTypes = await makeApiRequest('/api/tournament/tournament-types/', 'GET', null, {},  accessToken);
-      console.log('tournamentTypes:', tournamentTypes);
-      const tournamentTypeOptionsHtml = tournamentTypes.body.map(type => `<option value="${type.type_id}">${type.type_name}</option>`).join('');
+      // Fetching tournament types0
+      const ResponseTypes = await makeApiRequest('/api/tournament/tournament-types/', 'GET');
+      const tournamentTypes = ResponseTypes.body.tournament_types;
+      tournamentTypeOptionsHtml = tournamentTypes.map(type => `<option value="${type[0]}">${type[1]}</option>`).join('');
+
       // Fetching registration types
-      const registrationTypes = await makeApiRequest('/api/tournament/registration-types/', 'GET', null, {},  accessToken);
-      const registrationTypeOptionsHtml = registrationTypes.body.map(type => `<option value="${type.type_id}">${type.type_name}</option>`).join('');  
-      console.log ('registrationTypeOptionsHtml:', registrationTypes);        
+      const answerRegistrationTypes = await makeApiRequest('/api/tournament/registration-types/', 'GET');
+      const registrationTypes = answerRegistrationTypes.body.registration_types;
+      registrationTypeOptionsHtml = registrationTypes.map(type => `<option value="${type[0]}">${type[1]}</option>`).join('');  
     } catch (error) {
       console.error('Failed to fetch types:', error);
       tournamentTypeOptionsHtml = `<option value="1">Knockout</option>`;
@@ -283,7 +285,7 @@ export default class CreateTournament extends AbstractView {
 
   async getBasicGameSettings() {
     const accessToken = sessionStorage.getItem('accessToken');
-    const response = await makeApiRequest('/api/user_management/auth/getUser', 'GET', null, {}, accessToken);
+    const response = await makeApiRequest('/api/user_management/auth/getUser', 'GET');
     console.log('Basic game settings:', response.body);
     let gameSettings = {
 	  	"gamemodeData": {
@@ -342,8 +344,7 @@ export default class CreateTournament extends AbstractView {
 
     console.log('Submitting tournament:', tournamentAndGameSettings);
     try {
-      const accessToken = sessionStorage.getItem('accessToken');
-      const response = await makeApiRequest('/api/tournament/create-and-list/', 'POST', tournamentAndGameSettings, {}, accessToken);
+      const response = await makeApiRequest('/api/tournament/create-and-list/', 'POST', tournamentAndGameSettings);
     } catch (error) {
       console.error('Failed to create tournament:', error);
     }

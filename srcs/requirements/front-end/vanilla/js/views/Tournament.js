@@ -66,11 +66,7 @@ export default class Tournament extends AbstractView {
 
 	async getTournamentList() { 
 		try {
-
-			const accessToken = localStorage.getItem('accessToken');
-			
-
-			const response = await makeApiRequest('/api/tournament/create-and-list/','GET', null, {}, accessToken);
+			const response = await makeApiRequest('/api/tournament/create-and-list/','GET');
 			const tournaments = response.body;
 			console.log('Tournament list:', response.body);
 			
@@ -117,7 +113,7 @@ export default class Tournament extends AbstractView {
 		console.log('Create Match');
 		const gameSettings = this.getGameSettings();
 		try {
-			const response = await makeApiRequest('/game-logic/createMatch','POST',gameSettings );
+			const response = await makeApiRequest('/game-logic/createMatch','POST',gameSettings);
 			console.log('Match created:', response.body);
 			navigateTo('/play?matchID=' + response.body.matchID);
 		} catch (error) {

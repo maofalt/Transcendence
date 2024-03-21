@@ -517,7 +517,7 @@ class MatchEnd(APIView):
 #     serializer_class = GameTypeSerializer
 
 class TournamentTypeList(ListAPIView):
-    # authentication_classes = [CustomJWTAuthentication]
+    #authentication_classes = [CustomJWTAuthentication]
     # permission_classes = [IsAuthenticated] 
     def list(self, request, *args, **kwargs):
         tournament_types = Tournament.TOURNAMENT_TYPE
