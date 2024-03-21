@@ -202,13 +202,19 @@ export default class Game extends AbstractView {
 		this.socket.on('destroy', data => {
 			this.scene.clear();
 			console.log("DESTROY SCENE");
-		})
+		});
 
 		this.socket.on('refresh', data => {
 			console.log("REFRESH SCENE");
 			data.playersArray = Object.values(data.players);
 			this.refreshScene(data);
-		})
+		});
+
+		this.socket.on('end-game', data => {
+			this.endGameAnimation();
+			// this.scene.clear();
+			console.log("END OF GAME");
+		});
 
 		this.socket.on('ping', ([timestamp, latency]) => {
 			this.socket.emit('pong', timestamp);
@@ -218,6 +224,26 @@ export default class Game extends AbstractView {
 		});
 
 	};
+
+	// Define your animation function
+	endGameAnimation = () => {
+		// Update your scene here
+		// this.camera.position.z;
+		if (this.ballModel) {
+			this.ballModel.scale.multiplyScalar(1.1);
+			// this.ballModel.position.z
+		} else {
+			this.ball.mesh.scale.multiplyScalar(1.1);
+		}
+
+		console.log("end of game");
+
+		// Render the scene
+		this.renderer.render(this.scene, this.camera);
+
+		// Request the next frame
+		requestAnimationFrame(this.endGameAnimation);
+	}
 
 	destroy() {
 		if (this.socket) {

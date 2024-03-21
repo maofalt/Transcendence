@@ -234,15 +234,15 @@ function updateBall(data) {
     }
 }
 
-function endGame(data) {
-    // display scores + display winner's name
-    console.log("!!!!!!!!!!!!!!!!!!!!!! GAME OVER !!!!!!!!!!!!!!!!!!!");
-    console.log(`${data.winner.accountID} WON !`);
-    // send result of the game back to tournament or some place else;
-    // stop the interval
+// function endGame(data) {
+//     // display scores + display winner's name
+//     console.log("!!!!!!!!!!!!!!!!!!!!!! GAME OVER !!!!!!!!!!!!!!!!!!!");
+//     console.log(`${data.winner.accountID} WON !`);
+//     // send result of the game back to tournament or some place else;
+//     // stop the interval
 
-    // disconnect everyone ? need to think about this
-}
+//     // disconnect everyone ? need to think about this
+// }
 
 function eliminatePlayer(data, player) {
     // important : send the info to the client to delete the corresponding player,
@@ -330,4 +330,4 @@ function updateData(data) {
     return result;
 }
 
-module.exports = { updateData, endGame };
+module.exports = { updateData };

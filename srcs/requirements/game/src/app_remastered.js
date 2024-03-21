@@ -88,9 +88,10 @@ function waitingLoop(matchID) {
 		io.to(matchID).emit('destroy', match.gameState);
 		io.to(matchID).emit('refresh', match.gameState);
 	} else if (gameState == -1) {
-		io.to(matchID).emit('destroy', match.gameState);
+		// io.to(matchID).emit('destroy', match.gameState);
 		clearInterval(match.gameInterval); // stop the loop
-		render.endGame(match.gameState); // call end game animation
+		// render.endGame(match.gameState); // call end game animation
+		io.to(matchID).emit('end-game', match.gameState);
 		// something like a post of the gameState idk // send the result of the match back;
 		matches.delete(matchID); // then delete the match;
 		return ;
