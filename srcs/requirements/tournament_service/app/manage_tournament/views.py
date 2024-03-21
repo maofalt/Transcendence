@@ -332,11 +332,11 @@ class TournamentRoundState(APIView):
     def get(self, request, tournament_id):
         tournament = get_object_or_404(Tournament, id=tournament_id)
         matches = tournament.matches.all()
-
-        for match in matches:
-            if match.state == 'playing':
-                # If any match is still ongoing, return None
-                return Response({'round': None})
+        print("matches: ", matches)
+        match_in_progress = matches.filter(state='playing').first()
+        print("match_in_progress: ", match_in_progress)
+        if match_in_progress:
+            return Response({'round': None, 'message': f"round {match_in_progress.round_number} is playing"})
         
         # If all matches of the round are finished, return the round number of the last match
         last_match = matches.filter(state='ended').order_by('-round_number').first()
@@ -350,7 +350,7 @@ class TournamentRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     queryset = Tournament.objects.all()
     serializer_class = TournamentSerializer
     authentication_classes = [CustomJWTAuthentication]
-    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]  # Custom permission class for owner-only access
+    # permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]  # Custom permission class for owner-only access
 
 # class TournamentRegistrationCreate(generics.CreateAPIView):
 #     queryset = TournamentRegistration.objects.all()
@@ -381,7 +381,7 @@ class TournamentRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
 # --------------------------- Tournament Participants -----------------------------------    
 class TournamentParticipantList(APIView):
     authentication_classes = [CustomJWTAuthentication]
-    permission_classes = [IsAuthenticated] # Only authenticated users can view the participant list
+    # permission_classes = [IsAuthenticated] # Only authenticated users can view the participant list
 
     def get(self, request, id):
         tournament = get_object_or_404(Tournament, id=id)
@@ -397,7 +397,7 @@ class TournamentParticipantList(APIView):
 
 class TournamentParticipantDetail(APIView):
     authentication_classes = [CustomJWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def delete(self, request, id, participant_id):
         tournament = get_object_or_404(Tournament, id=id)
@@ -413,7 +413,7 @@ class TournamentParticipantDetail(APIView):
 # -------------------------------- Tournament Visualization --------------------------------------
 class TournamentVisualization(APIView):
     authentication_classes = [CustomJWTAuthentication]
-    permission_classes = [IsAuthenticated, IsHostOrParticipant]
+    # permission_classes = [IsAuthenticated, IsHostOrParticipant]
 
     def get(self, request, id):
         tournament = get_object_or_404(Tournament, id=id)
@@ -469,7 +469,7 @@ class TournamentEnd(APIView):
 # -------------------------------- Tournament Matches Progression ------------------------------------
 class TournamentMatchList(APIView):
     authentication_classes = [CustomJWTAuthentication]
-    permission_classes = [IsAuthenticated, IsHostOrParticipant]
+    # permission_classes = [IsAuthenticated, IsHostOrParticipant]
 
     def get(self, request, id):
         tournament = get_object_or_404(Tournament, id=id)
@@ -520,7 +520,7 @@ class MatchStart(APIView):
 
     def post(self, request, match_id):
         match = get_object_or_404(TournamentMatch, id=match_id)
-        match.state = "palying"
+        match.state = "playing"
         match.save()
         # Mettre à jour l'état du match pour le démarrer
         return Response({"status": "Match started"})
