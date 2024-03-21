@@ -251,6 +251,14 @@ class MatchResult(APIView):
     def post(self, request, match_id, player_id, score):
         print("match_id : ", match_id,  "player_id: ", player_id, "score: ", score)
         match = get_object_or_404(TournamentMatch, id=match_id)
+
+        if match.state != "ended":
+            return Response(f"Match {match_id} is not finished")
+        try:
+            player = match.players.get(id=player_id)
+        except Player.DoesNotExist:
+            return Response(f"Player with id {player_id} not found in the match", status=status.HTTP_404_NOT_FOUND)
+        
         for participant in match.participants.all():
             print("participant id : ", participant.player_id)
             if participant.player_id == player_id:
@@ -276,9 +284,14 @@ class MatchUpdate(APIView):
 
     def post(self, request, tournament_id, round):
         tournament = get_object_or_404(Tournament, id=tournament_id)
-        next_matches = tournament.matches.filter(round_number=round).order_by('id')
+        # next_matches = tournament.matches.filter(round_number=round).order_by('id')
         finished_matches = tournament.matches.filter(round_number=round - 1).order_by('id')
         finished_match_ids = finished_matches.values_list('id', flat=True)
+
+
+        matches_in_progress = finished_matches.filter(Q(state="waiting") | Q(state="playing"))
+        if matches_in_progress.exists():
+            return Response({"message": "Cannot update next round while previous round matches are in progress."}, status=400)
 
         participants = MatchParticipants.objects.filter(is_winner=True, match_id__in=finished_match_ids)
         print("Filtered participants: ", participants)
@@ -443,6 +456,10 @@ class TournamentEnd(APIView):
         if tournament.host.id != request.user:
             return Response({"message": "Only the tournament host can end the tournament."}, status=403)
 
+        matches_in_progress = tournament.matches.filter(Q(state="waiting") | Q(state="playing"))
+        if matches_in_progress.exists():
+            return Response({"message": "Cannot end the tournament while matches are in progress."}, status=400)
+        
         # Update tournament state to end
         tournament.state = "ended"
         tournament.save()
