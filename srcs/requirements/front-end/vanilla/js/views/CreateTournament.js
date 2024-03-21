@@ -75,8 +75,6 @@ export default class CreateTournament extends AbstractView {
 	  }
 	}
     
-
-  
   async getHtml() {
     let tournamentTypeOptionsHtml = '';
     let registrationTypeOptionsHtml = '';
@@ -121,16 +119,6 @@ export default class CreateTournament extends AbstractView {
                           value="2"
                           required
                           oninput="this.nextElementSibling.value = this.value">
-                      <label for="game_type">Game Type:</label>
-                      <div class="switch">
-                          <input
-                            type="number"
-                            id="game_type"
-                            name="game_type"
-                            value="1"
-                            required>
-                          <span class="slider round"></span>
-                      </div>
                       <label for="tournament_type">Tournament Type:</label>
                       <select id="tournament_type" name="tournament_type">
                           ${tournamentTypeOptionsHtml}
@@ -217,7 +205,6 @@ export default class CreateTournament extends AbstractView {
       htmlElement.querySelector('.game-showcase').innerHTML = await this.game.getHtml();
       return htmlElement.innerHTML;
   }
-
 
   getGameSettingsFromForm() {
     let gameSettings = {
