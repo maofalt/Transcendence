@@ -156,16 +156,12 @@ class JoinTournament(generics.ListCreateAPIView):
 class MatchGenerator(generics.ListCreateAPIView):
     serializer_class = MatchGeneratorSerializer
 
-    def get(self, request, *args, **kwargs):
-        form_data = {
-            "tournament_id": None
-        }
-        return Response(form_data)
-
     def post(self, request, tournament_id):
 
         print("Tournament id: ", tournament_id)
         tournament = get_object_or_404(Tournament, id=tournament_id)
+        if tournament.host.id != request.user:
+            return Response({"message": "You are not authorized to generate Tournament."}, status=status.HTTP_403_FORBIDDEN)
         match_setting = tournament.setting
         tournament.calculate_nbr_of_match()
         print("nbr_of_match of T: ", tournament.nbr_of_match)
@@ -336,11 +332,14 @@ class TournamentRoundState(APIView):
         match_in_progress = matches.filter(state='playing').first()
         print("match_in_progress: ", match_in_progress)
         if match_in_progress:
-            return Response({'round': None, 'message': f"round {match_in_progress.round_number} is playing"})
+            return Response({'round': None, 'message': f"Round {match_in_progress.round_number} is playing"})
         
         # If all matches of the round are finished, return the round number of the last match
+        final_round = matches.order_by('-round_number').first().round_number
         last_match = matches.filter(state='ended').order_by('-round_number').first()
         if last_match:
+            if last_match.round_number == final_round:
+                return Response({'round': last_match.round_number, 'is_tournamentFinish': True})
             return Response({'round': last_match.round_number})
         else:
             return Response({'round': None, "message": "An Error occurred while checking Round state"})
