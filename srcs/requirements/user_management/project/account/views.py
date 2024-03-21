@@ -78,7 +78,8 @@ def get_user(request):
             user = User.objects.get(pk=uid)
             user_data = {
                 'user_id': user.id,
-                'username': user.username
+                'username': user.username,
+                'playername': user.playername
             }
             return JsonResponse(user_data)
         except User.DoesNotExist:
