@@ -124,19 +124,14 @@ class JoinTournament(generics.ListCreateAPIView):
         print("request.user: ", request.user)
         return self.list(request, *args, **kwargs)
 
-    def post(self, request, id):
+    def post(self, request, tournament_id, player_id):
         print("request.user: ", request.user)
-        if id != request.user:
+        if player_id != request.user:
             return JsonResponse({'message': "You are not authorized to join the Tournament"}, status=status.HTTP_403_FORBIDDEN)
         print("All Tournaments:")
         for tournament in Tournament.objects.all():
             print(tournament.id)
-        print("POSTED DATA: ", request.data)
-        # username = request.data.get('username')
-
-        tournament_id = request.data.get('tournament_id')
         print("tournament_id: ", tournament_id)
-
         tournament = get_object_or_404(Tournament, id=tournament_id)
 
         if tournament.is_full():
@@ -265,12 +260,7 @@ class MatchResult(APIView):
         score_unset = match.participants.filter(participant_score=0)
 
         if not score_unset.exists():
-            first_participant = match.participants.first()
-            highest_score = first_participant.participant_score
-            for participant in match.participants.all().order_by('id'):
-                if participant.participant_score > higest_score:
-                    higest_score = participant.participant_score
-            winner = match.participants.filter(participant_score=higest_score)
+            winner = match.participants.order_by('-participant_score').first()
             winner.is_winner = True
             winner.save()
             return Response("Winner found and updated successfully")

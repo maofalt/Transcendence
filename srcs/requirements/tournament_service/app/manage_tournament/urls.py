@@ -18,8 +18,8 @@ urlpatterns = [
     path('manage/<int:pk>/', views.TournamentRetrieveUpdateDestroy.as_view(), name='tournament-retrieve-update-destroy'),
 
 # JoinTournament:
-    #   - POST /add_player/{id}/ - Add a player to a specific tournament.
-    path('add-player/<int:id>/', views.JoinTournament.as_view(), name='add-player'),
+    #   - POST /add_player/{tournament_id}/{player_id}/ - Add a player to a specific tournament.
+    path('add-player/<int:tournament_id>/<int:player_id>/', views.JoinTournament.as_view(), name='add-player'),
 
 # Tournament Participation:
     # GET /{id}/participants/ - Show the participants list for a tournament.
