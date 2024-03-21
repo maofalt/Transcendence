@@ -620,7 +620,7 @@ class UserAPIView(APIView):
 
 
 def print_all_user_data(request):
-    all_users = User.objects.all()
+    all_users = User.objects.all().order_by('id')
     context = {'users': all_users}
 
     return render(request, 'print_user_data.html', context)

@@ -233,7 +233,7 @@ class MatchGenerator(generics.ListCreateAPIView):
 class MatchResult(APIView):
     authentication_classes = [CustomJWTAuthentication]
 
-    def put(self, request, match_id, winner_id):
+    def post(self, request, match_id, winner_id):
         print("match_id : ", match_id,  "winner_id: ", winner_id)
         match = get_object_or_404(TournamentMatch, id=match_id)
         for participant in match.participants.all():
@@ -250,27 +250,32 @@ class MatchResult(APIView):
         else:
             return Response("Winner not found among participants", status=status.HTTP_404_NOT_FOUND)
 
-class MatchUpdate(generics.RetrieveUpdateDestroyAPIView):
+class MatchUpdate(APIView):
     authentication_classes = [CustomJWTAuthentication]
     serializer_class = MatchGeneratorSerializer
+    # queryset = Tournament.objects.all()
 
-    def put(self, request, tournament_id, round):
+
+    def post(self, request, tournament_id, round):
         tournament = get_object_or_404(Tournament, id=tournament_id)
-        next_matches = tournamet.matches.filter(round_number=round).order_by('id')
-        finished_matches = tournamet.matches.filter(round_number=round - 1).order_by('id')
+        next_matches = tournament.matches.filter(round_number=round).order_by('id')
+        finished_matches = tournament.matches.filter(round_number=round - 1).order_by('id')
         finished_match_ids = finished_matches.values_list('id', flat=True)
 
-        participants = MatchParticipants.objects.filter(round_number=round, match_id__in=finished_match_ids)
+        participants = MatchParticipants.objects.filter(is_winner=True, match_id__in=finished_match_ids)
         print("Filtered participants: ", participants)
         # Filter out winners from participants
         winners = participants.filter(is_winner=True)
 
         # Extract player IDs of winners
         winner_player_ids = sorted(winners.values_list('player_id', flat=True))
+        print("winner_player_ids: ", winner_player_ids)
 
         for player_id in winner_player_ids:
             player = Player.objects.get(id=player_id)
             match = tournament.assign_player_to_match(player, round)
+            print("winner: ", player.id, "match: ", match.id)
+
             if match:
                 print(f"Player {player} added to match {match}")
                 participant, created = MatchParticipants.objects.get_or_create(
@@ -287,6 +292,7 @@ class MatchUpdate(generics.RetrieveUpdateDestroyAPIView):
             else:
                 print(f"No available matches for player {player}")
 
+        serializer = TournamentMatchSerializer(next_matches, many=True)
         return JsonResponse(serializer.data, status=status.HTTP_201_CREATED, safe=False)
 
 class TournamentRoundState(APIView):
@@ -468,8 +474,8 @@ class TournamentMatchList(ListAPIView):
     serializer_class = TournamentMatchSerializer
 
     def get_queryset(self):
-        tournament_id = self.kwargs['tournament_id']
-        return TournamentMatch.objects.filter(tournament_id=tournament_id)
+        tournament_id = self.kwargs['id']
+        return TournamentMatch.objects.filter(tournament_id=tournament_id).order_by('id')
 
 
 # ---------------------------- Match Operations -------------------------------
