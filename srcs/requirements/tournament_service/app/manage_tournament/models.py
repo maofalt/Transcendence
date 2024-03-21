@@ -45,6 +45,8 @@ class Tournament(models.Model):
         ('pong', 'Pong'),
     ]
     game_type = models.CharField(max_length=15, choices=GAME_TYPE, default='pong', null=False)
+    state = models.CharField(max_length=15, default="waiting")
+
 
     def calculate_nbr_of_match(self):
         # Calculate the number of matches based on total players and max players per match
@@ -87,10 +89,11 @@ class TournamentMatch(models.Model):
     match_time = models.DateTimeField(null=True) 
     players = models.ManyToManyField('Player', related_name='matches')
     participants = models.ManyToManyField('MatchParticipants', related_name='matches')
+    state = models.CharField(max_length=15, default="waiting")
 
     def __str__(self):
         player_count = self.players.count()
-        return f"ID: {self.id}, Tournament: {self.tournament_id}, Match Setting: {self.match_setting_id}, Round Number: {self.round_number}, Count Players: {player_count}"
+        return f"ID: {self.id}, Tournament: {self.tournament_id}, State: {self.state}, Match Setting: {self.match_setting_id}, Round Number: {self.round_number}, Count Players: {player_count}"
 
 class MatchSetting(models.Model):
     # setting_id = models.AutoField(primary_key=True)
@@ -166,15 +169,20 @@ class TournamentPlayer(models.Model):
         unique_together = ('tournament_id', 'player')
 
 class Player(models.Model):
-    username = models.CharField(max_length=255)
+    id = models.IntegerField(primary_key=True)
+    # username = models.CharField(max_length=255)
 
-    class Meta:
-        unique_together = ('id', 'username')
+    # class Meta:
+    #     unique_together = ('id', 'username')
 
 class MatchParticipants(models.Model):
-    match_id = models.IntegerField()
+    match_id = models.IntegerField(null=False)
+    round_number = models.IntegerField(null=False)
     # match_id = models.ForeignKey('TournamentMatch', on_delete=models.CASCADE, related_name='match_participants')
-    player_id = models.IntegerField(null=True)
+    player_id = models.IntegerField(null=False)
     # player_id = models.ForeignKey('Player', on_delete=models.CASCADE, related_name='playeridfrommatch')
     is_winner = models.BooleanField(default=False)
     participant_score = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"ID: {self.id}, Match: {self.match_id}, Round: {self.round_number}, Player: {self.player_id}, IsWinner: {self.is_winner}"

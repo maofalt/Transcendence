@@ -32,9 +32,8 @@ urlpatterns = [
 # Tournament Progression:
     # GET /{id}/matches - Retrieve a list of matches for a tournament.
     # POST /{id}/matches - Create a new match within a tournament.
-    path('mathch_generator/', views.MatchGenerator.as_view(), name='mathch_generator'),
-    # path('<int:id>/matches/', views.TournamentMatchList.as_view(), name='tournament-matches'),
-    # PUT /tournaments/{id}/matches/{matchId} - Update the status or result of a match.
+    path('<int:tournament_id>/match-generator/', views.MatchGenerator.as_view(), name='mathch-generator'),
+    path('<int:id>/matches/', views.TournamentMatchList.as_view(), name='tournament-matches'),
     # DELETE /tournaments/{id}/matches/{matchId} - Cancel a scheduled match.
     path('<int:id>/matches/<int:match_id>/', views.TournamentMatchDetail.as_view(), name='tournament-match-detail'),
     
@@ -53,16 +52,24 @@ urlpatterns = [
     path('matches/<int:match_id>/start/', views.MatchStart.as_view(), name='match-start'),
     # POST /tournaments/{id}/end - End the tournament, finalizing its state and possibly triggering the calculation of rankings.
     path('matches/<int:match_id>/end/', views.MatchEnd.as_view(), name='match-end'),
+    # PUT /tournaments/{match_id}/{winner_id}/matches/ - Update the status or result of a match.
+    path('matches/<int:match_id>/<int:winner_id>/', views.MatchResult.as_view(), name='match-result'),
+    path('matches/<int:tournament_id>/<int:round>/update/', views.MatchUpdate.as_view(), name='match-update'),
+
+
+# RoundStateCheck:
+    # GET 
+    path('<int:tournament_id>/round/', views.TournamentRoundState.as_view(), name='round'),
 
 # All tournament types
     # Get aLL TOURNAMENT types
     path('tournament-types/', views.TournamentTypeList.as_view(), name='tournament-type-list'),
-    
+
 # All registration types
     # Get aLL registration types
     path('registration-types/', views.RegistrationTypeList.as_view(), name='resgistration-type-list'),
     
-    # path('<int:tournament_id>/matches/', views.TournamentMatchList.as_view(), name='tournament-match-list'),
+    path('<int:tournament_id>/matches/', views.TournamentMatchList.as_view(), name='tournament-match-list'),
     # path('<int:tournament_id>/match-settings/', views.MatchSettingList.as_view(), name='match-setting-list'),
     # path('<int:tournament_id>/game-types/', views.GameTypeList.as_view(), name='game-type-list'),
     # path('<int:tournament_id>/tournament-types/', views.TournamentTypeList.as_view(), name='tournament-type-list'),

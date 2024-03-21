@@ -65,12 +65,12 @@ class TournamentRegistrationSerializer(serializers.ModelSerializer):
 class PlayerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Player
-        fields = ['id', 'username']
+        fields = ['id']
 
 class MatchParticipantsSerializer(serializers.ModelSerializer):
     class Meta:
         model = MatchParticipants
-        fields = ['id', 'match_id', 'player_id', 'is_winner', 'participant_score']
+        fields = ['id', 'match_id', 'round_number', 'player_id', 'is_winner', 'participant_score']
 
 class MatchGeneratorSerializer(serializers.Serializer):
     tournament_id = serializers.IntegerField()
@@ -97,7 +97,7 @@ class TournamentMatchSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TournamentMatch
-        fields = ['id', 'tournament_id', 'round_number', 'match_time', 'players', 'participants']
+        fields = ['id', 'state', 'tournament_id', 'round_number', 'match_time', 'players', 'participants']
 
 
 # class TournamentTypeSerializer(serializers.ModelSerializer):
@@ -111,7 +111,8 @@ class TournamentMatchSerializer(serializers.ModelSerializer):
 #         fields = ['id', 'type_name']
 
 class TournamentPlayerSerializer(serializers.ModelSerializer):
-    username = serializers.CharField()
+    # username = serializers.CharField()
+    players = PlayerSerializer(many=True)
     class Meta:
         model = TournamentPlayer
-        fields = ['tournament_id', 'player', 'username']
+        fields = ['tournament_id', 'players']

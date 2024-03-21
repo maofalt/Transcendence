@@ -9,29 +9,25 @@ from django.conf import settings
 # ------------------------ Authentication -----------------------------------
 class CustomJWTAuthentication(authentication.BaseAuthentication):
     def authenticate(self, request):
-        accessToken = request.headers.get('Authorization', None)
-        # refreshToken = request.COOKIES.get('refreshToken', None)
-        print("accessToken print: ", str(accessToken))
+        # accessToken = request.headers.get('Authorization', None)
+        refreshToken = request.COOKIES.get('refreshToken')
+        print("refreshToken print: ", str(refreshToken))
         # if not accessToken or not refreshToken:
         #     return JsonResponse({'error': 'Missing tokens'}, status=400)
 
-        if not accessToken:
+
+
+        if not refreshToken:
             return None, None
             # return JsonResponse({'error': 'Authorization header is missing'}, status=400)
             # return JsonResponse({'error': 'Refresh token is missing'}, status=400)
 
         try:
-            decoded_token = jwt.decode(accessToken.split()[1], settings.SECRET_KEY, algorithms=["HS256"])
-            exp_timestamp = decoded_token['exp']
-            exp_datetime = datetime.datetime.utcfromtimestamp(exp_timestamp).replace(tzinfo=datetime.timezone.utc)
-            print("exp_datetime: ", exp_datetime)
+
+            decoded_token = jwt.decode(refreshToken, settings.SECRET_KEY, algorithms=["HS256"])
+            uid = decoded_token['user_id']
             
-            username = decoded_token.get('username')
-            if not username:
-                return None, None
-            
-            print("Access token is stil valid")
-            return username, accessToken
+            return uid, refreshToken
 
         except jwt.ExpiredSignatureError:
             print("Access token has expired")
