@@ -230,25 +230,53 @@ class MatchGenerator(generics.ListCreateAPIView):
 
         return JsonResponse(serializer.data, status=status.HTTP_201_CREATED, safe=False)
     
+# class MatchResult(APIView):
+#     authentication_classes = [CustomJWTAuthentication]
+
+#     def post(self, request, match_id, winner_id):
+#         print("match_id : ", match_id,  "winner_id: ", winner_id)
+#         match = get_object_or_404(TournamentMatch, id=match_id)
+#         for participant in match.participants.all():
+#             print("participant id : ", participant.player_id)
+#             if participant.player_id == winner_id:
+#                 participant.is_winner = True
+#                 participant.save()
+#                 winner_found = True
+#             else:
+#                 winner_found = False
+
+#         if winner_found:
+#             return Response("Winner found and updated successfully")
+#         else:
+#             return Response("Winner not found among participants", status=status.HTTP_404_NOT_FOUND)
+
 class MatchResult(APIView):
     authentication_classes = [CustomJWTAuthentication]
 
-    def post(self, request, match_id, winner_id):
-        print("match_id : ", match_id,  "winner_id: ", winner_id)
+    def post(self, request, match_id, player_id, score):
+        print("match_id : ", match_id,  "player_id: ", player_id, "score: ", score)
         match = get_object_or_404(TournamentMatch, id=match_id)
         for participant in match.participants.all():
             print("participant id : ", participant.player_id)
-            if participant.player_id == winner_id:
-                participant.is_winner = True
+            if participant.player_id == player_id:
+                participant.participant_score = score
                 participant.save()
-                winner_found = True
-            else:
-                winner_found = False
 
-        if winner_found:
+        score_unset = match.participants.filter(participant_score=0)
+
+        if not score_unset.exists():
+            first_participant = match.participants.first()
+            highest_score = first_participant.participant_score
+            for participant in match.participants.all().order_by('id'):
+                if participant.participant_score > higest_score:
+                    higest_score = participant.participant_score
+            winner = match.participants.filter(participant_score=higest_score)
+            winner.is_winner = True
+            winner.save()
             return Response("Winner found and updated successfully")
         else:
-            return Response("Winner not found among participants", status=status.HTTP_404_NOT_FOUND)
+            return Response("Winner not found yet. Some players score is missing")
+
 
 class MatchUpdate(APIView):
     authentication_classes = [CustomJWTAuthentication]
