@@ -111,11 +111,11 @@ export default class CreateTournament extends AbstractView {
                           name="tournament_name" 
                           required
                           placeholder="Enter tournament name">
-                      <label for="nbr_of_players_per_tournament">Number of Players:</label>
+                      <label for="nbr_of_player_total">Number of Players:</label>
                       <input 
                           type="range" 
-                          id="nbr_of_players_per_tournament" 
-                          name="nbr_of_player" 
+                          id="nbr_of_player_total" 
+                          name="nbr_of_player_total" 
                           min="2" 
                           max="100"
                           value="2"
@@ -336,9 +336,13 @@ export default class CreateTournament extends AbstractView {
     const gameData = new FormData(document.getElementById('game-settings-form'));
     const gameSettings = Object.fromEntries(gameData.entries());
 
+    // Extract nbr_of_player_match from gameSettings
+    const nbr_of_player_match = gameSettings['nbr_of_players_per_match'];
+
     // Combine data from both forms
     const tournamentAndGameSettings = {
       ...tournamentSettings,
+      nbr_of_player_match: nbr_of_player_match,
       setting:{  ...gameSettings }
     };
 
