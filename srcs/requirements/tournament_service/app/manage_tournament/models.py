@@ -168,15 +168,20 @@ class TournamentPlayer(models.Model):
         unique_together = ('tournament_id', 'player')
 
 class Player(models.Model):
-    username = models.CharField(max_length=255)
+    id = models.IntegerField(primary_key=True)
+    # username = models.CharField(max_length=255)
 
-    class Meta:
-        unique_together = ('id', 'username')
+    # class Meta:
+    #     unique_together = ('id', 'username')
 
 class MatchParticipants(models.Model):
-    match_id = models.IntegerField()
+    match_id = models.IntegerField(null=False)
+    round_number = models.IntegerField(null=False)
     # match_id = models.ForeignKey('TournamentMatch', on_delete=models.CASCADE, related_name='match_participants')
-    player_id = models.IntegerField(null=True)
+    player_id = models.IntegerField(null=False)
     # player_id = models.ForeignKey('Player', on_delete=models.CASCADE, related_name='playeridfrommatch')
     is_winner = models.BooleanField(default=False)
     participant_score = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"ID: {self.id}, Match: {self.match_id}, Round: {self.round_number}, Player: {self.player_id}, IsWinner: {self.is_winner}"

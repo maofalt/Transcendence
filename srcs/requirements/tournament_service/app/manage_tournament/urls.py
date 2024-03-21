@@ -32,10 +32,11 @@ urlpatterns = [
 # Tournament Progression:
     # GET /{id}/matches - Retrieve a list of matches for a tournament.
     # POST /{id}/matches - Create a new match within a tournament.
-    path('mathch-generator/', views.MatchGenerator.as_view(), name='mathch-generator'),
-    path('<int:match_id>/match/result', views.MatchResult.as_view(), name='match-result'),
-    # path('<int:id>/matches/', views.TournamentMatchList.as_view(), name='tournament-matches'),
-    # PUT /tournaments/{id}/matches/{matchId} - Update the status or result of a match.
+    path('<int:tournament_id>/match-generator/', views.MatchGenerator.as_view(), name='mathch-generator'),
+    # PUT /tournaments/{match_id}/{winner_id}/matches/ - Update the status or result of a match.
+    path('<int:match_id>/<int:winner_id>/matches/', views.MatchResult.as_view(), name='match-result'),
+    path('<int:tournament_id>/<int:round>/matches/update)', views.MatchUpdate.as_view(), name='match-update'),
+    path('<int:id>/matches/', views.TournamentMatchList.as_view(), name='tournament-matches'),
     # DELETE /tournaments/{id}/matches/{matchId} - Cancel a scheduled match.
     path('<int:id>/matches/<int:match_id>/', views.TournamentMatchDetail.as_view(), name='tournament-match-detail'),
     
@@ -55,10 +56,14 @@ urlpatterns = [
     # POST /tournaments/{id}/end - End the tournament, finalizing its state and possibly triggering the calculation of rankings.
     path('matches/<int:match_id>/end/', views.MatchEnd.as_view(), name='match-end'),
 
+# RoundStateCheck:
+    # GET 
+    path('<int:tournament_id>/round/', views.TournamentRoundState.as_view(), name='round'),
+
 # All tournament types
     # Get aLL TOURNAMENT types
     path('tournament-types/', views.TournamentTypeList.as_view(), name='tournament-type-list'),
-    
+
 # All registration types
     # Get aLL registration types
     path('registration-types/', views.RegistrationTypeList.as_view(), name='resgistration-type-list'),
