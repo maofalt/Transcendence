@@ -211,7 +211,18 @@ export default class Game extends AbstractView {
 		});
 
 		this.socket.on('end-game', data => {
-			this.endGameAnimation();
+			// this.launchEndGameAnimation();
+			this.controls.enabled = false;
+
+			// Get a vector from the ball to the camera
+			let direction = new THREE.Vector3().subVectors(this.camera.position, this.ballModel ? this.ballModel.position : this.ball.mesh.position);
+
+			// Divide the direction by the number of frames
+			let frames = 300; // Change this to the number of frames you want in your animation
+			direction.divideScalar(frames);
+
+			this.endGameAnimation(direction);
+			// this.endGameAnimation();
 			// this.scene.clear();
 			console.log("END OF GAME");
 		});
@@ -225,31 +236,49 @@ export default class Game extends AbstractView {
 
 	};
 
+	launchEndGameAnimation() {
+		this.controls.enabled = false;
+
+		// Get a vector from the ball to the camera
+		let direction = new THREE.Vector3().subVectors(this.camera.position, this.ballModel ? this.ballModel.position : this.ball.mesh.position);
+
+		// Divide the direction by the number of frames
+		let frames = 100; // Change this to the number of frames you want in your animation
+		direction.divideScalar(frames);
+
+		this.endGameAnimation(direction);
+	}
+
 	// Define your animation function
-	endGameAnimation = () => {
-		// Update your scene here
-		// this.camera.position.z;
+	endGameAnimation = (direction, frame = 0) => {
+		let scaleFactor = 1.1;
+
 		if (this.ballModel) {
-			this.ballModel.scale.multiplyScalar(1.1);
-			// this.ballModel.position.z
+			this.ballModel.scale.multiplyScalar(scaleFactor);
+			// this.ballModel.position.add(direction);
 		} else {
-			this.ball.mesh.scale.multiplyScalar(1.1);
+			this.ball.mesh.scale.multiplyScalar(scaleFactor);
+			// this.ball.mesh.position.add(direction);
 		}
 
 		console.log("end of game");
-
 		// Render the scene
 		this.renderer.render(this.scene, this.camera);
 
+		let length = this.camera.position.length();
+		if (this.ballModel ? this.ballModel.scale / 2 == length - 1 : this.ball.mesh.scale / 2 == length - 1) {
+			console.log("Animation Finished");
+			return ;
+		}
+
 		// Request the next frame
-		requestAnimationFrame(this.endGameAnimation);
+		requestAnimationFrame(() => this.endGameAnimation(direction, frame + 1));
 	}
 
 	destroy() {
 		if (this.socket) {
 			this.socket.disconnect();
 		}
-		
 		console.log("Destroying Game View...");
 		// Cleanup logic here (remove event listeners, etc.)
 		window.removeEventListener('resize', this.onWindowResize.bind(this));
@@ -257,6 +286,10 @@ export default class Game extends AbstractView {
 		window.removeEventListener("keyup", this.handleKeyRelease.bind(this));
 
 		// Additional cleanup (disposing Three.js objects, etc.)
+		this.scene.clear();
+		// delete cam;
+		// delete controls;
+		// delete renderer;
 	};
 
 
