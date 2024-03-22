@@ -30,9 +30,7 @@ class TournamentListCreate(generics.ListCreateAPIView):
     queryset = Tournament.objects.all()
     serializer_class = TournamentSerializer
     authentication_classes = [CustomJWTAuthentication]
-    # renderer_classes = [JSONRenderer]  # Force the response to be rendered in JSON
-    # permission_classes = [IsAuthenticated]  # Only authenticated users can create and list tournaments
-
+  
     def get(self, request, *args, **kwargs):
         print(">> GET: loading page\n")
         tournaments = self.get_queryset()
@@ -41,21 +39,16 @@ class TournamentListCreate(generics.ListCreateAPIView):
 
     def post(self, request, *args, **kwargs):
         print(">> received POST to creat a new tournament\n")
-        # Attribue automatiquement l'utilisateur actuel comme host du tournoi créé
         data = request.data
         print("POSTED DATA: ", data)
         tournament_name = data.get('tournament_name')
-        # settings = data.get('settings')
         registration_type = data.get('registration')
         registration_period_min = data.get('registration_period_min')
         nbr_of_player_total = data.get('nbr_of_player_total')
         nbr_of_player_match = data.get('nbr_of_player_match')
         tournament_type = data.get('tournament_type')
-        # username = 'tempHost'
         uid = request.user
-        host, created = Player.objects.get_or_create(id=uid) # created wiil return False if the player already exists
-
-        # print("host username: ", host.username)
+        host, created = Player.objects.get_or_create(id=uid)
 
 
         # Create MatchSetting instance
@@ -69,13 +62,12 @@ class TournamentListCreate(generics.ListCreateAPIView):
             ball_speed=data.get('ball_speed', 0.7),
             ball_radius=data.get('ball_radius', 1),
             ball_color=data.get('ball_color', '#000000'),
-            nbr_of_player=data.get('nbr_of_player_match', 2)    # this is about how it set not actual played player 
+            nbr_of_player=data.get('nbr_of_player_match', 2) 
         )
 
         # Create Tournament instance
         tournament = Tournament.objects.create(
             tournament_name=tournament_name,
-            # registration=registration_type,
             registration_period_min=registration_period_min,
             nbr_of_player_total=nbr_of_player_total,
             nbr_of_player_match=nbr_of_player_match,
@@ -84,7 +76,6 @@ class TournamentListCreate(generics.ListCreateAPIView):
             created_at=timezone.now(),
             tournament_type=tournament_type,
             registration=registration_type,
-            # nbr_of_player   will be assigned when user joining the tournament
         )
         
         tournament.players.add(host)
@@ -104,22 +95,11 @@ class TournamentListCreate(generics.ListCreateAPIView):
     #     if not queryset.exists():
     #         return Response({"message": "NO tournament was found."}, status=status.HTTP_204_NO_CONTENT)
 
-    #Orignal code
-    # def list(self, request, *args, **kwargs):
-    #     queryset = self.get_queryset()
-    #     if not queryset.exists():
-    #         return Response([], status=status.HTTP_200_OK)
-
-    #     serializer = self.get_serializer(queryset, many=True)
-    #     return Response(serializer.data)
-    # def generate_tree
-
 
 # ------------------------ Assigning Players on the Tournament Tree -----------------------------------
 
 class JoinTournament(generics.ListCreateAPIView):
     authentication_classes = [CustomJWTAuthentication]
-    # permission_classes = [IsAuthenticated] 401 comes from here
     queryset = TournamentPlayer.objects.all()
     serializer_class = TournamentPlayerSerializer
 
