@@ -44,13 +44,24 @@ class TournamentListCreate(generics.ListCreateAPIView):
         # Attribue automatiquement l'utilisateur actuel comme host du tournoi créé
         data = request.data
         print("POSTED DATA: ", data)
+
+        required_fields = ['tournament_name', 'registration_type', 'registration_period_min', 'nbr_of_player_total', 'nbr_of_player_match']
+        missing_fields = [field for field in required_fields if field not in data]
+        
+        if missing_fields:
+            error_message = f"Missing required fields: {', '.join(missing_fields)}"
+            # Handle the error, you can raise an exception or return an error response
+            # For example, raising a BadRequest exception:
+            # raise BadRequest(error_message)
+            # Or returning an error response:
+            return Response({"error": error_message}, status=status.HTTP_400_BAD_REQUEST)
+        
+
         tournament_name = data.get('tournament_name')
-        # settings = data.get('settings')
-        # registration_type = data.get('registration_type')
+        registration_type = data.get('registration_type')
         registration_period_min = data.get('registration_period_min')
         nbr_of_player_total = data.get('nbr_of_player_total')
         nbr_of_player_match = data.get('nbr_of_player_match')
-        # username = 'tempHost'
         uid = request.user
         host, created = Player.objects.get_or_create(id=uid) # created wiil return False if the player already exists
 
@@ -74,7 +85,7 @@ class TournamentListCreate(generics.ListCreateAPIView):
         # Create Tournament instance
         tournament = Tournament.objects.create(
             tournament_name=tournament_name,
-            # registration=registration_type,
+            registration=registration_type,
             registration_period_min=registration_period_min,
             nbr_of_player_total=nbr_of_player_total,
             nbr_of_player_match=nbr_of_player_match,
