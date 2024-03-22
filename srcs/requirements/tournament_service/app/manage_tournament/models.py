@@ -5,7 +5,7 @@ from django.conf import settings
 
 class Tournament(models.Model):
     # tournament_id = models.AutoField(primary_key=True)
-    tournament_name = models.CharField(max_length=255, unique=True)
+    tournament_name = models.CharField(max_length=255)
     # game_type = models.ForeignKey('GameType', on_delete=models.PROTECT, null=False, to_field='id', default=1)
     created_at = models.DateTimeField(auto_now_add=True)
     nbr_of_player_total = models.IntegerField(default=2, 
