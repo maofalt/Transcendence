@@ -46,10 +46,11 @@ class TournamentListCreate(generics.ListCreateAPIView):
         print("POSTED DATA: ", data)
         tournament_name = data.get('tournament_name')
         # settings = data.get('settings')
-        # registration_type = data.get('registration_type')
+        registration_type = data.get('registration')
         registration_period_min = data.get('registration_period_min')
         nbr_of_player_total = data.get('nbr_of_player_total')
         nbr_of_player_match = data.get('nbr_of_player_match')
+        tournament_type = data.get('tournament_type')
         # username = 'tempHost'
         uid = request.user
         host, created = Player.objects.get_or_create(id=uid) # created wiil return False if the player already exists
@@ -81,6 +82,8 @@ class TournamentListCreate(generics.ListCreateAPIView):
             host=host,
             setting=match_setting,
             created_at=timezone.now(),
+            tournament_type=tournament_type,
+            registration=registration_type,
             # nbr_of_player   will be assigned when user joining the tournament
         )
         
