@@ -48,14 +48,6 @@ export default class Tournament extends AbstractView {
 		await this.getTournamentList();
 		
 		const tournamentTable =  document.querySelector('tournament-table');
-
-		// for (let  i = 0; i < 0; i++) {
-		// 	tournamentTable.addDummyRow();
-		// }
-
-		//for each tournament in each data populate the table
-
-
 		const createMatchButton = document.getElementById('createMatchButton');
 		createMatchButton.addEventListener('click', this.createMatch);
 
@@ -122,6 +114,11 @@ export default class Tournament extends AbstractView {
 
 	async createTournament() {
 		navigateTo('/create-tournament');
+	}
+
+	joinTournament(tournamentID) {
+		console.log('Join tournament:)');
+		console.log('Join tournament:', tournamentID);
 	}
 
 	getGameSettings() {
