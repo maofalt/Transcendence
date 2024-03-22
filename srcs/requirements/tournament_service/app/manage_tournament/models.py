@@ -32,15 +32,15 @@ class Tournament(models.Model):
     matches = models.ManyToManyField('TournamentMatch', related_name='tournaments')
     nbr_of_match = models.IntegerField(default=0)
     TOURNAMENT_TYPE = [
-        ('tournament', 'Nock Out'),
-        ('league', 'Round Robin'),
+        ('Knock-out', 'Knock-Out'),
+        ('League', 'Round Robin'),
     ]
-    tournament_type = models.CharField(max_length=15, choices=TOURNAMENT_TYPE, default='tournament', null=False)
+    tournament_type = models.CharField(max_length=15, choices=TOURNAMENT_TYPE, default='Knock-out', null=False)
     REGISTRATION_TYPE = [
-        ('public', 'Opened game'),
-        ('private', 'Invitaion required'),
+        ('Public', 'Open game'),
+        ('Private', 'Invitation required'),
     ]
-    registration = models.CharField(max_length=15, choices=REGISTRATION_TYPE, default='public', null=False)
+    registration = models.CharField(max_length=15, choices=REGISTRATION_TYPE, default='Public', null=False)
     GAME_TYPE = [
         ('pong', 'Pong'),
     ]
@@ -147,6 +147,7 @@ class MatchSetting(models.Model):
         MaxValueValidator(8)
         ]
     )
+
 class GameType(models.Model):
     # id = models.AutoField(primary_key=True)
     type_name = models.CharField(max_length=255)

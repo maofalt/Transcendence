@@ -66,11 +66,7 @@ export default class Tournament extends AbstractView {
 
 	async getTournamentList() { 
 		try {
-
-			const accessToken = localStorage.getItem('accessToken');
-			
-
-			const response = await makeApiRequest('/api/tournament/create-and-list/','GET', null, {}, accessToken);
+			const response = await makeApiRequest('/api/tournament/create-and-list/','GET');
 			const tournaments = response.body;
 			console.log('Tournament list:', response.body);
 			
@@ -86,11 +82,10 @@ export default class Tournament extends AbstractView {
 				const Styles = tournamentTable.columnStyles;
 				const tournamentNameElement = tournamentTable.createStyledHTMLObject('div', tournament.tournament_name, Styles.tournamentName);
 				const hostElement = tournamentTable.createStyledHTMLObject('div', `Host ${tournament.host_id}`, Styles.host);
-				//64
 				const numberOfPlayersElement = tournamentTable.createStyledHTMLObject('div', `${tournament.joined}/${tournament.nbr_of_player_total}`, {}); 
-				const timeRemainingElement = tournamentTable.createStyledHTMLObject('div', '2:00', {}); // Placeholder for time remaining
+				const timeRemainingElement = tournamentTable.createStyledHTMLObject('div', '2:00', {});
 				const tournamentTypeElement = tournamentTable.createStyledHTMLObject('div', `${tournament.tournament_type}`);
-				const registrationModeElement = tournamentTable.createStyledHTMLObject('div', tournament.registration === 1 ? 'Open' : 'Invitational', {});
+				const registrationModeElement = tournamentTable.createStyledHTMLObject('div', tournament.registration, {});
 				const joinButtonElement = document.createElement('button');
 				joinButtonElement.textContent = 'Join';
 				Object.assign(joinButtonElement.style, Styles.action);
@@ -117,7 +112,7 @@ export default class Tournament extends AbstractView {
 		console.log('Create Match');
 		const gameSettings = this.getGameSettings();
 		try {
-			const response = await makeApiRequest('/game-logic/createMatch','POST',gameSettings );
+			const response = await makeApiRequest('/game-logic/createMatch','POST',gameSettings);
 			console.log('Match created:', response.body);
 			navigateTo('/play?matchID=' + response.body.matchID);
 		} catch (error) {
