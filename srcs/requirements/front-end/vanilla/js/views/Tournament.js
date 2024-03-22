@@ -85,7 +85,7 @@ export default class Tournament extends AbstractView {
 				const numberOfPlayersElement = tournamentTable.createStyledHTMLObject('div', `${tournament.joined}/${tournament.nbr_of_player_total}`, {}); 
 				const timeRemainingElement = tournamentTable.createStyledHTMLObject('div', '2:00', {});
 				const tournamentTypeElement = tournamentTable.createStyledHTMLObject('div', `${tournament.tournament_type}`);
-				const registrationModeElement = tournamentTable.createStyledHTMLObject('div', tournament.registration === 1 ? 'Open' : 'Invitational', {});
+				const registrationModeElement = tournamentTable.createStyledHTMLObject('div', tournament.registration, {});
 				const joinButtonElement = document.createElement('button');
 				joinButtonElement.textContent = 'Join';
 				Object.assign(joinButtonElement.style, Styles.action);

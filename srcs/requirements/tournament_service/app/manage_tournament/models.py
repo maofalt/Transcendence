@@ -37,10 +37,10 @@ class Tournament(models.Model):
     ]
     tournament_type = models.CharField(max_length=15, choices=TOURNAMENT_TYPE, default='Knock-out', null=False)
     REGISTRATION_TYPE = [
-        ('public', 'Opened game'),
-        ('private', 'Invitaion required'),
+        ('Public', 'Open game'),
+        ('Private', 'Invitation required'),
     ]
-    registration = models.CharField(max_length=15, choices=REGISTRATION_TYPE, default='public', null=False)
+    registration = models.CharField(max_length=15, choices=REGISTRATION_TYPE, default='Public', null=False)
     GAME_TYPE = [
         ('pong', 'Pong'),
     ]
