@@ -17,7 +17,7 @@ class TournamentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tournament
-        fields = ['tournament_name', 'nbr_of_player_total', 'nbr_of_player_match', 'setting', 'game_type', 'tournament_type', 'registration', 'registration_period_min', 'host_id', 'joined', 'is_full' ]
+        fields = ['id', 'tournament_name', 'nbr_of_player_total', 'nbr_of_player_match', 'setting', 'game_type', 'tournament_type', 'registration', 'registration_period_min', 'host_id', 'joined', 'is_full' ]
 
     def create(self, validated_data):
         setting_data = validated_data.pop('setting')  # Extract data from MatchSetting
@@ -30,6 +30,7 @@ class TournamentSerializer(serializers.ModelSerializer):
         setting_data = validated_data.pop('setting')
         setting = instance.setting
 
+        instance.id = validated_data.get('id', instance.id)
         instance.tournament_name = validated_data.get('tournament_name', instance.tournament_name)
         instance.nbr_of_player_total = validated_data.get('nbr_of_player_total', instance.nbr_of_player_total)
         instance.nbr_of_player_match = validated_data.get('nbr_of_player_match', instance.nbr_of_player_match)
