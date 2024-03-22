@@ -239,12 +239,25 @@ export default class Game extends AbstractView {
 	launchEndGameAnimation() {
 		this.controls.enabled = false;
 
+		// let mask = document.createElement('div');
+		// mask.id = 'mask';
+		// mask.style.setProperty("opacity", "1");
+		// mask.style.setProperty("background", "black");
+		// mask.style.setProperty("width", "200px");
+		// mask.style.setProperty("height", "200px");
+		// mask.style.setProperty("position", "absolute");
+		// mask.style.setProperty("top", "0");
+		// mask.style.setProperty("left", "0");
+		// mask.style.setProperty("z-index", "999");
+		// // this.shadowRoot.appendChild(mask);
+		// document.body.appendChild(mask);
+
 		// Get a vector from the ball to the camera
 		let direction = new THREE.Vector3().subVectors(this.camera.position, this.ballModel ? this.ballModel.position : this.ball.mesh.position);
 
 		// Divide the direction by the number of frames
-		let frames = 100; // Change this to the number of frames you want in your animation
-		direction.divideScalar(frames);
+		// let frames = 30; // Change this to the number of frames you want in your animation
+		// direction = direction.divideScalar(frames);
 
 		this.endGameAnimation(direction);
 	}
@@ -252,24 +265,36 @@ export default class Game extends AbstractView {
 	// Define your animation function
 	endGameAnimation = (direction, frame = 0) => {
 		let scaleFactor = 1.1;
+		let maxFrame = 300;
+		// let lightStep = this.ambientLight.intensity / maxFrame;
+		// let dirLightStep = this.directionalLight.intensity / maxFrame;
+		
 
-		if (this.ballModel) {
-			this.ballModel.scale.multiplyScalar(scaleFactor);
-			// this.ballModel.position.add(direction);
-		} else {
+		if (!this.ballModel) {
 			this.ball.mesh.scale.multiplyScalar(scaleFactor);
-			// this.ball.mesh.position.add(direction);
+			// this.ballModel.position.add(direction);
 		}
+
+		// this.ambientLight.intensity -= lightStep;
+		// this.directionalLight.intensity -= dirLightStep;
+
+		this.ambientLight.intensity = 0;
+		this.directionalLight.intensity = 0;
 
 		console.log("end of game");
 		// Render the scene
 		this.renderer.render(this.scene, this.camera);
 
-		let length = this.camera.position.length();
-		if (this.ballModel ? this.ballModel.scale / 2 == length - 1 : this.ball.mesh.scale / 2 == length - 1) {
-			console.log("Animation Finished");
+		// let length = this.camera.position.length();
+		// let ballScale = this.ballModel ? this.ballModel.scale.length() : this.ball.mesh.scale.length();
+		// // let ballPos = this.ballModel ? this.ballModel.position.length() : this.ball.mesh.position.length();
+		// ballScale /= 2;
+		// if (ballScale >= length * 0.6) {
+		// 	console.log("Animation Finished");
+		// 	return ;
+		// }
+		if (frame == maxFrame)
 			return ;
-		}
 
 		// Request the next frame
 		requestAnimationFrame(() => this.endGameAnimation(direction, frame + 1));
@@ -456,9 +481,9 @@ export default class Game extends AbstractView {
 		const scoreGeo = new TextGeometry(scoreText, this.textSettings);
 		// const scoreGeo = new TextGeometry(scoreText, this.TKtext);
 
-		const profilePicMaterial = new THREE.MeshBasicMaterial({ map:profilePic });
-		var scoreMaterial = new THREE.MeshBasicMaterial({ color: data.gamemode.gameType ? 0xff0000 : 0xffffff });
-		var loginMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+		const profilePicMaterial = new THREE.MeshPhongMaterial({ map:profilePic });
+		var scoreMaterial = new THREE.MeshPhongMaterial({ color: data.gamemode.gameType ? 0xff0000 : 0xffffff });
+		var loginMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
 
 		const loginMesh = new THREE.Mesh(loginGeo, loginMaterial);
 		const scoreMesh = new THREE.Mesh(scoreGeo, scoreMaterial);
