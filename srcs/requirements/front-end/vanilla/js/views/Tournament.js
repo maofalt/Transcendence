@@ -13,7 +13,8 @@ export default class Tournament extends AbstractView {
 		super();
 
 		this.createMatch = this.createMatch.bind(this);
-		this.createTournament = this.createTournament.bind(this);		
+		this.createTournament = this.createTournament.bind(this);	
+		this.joinTournament = this.joinTournament.bind(this);	
 		this.data = [];
 	}
 
@@ -85,13 +86,13 @@ export default class Tournament extends AbstractView {
 			
 				// Add the constructed row to the table
 				tournamentTable.addRow([
-					tournamentNameElement.outerHTML, 
-					hostElement.outerHTML, 
-					numberOfPlayersElement.outerHTML, 
-					timeRemainingElement.outerHTML, 
-					tournamentTypeElement.outerHTML, 
-					registrationModeElement.outerHTML, 
-					joinButtonElement.outerHTML
+					tournamentNameElement, 
+					hostElement, 
+					numberOfPlayersElement, 
+					timeRemainingElement, 
+					tournamentTypeElement, 
+					registrationModeElement, 
+					joinButtonElement
 				]);
 			});
 
@@ -105,7 +106,7 @@ export default class Tournament extends AbstractView {
 		const gameSettings = this.getGameSettings();
 		try {
 			const response = await makeApiRequest('/game-logic/createMatch','POST',gameSettings);
-			console.log('Match created:', response.body);
+			console.log('Match created:', response);
 			navigateTo('/play?matchID=' + response.body.matchID);
 		} catch (error) {
 			console.error('Failed to create match:', error);
@@ -116,9 +117,16 @@ export default class Tournament extends AbstractView {
 		navigateTo('/create-tournament');
 	}
 
-	joinTournament(tournamentID) {
-		console.log('Join tournament:)');
+	async joinTournament(tournamentID) {
 		console.log('Join tournament:', tournamentID);
+		const apiEndpoint = `/api/tournament/add-player/${tournamentID}/2/`;
+		try {
+			const response = await makeApiRequest(apiEndpoint,'POST');
+			console.log('Joined tournament:', response.body);
+			//navigateTo('/play?matchID=' + response.body.matchID);
+		} catch (error) {
+			console.error('Failed to join tournament:', error);
+		}
 	}
 
 	getGameSettings() {
