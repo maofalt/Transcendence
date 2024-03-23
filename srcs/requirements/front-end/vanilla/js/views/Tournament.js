@@ -1,6 +1,7 @@
 // import '@css/tournament.css'
 import AbstractView from "./AbstractView";
 import DynamicTable from "@components/DynamicTable";
+import TournamentTable from "@components/TournamentTable";
 import ActionButton from "@components/ActionButton";
 import NormalButton from '@components/NormalButton';
 import { makeApiRequest } from '@utils/makeApiRequest.js';
@@ -12,115 +13,103 @@ export default class Tournament extends AbstractView {
 		super();
 
 		this.createMatch = this.createMatch.bind(this);
-		this.caption = 'Active Tournaments';
-		
-		this.headers = ['Tournament Name', 'Host', 'Number of Players', 'Time Remaining', 'Tournament Type', 'Registration Mode', 'Action'];
-		
-		this.columnStyles = {
-			tournamentName: { 
-				'font-weight': '700',
-			 	'vertical-align': 'middle;',
-				'padding': '1rem'
-			},
-			host: {
-				container: {
-					'display': 'flex',
-					'align-items': 'center'
-				},
-				name: {
-					'color': 'blue',
-					'margin-left': '1rem'
-				},
-				imageUrl: {
-					'witdh': '50px',
-					'height': '50px',
-					'border-radius': '50%'
-				}
-			},
-			action: {
-				'vertical-align': 'middle;',
-				'text-align': 'center',
-				'cursor': 'pointer'
-			}
-		};
-		
-		this.getTournamentList();
-		this.data= [
-			{	
-				tournamentName: 'Tournament 1',
-				host: {
-					name: "<a href='https://profile.intra.42.fr/users/motero' class='host-link'>Host 1 Name</a>",
-					imageUrl: "<a href='https://cdn.intra.42.fr/users/f49a1258c4dc41d9f9e02192cc9c5e63/motero.JPG' class='host-image'>"
-				},
-				numberOfPlayers: '2/4',
-				timeRemaining: '2:00',
-				tournamentType: 'Single Elimination',
-				registrationMode: 'Open',
-				action: 'Join'
-			},
-			{	
-				tournamentName: 'Tournament 2',
-				host: 'Host 2',
-				numberOfPlayers: '5/4',
-				timeRemaining: '2:00',
-				tournamentType: 'Single Elimination',
-				registrationMode: 'Open',
-				action: 'Join'
-			},
-			{	
-				tournamentName: 'Tournament 2',
-				host: 'Host 2',
-				numberOfPlayers: '5/4',
-				timeRemaining: '2:00',
-				tournamentType: 'Single Elimination',
-				registrationMode: 'Open',
-				action: 'Join'
-			},
-		];
+		this.createTournament = this.createTournament.bind(this);	
+		this.joinTournament = this.joinTournament.bind(this);	
+		this.data = [];
 	}
 
 	async getHtml() {
-		//await new Promise(resolve => setTimeout(resolve, 100)); // Wait for 3 seconds
 		return `
 			<div class="tournament">
-			    <action-button 
-                    data-text=" ⚡ Play Now"
-					id="createMatchButton"
-					>
-                </action-button>
-				<start-btn
-					data-text="CREATE"
-					id="createTournamentButton"
-					>
-				</start-btn>
-				<start-btn
-					data-text="MANAGE"
-					id="createTournamentButton"
-					>
-				</start-btn>
-                <dynamic-table></dynamic-table>
+				<div class="action-button">    
+					<action-button 
+            		    data-text=" ⚡ Play Now"
+						id="createMatchButton"
+						>
+            		</action-button>
+				</div>
+				<div class="help">
+					<start-btn
+						data-text="CREATE"
+						id="createTournamentButton"
+						>
+					</start-btn>
+					<start-btn
+						data-text="MANAGE"
+						id="manageTournamentButton"
+						>
+					</start-btn>
+				</div>
+	                <tournament-table id="tournamentTable"></tournament-table>
 			</div>
 		`;
 	}
 
 	async init() {
-		const dynamicTable =  document.querySelector('dynamic-table');
-		dynamicTable.setAttribute('data-title', this.caption);
-		dynamicTable.setAttribute('data-headers', JSON.stringify(this.headers));
-		dynamicTable.setAttribute('data-style', JSON.stringify(this.columnStyles));
-		dynamicTable.setAttribute('data-rows', JSON.stringify(this.data));
-
+		await this.getTournamentList();
+		
+		const tournamentTable =  document.querySelector('tournament-table');
 		const createMatchButton = document.getElementById('createMatchButton');
 		createMatchButton.addEventListener('click', this.createMatch);
+
+		const createTournamentButton = document.getElementById('createTournamentButton');
+		createTournamentButton.addEventListener('click', this.createTournament);
+		
 	}
 
-	async getTournamentList() {
-
-		console.log("Get Tournament List");
-			  
+	async getTournamentList() { 
 		try {
-			const response = await makeApiRequest('https://localhost:9443/api/tournament/create-and-list/','GET', {});
+			const response = await makeApiRequest('/api/tournament/create-and-list/','GET');
+			const tournaments = response.body;
 			console.log('Tournament list:', response.body);
+			
+			// Transform the data
+			if (tournaments.length === 0) {
+				this.data = [];
+				return;
+			}
+
+			 // Map API data to table rows and add them to the table
+			 tournaments.forEach(tournament => {
+				console.log('Tournament:', tournament);
+				const Styles = tournamentTable.columnStyles;
+				const tournamentNameElement = tournamentTable.createStyledHTMLObject('div', tournament.tournament_name, Styles.tournamentName);
+				const hostElement = tournamentTable.createStyledHTMLObject('div', `Host ${tournament.host_id}`, Styles.host);
+				const numberOfPlayersElement = tournamentTable.createStyledHTMLObject('div', `${tournament.joined}/${tournament.nbr_of_player_total}`, {}); 
+				const timeRemainingElement = tournamentTable.createStyledHTMLObject('div', `${tournament.registration_period_min}`, {});
+				const tournamentTypeElement = tournamentTable.createStyledHTMLObject('div', `${tournament.tournament_type}`);
+				const registrationModeElement = tournamentTable.createStyledHTMLObject('div', tournament.registration, {});
+				const actionContainer = document.createElement('div');
+				//container for all button actions 
+				actionContainer.style.display = 'flex';
+				actionContainer.style.justifyContent = 'space-around';
+				//Join button on te action column to join corresponding tournament
+				const joinButtonElement = document.createElement('button');
+				joinButtonElement.textContent = 'Join';
+				Object.assign(joinButtonElement.style, Styles.action);
+				joinButtonElement.addEventListener('click', () => this.joinTournament(tournament.id));
+				// Details button to see the tournament state (either brackets and or results)
+				const viewButtonElement = document.createElement('button');
+				viewButtonElement.innerHTML = '👁️';
+				Object.assign(viewButtonElement.style, Styles.action);
+				viewButtonElement.addEventListener('click', () => 
+					console.log(`SOME IS WATCHING 👁️ 👁️ `)
+					);
+
+				actionContainer.appendChild(joinButtonElement);
+				actionContainer.appendChild(viewButtonElement);
+				// Add the constructed row to the table
+				tournamentTable.addRow([
+					tournamentNameElement, 
+					hostElement, 
+					numberOfPlayersElement, 
+					timeRemainingElement, 
+					tournamentTypeElement, 
+					registrationModeElement, 
+					actionContainer
+				]);
+			});
+
 		} catch (error) {
 			console.error('Failed to get tournament list:', error);
 		}
@@ -130,19 +119,36 @@ export default class Tournament extends AbstractView {
 		console.log('Create Match');
 		const gameSettings = this.getGameSettings();
 		try {
-			const response = await makeApiRequest('https://localhost:9443/game-logic/createMatch','POST',gameSettings);
-			console.log('Match created:', response.body);
-			//window.location.href = '/play?matchID=' + response.body.matchID;
+			const response = await makeApiRequest('/game-logic/createMatch','POST',gameSettings);
+			console.log('Match created:', response);
 			navigateTo('/play?matchID=' + response.body.matchID);
 		} catch (error) {
 			console.error('Failed to create match:', error);
 		}
 	}
 
+	async createTournament() {
+		navigateTo('/create-tournament');
+	}
+
+	async joinTournament(tournamentID) {
+	
+		try {
+			const responseUser = await makeApiRequest(`/api/user_management/auth/getUser`,'GET');
+			console.log('User:', responseUser.body);
+			const userID = responseUser.body.user_id;
+			const apiEndpoint = `/api/tournament/add-player/${tournamentID}/${userID}/`;
+			const response = await makeApiRequest(apiEndpoint,'POST');
+			//navigateTo('/play?matchID=' + response.body.matchID);
+		} catch (error) {
+			console.error('Failed to join tournament:', error);
+		}
+	}
+
 	getGameSettings() {
 		return {
 			"gamemodeData": {
-			  "nbrOfPlayers": 3,
+			  "nbrOfPlayers": 7,
 			  "nbrOfRounds": 1,
 			  "timeLimit": 0
 			},
@@ -159,8 +165,8 @@ export default class Tournament extends AbstractView {
 			  "speed": 0.7,
 			  "radius": 1,
 			  "color": "0xffffff",
-			  "texture": "",
-			  "model": "donut_sucre_au_sucre"
+			  "texture": "yridgway",
+			  "model": "banana",
 			},
 			"playersData": [
 			  {
@@ -173,6 +179,22 @@ export default class Tournament extends AbstractView {
 			  },
 			  {
 				"accountID": "tata3",
+				"color": "0x00ff00"
+			  },
+			  {
+				"accountID": "tata4",
+				"color": "0x0000ff"
+			  },
+			  {
+				"accountID": "tata5",
+				"color": "0x00ff00"
+			  },
+			  {
+				"accountID": "tata6",
+				"color": "0x00ff00"
+			  },
+			  {
+				"accountID": "tata7",
 				"color": "0x00ff00"
 			  },
 			]

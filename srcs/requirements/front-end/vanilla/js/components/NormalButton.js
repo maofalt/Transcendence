@@ -11,7 +11,7 @@ class NormalButton extends HTMLElement {
             <link rel="stylesheet" href="../../css/NormalButton.css">
             <meta name="viewport" content="width=device-width, initial-scale=1">
             <body>
-                <button class="start-btn"></button>
+                <span class="start-btn"></span>
             </body>
         `;
     }

@@ -16,6 +16,8 @@ services:
       - ./requirements/traefik/config:/etc/traefik
       - ./requirements/traefik/config/ssl/:/ssl-certs
       - "${XDG_RUNTIME_DIR:-/var/run}/docker.sock:/var/run/docker.sock"
+      #- /var/run/docker.sock:/var/run/docker.sock
+
     networks:
       - transcendence
     restart: unless-stopped
@@ -59,6 +61,7 @@ services:
     restart: unless-stopped
     volumes:
       - "${XDG_RUNTIME_DIR:-/var/run}/docker.sock:/var/run/docker.sock"
+      #- /var/run/docker.sock:/var/run/docker.sock
       - portainer-data:/data
     networks:
       - transcendence
@@ -202,6 +205,8 @@ services:
       dockerfile: Dockerfile
     networks:
       - transcendence
+    env_file:
+      - .env
     volumes:
       - ./requirements/tournament_service/app:/app
     #ports:

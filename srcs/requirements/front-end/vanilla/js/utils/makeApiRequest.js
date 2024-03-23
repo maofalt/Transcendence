@@ -17,6 +17,7 @@ export async function makeApiRequest(url, method = 'GET', body = null, headers =
 			headers: defaultHeaders,
 		};
 
+		
 		// Adding body for relevant methods
 		if (body && (method === 'POST' || method === 'PUT' || method === 'DELETE')) {
 			if (headers['Content-Type'] == 'application/x-www-form-urlencoded') {
@@ -42,6 +43,7 @@ export async function makeApiRequest(url, method = 'GET', body = null, headers =
 				body: null
 			};
 		}
+
 		// Check if response is JSON
 		const contentType = response.headers.get("content-type");
 		if (contentType && contentType.includes("application/json")) {
