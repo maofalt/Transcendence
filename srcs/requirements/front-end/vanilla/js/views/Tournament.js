@@ -79,11 +79,25 @@ export default class Tournament extends AbstractView {
 				const timeRemainingElement = tournamentTable.createStyledHTMLObject('div', `${tournament.registration_period_min}`, {});
 				const tournamentTypeElement = tournamentTable.createStyledHTMLObject('div', `${tournament.tournament_type}`);
 				const registrationModeElement = tournamentTable.createStyledHTMLObject('div', tournament.registration, {});
+				const actionContainer = document.createElement('div');
+				//container for all button actions 
+				actionContainer.style.display = 'flex';
+				actionContainer.style.justifyContent = 'space-around';
+				//Join button on te action column to join corresponding tournament
 				const joinButtonElement = document.createElement('button');
 				joinButtonElement.textContent = 'Join';
 				Object.assign(joinButtonElement.style, Styles.action);
 				joinButtonElement.addEventListener('click', () => this.joinTournament(tournament.id));
-			
+				// Details button to see the tournament state (either brackets and or results)
+				const viewButtonElement = document.createElement('button');
+				viewButtonElement.innerHTML = '👁️';
+				Object.assign(viewButtonElement.style, Styles.action);
+				viewButtonElement.addEventListener('click', () => 
+					console.log(`SOME IS WATCHING 👁️ 👁️ `)
+					);
+
+				actionContainer.appendChild(joinButtonElement);
+				actionContainer.appendChild(viewButtonElement);
 				// Add the constructed row to the table
 				tournamentTable.addRow([
 					tournamentNameElement, 
@@ -92,7 +106,7 @@ export default class Tournament extends AbstractView {
 					timeRemainingElement, 
 					tournamentTypeElement, 
 					registrationModeElement, 
-					joinButtonElement
+					actionContainer
 				]);
 			});
 
@@ -118,15 +132,13 @@ export default class Tournament extends AbstractView {
 	}
 
 	async joinTournament(tournamentID) {
-		console.log('Join tournament:', tournamentID);
-		
+	
 		try {
 			const responseUser = await makeApiRequest(`/api/user_management/auth/getUser`,'GET');
 			console.log('User:', responseUser.body);
 			const userID = responseUser.body.user_id;
 			const apiEndpoint = `/api/tournament/add-player/${tournamentID}/${userID}/`;
 			const response = await makeApiRequest(apiEndpoint,'POST');
-			console.log('Joined tournament:', response.body);
 			//navigateTo('/play?matchID=' + response.body.matchID);
 		} catch (error) {
 			console.error('Failed to join tournament:', error);
