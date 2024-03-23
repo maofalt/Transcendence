@@ -478,75 +478,69 @@ export default class Game extends AbstractView {
 		profilePic.repeat.set( 2, 1 );
 		const loginText = player.accountID;
 		const scoreText = player.score.toString();
+		const ppRadius = 2;
 
 		console.log("Creating score: " + scoreText + " for player " + i + " with dir: " + this.dir);
 		// this.textSettings.font = this.textSettings.fontNormal;
-		const profilePicGeo = new THREE.SphereGeometry(2, 12, 24);
+		const profilePicGeo = new THREE.SphereGeometry(ppRadius, 12, 24);
 		const loginGeo = new TextGeometry(loginText, this.textSettings);
 		// const loginGeo = new TextGeometry(loginText, this.TKtext);
 		const scoreGeo = new TextGeometry(scoreText, this.textSettings);
 		// const scoreGeo = new TextGeometry(scoreText, this.TKtext);
-
+		
 		const profilePicMaterial = new THREE.MeshPhongMaterial({ map:profilePic });
 		var scoreMaterial = new THREE.MeshPhongMaterial({ color: data.gamemode.gameType ? 0xff0000 : 0xffffff });
 		var loginMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
-
+		
 		const loginMesh = new THREE.Mesh(loginGeo, loginMaterial);
 		const scoreMesh = new THREE.Mesh(scoreGeo, scoreMaterial);
 		const profilePicMesh = new THREE.Mesh(profilePicGeo, profilePicMaterial);
-
-		// Compute bounding boxes
+		
+		// computing bounding boxes
 		profilePicGeo.computeBoundingBox();
 		loginGeo.computeBoundingBox();
 		scoreGeo.computeBoundingBox();
-	
-		// const profileWidth = profilePicGeo.boundingBox.max.x - profilePicGeo.boundingBox.min.x;
+		
+		// calculating sizes in order to setup the objects later
+		const spaceBetween = 2; // change this to the amount of space you want between the meshes
+		const textHeight = loginGeo.boundingBox.max.y - loginGeo.boundingBox.min.y;
 		const loginWidth = loginGeo.boundingBox.max.x - loginGeo.boundingBox.min.x;
 		const scoreWidth = scoreGeo.boundingBox.max.x - scoreGeo.boundingBox.min.x;
+		const topWidth = (ppRadius * 2 + spaceBetween + scoreWidth);
+
+		const totalWidth = Math.max(loginWidth, topWidth);
+		const totalHeight = textHeight + ppRadius * 2 + spaceBetween;
+		
+		// creating a box that will contain everything.
+		// login, score, profile picture.
+		// this box can be truned visible for debug.
+		const boxGeo = new THREE.BoxGeometry(totalWidth, textHeight + spaceBetween + ppRadius * 2, ppRadius * 2);
+		const boxMesh = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0});
+		const scoreBox = new THREE.Mesh(boxGeo, boxMesh);
+		boxGeo.computeBoundingBox();
+		
+		// adding items to the parent box
+		this.scores[i] = scoreBox;
+		this.scores[i].add(profilePicMesh);
+		this.scores[i].add(loginMesh);
+		this.scores[i].add(scoreMesh);
+
+		// positioning ui items
+		profilePicMesh.position.set(-ppRadius - spaceBetween / 2, totalHeight / 2 - ppRadius, 0);
+		scoreMesh.position.set(spaceBetween / 2, (totalHeight - textHeight) / 2 - ppRadius, 0);
+		loginMesh.position.set(-loginWidth / 2, -totalHeight / 2, 0);
 	
-		// Position loginMesh and scoreMesh relative to each other
-		const spaceBetween = 2; // Change this to the amount of space you want between the meshes
-		// loginMesh.position.set(0, 0, 0);
-		profilePicMesh.position.set(0, 5, 0);
-		scoreMesh.position.set(((i < data.gamemode.nbrOfPlayers / 2) ? (loginWidth + spaceBetween) : (-scoreWidth - spaceBetween)), 0, 0);
+		// positionning ui box
+		this.scores[i].position.set(
+			data.playersArray[i].scorePos.x,
+			data.playersArray[i].scorePos.y,
+			data.playersArray[i].scorePos.z
+		);
 
-		const group = new THREE.Group();
-		group.add(profilePicMesh);
-		group.add(loginMesh);
-		group.add(scoreMesh);
-
-		// this.scores[i] = group;
-
-		// Compute the bounding box of the group
-		const box = new THREE.Box3().setFromObject(group);
-
-		// Store the group and its bounding box
-		this.scores[i] = {
-			group: group,
-			box: box
-		};
-		console.log(this.scores[i].box.max.x);
-		console.log(this.scores[i].box.min.x);
-
-		// calculate bounds of score block
-		// this.scores[i].computeBoundingBox();
-		// const groupWidth = this.scores[i].box.max.x - this.scores[i].box.min.x;
-		const groupHeight = this.scores[i].box.max.y - this.scores[i].box.min.y;
-		const groupThickness = this.scores[i].box.max.z - this.scores[i].box.min.z;
-
-		// set center of score to center of paddle
-		const centerX = data.playersArray[i].scorePos.x - loginWidth / 2;
-		const centerY = data.playersArray[i].scorePos.y - groupHeight / 2;
-		const centerZ = data.playersArray[i].scorePos.z - groupThickness / 2;
-
-		profilePicMesh.position.set(loginWidth / 2, 5, 0);
-		this.scores[i].group.position.set(centerX, centerY, centerZ);
-
-		this.scene.add(this.scores[i].group);
+		this.scene.add(this.scores[i]);
 
 		// rotate the score to face client
-		this.scores[i].group.rotation.set(0, 0, 2 * Math.PI/data.gamemode.nbrOfPlayers * this.dir);
-		
+		this.scores[i].rotation.set(0, 0, 2 * Math.PI/data.gamemode.nbrOfPlayers * this.dir);
 	}
 
 	refreshScores(data) {
@@ -558,8 +552,7 @@ export default class Game extends AbstractView {
 			if (this.prevScores[index] != player.score) {
 				console.log("Refreshing score: " + player.score + " for player " + index);
 				if (this.scores[index])
-					this.scene.remove(this.scores[index].group);
-				// this.scene.remove( this.scores[index]);
+					this.scene.remove(this.scores[index]);
 				this.createScore(data, player, index);
 			}
 		
