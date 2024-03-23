@@ -41,7 +41,7 @@ urlpatterns = [
     path('updatePhone', views.update_phone, name='updatePhone'),
     path('updateSandbox', views.update_sandbox, name='updateSandbox'),
     path('verifySandBox', views.verify_sandBox, name='verifySandBox'),
-    
+    path('getUser', views.get_user, name='getUser'),
     
 ]
 

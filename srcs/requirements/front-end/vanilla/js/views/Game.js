@@ -48,9 +48,11 @@ class BoxObject {
 }
 
 export default class Game extends AbstractView {
-	constructor(element) {
-		super(element);
+	constructor(query='', screenWidth, screenHeight) {
+		super();
 		this.loader = new GLTFLoader();
+
+		this.query = 'matchID=' + query;
 		
         // controls
         this.controls = null;
@@ -88,6 +90,10 @@ export default class Game extends AbstractView {
 		}
 		this.prevScores = [];
 		this.dir = 0;
+
+		this.screenWidth = screenWidth || window.innerWidth;
+		this.screenHeight = screenHeight || window.innerHeight;
+		console.log("Screen size: ", this.screenWidth, this.screenHeight);
 	};
 
 	async getHtml() {
@@ -114,9 +120,9 @@ export default class Game extends AbstractView {
 	};
 
 	onWindowResize() {
-		this.camera.aspect = window.innerWidth / window.innerHeight;
+		this.camera.aspect = this.screenWidth / this.screenHeight;
 		this.camera.updateProjectionMatrix();
-		this.renderer.setSize(window.innerWidth, window.innerHeight);
+		this.renderer.setSize(this.screenWidth, this.screenHeight);
 	};
 
 	handleKeyPress(event) {
@@ -180,7 +186,7 @@ export default class Game extends AbstractView {
 		this.socket.on('render', data => {
 			data.playersArray = Object.values(data.players);
 			// if (data.ball.model && this.ballModel) {
-				console.log("Rendering Frame...");
+				//console.log("Rendering Frame...");
 				this.updateScene(data);
 			// }
 			// console.log("FPS: " + 1000 / callTracker() + "fps");
@@ -203,7 +209,7 @@ export default class Game extends AbstractView {
 			this.socket.emit('pong', timestamp);
 			let str = `Ping: ${latency}ms - FPS: ${fps.toFixed(1)}`;
 			document.title = str;
-			console.log(str);
+			//console.log(str);
 		});
 
 	};
@@ -229,7 +235,7 @@ export default class Game extends AbstractView {
 		back.colorSpace = THREE.SRGBColorSpace;
 		this.scene.background = back;
 		
-		this.renderer.setSize(window.innerWidth, window.innerHeight);
+		this.renderer.setSize(this.screenWidth, this.screenHeight);
 		
 		this.container.appendChild(this.renderer.domElement);
 		
@@ -254,7 +260,7 @@ export default class Game extends AbstractView {
 		this.renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
 
 		// set the camera and set it to look at the center of the match
-		this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+		this.camera = new THREE.PerspectiveCamera(45, this.screenWidth / this.screenHeight, 0.1, 1000);
 		this.camera.position.set(data.camera.pos.x, data.camera.pos.y, data.camera.pos.z);
 		this.camera.lookAt(new THREE.Vector3(data.camera.target.x, data.camera.target.y, data.camera.target.z));
 		
@@ -464,11 +470,11 @@ export default class Game extends AbstractView {
 		let ballTexture;
 		let ballMaterial;
 
-		if (data.ball.model != "") {
-			console.log("LOAD STUFF");
-			this.loadBallModel(data);
-			return ;
-		}
+		// if (data.ball.model != "") {
+		// 	console.log("LOAD STUFF");
+		// 	this.loadBallModel(data);
+		// 	return ;
+		// }
 		console.log("DIDNT LOADGE");
 		if (data.ball.texture != "") {
 			ballTexture = new THREE.TextureLoader().load(`./js/assets/images/${data.ball.texture}.jpg`);

@@ -84,7 +84,7 @@ REST_FRAMWORK = {
 
 
 #jwt token is realated on session, so when browser closed, session
-JWT_EXPIRATION_DELTA = datetime.timedelta(minutes=1)
+JWT_EXPIRATION_DELTA = datetime.timedelta(days=1)
 JWT_REFRESH_EXPIRATION_DELTA = datetime.timedelta(days=14)
 # Store access token in a cookie
 JWT_AUTH_COOKIE = True
@@ -167,9 +167,13 @@ EMAIL_HOST_USER = 'cscard1002@gmail.com'
 EMAIL_HOST_PASSWORD = 'dhefhwnswtqtldzz'
 
 # 2FA-SMS(AWS)
-AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID')
-AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY')
-AWS_REGION = env('AWS_REGION')
+# AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID')
+# AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY')
+# AWS_REGION = env('AWS_REGION')
+# AWS SNS service settings for 2FA-SMS
+AWS_ACCESS_KEY_ID='AKIAZI2LEU37VRPVEQOP'
+AWS_SECRET_ACCESS_KEY='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'
+AWS_REGION='eu-west-3'
 
 
 SECURE_SSL_REDIRECT = True

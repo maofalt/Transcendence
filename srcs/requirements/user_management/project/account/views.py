@@ -68,6 +68,28 @@ User = get_user_model()
 def home(request):
     return render(request, 'home.html')
 
+def get_user(request):
+    refreshToken = request.COOKIES.get('refreshToken', None)
+    try:
+        decoded_refresh_token = jwt.decode(refreshToken, settings.SECRET_KEY, algorithms=["HS256"])
+        print("DECODED REFRESHTOKEN: ", decoded_refresh_token)
+        uid = decoded_refresh_token['user_id']
+        try:
+            user = User.objects.get(pk=uid)
+            user_data = {
+                'user_id': user.id,
+                'username': user.username,
+                'playername': user.playername
+            }
+            return JsonResponse(user_data)
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'User not found'}, status=404)
+
+    except jwt.ExpiredSignatureError:
+        return JsonResponse({'error': 'Refresh token has expired'}, status=400)
+    except jwt.InvalidTokenError:
+        return JsonResponse({'error': 'Invalid refresh token'}, status=400)
+
 # call this function from frontend everytime user calls any API
 def check_refresh(request):
     accessToken = request.headers.get('Authorization', None)
@@ -83,8 +105,9 @@ def check_refresh(request):
 
     try:
         decoded_token = jwt.decode(accessToken.split()[1], settings.SECRET_KEY, algorithms=["HS256"])
+        local_tz = pytz.timezone('Europe/Paris')
         exp_timestamp = decoded_token['exp']
-        exp_datetime = datetime.datetime.utcfromtimestamp(exp_timestamp).replace(tzinfo=datetime.timezone.utc)
+        exp_datetime = datetime.datetime.fromtimestamp(exp_timestamp, tz=pytz.utc).astimezone(local_tz).strftime('%Y-%m-%d %H:%M:%S')
         print("exp_datetime: ", exp_datetime)
         
         return JsonResponse({'message': 'Access token is still valid'})
@@ -158,7 +181,7 @@ def api_login_view(request):
 def generate_tokens_and_response(request, user):
     accessToken = AccessToken.for_user(user)
     accessToken['username'] = user.username
-    
+    print("---> ACCESS TOKEN: ", str(accessToken))
     if user.two_factor_method == '' or user.two_factor_method is None:
         twoFA = False
         login(request, user)
@@ -179,7 +202,7 @@ def generate_tokens_and_response(request, user):
 
     try:
         secret_key = settings.SECRET_KEY
-
+        print("SECRET KEY: ", secret_key)
         # print("original ACCESS TOKEN: ", str(accessToken))
         # print("original REFRESH TOKEN: ", str(refreshToken))
         decodedToken = jwt.decode(str(accessToken), secret_key, algorithms=["HS256"])
@@ -597,7 +620,7 @@ class UserAPIView(APIView):
 
 
 def print_all_user_data(request):
-    all_users = User.objects.all()
+    all_users = User.objects.all().order_by('id')
     context = {'users': all_users}
 
     return render(request, 'print_user_data.html', context)

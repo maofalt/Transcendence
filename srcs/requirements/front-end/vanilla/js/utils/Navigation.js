@@ -7,8 +7,15 @@ export const setupNavigation = () => {
     navContainer.classList.add('navigation'); // Add a class for styling if necessary
     parentElement.insertBefore(navContainer, parentElement.firstChild);
 
+    const nav = [
+        "/",
+	    "/tournament",
+	    "/options"
+    ];
+    //Loop thorugh the nav array and create the links that correspond to the routes
+    //if path is included in nav
     Object.entries(routes).forEach(([path, { buttonText }]) => {
-        if (path !== '/404') { // Exclude the 404 route
+        if (nav.includes(path)) {
             const link = document.createElement('a');
             link.href = path;
             link.textContent = buttonText;
@@ -21,4 +28,7 @@ export const setupNavigation = () => {
             navContainer.appendChild(link); // Append the link to the navigation container
         }
     });
+
+    
+
 };

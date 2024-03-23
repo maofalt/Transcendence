@@ -48,12 +48,10 @@ class DynamicTable extends HTMLElement {
     }
 
     handleComplexCellType(cellValue) {
-        // Example handling for an object representing an image
         if (cellValue.type === 'image') {
             return `<img src="${cellValue.src}" alt="${cellValue.alt}" style="${this.styleToString(cellValue.style)}">`;
         }
-        // Handle other types as needed
-        return cellValue; // Fallback for unknown types
+        return cellValue;
     }
     
 
