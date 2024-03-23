@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from .models import Tournament, TournamentMatch, MatchSetting, GameType, TournamentType, RegistrationType, TournamentPlayer, Player, MatchParticipants
 from .serializers import TournamentSerializer, TournamentMatchSerializer, MatchSettingSerializer
 from .serializers import TournamentPlayerSerializer
-from .serializers import PlayerSerializer, MatchParticipantsSerializer, TournamentRegistrationSerializer
+from .serializers import PlayerSerializer, MatchParticipantsSerializer, TournamentRegistrationSerializer, PlayerGameStatsSerializer, SimpleTournamentSerializer
 from .serializers import MatchGeneratorSerializer
 from django.conf import settings
 from rest_framework.views import APIView
@@ -21,6 +21,8 @@ from collections import defaultdict
 from django.http import JsonResponse
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
+
 
 
 
@@ -159,12 +161,15 @@ class JoinTournament(generics.ListCreateAPIView):
 
 
 class MatchGenerator(generics.ListCreateAPIView):
+    authentication_classes = [CustomJWTAuthentication]
     serializer_class = MatchGeneratorSerializer
+    queryset = TournamentMatch.objects.all()
 
     def post(self, request, tournament_id):
 
         print("Tournament id: ", tournament_id)
         tournament = get_object_or_404(Tournament, id=tournament_id)
+        print("request.user: ", request.user, "tournament.host.id: ", tournament.host.id)
         if tournament.host.id != request.user:
             return Response({"message": "You are not authorized to generate Tournament."}, status=status.HTTP_403_FORBIDDEN)
         match_setting = tournament.setting
@@ -263,6 +268,8 @@ class MatchResult(APIView):
         for participant in match.participants.all():
             print("participant id : ", participant.player_id)
             if participant.player_id == player_id:
+                player.total_played += 1
+                player.save()
                 participant.participant_score = score
                 participant.save()
 
@@ -272,6 +279,9 @@ class MatchResult(APIView):
             winner = match.participants.order_by('-participant_score').first()
             winner.is_winner = True
             winner.save()
+            player = match.players.get(id=winner.player_id)
+            player.won_match.add(match)
+            player.save()
             return Response("Winner found and updated successfully")
         else:
             return Response("Winner not found yet. Some players score is missing")
@@ -285,10 +295,8 @@ class MatchUpdate(APIView):
 
     def post(self, request, tournament_id, round):
         tournament = get_object_or_404(Tournament, id=tournament_id)
-        # next_matches = tournament.matches.filter(round_number=round).order_by('id')
         finished_matches = tournament.matches.filter(round_number=round - 1).order_by('id')
         finished_match_ids = finished_matches.values_list('id', flat=True)
-
 
         matches_in_progress = finished_matches.filter(Q(state="waiting") | Q(state="playing"))
         if matches_in_progress.exists():
@@ -302,6 +310,18 @@ class MatchUpdate(APIView):
         # Extract player IDs of winners
         winner_player_ids = sorted(winners.values_list('player_id', flat=True))
         print("winner_player_ids: ", winner_player_ids)
+        next_matches = tournament.matches.filter(round_number=round).order_by('id')
+        if not next_matches.exists():
+            if len(winner_player_ids) == 1:
+                winner = Player.objects.get(id=winner_player_ids[0])
+                print("winner_player_ids[0]: ", winner_player_ids[0])
+                print("winner: ", winner)
+                winner.won_tournament.add(tournament)
+                winner.save()
+                serializer = TournamentMatchSerializer(finished_matches, many=True)
+                return JsonResponse({"data": serializer.data, "status": status.HTTP_200_OK, "message": 'The Tournament has been finished.', "winner": winner.id})
+            else:
+                return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'message': 'An Error occurred while updating the next round matches.'})
 
         for player_id in winner_player_ids:
             player = Player.objects.get(id=player_id)
@@ -594,8 +614,38 @@ def home(request):
     return render(request, 'home.html')
 
 
-# class MatchHistoryView(APIView):
-#     authentication_classes = [CustomJWTAuthentication]
+class PlayerStatsView(APIView):
+    authentication_classes = [CustomJWTAuthentication]
 
-#     def get(self, request, user_id):
+    def get(self, request, user_id):
+        player = Player.objects.get(id=user_id)
+        played_tournaments = Tournament.objects.filter(players__id=user_id)
+        played_matches = TournamentMatch.objects.filter(players__id=user_id)
 
+        total_played = player.total_played
+        nbr_of_won_matches = player.won_match.count()
+        nbr_of_won_tournaments = player.won_tournament.count()
+
+        # Calculate the average score
+        total_scores = 0
+        highest_score = 0
+        for match in played_matches:
+            if match.participants.filter(player_id=user_id).exists():
+                participant = match.participants.get(player_id=user_id)
+                total_scores += participant.participant_score
+                highest_score = max(highest_score, participant.participant_score)
+        average_score = total_scores / total_played if total_played > 0 else 0
+
+        serialized_tournaments = SimpleTournamentSerializer(played_tournaments, many=True)
+
+        player_stats_data = {
+            'played_tournaments': serialized_tournaments.data,
+            'total_played': total_played,
+            'nbr_of_won_matches': nbr_of_won_matches,
+            'nbr_of_won_tournaments': nbr_of_won_tournaments,
+            'average_score': average_score,
+            'highest_score': highest_score
+        }
+
+        serializer = PlayerGameStatsSerializer(player_stats_data)
+        return Response(serializer.data)

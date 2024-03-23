@@ -4,7 +4,6 @@ from django.contrib.auth.models import User
 from django.conf import settings
 
 class Tournament(models.Model):
-    # tournament_id = models.AutoField(primary_key=True)
     tournament_name = models.CharField(max_length=255)
     # game_type = models.ForeignKey('GameType', on_delete=models.PROTECT, null=False, to_field='id', default=1)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -18,9 +17,7 @@ class Tournament(models.Model):
         MaxValueValidator(8)
         ]
     )
-    # tournament_type = models.ForeignKey('TournamentType', on_delete=models.PROTECT, null=False, to_field='id', default=1)
     setting = models.ForeignKey('MatchSetting', on_delete=models.PROTECT, null=False, to_field='id', default=0)
-    # registration = models.ForeignKey('RegistrationType', on_delete=models.PROTECT, null=False, to_field='id', default=1)
     registration_period_min = models.IntegerField(default=15, 
         validators=[MinValueValidator(1, message="Registration period must be at least 1 minutes."), 
         MaxValueValidator(60, message="Registration period cannot exceed 60 minutes.")
@@ -80,11 +77,9 @@ class Tournament(models.Model):
         return None
 
 class TournamentMatch(models.Model):
-    # match_id = models.AutoField(primary_key=True)
     tournament_id = models.IntegerField()
     # tournament_id = models.ForeignKey('Tournament', on_delete=models.CASCADE, related_name='match' )
     match_setting_id = models.IntegerField()
-    # match_setting_id = models.ForeignKey('MatchSetting', on_delete=models.PROTECT, null=False, related_name='matches')
     round_number = models.IntegerField(default=1, validators=[MinValueValidator(1)])
     match_time = models.DateTimeField(null=True) 
     players = models.ManyToManyField('Player', related_name='matches')
@@ -96,7 +91,6 @@ class TournamentMatch(models.Model):
         return f"ID: {self.id}, Tournament: {self.tournament_id}, State: {self.state}, Match Setting: {self.match_setting_id}, Round Number: {self.round_number}, Count Players: {player_count}"
 
 class MatchSetting(models.Model):
-    # setting_id = models.AutoField(primary_key=True)
     duration_sec = models.IntegerField(default=210, 
         validators=[MinValueValidator(60, message="Duration must be at least 60 seconds."), 
         MaxValueValidator(300, message="Duration cannot exceed 300 seconds.")
@@ -149,15 +143,12 @@ class MatchSetting(models.Model):
     )
 
 class GameType(models.Model):
-    # id = models.AutoField(primary_key=True)
     type_name = models.CharField(max_length=255)
 
 class TournamentType(models.Model):
-    # id = models.AutoField(primary_key=True)
     type_name = models.CharField(max_length=255)
 
 class RegistrationType(models.Model):
-    # id = models.AutoField(primary_key=True)
     type_name = models.CharField(max_length=255)
 
 # May not need this schema
@@ -170,19 +161,17 @@ class TournamentPlayer(models.Model):
 
 class Player(models.Model):
     id = models.IntegerField(primary_key=True)
-    # username = models.CharField(max_length=255)
     total_played = models.IntegerField(default=0)
-    won = models.IntegerField(default=0)
+    won_match = models.ManyToManyField('TournamentMatch', related_name='won_match')
+    won_tournament = models.ManyToManyField('Tournament', related_name='won_tournament')
 
-    # class Meta:
-    #     unique_together = ('id', 'username')
+    def __str__(self):
+        return f"ID: {self.id}, TOTAL: {self.total_played}, MATCH: {self.won_match}, TOURNAMENT: {self.won_tournament}"
 
 class MatchParticipants(models.Model):
     match_id = models.IntegerField(null=False)
     round_number = models.IntegerField(null=False)
-    # match_id = models.ForeignKey('TournamentMatch', on_delete=models.CASCADE, related_name='match_participants')
     player_id = models.IntegerField(null=False)
-    # player_id = models.ForeignKey('Player', on_delete=models.CASCADE, related_name='playeridfrommatch')
     is_winner = models.BooleanField(default=False)
     participant_score = models.IntegerField(default=0)
 
