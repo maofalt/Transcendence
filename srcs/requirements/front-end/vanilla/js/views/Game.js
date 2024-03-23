@@ -293,8 +293,8 @@ export default class Game extends AbstractView {
 			// this.ballModel.position.add(direction);
 		}
 
-		console.log(this.darkenShader.uniforms.amount.value);
-		console.log(frame);
+		// console.log(this.darkenShader.uniforms.amount.value);
+		// console.log(frame);
 		this.darkenShader.uniforms.amount.value += (1 / maxFrame); // Increase this value to darken faster
 		this.composer.render();
 
