@@ -6,6 +6,9 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { Texture } from 'three';
 import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 
 
 function createCallTracker() {
@@ -99,6 +102,12 @@ export default class Game extends AbstractView {
 		this.screenWidth = screenWidth || window.innerWidth;
 		this.screenHeight = screenHeight || window.innerHeight;
 		console.log("Screen size: ", this.screenWidth, this.screenHeight);
+
+		// Create an EffectComposer
+		this.composer = null;
+		this.renderPass = null;
+		this.darkenShader = null;
+		this.darkenPass = null;
 	};
 
 	async getHtml() {
@@ -214,15 +223,8 @@ export default class Game extends AbstractView {
 			// this.launchEndGameAnimation();
 			this.controls.enabled = false;
 
-			// Get a vector from the ball to the camera
-			let direction = new THREE.Vector3().subVectors(this.camera.position, this.ballModel ? this.ballModel.position : this.ball.mesh.position);
+			this.launchEndGameAnimation();
 
-			// Divide the direction by the number of frames
-			let frames = 300; // Change this to the number of frames you want in your animation
-			direction.divideScalar(frames);
-
-			this.endGameAnimation(direction);
-			// this.endGameAnimation();
 			// this.scene.clear();
 			console.log("END OF GAME");
 		});
@@ -237,33 +239,49 @@ export default class Game extends AbstractView {
 	};
 
 	launchEndGameAnimation() {
+		// Create an EffectComposer
+		this.composer = new EffectComposer(this.renderer);
+
+		// Add a RenderPass
+		this.renderPass = new RenderPass(this.scene, this.camera);
+		this.composer.addPass(this.renderPass);
+
+		// Create a ShaderPass
+		this.darkenShader = new THREE.ShaderMaterial({
+			uniforms: {
+				tDiffuse: { value: null },
+				amount: { value: 0 }
+			},
+			vertexShader: `
+				varying vec2 vUv;
+				void main() {
+					vUv = uv;
+					gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+				}
+			`,
+			fragmentShader: `
+				uniform sampler2D tDiffuse;
+				uniform float amount;
+				varying vec2 vUv;
+
+				void main() {
+					vec4 color = texture2D(tDiffuse, vUv);
+					gl_FragColor = mix(color, vec4(0.0, 0.0, 0.0, 1.0), amount);
+				}
+			`,
+			blending: THREE.AdditiveBlending
+		});
+
+		this.darkenPass = new ShaderPass(this.darkenShader);
+		this.composer.addPass(this.darkenPass);
+
 		this.controls.enabled = false;
 
-		// let mask = document.createElement('div');
-		// mask.id = 'mask';
-		// mask.style.setProperty("opacity", "1");
-		// mask.style.setProperty("background", "black");
-		// mask.style.setProperty("width", "200px");
-		// mask.style.setProperty("height", "200px");
-		// mask.style.setProperty("position", "absolute");
-		// mask.style.setProperty("top", "0");
-		// mask.style.setProperty("left", "0");
-		// mask.style.setProperty("z-index", "999");
-		// // this.shadowRoot.appendChild(mask);
-		// document.body.appendChild(mask);
-
-		// Get a vector from the ball to the camera
-		let direction = new THREE.Vector3().subVectors(this.camera.position, this.ballModel ? this.ballModel.position : this.ball.mesh.position);
-
-		// Divide the direction by the number of frames
-		// let frames = 30; // Change this to the number of frames you want in your animation
-		// direction = direction.divideScalar(frames);
-
-		this.endGameAnimation(direction);
+		this.endGameAnimation();
 	}
 
 	// Define your animation function
-	endGameAnimation = (direction, frame = 0) => {
+	endGameAnimation = (frame = 0) => {
 		let scaleFactor = 1.1;
 		let maxFrame = 300;
 		// let lightStep = this.ambientLight.intensity / maxFrame;
@@ -275,29 +293,17 @@ export default class Game extends AbstractView {
 			// this.ballModel.position.add(direction);
 		}
 
-		// this.ambientLight.intensity -= lightStep;
-		// this.directionalLight.intensity -= dirLightStep;
-
-		this.ambientLight.intensity = 0;
-		this.directionalLight.intensity = 0;
+		console.log(this.darkenShader.uniforms.amount.value);
+		console.log(frame);
+		this.darkenShader.uniforms.amount.value += (1 / maxFrame); // Increase this value to darken faster
+		this.composer.render();
 
 		console.log("end of game");
-		// Render the scene
-		this.renderer.render(this.scene, this.camera);
-
-		// let length = this.camera.position.length();
-		// let ballScale = this.ballModel ? this.ballModel.scale.length() : this.ball.mesh.scale.length();
-		// // let ballPos = this.ballModel ? this.ballModel.position.length() : this.ball.mesh.position.length();
-		// ballScale /= 2;
-		// if (ballScale >= length * 0.6) {
-		// 	console.log("Animation Finished");
-		// 	return ;
-		// }
 		if (frame == maxFrame)
 			return ;
 
 		// Request the next frame
-		requestAnimationFrame(() => this.endGameAnimation(direction, frame + 1));
+		requestAnimationFrame(() => this.endGameAnimation(frame + 1));
 	}
 
 	destroy() {

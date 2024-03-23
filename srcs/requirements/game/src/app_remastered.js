@@ -299,17 +299,84 @@ function generateMatchID(gameSettings) {
 	return crypto.createHash('sha256').update(string).digest('hex');
 }
 
+function verifyMatchSettings(settings) {
+	console.log("MATCH SETTINGS VERIFICATION :");
+	console.log(settings);
+
+	const checks = {
+		gamemodeData: {
+			gameType: value => (value === 0 || value === 1) ? null : "This Game Type is not recognized.",
+			nbrOfPlayers: value => (value >= 2 && value <= 8) ? null : "Nbr of players should be between 2 and 8",
+			nbrOfRounds: value => (value >= 1 && value <= 10) ? null : "Nbr of Rounds should be between 1 and 10",
+		},
+		fieldData: {
+			sizeOfGoals: value => (value >= 15 && value <= 30) ? null : "Size of goals should be between 15 and 30",
+			wallsFactor: value => (value >= 0 && value <= 2) ? null : "Walls Factor should be between 0 and 2",
+		},
+		paddlesData: {
+			width: value => (value === 1) ? null : "Paddles width should be 1",
+			height: value => (value >= 1 && value <= 10) ? null : "Paddles height should be between 1 and 10",
+		},
+		ballData: {
+			radius: value => (value >= 0.5 && value <= 7) ? null : "Ball radius should be between 0.5 and 7",
+		},
+	};
+
+	for (const category in checks) {
+		for (const setting in checks[category]) {
+			const check = checks[category][setting];
+			const value = settings[category][setting];
+			const error = check(value);
+			if (error) {
+				return error;
+			}
+		}
+	}
+
+	// check if nbr of players matches nbr of actual player objects;
+	if (settings.playersData.length !== settings.gamemodeData.nbrOfPlayers) {
+		return "\'Number of players\' doesn't match number of <player> objects";
+	}
+
+	// check if all players have different names, that they dont have an empty name
+    let playerNames = settings.playersData.map(player => player.accountID);
+    let uniquePlayerNames = [...new Set(playerNames)];
+
+    if (playerNames.length !== uniquePlayerNames.length) {
+        return "Multiple identical player IDs";
+    }
+
+    if (playerNames.some(name => name.trim() === "")) {
+        return "Player names should not be empty";
+    }
+
+    // check that the current user is actually part of those users :
+    // this part will be handled by the user management API
+
+	return null;
+}
+
 // app.use(express.static('./public/remote/'));
 app.post('/createMatch', (req, res) => {
 	const gameSettings = req.body;
 
+	// check post comes from verified source;
+
 	const matchID = generateMatchID(gameSettings);
+	
 	if (matches.has(matchID)) {
 		console.log("Match already exists");
 		res.json({ matchID });
 		return ;
 	}
 
+	const matchValidity = verifyMatchSettings(gameSettings);
+	if (matchValidity) {
+		console.log("Error: ",matchValidity);
+		res.json({ matchID });
+		return ;
+	}
+	
 	// Convert game settings to game state
 	const gameState = init.initLobby(gameSettings);
 	
