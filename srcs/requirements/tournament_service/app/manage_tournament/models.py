@@ -171,6 +171,8 @@ class TournamentPlayer(models.Model):
 class Player(models.Model):
     id = models.IntegerField(primary_key=True)
     # username = models.CharField(max_length=255)
+    total_played = models.IntegerField(default=0)
+    won = models.IntegerField(default=0)
 
     # class Meta:
     #     unique_together = ('id', 'username')

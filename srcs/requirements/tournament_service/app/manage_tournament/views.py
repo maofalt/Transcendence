@@ -592,3 +592,10 @@ class MatchParticipantsList(ListAPIView):
 
 def home(request):
     return render(request, 'home.html')
+
+
+# class MatchHistoryView(APIView):
+#     authentication_classes = [CustomJWTAuthentication]
+
+#     def get(self, request, user_id):
+
