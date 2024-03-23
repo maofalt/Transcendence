@@ -119,8 +119,12 @@ export default class Tournament extends AbstractView {
 
 	async joinTournament(tournamentID) {
 		console.log('Join tournament:', tournamentID);
-		const apiEndpoint = `/api/tournament/add-player/${tournamentID}/2/`;
+		
 		try {
+			const responseUser = await makeApiRequest(`/api/user_management/auth/getUser`,'GET');
+			console.log('User:', responseUser.body);
+			const userID = responseUser.body.user_id;
+			const apiEndpoint = `/api/tournament/add-player/${tournamentID}/${userID}/`;
 			const response = await makeApiRequest(apiEndpoint,'POST');
 			console.log('Joined tournament:', response.body);
 			//navigateTo('/play?matchID=' + response.body.matchID);
