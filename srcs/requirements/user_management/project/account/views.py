@@ -78,8 +78,7 @@ def get_user(request):
             user = User.objects.get(pk=uid)
             user_data = {
                 'user_id': user.id,
-                'username': user.username,
-                'playername': user.playername
+                'username': user.username
             }
             return JsonResponse(user_data)
         except User.DoesNotExist:
@@ -95,6 +94,8 @@ def check_refresh(request):
     accessToken = request.headers.get('Authorization', None)
     refreshToken = request.COOKIES.get('refreshToken', None)
     print("accessToken print: ", str(accessToken))
+    # if not accessToken or not refreshToken:
+    #     return JsonResponse({'error': 'Missing tokens'}, status=400)
 
     if not accessToken:
         return JsonResponse({'error': 'Authorization header is missing'}, status=400)
@@ -122,14 +123,9 @@ def check_refresh(request):
             access['username'] = user.username
             new_accessToken = str(access)
 
-            # Set new access token in response body
-            response_data = {
-                'message': 'New access token generated',
-                'access_token': new_accessToken,
-                'token_type': 'Bearer',
-                'expires_in': access['exp'] - access['iat']
-            }
-            response = JsonResponse(response_data)
+            # Set new access token in response header
+            response = JsonResponse({'message': 'New access token generated'})
+            response['Authorization'] = f'Bearer {new_accessToken}'
             return response
         # return JsonResponse({'error': 'Access token has expired'}, status=401)
         except jwt.ExpiredSignatureError:
@@ -193,9 +189,19 @@ def generate_tokens_and_response(request, user):
     else:
         twoFA = True
     refreshToken = RefreshToken.for_user(user)
- 
+    response = JsonResponse({
+        'success' : True,
+        'message': escape('Password Authentication successful'),
+        # 'redirect_url': escape(redirect_url),
+        'requires_2fa': twoFA
+    })
+
+    response['Authorization'] = f'Bearer {str(accessToken)}'
+    response.set_cookie('refreshToken', refreshToken, httponly=True, secure=True, samesite='Strict')
+
     try:
         secret_key = settings.SECRET_KEY
+        print("SECRET KEY: ", secret_key)
         # print("original ACCESS TOKEN: ", str(accessToken))
         # print("original REFRESH TOKEN: ", str(refreshToken))
         decodedToken = jwt.decode(str(accessToken), secret_key, algorithms=["HS256"])
@@ -204,22 +210,11 @@ def generate_tokens_and_response(request, user):
         exp_accessToken = datetime.datetime.fromtimestamp(exp_timestamp_accessToken, tz=pytz.utc).astimezone(local_tz).strftime('%Y-%m-%d %H:%M:%S')
         print("Expiration time of ACCESS token:", exp_accessToken)
 
+        return response
     except jwt.ExpiredSignatureError:
         return JsonResponse({'error': escape('Token has expired')}, status=400)
     except jwt.InvalidTokenError:
         return JsonResponse({'error': escape('Invalid token')}, status=400)
-
-    response_data = {
-        'success': True,
-        'requires_2fa': twoFA,
-        'access_token': str(accessToken),
-        'token_type': 'Bearer',
-        'expires_in': accessToken['exp'] - accessToken['iat'] 
-    }
-    response = JsonResponse(response_data)
-    response.set_cookie('refreshToken', refreshToken, httponly=True, secure=True, samesite='Strict')
-    
-    return response
 
 def generate_one_time_code():
     return get_random_string(length=6, allowed_chars='1234567890')
@@ -624,7 +619,7 @@ class UserAPIView(APIView):
 
 
 def print_all_user_data(request):
-    all_users = User.objects.all().order_by('id')
+    all_users = User.objects.all()
     context = {'users': all_users}
 
     return render(request, 'print_user_data.html', context)
