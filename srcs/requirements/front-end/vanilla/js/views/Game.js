@@ -169,9 +169,11 @@ export default class Game extends AbstractView {
 		this.socket = io(`${io_url}`, {
 			path: '/game-logic/socket.io',
 			query: query,
+			accessToken: accessTok,
 			secure: hostname !== 'localhost',
 			rejectUnauthorized: false,
-			transports: ['websocket']
+			transports: ['websocket'],
+			auth: {accessToken: accessTok}
 		});
 
 		this.socket.on('error', (error) => {

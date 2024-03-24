@@ -80,8 +80,7 @@ def get_user(request):
             user = User.objects.get(pk=uid)
             user_data = {
                 'user_id': user.id,
-                'username': user.username,
-                'playername': user.playername
+                'username': user.username
             }
             return JsonResponse(user_data)
         except User.DoesNotExist:
@@ -97,6 +96,8 @@ def check_refresh(request):
     accessToken = request.headers.get('Authorization', None)
     refreshToken = request.COOKIES.get('refreshToken', None)
     print("accessToken print: ", str(accessToken))
+    # if not accessToken or not refreshToken:
+    #     return JsonResponse({'error': 'Missing tokens'}, status=400)
 
     if not accessToken:
         return JsonResponse({'error': 'Authorization header is missing'}, status=400)
@@ -212,6 +213,7 @@ def generate_tokens_and_response(request, user):
         exp_accessToken = datetime.datetime.fromtimestamp(exp_timestamp_accessToken, tz=pytz.utc).astimezone(local_tz).strftime('%Y-%m-%d %H:%M:%S')
         print("Expiration time of ACCESS token:", exp_accessToken)
 
+        return response
     except jwt.ExpiredSignatureError:
         return JsonResponse({'error': escape('Token has expired')}, status=400)
     except jwt.InvalidTokenError:
@@ -638,7 +640,7 @@ class UserAPIView(APIView):
 
 
 def print_all_user_data(request):
-    all_users = User.objects.all().order_by('id')
+    all_users = User.objects.all()
     context = {'users': all_users}
 
     return render(request, 'print_user_data.html', context)
