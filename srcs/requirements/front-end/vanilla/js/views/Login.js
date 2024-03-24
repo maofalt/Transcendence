@@ -337,9 +337,9 @@ export default class Login extends HTMLElement {
 				console.log('Login successful:', data);
 				
 				// Store the access token and details in memory
-				sessionStorage.setItem('expiryTimestamp', new Date().getTime() + body.expiresIn * 1000);
-				sessionStorage.setItem('accessToken', body.accessToken);
-				sessionStorage.setItem('tokenType', body.tokenType);
+				sessionStorage.setItem('expiryTimestamp', new Date().getTime() + data.expiresIn * 1000);
+				sessionStorage.setItem('accessToken', data.accessToken);
+				sessionStorage.setItem('tokenType', data.tokenType);
 				
 				if (data.requires_2fa) {
 					this.shadowRoot.querySelector('#loginForm').style.display = 'none'; // hide
