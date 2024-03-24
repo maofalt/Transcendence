@@ -78,8 +78,7 @@ def get_user(request):
             user = User.objects.get(pk=uid)
             user_data = {
                 'user_id': user.id,
-                'username': user.username,
-                'playername': user.playername
+                'username': user.username
             }
             return JsonResponse(user_data)
         except User.DoesNotExist:
@@ -620,7 +619,7 @@ class UserAPIView(APIView):
 
 
 def print_all_user_data(request):
-    all_users = User.objects.all().order_by('id')
+    all_users = User.objects.all()
     context = {'users': all_users}
 
     return render(request, 'print_user_data.html', context)

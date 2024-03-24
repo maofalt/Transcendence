@@ -38,35 +38,47 @@ export default class SpaceBackground extends AbstractComponent {
 			camera.aspect = container.clientWidth / container.clientHeight;
 			camera.updateProjectionMatrix();
 		});
-
+		
+		const textureLoader = new THREE.TextureLoader();
 		// Background setup
-		const loader = new THREE.TextureLoader();
-		loader.load('../js/assets/images/purpleSpace.jpg', function(texture) {
+		// const loader = new THREE.TextureLoader();
+		textureLoader.load('../js/assets/images/purpleSpace.jpg', function(texture) {
 			texture.colorSpace = THREE.SRGBColorSpace;
 			scene.background = texture;
 		});
 
 		// Textured spheres
-		const textureLoader = new THREE.TextureLoader();
 		const sphereGeometry = new THREE.SphereGeometry(1, 64, 64);
 
 		// Material for sphere 1
-		const material1 = new THREE.MeshPhongMaterial({
-			map: textureLoader.load('../js/assets/images/8kVenus.jpg')
+		const venus = textureLoader.load('../js/assets/images/1.8kVenus.jpg');
+		venus.colorSpace = THREE.SRGBColorSpace;
+		const material1 = new THREE.MeshStandardMaterial({
+			map: venus,
+			roughness: 0.6, // Adjust roughness for specular reflections
+			metalness: 0.7, // Adjust metalness for specular reflections
+			transparent: false, // Make the material transparent if needed
+			opacity: 1 // Set the opacity level if needed
 		});
 		const sphere1 = new THREE.Mesh(sphereGeometry, material1);
 		sphere1.position.x = -1.4;
 		sphere1.position.z = 3.7;
 		sphere1.position.y = -0.6;
 
-		const atmMaterial = new THREE.MeshPhongMaterial({
-			color: 0xbbffff, // Set color to white
-			transparent: true, // Make the material transparent
-			opacity: 0.15 // Set the opacity level
+		const atm = textureLoader.load('../js/assets/images/1.8kClouds_A.png');
+		atm.colorSpace = THREE.SRGBColorSpace;
+		const atmMaterial = new THREE.MeshStandardMaterial({
+			// color: 0xbbffff, // Set color to white
+			map: atm,
+			roughness: 0.4, // Adjust roughness for specular reflections
+			metalness: 0.6, // Adjust metalness for specular reflections
+			transparent: true, // Make the material transparent if needed
+			opacity: 1 // Set the opacity level if needed
 		});
 		
 		const atmSphere = new THREE.Mesh(sphereGeometry, atmMaterial);
-		atmSphere.scale.set(1.01, 1.01, 1.01); // Slightly larger scale
+
+		atmSphere.scale.set(1.008, 1.008, 1.008); // Slightly larger scale
 		atmSphere.position.x = -1.4;
 		atmSphere.position.z = 3.7;
 		atmSphere.position.y = -0.6;
@@ -82,7 +94,7 @@ export default class SpaceBackground extends AbstractComponent {
 		const sphere2 = new THREE.Mesh(sphereGeometry, material2);
 		sphere2.position.x = 42;
 		sphere2.position.z = -76;
-		// sphere2.position.y = ;
+		sphere2.scale.set(0.5, 0.5, 0.5);
 
 		// Add spheres to the scene
 		scene.add(sphere1);
@@ -105,7 +117,8 @@ export default class SpaceBackground extends AbstractComponent {
 			requestAnimationFrame(animate);
 			
 			// Rotate spheres
-			sphere1.rotation.y += 0.00007;
+			sphere1.rotation.y += 0.0001;
+			atmSphere.rotation.y += 0.00006;
 			// sphere2.rotation.y += 0.0001;
 			
 			renderer.render(scene, camera);
