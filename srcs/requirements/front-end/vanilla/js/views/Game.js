@@ -160,15 +160,10 @@ export default class Game extends AbstractView {
 		// socket initialization and event handling logic
 		const hostname = window.location.hostname;
 		const protocol = 'wss';
-<<<<<<< HEAD
 		const query = window.location.search.replace('?', '');
 		let accessTok = sessionStorage.getItem('accessToken');
 		accessTok = accessTok.replace("Bearer ", ""); // replace the "Bearer " at the beginning of the value;
 
-=======
-		const query = window.location.search.replace('?', '') || this.query;
-		console.log("Query: ", query);
->>>>>>> e27ca9400d14803fadfde86c9a77cb018643a655
 		const io_url = hostname.includes("github.dev") ? `${protocol}://${hostname}` : `${protocol}://${hostname}:9443`;
 		console.log(`Connecting to ${io_url}`)
 		this.socket = io(`${io_url}`, {
