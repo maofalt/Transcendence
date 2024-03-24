@@ -29,7 +29,15 @@ const init = require("./init");
 //     return false;
 // }
 
-function checkCorner(ball, corner, center) {
+// to make the collisions system actually bullet proof, I should check for collisions each time I
+// change the ball's position according to a collision. Calculating the result of a collision shouldn't
+// create objects clipping through each other, hence each collision with a wall should check for collision with paddles too,
+// and each collision with a paddle should check for collisions with walls
+
+// Actually a better way to do that would be to return the result of each collision, or more accurately store them somewhere,
+// and then if the ball hit a wall and a paddle during the same 'turn' I add both vectors in order to get the new ball's position.
+
+function checkCorner(ball, corner, center, paddle) {
     let distToCorner, vecCornerDist, cornerHitPoint = 0;
 
     distToCorner = corner.sub(ball.pos).mag;
@@ -37,6 +45,8 @@ function checkCorner(ball, corner, center) {
         return false;
     if (distToCorner < ball.r) {
         ball.dir = ball.pos.getDirFrom(center);
+        if (paddle)
+            ball.sp += Math.abs(paddle.currSp) * 0.5;
         return false;
     }
     vecCornerDist = ball.dir.scale(distToCorner);
@@ -46,6 +56,8 @@ function checkCorner(ball, corner, center) {
         let scaler = Math.sqrt(ball.r ** 2 - cornerToHitPointDist ** 2);
         ball.pos = cornerHitPoint.add(ball.dir.scale(-scaler));
         ball.dir = ball.pos.getDirFrom(center);
+        if (paddle)
+            ball.sp += Math.abs(paddle.currSp) * 0.5;
         return true;
     }
     return false;
@@ -67,8 +79,24 @@ function ballHitsWallSide (ball, segP1, segP2, perpVec, scaledNormalVec) {
     }
 }
 
+function ballClipsWallSide (ball, segP1, segP2, perpVec, scaledNormalVec) {
+    let potentialHitPoint, futureHitPos, hitScaler;
+
+    potentialHitPoint = ball.pos;
+    futureHitPos = potentialHitPoint.add(ball.dir.scale(ball.sp));
+    hitScaler = vecs.segmentsIntersect(potentialHitPoint, futureHitPos, segP1, segP2);
+    if (hitScaler > 0) {
+        let ballPath = futureHitPos.sub(potentialHitPoint);
+        ball.pos = ball.pos.add(ballPath.scale(hitScaler)).add(scaledNormalVec);
+        let dot = ball.dir.dotProduct(perpVec);
+        let a = Math.acos(dot / ball.dir.mag * perpVec.mag);
+        ball.dir = ball.dir.rotateAroundZ(2 * a);
+        return true;
+    }
+}
+
 function ballHitsWallV2(data) {
-    let ball, wall;
+    let ball;
 
     ball = data.ball;
 	for (let wall of data.field.walls) {
@@ -82,13 +110,16 @@ function ballHitsWallV2(data) {
                 return true;
             if (checkCorner(ball, wall.bottom, wall.pos))
                 return true;
+
+            if (ballClipsWallSide(ball, wall.top, wall.bottom, wall.dirToTop, wall.dirToCenter.scale(ball.r)))
+                return true;
         }
     }
     return false;
 }
 
 
-function ballHitsPaddleSide (paddle, ball, segP1, segP2, scaledNormalVec) {
+function ballHitsPaddleSide (paddle, ball, segP1, segP2, scaledNormalVec, side) {
     let potentialHitPoint, futureHitPos, hitScaler;
 
     potentialHitPoint = ball.pos.sub(scaledNormalVec);
@@ -98,6 +129,8 @@ function ballHitsPaddleSide (paddle, ball, segP1, segP2, scaledNormalVec) {
         let ballPath = futureHitPos.sub(potentialHitPoint);
         ball.pos = ball.pos.add(ballPath.scale(hitScaler));
         ball.dir = ball.pos.getDirFrom(paddle.pos).normalize();
+        if (side)
+            ball.sp += Math.abs(paddle.currSp) * 0.5;
         return true;
     }
 }
@@ -109,21 +142,25 @@ function ballHitsPaddle(data) {
 	for (let player of Object.values(data.players)) {
         paddle = player.paddle;
         if (ball.pos.getDistFrom(paddle.pos) < ball.sp + ball.r + paddle.h / 2) {
-            if (ballHitsPaddleSide(paddle, ball, paddle.top, paddle.bottom, paddle.dirToCenter.scale(ball.r)) ||
-                ballHitsPaddleSide(paddle, ball, paddle.top, paddle.topBack, paddle.dirToTop.scale(ball.r)) ||
-                ballHitsPaddleSide(paddle, ball, paddle.bottom, paddle.bottomBack, paddle.dirToTop.scale(-ball.r))) {
+            if (ballHitsPaddleSide(paddle, ball, paddle.top, paddle.bottom, paddle.dirToCenter.scale(ball.r), false) ||
+                ballHitsPaddleSide(paddle, ball, paddle.top, paddle.topBack, paddle.dirToTop.scale(ball.r), true) ||
+                ballHitsPaddleSide(paddle, ball, paddle.bottom, paddle.bottomBack, paddle.dirToTop.scale(-ball.r), true)) {
                 return true;
             }
-            if (checkCorner(ball, paddle.top, paddle.pos))
+            if (checkCorner(ball, paddle.top, paddle.pos, paddle))
                 return true;
-            if (checkCorner(ball, paddle.bottom, paddle.pos))
+            if (checkCorner(ball, paddle.bottom, paddle.pos, paddle))
                 return true;
         }
     }
     return false;
 }
 
-function updatePaddlesPoints(currPaddle, dir) {
+function updatePaddlesPoints(ball, currPaddle, dir, dist, toStart) {
+    if ((currPaddle.top.add(dir).sub(ball.pos).mag <= ball.r || currPaddle.bottom.add(dir).sub(ball.pos).mag <= ball.r) && 
+    (dist.mag >= toStart.mag - ball.r * 2)) {
+        return;
+    }
     currPaddle.pos = currPaddle.pos.add(dir);
     currPaddle.top = currPaddle.top.add(dir);
     currPaddle.bottom = currPaddle.bottom.add(dir);
@@ -157,12 +194,15 @@ function updatePaddles(data) {
         currPaddle = player.paddle;
         let dir = 0;
         
-        dir = (currPaddle.dashSp != 0) ? currPaddle.dirToTop.scale(currPaddle.dashSp) : currPaddle.dirToTop.scale(currPaddle.currSp);
-        updatePaddlesPoints(currPaddle, dir);
-        handleDash(currPaddle);
-
         let vecToStart = currPaddle.pos.sub(currPaddle.startingPos);
         let limitDist = (data.field.goalsSize - currPaddle.h - currPaddle.w) / 2;
+ 
+        dir = (currPaddle.dashSp != 0) ? currPaddle.dirToTop.scale(currPaddle.dashSp) : currPaddle.dirToTop.scale(currPaddle.currSp);
+        updatePaddlesPoints(data.ball, currPaddle, dir, limitDist, vecToStart);
+        handleDash(currPaddle);
+
+        vecToStart = currPaddle.pos.sub(currPaddle.startingPos);
+        limitDist = (data.field.goalsSize - currPaddle.h - currPaddle.w) / 2;
 
         if (vecToStart.mag > limitDist) {
             vecToStart = vecToStart.normalize();
@@ -174,33 +214,41 @@ function updatePaddles(data) {
 }
 
 function updateBall(data) {
-    if (!ballHitsWallV2(data) && !ballHitsPaddle(data)) {
+    paddleHit = ballHitsPaddle(data);
+    wallHit = ((data.field.wallsSize || data.gamemode.nbrOfPlayers == 2) ? ballHitsWallV2(data) : 0);
+    if (paddleHit) {
+        console.log("paddle hit");
+    }
+    if (wallHit) {
+        console.log("wall hit");
+    }
+    if (!paddleHit && !wallHit) {
         data.ball.pos = data.ball.pos.add(data.ball.dir.scale(data.ball.sp));
-    } else {
+    } else if (paddleHit) {
         data.ball.sp *= 1.01;
     }
-    if (data.ball.pos.getDistFrom(new Vector(0, 0, 0)) > 100) {
+    if (data.ball.pos.getDistFrom(new Vector(0, 0, 0)) > 
+        (data.field.wallDist < data.field.goalDist ? data.field.goalDist: data.field.wallDist) + 20) {
         data.ball.pos = new Vector(0, 0, 0);
         data.ball.sp = data.ball.startingSp;
     }
 }
 
-function endGame(data, winner) {
-    // display scores + display winner's name
-    console.log("!!!!!!!!!!!!!!!!!!!!!! GAME OVER !!!!!!!!!!!!!!!!!!!");
-    console.log(`${winner.accountID} WON !`);
-    // send result of the game back to tournament or some place else;
-    // stop the interval
+// function endGame(data) {
+//     // display scores + display winner's name
+//     console.log("!!!!!!!!!!!!!!!!!!!!!! GAME OVER !!!!!!!!!!!!!!!!!!!");
+//     console.log(`${data.winner.accountID} WON !`);
+//     // send result of the game back to tournament or some place else;
+//     // stop the interval
 
-    // disconnect everyone ? need to think about this
-}
+//     // disconnect everyone ? need to think about this
+// }
 
 function eliminatePlayer(data, player) {
     // important : send the info to the client to delete the corresponding player,
     // it should be the only required additional exchange since the client
     // receives everything else it needs to display properly the game in each
     // "render" socket emission
-
     console.log("!!!!!!!!!!!!!!!!!!!!!! ELIMINATED !!!!!!!!!!!!!!!!!!!");
     console.log(`${data.gamemode.nbrOfPlayers}`);
     // get rid of this player in the map of players;
@@ -218,7 +266,8 @@ function handleScoring(data, player) {
                 continue ;
             otherPlayer.score++;
             if (otherPlayer.score == data.gamemode.nbrOfRounds) {
-                endGame(data, otherPlayer);
+                // endGame(data, otherPlayer);
+                data.winner = otherPlayer;
                 return -1;
             }
         }
@@ -228,14 +277,9 @@ function handleScoring(data, player) {
             eliminatePlayer(data, player);
             data.ball.pos = new Vector(0, 0, 0);
             if (data.gamemode.nbrOfPlayers == 1) {
-                endGame(data, Object.values(data.players)[0]);
+                // endGame(data, Object.values(data.players)[0]);
+                data.winner = Object.values(data.players)[0];
                 return -1;
-            }
-            if (data.gamemode.nbrOfPlayers == 2 && data.field.wallsSize < data.field.goalsSize * 1.5) {
-                data.field.wallsSize = data.field.goalsSize * 1.5;
-                for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
-                    data.field.walls[i].h = data.field.wallsSize;
-                }
             }
             init.initFieldShape(data);
             return 1;

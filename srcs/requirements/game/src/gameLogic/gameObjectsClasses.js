@@ -31,6 +31,8 @@ class Field {
         this.goalsSize = fieldData.sizeOfGoals;
         this.wallsSize = fieldData.sizeOfGoals * fieldData.wallsFactor;
         this.walls = [];
+        this.wallDist = 0;
+        this.goalDist = 0;
         // this.goals = [];
     }
 }
@@ -140,6 +142,7 @@ class Data {
         this.camera = new Camera();
         this.field = new Field(lobbyData.fieldData);
         this.ball = new Ball(lobbyData.ballData);
+        this.winner = 0;
 
         // create and fill the array of players
         this.players = {};

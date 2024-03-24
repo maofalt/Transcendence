@@ -6,6 +6,9 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { Texture } from 'three';
 import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 
 
 function createCallTracker() {
@@ -88,12 +91,25 @@ export default class Game extends AbstractView {
 			height: 0.2,
 			curveSegments: 12,
 		}
+		this.TKtext = {
+			size: 5,
+			height: 0.2,
+			curveSegments: 12,
+		}
 		this.prevScores = [];
 		this.dir = 0;
 
 		this.screenWidth = screenWidth || window.innerWidth;
 		this.screenHeight = screenHeight || window.innerHeight;
 		console.log("Screen size: ", this.screenWidth, this.screenHeight);
+
+		// Create an EffectComposer
+		this.composer = null;
+		this.renderPass = null;
+		this.darkenShader = null;
+		this.darkenPass = null;
+		this.sRGBToLinearShader = null;
+		this.sRGBToLinearPass = null;
 	};
 
 	async getHtml() {
@@ -144,16 +160,20 @@ export default class Game extends AbstractView {
 		// socket initialization and event handling logic
 		const hostname = window.location.hostname;
 		const protocol = 'wss';
-		const query = window.location.search.replace('?', '') || this.query;
-		console.log("Query: ", query);
+		const query = window.location.search.replace('?', '');
+		let accessTok = sessionStorage.getItem('accessToken');
+		accessTok = accessTok.replace("Bearer ", ""); // replace the "Bearer " at the beginning of the value;
+
 		const io_url = hostname.includes("github.dev") ? `${protocol}://${hostname}` : `${protocol}://${hostname}:9443`;
 		console.log(`Connecting to ${io_url}`)
 		this.socket = io(`${io_url}`, {
 			path: '/game-logic/socket.io',
 			query: query,
+			accessToken: accessTok,
 			secure: hostname !== 'localhost',
 			rejectUnauthorized: false,
-			transports: ['websocket']
+			transports: ['websocket'],
+			auth: {accessToken: accessTok}
 		});
 
 		this.socket.on('error', (error) => {
@@ -193,13 +213,23 @@ export default class Game extends AbstractView {
 		this.socket.on('destroy', data => {
 			this.scene.clear();
 			console.log("DESTROY SCENE");
-		})
+		});
 
 		this.socket.on('refresh', data => {
 			console.log("REFRESH SCENE");
 			data.playersArray = Object.values(data.players);
 			this.refreshScene(data);
-		})
+		});
+
+		this.socket.on('end-game', data => {
+			// this.launchEndGameAnimation();
+			this.controls.enabled = false;
+
+			this.launchEndGameAnimation();
+
+			// this.scene.clear();
+			console.log("END OF GAME");
+		});
 
 		this.socket.on('ping', ([timestamp, latency]) => {
 			this.socket.emit('pong', timestamp);
@@ -210,11 +240,107 @@ export default class Game extends AbstractView {
 
 	};
 
+	launchEndGameAnimation() {
+		// Create an EffectComposer
+		this.composer = new EffectComposer(this.renderer);
+
+		// Add a RenderPass
+		this.renderPass = new RenderPass(this.scene, this.camera);
+		this.composer.addPass(this.renderPass);
+
+		// Create a ShaderPass
+		this.sRGBToLinearShader = new THREE.ShaderMaterial({
+			uniforms: {
+				tDiffuse: { value: null }
+			},
+			vertexShader: `
+				varying vec2 vUv;
+				void main() {
+					vUv = uv;
+					gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+				}
+			`,
+			fragmentShader: `
+				uniform sampler2D tDiffuse;
+				varying vec2 vUv;
+
+				void main() {
+					vec4 color = texture2D(tDiffuse, vUv);
+					color.rgb = pow(color.rgb, vec3(2.2)); // sRGB to Linear
+					gl_FragColor = color;
+				}
+			`
+		});
+
+		this.sRGBToLinearPass = new ShaderPass(this.sRGBToLinearShader);
+
+		// Create a ShaderPass
+		this.darkenShader = new THREE.ShaderMaterial({
+			uniforms: {
+				tDiffuse: { value: null },
+				amount: { value: 0 }
+			},
+			vertexShader: `
+				varying vec2 vUv;
+				void main() {
+					vUv = uv;
+					gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+				}
+			`,
+			fragmentShader: `
+				uniform sampler2D tDiffuse;
+				uniform float amount;
+				varying vec2 vUv;
+
+				void main() {
+					vec4 color = texture2D(tDiffuse, vUv);
+					gl_FragColor = mix(color, vec4(0.0, 0.0, 0.0, 1.0), amount);
+				}
+			`,
+			blending: THREE.AdditiveBlending
+		});
+		
+		this.darkenShader.toneMapped = false;
+		this.darkenPass = new ShaderPass(this.darkenShader);
+
+		this.composer.addPass(this.sRGBToLinearPass);
+		this.composer.addPass(this.darkenPass);
+
+		this.controls.enabled = false;
+
+		this.endGameAnimation();
+	}
+
+	// Define your animation function
+	endGameAnimation = (frame = 0) => {
+		let scaleFactor = 1.1;
+		let maxFrame = 300;
+		// let lightStep = this.ambientLight.intensity / maxFrame;
+		// let dirLightStep = this.directionalLight.intensity / maxFrame;
+		
+
+		if (!this.ballModel) {
+			this.ball.mesh.scale.multiplyScalar(scaleFactor);
+			// this.ballModel.position.add(direction);
+		}
+
+		// console.log(this.darkenShader.uniforms.amount.value);
+		// console.log(frame);
+		this.darkenShader.uniforms.amount.value += (1 / maxFrame); // Increase this value to darken faster
+		this.composer.render();
+
+		console.log("end of game");
+		if (frame == maxFrame)
+			return ;
+
+		// Request the next frame
+		requestAnimationFrame(() => this.endGameAnimation(frame + 1));
+	}
+
 	destroy() {
 		if (this.socket) {
 			this.socket.disconnect();
 		}
-		
 		console.log("Destroying Game View...");
 		// Cleanup logic here (remove event listeners, etc.)
 		window.removeEventListener('resize', this.onWindowResize.bind(this));
@@ -222,6 +348,10 @@ export default class Game extends AbstractView {
 		window.removeEventListener("keyup", this.handleKeyRelease.bind(this));
 
 		// Additional cleanup (disposing Three.js objects, etc.)
+		this.scene.clear();
+		// delete cam;
+		// delete controls;
+		// delete renderer;
 	};
 
 
@@ -285,6 +415,9 @@ export default class Game extends AbstractView {
 		} else {
 			if (data.ball.texture) {
 				// this.ball.mesh.rotateX(-Math.PI / 42 * data.ball.sp);
+				// this.ball.mesh.rotateX((-Math.PI / 20) * data.ball.sp);
+				// this.ball.mesh.rotateZ((Math.PI / 24) * data.ball.sp);
+				this.ball.mesh.rotateY(Math.PI / 42 * data.ball.sp);
 				this.ball.mesh.rotateZ(Math.PI / 36 * data.ball.sp);
 			}
 			this.ball.mesh.position.set(data.ball.pos.x, data.ball.pos.y, 0);
@@ -332,13 +465,23 @@ export default class Game extends AbstractView {
 		if (!loader)
 			return console.error("FontLoader not found");
 
+		loader.load( 'js/assets/fonts/Tk421-K7mv7.json', ( response ) => {
+
+		this.TKtext.font = response;
+
+		this.refreshScores(data);
+
+		console.log("Font TK loaded");
+
+		} );
+
 		loader.load( 'https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', ( response ) => {
 
 			this.textSettings.font = response;
 
 			this.refreshScores(data);
 
-			console.log("Font loaded");
+			console.log("Normal Font loaded");
 
 		} );
 
@@ -360,32 +503,75 @@ export default class Game extends AbstractView {
 		let dir = 0; // used to rotate scores to face client
 
 		// generate scores for each player
+		const profilePic = new THREE.TextureLoader().load(`./js/assets/images/default-avatar.webp`);
+		profilePic.wrapS = profilePic.wrapT = THREE.RepeatWrapping;
+		profilePic.offset.set( 0, 0 );
+		profilePic.repeat.set( 2, 1 );
+		const loginText = player.accountID;
 		const scoreText = player.score.toString();
+		const ppRadius = 2;
+
 		console.log("Creating score: " + scoreText + " for player " + i + " with dir: " + this.dir);
+		// this.textSettings.font = this.textSettings.fontNormal;
+		const profilePicGeo = new THREE.SphereGeometry(ppRadius, 12, 24);
+		const loginGeo = new TextGeometry(loginText, this.textSettings);
+		// const loginGeo = new TextGeometry(loginText, this.TKtext);
+		const scoreGeo = new TextGeometry(scoreText, this.textSettings);
+		// const scoreGeo = new TextGeometry(scoreText, this.TKtext);
+		
+		const profilePicMaterial = new THREE.MeshPhongMaterial({ map:profilePic });
+		var scoreMaterial = new THREE.MeshPhongMaterial({ color: data.gamemode.gameType ? 0xff0000 : 0xffffff });
+		var loginMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
+		
+		const loginMesh = new THREE.Mesh(loginGeo, loginMaterial);
+		const scoreMesh = new THREE.Mesh(scoreGeo, scoreMaterial);
+		const profilePicMesh = new THREE.Mesh(profilePicGeo, profilePicMaterial);
+		
+		// computing bounding boxes
+		profilePicGeo.computeBoundingBox();
+		loginGeo.computeBoundingBox();
+		scoreGeo.computeBoundingBox();
+		
+		// calculating sizes in order to setup the objects later
+		const spaceBetween = 2; // change this to the amount of space you want between the meshes
+		const textHeight = loginGeo.boundingBox.max.y - loginGeo.boundingBox.min.y;
+		const loginWidth = loginGeo.boundingBox.max.x - loginGeo.boundingBox.min.x;
+		const scoreWidth = scoreGeo.boundingBox.max.x - scoreGeo.boundingBox.min.x;
+		const topWidth = (ppRadius * 2 + spaceBetween + scoreWidth);
 
-		const geometry = new TextGeometry(scoreText, this.textSettings);
+		const totalWidth = Math.max(loginWidth, topWidth);
+		const totalHeight = textHeight + ppRadius * 2 + spaceBetween;
+		
+		// creating a box that will contain everything.
+		// login, score, profile picture.
+		// this box can be truned visible for debug.
+		const boxGeo = new THREE.BoxGeometry(totalWidth, textHeight + spaceBetween + ppRadius * 2, ppRadius * 2);
+		const boxMesh = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0});
+		const scoreBox = new THREE.Mesh(boxGeo, boxMesh);
+		boxGeo.computeBoundingBox();
+		
+		// adding items to the parent box
+		this.scores[i] = scoreBox;
+		this.scores[i].add(profilePicMesh);
+		this.scores[i].add(loginMesh);
+		this.scores[i].add(scoreMesh);
 
-		var material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-		this.scores[i] = new THREE.Mesh(geometry, material);
-
-		// calculate bounds of score
-		geometry.computeBoundingBox();
-		const scoreWidth = this.scores[i].geometry.boundingBox.max.x - this.scores[i].geometry.boundingBox.min.x;
-		const scoreHeight = this.scores[i].geometry.boundingBox.max.y - this.scores[i].geometry.boundingBox.min.y;
-		const scoreThickness = this.scores[i].geometry.boundingBox.max.z - this.scores[i].geometry.boundingBox.min.z;
-
-		// set center of score to center of paddle
-		const centerX = data.playersArray[i].scorePos.x - scoreWidth / 2;
-		const centerY = data.playersArray[i].scorePos.y - scoreHeight / 2;
-		const centerZ = data.playersArray[i].scorePos.z - scoreThickness / 2;
-
-		this.scores[i].position.set(centerX, centerY, centerZ);
+		// positioning ui items
+		profilePicMesh.position.set(-ppRadius - spaceBetween / 2, totalHeight / 2 - ppRadius, 0);
+		scoreMesh.position.set(spaceBetween / 2, (totalHeight - textHeight) / 2 - ppRadius, 0);
+		loginMesh.position.set(-loginWidth / 2, -totalHeight / 2, 0);
+	
+		// positionning ui box
+		this.scores[i].position.set(
+			data.playersArray[i].scorePos.x,
+			data.playersArray[i].scorePos.y,
+			data.playersArray[i].scorePos.z
+		);
 
 		this.scene.add(this.scores[i]);
 
 		// rotate the score to face client
 		this.scores[i].rotation.set(0, 0, 2 * Math.PI/data.gamemode.nbrOfPlayers * this.dir);
-		
 	}
 
 	refreshScores(data) {
@@ -396,7 +582,8 @@ export default class Game extends AbstractView {
 
 			if (this.prevScores[index] != player.score) {
 				console.log("Refreshing score: " + player.score + " for player " + index);
-				this.scene.remove( this.scores[index] );
+				if (this.scores[index])
+					this.scene.remove(this.scores[index]);
 				this.createScore(data, player, index);
 			}
 		
@@ -433,7 +620,7 @@ export default class Game extends AbstractView {
 			let boundingBox = new THREE.Box3().setFromObject(this.ballModel);
 			let size = boundingBox.getSize(new THREE.Vector3()); // Returns Vector3
 			let len = size.x > size.y ? size.x : size.y;
-			let scale = data.ball.r / (len / 2);
+			let scale = data.ball.r / (len / 2.2);
 			this.ballModel.scale.set(scale, scale, scale);
 	
 			// Add the model to the scene
@@ -445,39 +632,22 @@ export default class Game extends AbstractView {
 		});
 	}
 
-	// loadBallModel(model) {
-	// 	this.loader.load("./js/assets/3D_Models/" + model + "/scene.gltf", ( gltf ) => {
-	// 		this.ballModel = gltf.scene;
-	// 		this.scene.add(this.ballModel);
-	// 	});
-		
-	// }
-
-	// scaleBallModel(data) {
-	// 	this.loadBallModel(data.ball.model);
-	// 	let boundingBox = new THREE.Box3().setFromObject(this.ballModel);
-	// 	let size = boundingBox.getSize(); // Returns Vector3
-	// 	let len = size.x > size.y ? size.x : size.y;
-	// 	let scale = len / data.ball.r;
-	// 	this.ballModel.scale.set(scale, scale, scale);
-	// }
-
 	generateBall(data) {
 		let ballTexture;
 		let ballMaterial;
 
-		// if (data.ball.model != "") {
-		// 	console.log("LOAD STUFF");
-		// 	this.loadBallModel(data);
-		// 	return ;
-		// }
+		if (data.ball.model) {
+			console.log("LOAD STUFF");
+			this.loadBallModel(data);
+			return ;
+		}
 		console.log("DIDNT LOADGE");
 		if (data.ball.texture != "") {
-			ballTexture = new THREE.TextureLoader().load(`./js/assets/images/${data.ball.texture}.jpg`);
+			ballTexture = new THREE.TextureLoader().load(`./js/assets/images/${data.ball.texture}`);
 			ballMaterial = new THREE.MeshPhongMaterial({ map: ballTexture, transparent: false, opacity: 0.7 });
-			ballTexture.wrapS = ballTexture.wrapT = THREE.RepeatWrapping;
-			ballTexture.offset.set( 0, 0 );
-			ballTexture.repeat.set( 2, 1 );
+			// ballTexture.wrapS = ballTexture.wrapT = THREE.RepeatWrapping;
+			// ballTexture.offset.set( 0, 0 );
+			// ballTexture.repeat.set( 2, 1 );
 		} else {
 			ballMaterial = new THREE.MeshPhongMaterial({ color: data.ball.col, transparent: false, opacity: 0.7 });
 		}
@@ -498,6 +668,9 @@ export default class Game extends AbstractView {
 	}
 
 	generateWalls(data) {
+		if (data.field.wallsSize == 0) {
+			return ;
+		}
 		const wallGeometry = new THREE.BoxGeometry(data.field.wallsSize, 1, 2);
 		const wallMaterial = new THREE.MeshPhongMaterial({ color: data.ball.col, transparent: true, opacity: 1, reflectivity: 0.5 });
 		// console.log("number of players : ", data.gamemode.nbrOfPlayers);
@@ -595,6 +768,7 @@ export default class Game extends AbstractView {
 		// const starTexture2 = new THREE.TextureLoader().load('./js/assets/images/PurpleLayer2.png');
 		// const starTexture3 = new THREE.TextureLoader().load('./js/assets/images/PurpleLayer3.png');
 		const starTextureBase = new THREE.TextureLoader().load('./js/assets/images/purpleSpace.jpg');
+		starTextureBase.colorSpace = THREE.SRGBColorSpace;
 		// this.starTexture = new THREE.TextureLoader().load('./js/assets/images/redSpace.jpg');
 
 		// Créer la géométrie de la sphère

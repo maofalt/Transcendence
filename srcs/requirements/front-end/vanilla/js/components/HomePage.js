@@ -34,7 +34,7 @@ export default class HomePage extends AbstractComponent {
 		menu.id = "menu";
 
 		menu.appendChild(playButton);
-		menu.appendChild(tournamentsButton);
+		// menu.appendChild(tournamentsButton);
 		menu.appendChild(profileButton);
 		// menu.appendChild(loginButton);
 
@@ -100,7 +100,7 @@ export default class HomePage extends AbstractComponent {
 		successButton.onclick = () => displayPopup("this is success", "success");
 
 		playButton.onclick = () => navigateTo("/game");
-		tournamentsButton.onclick = () => navigateTo("/tournament");
+		// tournamentsButton.onclick = () => navigateTo("/tournament");
 		profileButton.onclick = () => navigateTo("/profile");
 		userInfo.onclick = () => navigateTo("/profile");
 
