@@ -46,6 +46,8 @@ import jwt
 import datetime
 import pytz
 from django.conf import settings
+from django.utils import timezone
+
 # 2FA
 import json
 from django.core.validators import validate_email
@@ -100,7 +102,8 @@ def check_refresh(request):
         return JsonResponse({'error': 'Authorization header is missing'}, status=400)
     if not refreshToken:
         return JsonResponse({'error': 'Refresh token is missing'}, status=400)
-
+    
+    exp_datetime = None
     try:
         decoded_token = jwt.decode(accessToken.split()[1], settings.SECRET_KEY, algorithms=["HS256"])
         local_tz = pytz.timezone('Europe/Paris')
@@ -122,13 +125,20 @@ def check_refresh(request):
             access['username'] = user.username
             new_accessToken = str(access)
 
+            current_time = timezone.now()
+            expiration_time = datetime.datetime.fromtimestamp(access['exp'], tz=pytz.utc)
+            expires_in = (expiration_time - current_time).total_seconds()
+            local_tz = pytz.timezone('Europe/Paris')
+            exp_datetime = datetime.datetime.fromtimestamp(access['exp'], tz=pytz.utc).astimezone(local_tz).strftime('%Y-%m-%d %H:%M:%S')
             # Set new access token in response body
             response_data = {
                 'message': 'New access token generated',
                 'access_token': new_accessToken,
                 'token_type': 'Bearer',
-                'expires_in': access['exp'] - access['iat']
+                'expires_in': expires_in,
+                'exp_datetime': exp_datetime
             }
+            print("expires_in: ", expires_in, "exp_datetime: ", exp_datetime)
             response = JsonResponse(response_data)
             return response
         # return JsonResponse({'error': 'Access token has expired'}, status=401)
@@ -193,11 +203,9 @@ def generate_tokens_and_response(request, user):
     else:
         twoFA = True
     refreshToken = RefreshToken.for_user(user)
- 
+    exp_accessToken = None
     try:
         secret_key = settings.SECRET_KEY
-        # print("original ACCESS TOKEN: ", str(accessToken))
-        # print("original REFRESH TOKEN: ", str(refreshToken))
         decodedToken = jwt.decode(str(accessToken), secret_key, algorithms=["HS256"])
         local_tz = pytz.timezone('Europe/Paris')
         exp_timestamp_accessToken = decodedToken['exp']
@@ -209,13 +217,19 @@ def generate_tokens_and_response(request, user):
     except jwt.InvalidTokenError:
         return JsonResponse({'error': escape('Invalid token')}, status=400)
 
+    current_time = timezone.now()
+    expiration_time = datetime.datetime.fromtimestamp(accessToken['exp'], tz=pytz.utc)
+    expires_in = (expiration_time - current_time).total_seconds()
     response_data = {
         'success': True,
         'requires_2fa': twoFA,
         'access_token': str(accessToken),
         'token_type': 'Bearer',
-        'expires_in': accessToken['exp'] - accessToken['iat'] 
+        'expires_in': expires_in,
+        'exp_datetime': exp_accessToken
     }
+    
+    print("expires_in: ", expires_in,  "exp_datetime : ", exp_accessToken)
     response = JsonResponse(response_data)
     response.set_cookie('refreshToken', refreshToken, httponly=True, secure=True, samesite='Strict')
     
