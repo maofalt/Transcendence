@@ -16,21 +16,21 @@ export default class PlayMenu extends AbstractComponent {
 		styleEl.textContent = style;
 		this.shadowRoot.appendChild(styleEl);
 
-        let classicPong = new Pannel({title: "Classic Pong"});
-        let customGame = new Pannel({title: "Custom Game"});
-        let bigTitle = new BigTitle({content: "Cosmic<br>Pong"});
+		let classicPong = new Pannel({title: "Local", style: {padding: "18px 0"}});
+		let customGame = new Pannel({title: "Tournaments", style: {padding: "18px 0"}});
+		let bigTitle = new BigTitle({content: "Cosmic<br>Pong"});
 
 		const menu = document.createElement('div');
 		menu.id = "menu";
 
 		this.setupPannel(classicPong, 
 			"Play a game of classic Pong with a friend, on the same keyboard.",
-			"../js/assets/images/pong-intro-img.webp",
+			"../js/assets/images/screenShot_normalGameBetter.png",
 			() => navigateTo("/basic"));
 		this.setupPannel(customGame, 
-			"Create your own game of Pong and play remotely with up to 7 friends.",
-			"../js/assets/images/redSpace.jpg",
-			() => navigateTo("/play"));
+			"Create your own Tournaments and personalize your gaming experience.",
+			"../js/assets/images/screenShot_customGame.png",
+			() => navigateTo("/tournament"));
 
 		menu.appendChild(classicPong);
         menu.appendChild(customGame);
@@ -49,7 +49,7 @@ export default class PlayMenu extends AbstractComponent {
 		desc.style.setProperty("font-size", "20px");
 		desc.style.setProperty("padding", "0");
 		desc.style.setProperty("margin", "0");
-		desc.style.setProperty("margin-top", "7%");
+		desc.style.setProperty("margin-top", "4%");
 	
 		const container = document.createElement('div');
 		container.style.setProperty("width", "70%");
@@ -59,7 +59,7 @@ export default class PlayMenu extends AbstractComponent {
 		const imgContainer = document.createElement('div');
 		imgContainer.className = "imgContainer";
 		imgContainer.style.setProperty("width", "100%");
-		imgContainer.style.setProperty("height", "80%");
+		imgContainer.style.setProperty("height", "90%");
 		// imgContainer.style.setProperty("border", "1px yellow solid");
 		
 		const image = document.createElement('img');
@@ -87,6 +87,7 @@ export default class PlayMenu extends AbstractComponent {
 		console.log(arg);
 		pannel.style.setProperty("background", "rgba(0, 0, 0, 0.5)");
 		pannel.style.setProperty("backdrop-filter", "blur(6px)");
+		// pannel.shadowRoot.querySelector("img").style.setProperty("width", "200px");
 	}
 
 	pannelLeave = (e, pannel, arg) => {
