@@ -11,4 +11,4 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // initial call to set up the refresh token loop
-// renewToken();
+renewToken();
