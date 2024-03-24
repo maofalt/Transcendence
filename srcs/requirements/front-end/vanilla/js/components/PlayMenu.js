@@ -16,9 +16,9 @@ export default class PlayMenu extends AbstractComponent {
 		styleEl.textContent = style;
 		this.shadowRoot.appendChild(styleEl);
 
-        let classicPong = new Pannel({title: "Classic Pong", style: {padding: "18px 0"}});
-        let customGame = new Pannel({title: "Custom Game", style: {padding: "18px 0"}});
-        let bigTitle = new BigTitle({content: "Cosmic<br>Pong"});
+		let classicPong = new Pannel({title: "Local", style: {padding: "18px 0"}});
+		let customGame = new Pannel({title: "Tournaments", style: {padding: "18px 0"}});
+		let bigTitle = new BigTitle({content: "Cosmic<br>Pong"});
 
 		const menu = document.createElement('div');
 		menu.id = "menu";
@@ -28,9 +28,9 @@ export default class PlayMenu extends AbstractComponent {
 			"../js/assets/images/screenShot_normalGameBetter.png",
 			() => navigateTo("/basic"));
 		this.setupPannel(customGame, 
-			"Create your own game of Pong and play remotely with up to 7 friends.",
+			"Create your own Tournaments and personalize your gaming experience.",
 			"../js/assets/images/screenShot_customGame.png",
-			() => navigateTo("/play"));
+			() => navigateTo("/tournament"));
 
 		menu.appendChild(classicPong);
         menu.appendChild(customGame);

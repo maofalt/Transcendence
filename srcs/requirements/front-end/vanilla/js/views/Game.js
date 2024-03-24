@@ -108,6 +108,8 @@ export default class Game extends AbstractView {
 		this.renderPass = null;
 		this.darkenShader = null;
 		this.darkenPass = null;
+		this.sRGBToLinearShader = null;
+		this.sRGBToLinearPass = null;
 	};
 
 	async getHtml() {
@@ -247,6 +249,32 @@ export default class Game extends AbstractView {
 		this.composer.addPass(this.renderPass);
 
 		// Create a ShaderPass
+		this.sRGBToLinearShader = new THREE.ShaderMaterial({
+			uniforms: {
+				tDiffuse: { value: null }
+			},
+			vertexShader: `
+				varying vec2 vUv;
+				void main() {
+					vUv = uv;
+					gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+				}
+			`,
+			fragmentShader: `
+				uniform sampler2D tDiffuse;
+				varying vec2 vUv;
+
+				void main() {
+					vec4 color = texture2D(tDiffuse, vUv);
+					color.rgb = pow(color.rgb, vec3(2.2)); // sRGB to Linear
+					gl_FragColor = color;
+				}
+			`
+		});
+
+		this.sRGBToLinearPass = new ShaderPass(this.sRGBToLinearShader);
+
+		// Create a ShaderPass
 		this.darkenShader = new THREE.ShaderMaterial({
 			uniforms: {
 				tDiffuse: { value: null },
@@ -271,8 +299,11 @@ export default class Game extends AbstractView {
 			`,
 			blending: THREE.AdditiveBlending
 		});
-
+		
+		this.darkenShader.toneMapped = false;
 		this.darkenPass = new ShaderPass(this.darkenShader);
+
+		this.composer.addPass(this.sRGBToLinearPass);
 		this.composer.addPass(this.darkenPass);
 
 		this.controls.enabled = false;
