@@ -146,7 +146,7 @@ export const navigateTo = (url) => {
 };
 let previousView = null;
 
-const router = async () => {
+export const router = async () => {
   const path = window.location.pathname;
   const View = routes[path] || routes['/404'];
   const viewContainer = document.querySelector('#view');
@@ -176,10 +176,6 @@ const router = async () => {
 };
 
 window.addEventListener("popstate", router);
-
-document.addEventListener('DOMContentLoaded', () => {
-  router();
-});
 
 // const background = new SpaceBackground();
 
