@@ -53,9 +53,9 @@ urlpatterns = [
     # POST /tournament/{id}/end - End the tournament, finalizing its state and possibly triggering the calculation of rankings.
     path('matches/<int:match_id>/end/', views.MatchEnd.as_view(), name='match-end'),
     # PUT /tournament/{match_id}/{winner_id}/matches/ - Update the status or result of a match.
-    # path('matches/<int:match_id>/<int:winner_id>/', views.MatchResult.as_view(), name='match-result'),
+    path('matches/<int:match_id>/<int:winner_id>/', views.MatchResult.as_view(), name='match-result'),
     # PUT /tournament/{match_id}/{player_id}/{participant_score}/matches/ - Update the status or result of a match.
-    path('matches/<int:match_id>/<int:player_id>/<int:score>/', views.MatchResult.as_view(), name='match-result'),
+    # path('matches/<int:match_id>/<int:player_id>/<int:score>/', views.MatchResult.as_view(), name='match-result'),
     
     path('matches/<int:tournament_id>/<int:round>/update/', views.MatchUpdate.as_view(), name='match-update'),
 

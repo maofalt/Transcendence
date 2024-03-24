@@ -24,6 +24,12 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Q
 
 
+    # compare total player > match player
+    # check is user generate tournament is host user,
+    # is user who start tournament is host user,
+    # registration time put or is_full tornament, send alert and start.
+    # deletion
+    # jwt token
 
 
 
@@ -34,6 +40,7 @@ class TournamentListCreate(generics.ListCreateAPIView):
     authentication_classes = [CustomJWTAuthentication]
     # renderer_classes = [JSONRenderer]  # Force the response to be rendered in JSON
     # permission_classes = [IsAuthenticated]  # Only authenticated users can create and list tournaments
+
 
     def get(self, request, *args, **kwargs):
         print(">> GET: loading page\n")
@@ -231,60 +238,72 @@ class MatchGenerator(generics.ListCreateAPIView):
 
         return JsonResponse(serializer.data, status=status.HTTP_201_CREATED, safe=False)
     
-# class MatchResult(APIView):
-#     authentication_classes = [CustomJWTAuthentication]
-
-#     def post(self, request, match_id, winner_id):
-#         print("match_id : ", match_id,  "winner_id: ", winner_id)
-#         match = get_object_or_404(TournamentMatch, id=match_id)
-#         for participant in match.participants.all():
-#             print("participant id : ", participant.player_id)
-#             if participant.player_id == winner_id:
-#                 participant.is_winner = True
-#                 participant.save()
-#                 winner_found = True
-#             else:
-#                 winner_found = False
-
-#         if winner_found:
-#             return Response("Winner found and updated successfully")
-#         else:
-#             return Response("Winner not found among participants", status=status.HTTP_404_NOT_FOUND)
-
 class MatchResult(APIView):
     authentication_classes = [CustomJWTAuthentication]
 
-    def post(self, request, match_id, player_id, score):
-        print("match_id : ", match_id,  "player_id: ", player_id, "score: ", score)
+    def post(self, request, match_id, winner_id):
+        print("match_id : ", match_id,  "winner_id: ", winner_id)
         match = get_object_or_404(TournamentMatch, id=match_id)
-
         if match.state != "ended":
             return Response(f"Match {match_id} is not finished")
-        try:
-            player = match.players.get(id=player_id)
-        except Player.DoesNotExist:
-            return Response(f"Player with id {player_id} not found in the match", status=status.HTTP_404_NOT_FOUND)
-        
         for participant in match.participants.all():
             print("participant id : ", participant.player_id)
-            if participant.player_id == player_id:
+            try:
+                player = match.players.get(id=player_id)
+            except Player.DoesNotExist:
+                return Response(f"Player with id {player_id} not found in the match", status=status.HTTP_404_NOT_FOUND)
+            
+            if participant.player_id == winner_id:
+                participant.is_winner = True
+                participant.save()
+                player.total_played += 1
+                player.won_match.add(match)
+                player.save()
+                winner_found = True
+            else:
                 player.total_played += 1
                 player.save()
-                participant.participant_score = score
-                participant.save()
+                winner_found = False
 
-        score_unset = match.participants.filter(participant_score=0)
-
-        if not score_unset.exists():
-            winner = match.participants.order_by('-participant_score').first()
-            winner.is_winner = True
-            winner.save()
-            player = match.players.get(id=winner.player_id)
-            player.won_match.add(match)
-            player.save()
+        if winner_found:
             return Response("Winner found and updated successfully")
         else:
-            return Response("Winner not found yet. Some players score is missing")
+            return Response("Winner not found among participants", status=status.HTTP_404_NOT_FOUND)
+
+# class MatchResult(APIView):
+#     authentication_classes = [CustomJWTAuthentication]
+
+#     def post(self, request, match_id, player_id, score):
+#         print("match_id : ", match_id,  "player_id: ", player_id, "score: ", score)
+#         match = get_object_or_404(TournamentMatch, id=match_id)
+
+#         if match.state != "ended":
+#             return Response(f"Match {match_id} is not finished")
+#         try:
+#             player = match.players.get(id=player_id)
+#         except Player.DoesNotExist:
+#             return Response(f"Player with id {player_id} not found in the match", status=status.HTTP_404_NOT_FOUND)
+        
+#         for participant in match.participants.all():
+#             print("participant id : ", participant.player_id)
+#             if participant.player_id == player_id:
+#                 player.total_played += 1
+#                 player.save()
+#                 participant.participant_score = score
+#                 participant.save()
+
+#         score_unset = match.participants.filter(participant_score=0)
+
+#         if not score_unset.exists():
+#             winner = match.participants.order_by('-participant_score').first()
+#             winner.is_winner = True
+#             winner.save()
+#             player = match.players.get(id=winner.player_id)
+#             player.won_match.add(match)
+#             player.save()
+#             return Response("Winner found and updated successfully")
+#         else:
+#             return Response("Winner not found yet. Some players score is missing")
 
 
 class MatchUpdate(APIView):
