@@ -117,6 +117,8 @@ def check_refresh(request):
             print("DECODED REFRESHTOKEN: ", decoded_refresh_token)
             uid = decoded_refresh_token['user_id']
             user = User.objects.get(pk=uid)
+            user.last_valid_time = datetime.now()
+            user.save()
             refresh = RefreshToken(refreshToken)
             access = refresh.access_token
             access['username'] = user.username
@@ -203,6 +205,8 @@ def generate_tokens_and_response(request, user):
         exp_timestamp_accessToken = decodedToken['exp']
         exp_accessToken = datetime.datetime.fromtimestamp(exp_timestamp_accessToken, tz=pytz.utc).astimezone(local_tz).strftime('%Y-%m-%d %H:%M:%S')
         print("Expiration time of ACCESS token:", exp_accessToken)
+        user.last_valid_time = datetime.now()
+        user.save()
 
     except jwt.ExpiredSignatureError:
         return JsonResponse({'error': escape('Token has expired')}, status=400)

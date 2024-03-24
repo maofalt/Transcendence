@@ -11,6 +11,7 @@ class User(AbstractUser):
     friends = models.ManyToManyField('self', symmetrical=False, blank=True)
     game_stats = models.OneToOneField('gameHistory_microservice.GameStats', on_delete=models.CASCADE, null=True, blank=True, related_name='user_game_stats')
     phone = models.CharField(max_length=15, blank=True, null=True)
+    last_valid_time = models.DateTimeField(null=True, blank=True)
     TWO_FACTOR_METHODS = [
         ('sms', 'SMS'),
         ('email', 'Email'),
