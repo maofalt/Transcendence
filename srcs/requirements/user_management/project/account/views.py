@@ -28,6 +28,7 @@ from urllib.parse import urljoin
 import secrets
 import requests
 import logging
+import base64
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.forms.models import model_to_dict
 
@@ -43,9 +44,12 @@ from .serializers import UserSerializer, AnonymousUserSerializer
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework_simplejwt.tokens import RefreshToken
 import jwt
+from datetime import datetime, timedelta
 import datetime
 import pytz
 from django.conf import settings
+from django.utils import timezone
+
 # 2FA
 import json
 from django.core.validators import validate_email
@@ -76,10 +80,15 @@ def get_user(request):
         uid = decoded_refresh_token['user_id']
         try:
             user = User.objects.get(pk=uid)
+            avatar_data = None
+            if user.avatar:
+                with open(user.avatar.path, "rb") as image_file:
+                    avatar_data = base64.b64encode(image_file.read()).decode('utf-8')
             user_data = {
                 'user_id': user.id,
                 'username': user.username,
-                'playername': user.playername
+                'last_valid_time': user.last_valid_time,
+                'avatar': avatar_data,
             }
             return JsonResponse(user_data)
         except User.DoesNotExist:
@@ -95,12 +104,15 @@ def check_refresh(request):
     accessToken = request.headers.get('Authorization', None)
     refreshToken = request.COOKIES.get('refreshToken', None)
     print("accessToken print: ", str(accessToken))
+    # if not accessToken or not refreshToken:
+    #     return JsonResponse({'error': 'Missing tokens'}, status=400)
 
     if not accessToken:
         return JsonResponse({'error': 'Authorization header is missing'}, status=400)
     if not refreshToken:
         return JsonResponse({'error': 'Refresh token is missing'}, status=400)
-
+    
+    exp_datetime = None
     try:
         decoded_token = jwt.decode(accessToken.split()[1], settings.SECRET_KEY, algorithms=["HS256"])
         local_tz = pytz.timezone('Europe/Paris')
@@ -117,20 +129,27 @@ def check_refresh(request):
             print("DECODED REFRESHTOKEN: ", decoded_refresh_token)
             uid = decoded_refresh_token['user_id']
             user = User.objects.get(pk=uid)
-            user.last_valid_time = datetime.now()
+            user.last_valid_time = timezone.now().replace(microsecond=0)
             user.save()
             refresh = RefreshToken(refreshToken)
             access = refresh.access_token
             access['username'] = user.username
             new_accessToken = str(access)
 
+            current_time = timezone.now()
+            expiration_time = datetime.datetime.fromtimestamp(access['exp'], tz=pytz.utc)
+            expires_in = (expiration_time - current_time).total_seconds()
+            local_tz = pytz.timezone('Europe/Paris')
+            exp_datetime = datetime.datetime.fromtimestamp(access['exp'], tz=pytz.utc).astimezone(local_tz).strftime('%Y-%m-%d %H:%M:%S')
             # Set new access token in response body
             response_data = {
                 'message': 'New access token generated',
                 'access_token': new_accessToken,
                 'token_type': 'Bearer',
-                'expires_in': access['exp'] - access['iat']
+                'expires_in': expires_in,
+                'exp_datetime': exp_datetime
             }
+            print("expires_in: ", expires_in, "exp_datetime: ", exp_datetime)
             response = JsonResponse(response_data)
             return response
         # return JsonResponse({'error': 'Access token has expired'}, status=401)
@@ -195,17 +214,15 @@ def generate_tokens_and_response(request, user):
     else:
         twoFA = True
     refreshToken = RefreshToken.for_user(user)
- 
+    exp_accessToken = None
     try:
         secret_key = settings.SECRET_KEY
-        # print("original ACCESS TOKEN: ", str(accessToken))
-        # print("original REFRESH TOKEN: ", str(refreshToken))
         decodedToken = jwt.decode(str(accessToken), secret_key, algorithms=["HS256"])
         local_tz = pytz.timezone('Europe/Paris')
         exp_timestamp_accessToken = decodedToken['exp']
         exp_accessToken = datetime.datetime.fromtimestamp(exp_timestamp_accessToken, tz=pytz.utc).astimezone(local_tz).strftime('%Y-%m-%d %H:%M:%S')
         print("Expiration time of ACCESS token:", exp_accessToken)
-        user.last_valid_time = datetime.now()
+        user.last_valid_time = timezone.now().replace(microsecond=0)
         user.save()
 
     except jwt.ExpiredSignatureError:
@@ -213,13 +230,19 @@ def generate_tokens_and_response(request, user):
     except jwt.InvalidTokenError:
         return JsonResponse({'error': escape('Invalid token')}, status=400)
 
+    current_time = timezone.now()
+    expiration_time = datetime.datetime.fromtimestamp(accessToken['exp'], tz=pytz.utc)
+    expires_in = (expiration_time - current_time).total_seconds()
     response_data = {
         'success': True,
         'requires_2fa': twoFA,
         'access_token': str(accessToken),
         'token_type': 'Bearer',
-        'expires_in': accessToken['exp'] - accessToken['iat'] 
+        'expires_in': expires_in,
+        'exp_datetime': exp_accessToken
     }
+    
+    print("expires_in: ", expires_in,  "exp_datetime : ", exp_accessToken)
     response = JsonResponse(response_data)
     response.set_cookie('refreshToken', refreshToken, httponly=True, secure=True, samesite='Strict')
     
@@ -353,13 +376,13 @@ def api_signup_view(request):
 
 
 
-def send_notification_to_microservices(username):
-    endpoint_url = "https://localhost:9443/api/tournament/delete_user"
-    payload = {'username': username}
+def send_notification_to_microservices(user):
+    endpoint_url = f"https://localhost:9443/api/tournament/{user.id}/delete_user"
+    # payload = {'username': username}
 
     try:
         # send POST request
-        response = requests.post(endpoint_url, json=payload)
+        response = requests.post(endpoint_url)
         if response.status_code == 200:
             logger.info("successfully sent request to delete user from tournament")
         else:
@@ -372,6 +395,7 @@ def send_notification_to_microservices(username):
 def delete_account(request):
     user = request.user
     try:
+        send_notification_to_microservices(user)
         game_stats = user.game_stats
         with transaction.atomic():
             user.game_stats.delete()
@@ -381,19 +405,6 @@ def delete_account(request):
         request.user.delete()
 
         logger.info(f"User {user.username} deleted successfully.")
-
-        jwt_token = request.COOKIES.get('jwtToken')
-        secret_key = settings.SECRET_KEY
-
-        if jwt_token:
-            try:
-                decoded_token = jwt.decode(jwt_token, secret_key, algorithms=["HS256"])
-                username = decoded_token.get('username')
-                send_notification_to_microservices(username)
-            except jwt.ExpiredSignatureError:
-                return JsonResponse({'error': escape('Token has expired')}, status=400)
-            except jwt.InvalidTokenError:
-                return JsonResponse({'error': escape('Invalid token')}, status=400)
         
         return JsonResponse({'success': True, 'message': escape('Account deleted successfully')})
     except Exception as e:
@@ -418,13 +429,25 @@ def friends_view(request):
 
     friend_data = []
     for friend in friends:
+        print("friend: ", friend)
+        current_time = int(timezone.now().timestamp())
+        print("last_valid_time_unix_timestamp = int(last_valid_time.timestamp())", int(friend.last_valid_time.timestamp()))
+        print("current_time: ", current_time)
+        print("current_time - friend.last_valid_time: ", current_time - int(friend.last_valid_time.timestamp()))
+        if friend.is_online == True and (current_time - int(friend.last_valid_time.timestamp())) > 300:
+            friend.is_online = False
+            friend.save()
+
         avatar_url = None
         if friend.avatar:
-            avatar_url = urljoin(settings.MEDIA_URL, friend.avatar.url)
+            with open(friend.avatar.path, "rb") as image_file:
+                avatar_data = base64.b64encode(image_file.read()).decode('utf-8')
+            # avatar_url = urljoin(settings.MEDIA_URL, friend.avatar.url)
+            print("avatar_url: ", avatar_url)
         friend_info = {
             'username': escape(friend.username),
             'playername': escape(friend.playername),
-            'avatar': avatar_url,
+            'avatar': avatar_data,
             'pk': friend.pk,
             'game_stats': {
                 'total_games_played': friend.game_stats.total_games_played,
@@ -440,9 +463,10 @@ def friends_view(request):
         if search_query:
             print(search_query)
             search_results = User.objects.filter(username__icontains=search_query)
+            print("search_resuls : ", search_results)
 
     return JsonResponse({'friends': friend_data, 'search_query': escape(search_query), 'search_results': search_results})
-#     return render(request, 'detail.html', {'data': data})
+    # return render(request, 'friends.html', {'friends': friend_data, 'search_query': search_query, 'search_results': search_results})
 
 @login_required
 @csrf_protect
@@ -483,8 +507,10 @@ def detail_view(request):
 @login_required
 def add_friend(request, pk):
     friend = get_object_or_404(User, pk=pk)
+    print("pk : ", pk)
+    print("friend: ", friend)
     request.user.add_friend(friend)
-    return JsonResponse({})
+    return JsonResponse({'message': 'Friend added successfully', 'friend_id': friend.pk})
 
 @login_required
 def remove_friend(request, pk):
@@ -628,7 +654,7 @@ class UserAPIView(APIView):
 
 
 def print_all_user_data(request):
-    all_users = User.objects.all().order_by('id')
+    all_users = User.objects.all()
     context = {'users': all_users}
 
     return render(request, 'print_user_data.html', context)
