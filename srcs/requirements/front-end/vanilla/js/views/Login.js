@@ -335,12 +335,12 @@ export default class Login extends HTMLElement {
 			})
 			.then(data => {
 				console.log('Login successful:', data);
-				var accessToken = xhr.getResponseHeader('Authorization');
-				if (accessToken) {
-				// Store the access token in memory
-				sessionStorage.setItem('accessToken', accessToken);
-				console.log('Access token stored:', accessToken);
-				}
+				
+				// Store the access token and details in memory
+				sessionStorage.setItem('expiryTimestamp', new Date().getTime() + body.expiresIn * 1000);
+				sessionStorage.setItem('accessToken', body.accessToken);
+				sessionStorage.setItem('tokenType', body.tokenType);
+				
 				if (data.requires_2fa) {
 					this.shadowRoot.querySelector('#loginForm').style.display = 'none'; // hide
 					this.shadowRoot.querySelector('#forgotPasswordLink').style.display = 'none'; // hide
