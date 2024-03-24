@@ -1,11 +1,13 @@
 import { easyFetch } from "@utils/easyFetch";
 
 export function renewToken() {
-	const expiryTimestamp = parseInt(sessionStorage.getItem("expiryTimestamp"), 10);
-	const accessToken = sessionStorage.getItem("accessToken");
-	const tokenType = sessionStorage.getItem("tokenType");
-
+	
 	const now = new Date().getTime();
+
+	const expiryTimestamp = parseInt(sessionStorage.getItem("expiryTimestamp") || now + 120000, 10);
+	const accessToken = sessionStorage.getItem("accessToken") || null;
+	const tokenType = sessionStorage.getItem("tokenType") || "Bearer";
+
 
 	if (accessToken !== null && now >= expiryTimestamp - 60000) {
 		easyFetch('/api/user_management/auth/check_refresh', {
@@ -51,6 +53,8 @@ export function renewToken() {
 	let delayUntilRefresh = 60000;
 	if (expiryTimestamp !== null)
 		delayUntilRefresh = expiryTimestamp - now - 60000;
+
+	console.log('Token will be refreshed in:', delayUntilRefresh);
 
 	// timeout to refresh the token just before it expires
 	setTimeout(renewToken, delayUntilRefresh);
