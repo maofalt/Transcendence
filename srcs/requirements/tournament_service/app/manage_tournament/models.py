@@ -5,7 +5,7 @@ from django.conf import settings
 
 class Tournament(models.Model):
     # tournament_id = models.AutoField(primary_key=True)
-    tournament_name = models.CharField(max_length=255)
+    tournament_name = models.CharField(max_length=255, unique=True)
     # game_type = models.ForeignKey('GameType', on_delete=models.PROTECT, null=False, to_field='id', default=1)
     created_at = models.DateTimeField(auto_now_add=True)
     nbr_of_player_total = models.IntegerField(default=2, 
@@ -32,21 +32,19 @@ class Tournament(models.Model):
     matches = models.ManyToManyField('TournamentMatch', related_name='tournaments')
     nbr_of_match = models.IntegerField(default=0)
     TOURNAMENT_TYPE = [
-        ('Knock-out', 'Knock-Out'),
-        ('League', 'Round Robin'),
+        ('tournament', 'Tournament'),
+        ('league', 'League'),
     ]
-    tournament_type = models.CharField(max_length=15, choices=TOURNAMENT_TYPE, default='Knock-out', null=False)
+    tournament_type = models.CharField(max_length=15, choices=TOURNAMENT_TYPE, default='tournament', null=False)
     REGISTRATION_TYPE = [
-        ('Public', 'Open game'),
-        ('Private', 'Invitation required'),
+        ('public', 'Opened game'),
+        ('private', 'Invitaion required'),
     ]
-    registration = models.CharField(max_length=15, choices=REGISTRATION_TYPE, default='Public', null=False)
+    registration = models.CharField(max_length=15, choices=REGISTRATION_TYPE, default='public', null=False)
     GAME_TYPE = [
         ('pong', 'Pong'),
     ]
     game_type = models.CharField(max_length=15, choices=GAME_TYPE, default='pong', null=False)
-    state = models.CharField(max_length=15, default="waiting")
-
 
     def calculate_nbr_of_match(self):
         # Calculate the number of matches based on total players and max players per match
@@ -89,11 +87,10 @@ class TournamentMatch(models.Model):
     match_time = models.DateTimeField(null=True) 
     players = models.ManyToManyField('Player', related_name='matches')
     participants = models.ManyToManyField('MatchParticipants', related_name='matches')
-    state = models.CharField(max_length=15, default="waiting")
 
     def __str__(self):
         player_count = self.players.count()
-        return f"ID: {self.id}, Tournament: {self.tournament_id}, State: {self.state}, Match Setting: {self.match_setting_id}, Round Number: {self.round_number}, Count Players: {player_count}"
+        return f"ID: {self.id}, Tournament: {self.tournament_id}, Match Setting: {self.match_setting_id}, Round Number: {self.round_number}, Count Players: {player_count}"
 
 class MatchSetting(models.Model):
     # setting_id = models.AutoField(primary_key=True)
@@ -169,20 +166,15 @@ class TournamentPlayer(models.Model):
         unique_together = ('tournament_id', 'player')
 
 class Player(models.Model):
-    id = models.IntegerField(primary_key=True)
-    # username = models.CharField(max_length=255)
+    username = models.CharField(max_length=255)
 
-    # class Meta:
-    #     unique_together = ('id', 'username')
+    class Meta:
+        unique_together = ('id', 'username')
 
 class MatchParticipants(models.Model):
-    match_id = models.IntegerField(null=False)
-    round_number = models.IntegerField(null=False)
+    match_id = models.IntegerField()
     # match_id = models.ForeignKey('TournamentMatch', on_delete=models.CASCADE, related_name='match_participants')
-    player_id = models.IntegerField(null=False)
+    player_id = models.IntegerField(null=True)
     # player_id = models.ForeignKey('Player', on_delete=models.CASCADE, related_name='playeridfrommatch')
     is_winner = models.BooleanField(default=False)
     participant_score = models.IntegerField(default=0)
-
-    def __str__(self):
-        return f"ID: {self.id}, Match: {self.match_id}, Round: {self.round_number}, Player: {self.player_id}, IsWinner: {self.is_winner}"
