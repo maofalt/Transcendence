@@ -213,7 +213,6 @@ def generate_tokens_and_response(request, user):
         exp_accessToken = datetime.datetime.fromtimestamp(exp_timestamp_accessToken, tz=pytz.utc).astimezone(local_tz).strftime('%Y-%m-%d %H:%M:%S')
         print("Expiration time of ACCESS token:", exp_accessToken)
 
-        return response
     except jwt.ExpiredSignatureError:
         return JsonResponse({'error': escape('Token has expired')}, status=400)
     except jwt.InvalidTokenError:

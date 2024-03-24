@@ -100,10 +100,17 @@ export default class LoginPage extends AbstractComponent {
 			}
 
 			if (response.status === 200 && body.success === true) {
+
+				// Store the access token and details in memory
+				sessionStorage.setItem('expiryTimestamp', new Date().getTime() + body.expiresIn * 1000);
+				sessionStorage.setItem('accessToken', body.accessToken);
+				sessionStorage.setItem('tokenType', body.tokenType);
+				
 				if (body.requires_2fa) {
 					Router.navigateTo("/2fa");
 					return ;
 				}
+	
 				console.log('Login successful:', body);
 				Router.navigateTo("/");
 			}
