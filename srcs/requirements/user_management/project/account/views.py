@@ -125,31 +125,6 @@ def check_refresh(request):
 
     except jwt.ExpiredSignatureError:
         print("Access token has expired")
-        # try:
-        #     decoded_refresh_token = jwt.decode(refreshToken, settings.SECRET_KEY, algorithms=["HS256"])
-        #     print("DECODED REFRESHTOKEN: ", decoded_refresh_token)
-        #     uid = decoded_refresh_token['user_id']
-        #     user = User.objects.get(pk=uid)
-        #     user.last_valid_time = timezone.now().replace(microsecond=0)
-        #     user.save()
-        #     refresh = RefreshToken(refreshToken)
-        #     access = refresh.access_token
-        #     new_accessToken = str(access)
-
-        #     current_time = timezone.now()
-        #     expiration_time = datetime.datetime.fromtimestamp(access['exp'], tz=pytz.utc)
-        #     expires_in = (expiration_time - current_time).total_seconds()
-        #     local_tz = pytz.timezone('Europe/Paris')
-        #     exp_datetime = datetime.datetime.fromtimestamp(access['exp'], tz=pytz.utc).astimezone(local_tz).strftime('%Y-%m-%d %H:%M:%S')
-        #     # Set new access token in response body
-        #     response_data = {
-        #         'message': 'New access token generated',
-        #         'access_token': new_accessToken,
-        #         'token_type': 'Bearer',
-        #         'expires_in': expires_in,
-        #         'exp_datetime': exp_datetime
-        #     }
-        #     print("expires_in: ", expires_in, "exp_datetime: ", exp_datetime)
         response_data = refresh_accessToken(request, accessToken, refreshToken)
         response = JsonResponse(response_data)
         return response        
@@ -167,8 +142,10 @@ def refresh_accessToken(request, accessToken, refreshToken):
         decoded_refresh_token = jwt.decode(refreshToken, settings.SECRET_KEY, algorithms=["HS256"])
         print("DECODED REFRESHTOKEN: ", decoded_refresh_token)
         uid = decoded_refresh_token['user_id']
-        user = User.objects.get_object_or_404(pk=uid)
-        user.last_valid_time = timezone.now().replace(microsecond=0)
+        user = get_object_or_404(User, pk=uid)
+        local_tz = pytz.timezone('Europe/Paris')
+        user.last_valid_time = timezone.now().astimezone(local_tz).replace(microsecond=0)
+        # user.last_valid_time = timezone.now().replace(microsecond=0)
         user.save()
         refresh = RefreshToken(refreshToken)
         access = refresh.access_token
@@ -177,7 +154,6 @@ def refresh_accessToken(request, accessToken, refreshToken):
         current_time = timezone.now()
         expiration_time = datetime.datetime.fromtimestamp(access['exp'], tz=pytz.utc)
         expires_in = (expiration_time - current_time).total_seconds()
-        local_tz = pytz.timezone('Europe/Paris')
         exp_datetime = datetime.datetime.fromtimestamp(access['exp'], tz=pytz.utc).astimezone(local_tz).strftime('%Y-%m-%d %H:%M:%S')
         # Set new access token in response body
         response_data = {
@@ -188,7 +164,7 @@ def refresh_accessToken(request, accessToken, refreshToken):
             'exp_datetime': exp_datetime
         }
         print("expires_in: ", expires_in, "exp_datetime: ", exp_datetime)
-
+        return response_data 
     except jwt.ExpiredSignatureError:
             return JsonResponse({'error': 'Access/Refresh token has expired'}, status=401)
 
