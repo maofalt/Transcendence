@@ -55,8 +55,8 @@ export function renewToken() {
 
 	// calculate remaining time until the token needs refreshing
 	console.log('expiryTimestamp:', expiryTimestamp);
-	const delayUntilRefresh = expiryTimestamp - now - 30000;
-	if (delayUntilRefresh < 0)
+	let delayUntilRefresh = expiryTimestamp - now - 30000;
+	if (delayUntilRefresh <= 0)
 		delayUntilRefresh = 120
 
 	console.log('Token will be refreshed in:', delayUntilRefresh);
