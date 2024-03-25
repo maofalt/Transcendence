@@ -627,7 +627,9 @@ class PlayerStatsView(APIView):
 
         player_stats_data = {
             'played_tournaments': serialized_tournaments.data,
+            'played_matches': played_matches,
             'total_played': total_played,
+            'nbr_of_lost_matches': total_played - nbr_of_won_matches
             'nbr_of_won_matches': nbr_of_won_matches,
             'nbr_of_won_tournaments': nbr_of_won_tournaments,
             'average_score': average_score,

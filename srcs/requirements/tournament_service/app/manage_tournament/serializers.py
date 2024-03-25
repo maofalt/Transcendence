@@ -137,6 +137,7 @@ class PlayerGameStatsSerializer(serializers.Serializer):
     played_matches = SimpleMatchSerializer(many=True, read_only=True)
 
     total_played = serializers.IntegerField()
+    nbr_of_lost_matches = serializers.IntegerField()
     nbr_of_won_matches = serializers.IntegerField()
     nbr_of_won_tournaments = serializers.IntegerField()
     average_score = serializers.DecimalField(max_digits=5, decimal_places=2)
