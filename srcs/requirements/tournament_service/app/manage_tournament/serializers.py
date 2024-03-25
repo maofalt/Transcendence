@@ -66,7 +66,7 @@ class PlayerSerializer(serializers.ModelSerializer):
 class MatchParticipantsSerializer(serializers.ModelSerializer):
     class Meta:
         model = MatchParticipants
-        fields = ['id', 'match_id', 'round_number', 'player_id', 'is_winner', 'participant_score']
+        fields = ['id', 'match_id', 'round_number', 'player_id', 'is_winner']
 
 class MatchGeneratorSerializer(serializers.Serializer):
     tournament_id = serializers.IntegerField()
@@ -140,5 +140,5 @@ class PlayerGameStatsSerializer(serializers.Serializer):
     nbr_of_lost_matches = serializers.IntegerField()
     nbr_of_won_matches = serializers.IntegerField()
     nbr_of_won_tournaments = serializers.IntegerField()
-    average_score = serializers.DecimalField(max_digits=5, decimal_places=2)
-    highest_score = serializers.IntegerField()
+    # average_score = serializers.DecimalField(max_digits=5, decimal_places=2)
+    # highest_score = serializers.IntegerField()

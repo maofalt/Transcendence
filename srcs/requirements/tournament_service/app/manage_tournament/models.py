@@ -157,7 +157,7 @@ class MatchParticipants(models.Model):
     round_number = models.IntegerField(null=False)
     player_id = models.IntegerField(null=False)
     is_winner = models.BooleanField(default=False)
-    participant_score = models.IntegerField(default=0)
+    # participant_score = models.IntegerField(default=0)
 
     def __str__(self):
         return f"ID: {self.id}, Match: {self.match_id}, Round: {self.round_number}, Player: {self.player_id}, IsWinner: {self.is_winner}"

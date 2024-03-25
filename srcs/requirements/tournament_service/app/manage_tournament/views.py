@@ -614,14 +614,14 @@ class PlayerStatsView(APIView):
         nbr_of_won_tournaments = player.won_tournament.count()
 
         # Calculate the average score
-        total_scores = 0
-        highest_score = 0
+        # total_scores = 0
+        # highest_score = 0
         for match in played_matches:
             if match.participants.filter(player_id=user_id).exists():
                 participant = match.participants.get(player_id=user_id)
-                total_scores += participant.participant_score
-                highest_score = max(highest_score, participant.participant_score)
-        average_score = total_scores / total_played if total_played > 0 else 0
+                # total_scores += participant.participant_score
+                # highest_score = max(highest_score, participant.participant_score)
+        # average_score = total_scores / total_played if total_played > 0 else 0
 
         serialized_tournaments = SimpleTournamentSerializer(played_tournaments, many=True)
 
@@ -629,11 +629,11 @@ class PlayerStatsView(APIView):
             'played_tournaments': serialized_tournaments.data,
             'played_matches': played_matches,
             'total_played': total_played,
-            'nbr_of_lost_matches': total_played - nbr_of_won_matches
+            'nbr_of_lost_matches': total_played - nbr_of_won_matches,
             'nbr_of_won_matches': nbr_of_won_matches,
             'nbr_of_won_tournaments': nbr_of_won_tournaments,
-            'average_score': average_score,
-            'highest_score': highest_score
+            # 'average_score': average_score,
+            # 'highest_score': highest_score
         }
 
         serializer = PlayerGameStatsSerializer(player_stats_data)
