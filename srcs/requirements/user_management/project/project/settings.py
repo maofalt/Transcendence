@@ -55,8 +55,8 @@ INSTALLED_APPS = [
     'account',
     'rest_framework',
     'corsheaders',
-    'gameHistory_microservice',
-    'gameHistory_microservice.api',
+    # 'gameHistory_microservice',
+    # 'gameHistory_microservice.api',
 ]
 
 MIDDLEWARE = [
