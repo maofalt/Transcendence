@@ -207,7 +207,7 @@ class MatchResult(APIView):
                 return Response(f"Player with id {player_id} not found in the match", status=status.HTTP_404_NOT_FOUND)
             
             if participant.player_id == winner_id:
-                if participant.is_winner == False
+                if participant.is_winner == False:
                     participant.is_winner = True
                     participant.save()
                     player.total_played += 1
@@ -342,25 +342,26 @@ class TournamentRoundState(APIView):
             return Response({'round': None, "message": "An Error occurred while checking Round state"})
 
 
-class TournamentRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Tournament.objects.all()
-    serializer_class = TournamentSerializer
-    authentication_classes = [CustomJWTAuthentication]
+# class TournamentRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
+#     queryset = Tournament.objects.all()
+#     serializer_class = TournamentSerializer
+#     authentication_classes = [CustomJWTAuthentication]
 
-    def destroy(self, request, *args, **kwargs):
-        tournament_id = self.kwargs.get('tournament_id')
+#     def destroy(self, request, *args, **kwargs):
+#         tournament_id = self.kwargs.get('tournament_id')
         
-        try:
-            tournament = Tournament.objects.get(pk=tournament_id)
-        except Tournament.DoesNotExist:
-            raise Http404("Tournament does not exist")
+#         try:
+#             tournament = Tournament.objects.get(pk=tournament_id)
+#         except Tournament.DoesNotExist:
+#             raise Http404("Tournament does not exist")
 
-        # Check if the requesting user is the host of the tournament
-        if request.user == tournament.host.id:
-            tournament.delete()
-            return JsonResponse({'message': 'Tournament deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
-        else:
-            return JsonResponse({'error': 'You don\'t have permission to delete this tournament'}, status=status.HTTP_403_FORBIDDEN)
+#         # Check if the requesting user is the host of the tournament
+#         if request.user == tournament.host.id:
+#             tournament.state = 'destroyed'
+#             tournament.save()
+#             return JsonResponse({'message': 'Tournament deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+#         else:
+#             return JsonResponse({'error': 'You don\'t have permission to delete this tournament'}, status=status.HTTP_403_FORBIDDEN)
 
 # class TournamentRegistrationCreate(generics.CreateAPIView):
 #     queryset = TournamentRegistration.objects.all()

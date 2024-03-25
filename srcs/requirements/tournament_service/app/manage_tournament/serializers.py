@@ -118,8 +118,23 @@ class SimpleTournamentSerializer(serializers.ModelSerializer):
         model = Tournament
         fields = ['id', 'tournament_name']
 
+class SimpleMatchSerializer(serializers.ModelSerializer):
+    winner_id = serializers.SerializerMethodField()
+
+    class Meta:
+        model = TournamentMatch
+        fields = ['id', 'tournament_id', 'round_number', 'players', 'winner_id']
+
+    def get_winner_id(self, obj):
+        winner = obj.participants.filter(is_winner=True).first()
+        if winner:
+            return winner.player_id
+        return None
+
+
 class PlayerGameStatsSerializer(serializers.Serializer):
     played_tournaments = SimpleTournamentSerializer(many=True, read_only=True)
+    played_matches = SimpleMatchSerializer(many=True, read_only=True)
 
     total_played = serializers.IntegerField()
     nbr_of_won_matches = serializers.IntegerField()
