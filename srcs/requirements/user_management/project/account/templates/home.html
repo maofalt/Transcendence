@@ -96,7 +96,7 @@
         type: 'GET',
         url: '{% url "account:check_refresh" %}',
         headers: {
-          'Authorization': accessToken
+          'Authorization': 'Bearer ' + accessToken
         },
         success: function(data, textStatus, xhr) {
           console.log('Check refresh successful:', data);

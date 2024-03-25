@@ -94,7 +94,8 @@
       success: function (data, textStatus, xhr) {
         console.log('Login successful:', data);
         // Extract access token from Authorization header
-        var accessToken = xhr.getResponseHeader('Authorization');
+        var accessToken = data.access_token;
+        // var accessToken = xhr.getResponseHeader('Authorization');
         if (accessToken) {
           // Store the access token in memory
           sessionStorage.setItem('accessToken', accessToken);
