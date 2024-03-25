@@ -5,7 +5,6 @@ from django.conf import settings
 
 class Tournament(models.Model):
     tournament_name = models.CharField(max_length=255)
-    # game_type = models.ForeignKey('GameType', on_delete=models.PROTECT, null=False, to_field='id', default=1)
     created_at = models.DateTimeField(auto_now_add=True)
     nbr_of_player_total = models.IntegerField(default=2, 
         validators=[MinValueValidator(2), 
@@ -28,20 +27,6 @@ class Tournament(models.Model):
     players = models.ManyToManyField('Player', related_name='tournaments')  # Direct many-to-many relationship with Player
     matches = models.ManyToManyField('TournamentMatch', related_name='tournaments')
     nbr_of_match = models.IntegerField(default=0)
-    # TOURNAMENT_TYPE = [
-    #     ('Knock-out', 'Knock-Out'),
-    #     ('League', 'Round Robin'),
-    # ]
-    # tournament_type = models.CharField(max_length=15, choices=TOURNAMENT_TYPE, default='Knock-out', null=False)
-    # REGISTRATION_TYPE = [
-    #     ('Public', 'Open game'),
-    #     ('Private', 'Invitation required'),
-    # ]
-    # registration = models.CharField(max_length=15, choices=REGISTRATION_TYPE, default='Public', null=False)
-    # GAME_TYPE = [
-    #     ('pong', 'Pong'),
-    # ]
-    # game_type = models.CharField(max_length=15, choices=GAME_TYPE, default='pong', null=False)
     state = models.CharField(max_length=15, default="waiting")
 
 
@@ -78,7 +63,6 @@ class Tournament(models.Model):
 
 class TournamentMatch(models.Model):
     tournament_id = models.IntegerField()
-    # tournament_id = models.ForeignKey('Tournament', on_delete=models.CASCADE, related_name='match' )
     match_setting_id = models.IntegerField()
     round_number = models.IntegerField(default=1, validators=[MinValueValidator(1)])
     match_time = models.DateTimeField(null=True) 

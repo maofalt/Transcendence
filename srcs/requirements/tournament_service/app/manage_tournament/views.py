@@ -39,8 +39,6 @@ class TournamentListCreate(generics.ListCreateAPIView):
     serializer_class = TournamentSerializer
     authentication_classes = [CustomJWTAuthentication]
     # renderer_classes = [JSONRenderer]  # Force the response to be rendered in JSON
-    # permission_classes = [IsAuthenticated]  # Only authenticated users can create and list tournaments
-
 
     def get(self, request, *args, **kwargs):
         print(">> GET: loading page\n")
@@ -50,59 +48,40 @@ class TournamentListCreate(generics.ListCreateAPIView):
 
     def post(self, request, *args, **kwargs):
         print(">> received POST to creat a new tournament\n")
-        # Attribue automatiquement l'utilisateur actuel comme host du tournoi créé
-        data = request.data
-        print("POSTED DATA: ", data)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        required_fields = ['tournament_name', 'registration_period_min', 'nbr_of_player_total', 'nbr_of_player_match']
-        missing_or_empty_fields = [field for field in required_fields if field not in data or not data[field]]
-        
-        if missing_or_empty_fields:
-            error_message = f"Missing required fields: {', '.join(missing_or_empty_fields)}"
-            return Response({"error": error_message}, status=status.HTTP_400_BAD_REQUEST)
-        
-        tournament_name = data.get('tournament_name')
-        # registration_type = data.get('registration')
-        registration_period_min = data.get('registration_period_min')
-        nbr_of_player_total = data.get('nbr_of_player_total')
-        nbr_of_player_match = data.get('nbr_of_player_match')
-        # tournament_type = data.get('tournament_type')
-        uid = request.user
-        host, created = Player.objects.get_or_create(id=uid) # created wiil return False if the player already exists
+        validated_data = serializer.validated_data
+        host, _ = Player.objects.get_or_create(id=request.user) # created wiil return False if the player already exists
 
-        # Create MatchSetting instance
-        match_setting = MatchSetting.objects.create(
-            duration_sec=data.get('duration_sec', 210),
-            max_score=data.get('max_score', 5),
-            walls_factor=data.get('walls_factor', 0),
-            size_of_goals=data.get('size_of_goals', 15),
-            paddle_height=data.get('paddle_height', 10),
-            paddle_speed=data.get('paddle_speed', 0.5),
-            ball_speed=data.get('ball_speed', 0.7),
-            ball_radius=data.get('ball_radius', 1),
-            ball_color=data.get('ball_color', '#000000'),
-            nbr_of_player=data.get('nbr_of_player_match', 2)    # this is about how it set not actual played player 
-        )
+        match_setting_data = {
+            'duration_sec': validated_data.get('duration_sec', 210),
+            'max_score': validated_data.get('max_score', 5),
+            'walls_factor': validated_data.get('walls_factor', 0),
+            'size_of_goals': validated_data.get('size_of_goals', 15),
+            'paddle_height': validated_data.get('paddle_height', 10),
+            'paddle_speed': validated_data.get('paddle_speed', 0.5),
+            'ball_speed': validated_data.get('ball_speed', 0.7),
+            'ball_radius': validated_data.get('ball_radius', 1),
+            'ball_color': validated_data.get('ball_color', '#000000'),
+            'nbr_of_player': validated_data.get('nbr_of_player_match', 2)
+        }
+        match_setting = MatchSetting.objects.create(**match_setting_data)
 
-        # Create Tournament instance
         tournament = Tournament.objects.create(
-            tournament_name=tournament_name,
-            # registration=registration_type,
-            registration_period_min=registration_period_min,
-            nbr_of_player_total=nbr_of_player_total,
-            nbr_of_player_match=nbr_of_player_match,
+            tournament_name=validated_data['tournament_name'],
+            registration_period_min=validated_data['registration_period_min'],
+            nbr_of_player_total=validated_data['nbr_of_player_total'],
+            nbr_of_player_match=validated_data['nbr_of_player_match'],
             host=host,
             setting=match_setting,
             created_at=timezone.now(),
-            # tournament_type=tournament_type,
-            # nbr_of_player   will be assigned when user joining the tournament
         )
         
         tournament.players.add(host)
 
-        serializer = TournamentSerializer(tournament)
-        # tournament.calculate_nbr_of_match()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        serialized_tournament  = TournamentSerializer(tournament)
+        return Response(serialized_tournament.data, status=status.HTTP_201_CREATED)
 
 
         # serializer.save(host=self.request.user)
