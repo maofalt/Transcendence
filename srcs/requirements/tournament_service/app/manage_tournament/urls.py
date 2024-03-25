@@ -15,7 +15,7 @@ urlpatterns = [
     #   - GET /manage/{id}/ - Retrieve the details of a specific tournament.
     #   - PUT /manage/{id}/ - Update the settings or rules of a specific tournament.
     #   - DELETE /manage/{id}/ - Remove a tournament from the system.
-    path('manage/<int:pk>/', views.TournamentRetrieveUpdateDestroy.as_view(), name='tournament-retrieve-update-destroy'),
+    path('manage/<int:tournament_id>/', views.TournamentRetrieveUpdateDestroy.as_view(), name='tournament-retrieve-update-destroy'),
 
 # JoinTournament:
     #   - POST /add_player/{tournament_id}/{player_id}/ - Add a player to a specific tournament.

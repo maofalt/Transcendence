@@ -82,18 +82,6 @@ class TournamentListCreate(generics.ListCreateAPIView):
         serialized_tournament  = TournamentSerializer(tournament)
         return Response(serialized_tournament.data, status=status.HTTP_201_CREATED)
 
-
-        # serializer.save(host=self.request.user)
-    # permission_classes = [permissions.IsAuthenticated] #add more permissions if is necessary
-    
-
-    #from Miguel's changes
-    # def list(self, request, *args, **kwargs):
-    #     queryset = self.get_queryset()
-    #     if not queryset.exists():
-    #         return Response({"message": "NO tournament was found."}, status=status.HTTP_204_NO_CONTENT)
-
-
 # ------------------------ Assigning Players on the Tournament Tree -----------------------------------
 
 class JoinTournament(generics.ListCreateAPIView):
@@ -127,8 +115,6 @@ class JoinTournament(generics.ListCreateAPIView):
         print("Players in the tournament:")
         for player in tournament.players.all():
             print(player.id)
-
-        # tournament.assign_player_to_match(player)
 
         serializer = TournamentSerializer(tournament)
         return JsonResponse(serializer.data, status=status.HTTP_200_OK)
@@ -221,11 +207,12 @@ class MatchResult(APIView):
                 return Response(f"Player with id {player_id} not found in the match", status=status.HTTP_404_NOT_FOUND)
             
             if participant.player_id == winner_id:
-                participant.is_winner = True
-                participant.save()
-                player.total_played += 1
-                player.won_match.add(match)
-                player.save()
+                if participant.is_winner == False
+                    participant.is_winner = True
+                    participant.save()
+                    player.total_played += 1
+                    player.won_match.add(match)
+                    player.save()
                 winner_found = True
             else:
                 player.total_played += 1
@@ -277,7 +264,6 @@ class MatchUpdate(APIView):
     authentication_classes = [CustomJWTAuthentication]
     serializer_class = MatchGeneratorSerializer
     # queryset = Tournament.objects.all()
-
 
     def post(self, request, tournament_id, round):
         tournament = get_object_or_404(Tournament, id=tournament_id)
@@ -360,7 +346,21 @@ class TournamentRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     queryset = Tournament.objects.all()
     serializer_class = TournamentSerializer
     authentication_classes = [CustomJWTAuthentication]
-    # permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]  # Custom permission class for owner-only access
+
+    def destroy(self, request, *args, **kwargs):
+        tournament_id = self.kwargs.get('tournament_id')
+        
+        try:
+            tournament = Tournament.objects.get(pk=tournament_id)
+        except Tournament.DoesNotExist:
+            raise Http404("Tournament does not exist")
+
+        # Check if the requesting user is the host of the tournament
+        if request.user == tournament.host.id:
+            tournament.delete()
+            return JsonResponse({'message': 'Tournament deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+        else:
+            return JsonResponse({'error': 'You don\'t have permission to delete this tournament'}, status=status.HTTP_403_FORBIDDEN)
 
 # class TournamentRegistrationCreate(generics.CreateAPIView):
 #     queryset = TournamentRegistration.objects.all()
