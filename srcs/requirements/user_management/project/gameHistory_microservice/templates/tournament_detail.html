@@ -1,7 +1,0 @@
-<h1>{{ tournament.tournament_id }} - {{ tournament.winner.username }} - Rounds</h1>
-
-<ul>
-  {% for round in rounds %}
-    <li>Round {{ round.round_id }} - {{ round.date_played }} - Winner: {{ round.winner.username }}</li>
-  {% endfor %}
-</ul>
