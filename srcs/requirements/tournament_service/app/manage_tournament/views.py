@@ -38,8 +38,7 @@ class TournamentListCreate(generics.ListCreateAPIView):
     queryset = Tournament.objects.all()
     serializer_class = TournamentSerializer
     authentication_classes = [CustomJWTAuthentication]
-    # renderer_classes = [JSONRenderer]  # Force the response to be rendered in JSON
-
+  
     def get(self, request, *args, **kwargs):
         print(">> GET: loading page\n")
         tournaments = self.get_queryset()
@@ -94,22 +93,11 @@ class TournamentListCreate(generics.ListCreateAPIView):
     #     if not queryset.exists():
     #         return Response({"message": "NO tournament was found."}, status=status.HTTP_204_NO_CONTENT)
 
-    #Orignal code
-    # def list(self, request, *args, **kwargs):
-    #     queryset = self.get_queryset()
-    #     if not queryset.exists():
-    #         return Response([], status=status.HTTP_200_OK)
-
-    #     serializer = self.get_serializer(queryset, many=True)
-    #     return Response(serializer.data)
-    # def generate_tree
-
 
 # ------------------------ Assigning Players on the Tournament Tree -----------------------------------
 
 class JoinTournament(generics.ListCreateAPIView):
     authentication_classes = [CustomJWTAuthentication]
-    # permission_classes = [IsAuthenticated] 401 comes from here
     queryset = TournamentPlayer.objects.all()
     serializer_class = TournamentPlayerSerializer
 

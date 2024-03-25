@@ -129,7 +129,7 @@ export default class UserInfo extends AbstractComponent {
             button1 = new CustomButton({content: options.button1.content, action: options.button1.action, style: {display: "block", margin: "15px 0px"}});
         } else {
             button1 = new CustomButton({content: "Log in", action: true, style: {display: "block", margin: "15px 0px"}});
-			button1.onclick = () => { 
+			button1.onclick = (e) => { 
 				e.stopPropagation();
 				navigateTo("/login");
 			};

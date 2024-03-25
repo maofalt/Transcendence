@@ -334,13 +334,12 @@ export default class Signup extends AbstractComponent {
 				valid = false;
 			} else if (response.status === 200 && body.success === true) {
 				alert('Login successful: ' + body.message || JSON.stringify(body));
-				console.log('ResponseHeader:', response.headers.get('Authorization'));
-				var accessToken = response.headers.get('Authorization');
-				if (accessToken) {
-					// Store the access token in memory
-					sessionStorage.setItem('accessToken', accessToken);
-					console.log('Access token stored:', accessToken);
-				}
+
+				// Store the access token and details in memory
+				sessionStorage.setItem('expiryTimestamp', new Date().getTime() + body.expires_in * 1000);
+				sessionStorage.setItem('accessToken', body.access_token);
+				sessionStorage.setItem('tokenType', body.token_type);
+
 				Router.navigateTo("/");
 				valid = true;
 			} else {

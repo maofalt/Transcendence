@@ -33,7 +33,7 @@ urlpatterns = [
     path('', account.views.home, name='home'),
     path(account_base_path + 'auth/', include("account.urls")),
     path('auth/', include("account.urls")),
-    path('gameHistory_microservice/', include('gameHistory_microservice.urls')),
+    # path('gameHistory_microservice/', include('gameHistory_microservice.urls')),
     # path('password_reset_confirm/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
 ]
 

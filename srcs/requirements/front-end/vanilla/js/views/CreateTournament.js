@@ -211,7 +211,8 @@ export default class CreateTournament extends AbstractView {
       "gamemodeData": {
         "nbrOfPlayers": parseInt(document.getElementById('nbr_of_players_per_match').value, 10),
         "nbrOfRounds": parseInt(document.getElementById('nbr_of_rounds').value, 10),
-        "timeLimit": parseInt(document.getElementById('time_limit').value, 10)
+        "timeLimit": parseInt(document.getElementById('time_limit').value, 10),
+        "gameType": 0
       },
       "fieldData": {
         "wallsFactor": parseFloat(document.getElementById('walls_factor').value),
@@ -278,15 +279,16 @@ export default class CreateTournament extends AbstractView {
 	  	"gamemodeData": {
 	  	  "nbrOfPlayers": 3,
 	  	  "nbrOfRounds": 1,
-	  	  "timeLimit": 0
+	  	  "timeLimit": 0,
+        "gameType": 0,
 	  	},
 	  	"fieldData": {
 	  	  "wallsFactor": 1,
 	  	  "sizeOfGoals": 20
 	  	},
 	  	"paddlesData": {
-	  	  "width": 0,
-	  	  "height": 12,
+	  	  "width": 1,
+	  	  "height": 10,
 	  	  "speed": 1
 	  	},
 	  	"ballData": {

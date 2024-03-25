@@ -13,7 +13,8 @@ export default class Tournament extends AbstractView {
 		super();
 
 		this.createMatch = this.createMatch.bind(this);
-		this.createTournament = this.createTournament.bind(this);		
+		this.createTournament = this.createTournament.bind(this);	
+		this.joinTournament = this.joinTournament.bind(this);	
 		this.data = [];
 	}
 
@@ -48,14 +49,6 @@ export default class Tournament extends AbstractView {
 		await this.getTournamentList();
 		
 		const tournamentTable =  document.querySelector('tournament-table');
-
-		// for (let  i = 0; i < 0; i++) {
-		// 	tournamentTable.addDummyRow();
-		// }
-
-		//for each tournament in each data populate the table
-
-
 		const createMatchButton = document.getElementById('createMatchButton');
 		createMatchButton.addEventListener('click', this.createMatch);
 
@@ -83,23 +76,37 @@ export default class Tournament extends AbstractView {
 				const tournamentNameElement = tournamentTable.createStyledHTMLObject('div', tournament.tournament_name, Styles.tournamentName);
 				const hostElement = tournamentTable.createStyledHTMLObject('div', `Host ${tournament.host_id}`, Styles.host);
 				const numberOfPlayersElement = tournamentTable.createStyledHTMLObject('div', `${tournament.joined}/${tournament.nbr_of_player_total}`, {}); 
-				const timeRemainingElement = tournamentTable.createStyledHTMLObject('div', '2:00', {});
+				const timeRemainingElement = tournamentTable.createStyledHTMLObject('div', `${tournament.registration_period_min}`, {});
 				const tournamentTypeElement = tournamentTable.createStyledHTMLObject('div', `${tournament.tournament_type}`);
 				const registrationModeElement = tournamentTable.createStyledHTMLObject('div', tournament.registration, {});
+				const actionContainer = document.createElement('div');
+				//container for all button actions 
+				actionContainer.style.display = 'flex';
+				actionContainer.style.justifyContent = 'space-around';
+				//Join button on te action column to join corresponding tournament
 				const joinButtonElement = document.createElement('button');
 				joinButtonElement.textContent = 'Join';
 				Object.assign(joinButtonElement.style, Styles.action);
 				joinButtonElement.addEventListener('click', () => this.joinTournament(tournament.id));
-			
+				// Details button to see the tournament state (either brackets and or results)
+				const viewButtonElement = document.createElement('button');
+				viewButtonElement.innerHTML = '👁️';
+				Object.assign(viewButtonElement.style, Styles.action);
+				viewButtonElement.addEventListener('click', () => 
+					console.log(`SOME IS WATCHING 👁️ 👁️ `)
+					);
+
+				actionContainer.appendChild(joinButtonElement);
+				actionContainer.appendChild(viewButtonElement);
 				// Add the constructed row to the table
 				tournamentTable.addRow([
-					tournamentNameElement.outerHTML, 
-					hostElement.outerHTML, 
-					numberOfPlayersElement.outerHTML, 
-					timeRemainingElement.outerHTML, 
-					tournamentTypeElement.outerHTML, 
-					registrationModeElement.outerHTML, 
-					joinButtonElement.outerHTML
+					tournamentNameElement, 
+					hostElement, 
+					numberOfPlayersElement, 
+					timeRemainingElement, 
+					tournamentTypeElement, 
+					registrationModeElement, 
+					actionContainer
 				]);
 			});
 
@@ -113,7 +120,7 @@ export default class Tournament extends AbstractView {
 		const gameSettings = this.getGameSettings();
 		try {
 			const response = await makeApiRequest('/game-logic/createMatch','POST',gameSettings);
-			console.log('Match created:', response.body);
+			console.log('Match created:', response);
 			navigateTo('/play?matchID=' + response.body.matchID);
 		} catch (error) {
 			console.error('Failed to create match:', error);
@@ -122,6 +129,20 @@ export default class Tournament extends AbstractView {
 
 	async createTournament() {
 		navigateTo('/create-tournament');
+	}
+
+	async joinTournament(tournamentID) {
+	
+		try {
+			const responseUser = await makeApiRequest(`/api/user_management/auth/getUser`,'GET');
+			console.log('User:', responseUser.body);
+			const userID = responseUser.body.user_id;
+			const apiEndpoint = `/api/tournament/add-player/${tournamentID}/${userID}/`;
+			const response = await makeApiRequest(apiEndpoint,'POST');
+			//navigateTo('/play?matchID=' + response.body.matchID);
+		} catch (error) {
+			console.error('Failed to join tournament:', error);
+		}
 	}
 
 	getGameSettings() {

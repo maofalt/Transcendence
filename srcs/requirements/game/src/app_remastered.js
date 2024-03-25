@@ -88,12 +88,12 @@ function waitingLoop(matchID) {
 		io.to(matchID).emit('destroy', match.gameState);
 		io.to(matchID).emit('refresh', match.gameState);
 	} else if (gameState == -1) {
-		io.to(matchID).emit('destroy', match.gameState);
-		clearInterval(match.gameInterval);
-		// first, send the result of the match back;
-
-		// then delete the match;
-		matches.delete(matchID);
+		clearInterval(match.gameInterval); // stop the loop
+		// render.endGame(match.gameState); // call end game animation
+		match.gameState.ball.dir = match.gameState.camera.pos.sub(match.gameState.ball.pos);
+		io.to(matchID).emit('end-game', match.gameState);
+		// something like a post of the gameState idk // send the result of the match back;
+		matches.delete(matchID); // then delete the match;
 		return ;
 	}
 	// else if (gameState == 0) {
@@ -176,35 +176,28 @@ function handleConnectionV2(client) {
 // authenticate user before establishing websocket connection
 io.use((client, next) => {
 	try {
-		console.log("\nquery:\n", client.handshake.query);
+		//console.log("\nclient.handshake.query:\n", client.handshake);
 		client.matchID = client.handshake.query.matchID;
 		if (!client.matchID) {
 			console.error('Authentication error: Missing matchID');
 			next(new Error('Authentication error: Missing matchID.'));
 		}
-		if (client.handshake.headers && client.handshake.headers.cookie) {
-			// Parse the cookies from the handshake headers
-			const cookies = cookie.parse(client.handshake.headers.cookie);
-			//const token = cookies.jwtToken;
-			const token = cookies.refreshToken;
+		if (client.handshake.headers && client.handshake.auth) {
+			// Parse the auth from the handshake
+			const token = client.handshake.auth.accessToken;
 			console.log("\ntoken:\n", token);
-			console.log("\ncookies:\n", cookies);
 	
 			// Verify the token
-			console.log("\nFRONT END SECRET_KEY:\n", SECRET_KEY);
 			jwt.verify(token, SECRET_KEY, function(err, decoded) {
 			// jwt.verify(token, SECRET_KEY, function(err, decoded) {
 				if (err) {
-					console.error('Authentication error: Could not verify token.', err);
-					return next(new Error('Authentication error: Could not verify token.'));
+					console.error('HEHE Authentication error: Could not verify token.', err);
+					return next(new Error('WAWA Authentication error: Could not verify token.'));
 				}
-				console.log("\n decoded \n", decoded);
 				client.decoded = decoded;
-				//client.playerID = decoded.user_id;
-				client.playerID = "motero";
-				// console.log("JWT: ", decoded);
-				// client.username = decoded.replace('jwtToken=', '')
-				console.log("\ndecoded:\n", decoded);
+				// get the playerID from the decoded token
+				client.playerID = decoded.username;
+				// console.log("\ndecoded:\n", decoded);
 				next();
 			});
 		} else {
@@ -213,7 +206,7 @@ io.use((client, next) => {
 		}
 	} catch (error) {
 		console.error('Error connecting websocket: ', error);
-		next(new Error('Authentication error: ' + error));
+		next(new Error('BLABLA Authentication error: ' + error));
 	}
 });
 
@@ -307,17 +300,84 @@ function generateMatchID(gameSettings) {
 	return crypto.createHash('sha256').update(string).digest('hex');
 }
 
+function verifyMatchSettings(settings) {
+	console.log("MATCH SETTINGS VERIFICATION :");
+	console.log(settings);
+
+	const checks = {
+		gamemodeData: {
+			gameType: value => (value === 0 || value === 1) ? null : "This Game Type is not recognized.",
+			nbrOfPlayers: value => (value >= 2 && value <= 8) ? null : "Nbr of players should be between 2 and 8",
+			nbrOfRounds: value => (value >= 1 && value <= 10) ? null : "Nbr of Rounds should be between 1 and 10",
+		},
+		fieldData: {
+			sizeOfGoals: value => (value >= 15 && value <= 30) ? null : "Size of goals should be between 15 and 30",
+			wallsFactor: value => (value >= 0 && value <= 2) ? null : "Walls Factor should be between 0 and 2",
+		},
+		paddlesData: {
+			width: value => (value === 1) ? null : "Paddles width should be 1",
+			height: value => (value >= 1 && value <= 10) ? null : "Paddles height should be between 1 and 10",
+		},
+		ballData: {
+			radius: value => (value >= 0.5 && value <= 7) ? null : "Ball radius should be between 0.5 and 7",
+		},
+	};
+
+	for (const category in checks) {
+		for (const setting in checks[category]) {
+			const check = checks[category][setting];
+			const value = settings[category][setting];
+			const error = check(value);
+			if (error) {
+				return error;
+			}
+		}
+	}
+
+	// check if nbr of players matches nbr of actual player objects;
+	if (settings.playersData.length !== settings.gamemodeData.nbrOfPlayers) {
+		return "\'Number of players\' doesn't match number of <player> objects";
+	}
+
+	// check if all players have different names, that they dont have an empty name
+    let playerNames = settings.playersData.map(player => player.accountID);
+    let uniquePlayerNames = [...new Set(playerNames)];
+
+    if (playerNames.length !== uniquePlayerNames.length) {
+        return "Multiple identical player IDs";
+    }
+
+    if (playerNames.some(name => name.trim() === "")) {
+        return "Player names should not be empty";
+    }
+
+    // check that the current user is actually part of those users :
+    // this part will be handled by the user management API
+
+	return null;
+}
+
 // app.use(express.static('./public/remote/'));
 app.post('/createMatch', (req, res) => {
 	const gameSettings = req.body;
 
+	// check post comes from verified source;
+
 	const matchID = generateMatchID(gameSettings);
+	
 	if (matches.has(matchID)) {
 		console.log("Match already exists");
 		res.json({ matchID });
 		return ;
 	}
 
+	const matchValidity = verifyMatchSettings(gameSettings);
+	if (matchValidity) {
+		console.log("Error: ",matchValidity);
+		res.json({ matchID });
+		return ;
+	}
+	
 	// Convert game settings to game state
 	const gameState = init.initLobby(gameSettings);
 	
