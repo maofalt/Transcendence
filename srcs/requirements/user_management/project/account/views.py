@@ -103,9 +103,7 @@ def get_user(request):
 def check_refresh(request):
     accessToken = request.headers.get('Authorization', None)
     refreshToken = request.COOKIES.get('refreshToken', None)
-    print("accessToken print: ", str(accessToken))
-    # if not accessToken or not refreshToken:
-    #     return JsonResponse({'error': 'Missing tokens'}, status=400)
+    # print("accessToken print: ", str(accessToken))
 
     if not accessToken:
         return JsonResponse({'error': 'Authorization header is missing'}, status=400)
