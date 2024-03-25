@@ -3,7 +3,6 @@ from django import forms
 from .forms import ProfileUpdateForm, PasswordUpdateForm
 from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
 from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView, PasswordResetDoneView
-# from gameHistory_microservice.models import GameStats
 from django.db.utils import IntegrityError
 from django.core import signing
 from django.core.exceptions import ValidationError
@@ -360,16 +359,6 @@ def api_signup_view(request):
         except IntegrityError as e:
             return JsonResponse({'success': False, 'error': escape('User creation failed.')})
 
-        # if user.game_stats is None:
-        #     game_stats = GameStats.objects.create(
-        #         user=user,
-        #         username=user.username,
-        #         total_games_played=0,
-        #         games_won=0,
-        #         games_lost=0
-        #     )
-        #     user.game_stats = game_stats
-        #     user.save()
         print(" >>  User created successfully.")
 
         login(request, user)
@@ -402,10 +391,6 @@ def delete_account(request):
     user = request.user
     try:
         send_notification_to_microservices(user)
-        # game_stats = user.game_stats
-        # with transaction.atomic():
-        #     user.game_stats.delete()
-
         user.is_online = False
         # user.save()
         request.user.delete()
@@ -455,11 +440,6 @@ def friends_view(request):
             'playername': escape(friend.playername),
             'avatar': avatar_data,
             'pk': friend.pk,
-            # 'game_stats': {
-            #     'total_games_played': friend.game_stats.total_games_played,
-            #     'games_won': friend.game_stats.games_won,
-            #     'games_lost': friend.game_stats.games_lost
-            # }
         }
         friend_data.append(friend_info)
 
@@ -487,7 +467,6 @@ def detail_view(request):
         #     user = User.objects.filter(pk=user_id).first()
 
     if user:
-        # game_stats = user.game_stats
         # Serialize user data
         data = {
             'username': user.username,
@@ -496,9 +475,7 @@ def detail_view(request):
             'avatar': user.avatar.url if user.avatar else None,
             'friends_count': user.friends.count(),
             'two_factor_method': user.two_factor_method,
-            # 'total_games_played': game_stats.total_games_played,
-            # 'games_won': game_stats.games_won,
-            # 'games_lost': game_stats.games_lost,
+
         }
         # return render(request, 'detail.html', {'data': data})
         return JsonResponse(data)
