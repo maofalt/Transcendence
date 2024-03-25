@@ -176,6 +176,7 @@ function handleConnectionV2(client) {
 // authenticate user before establishing websocket connection
 io.use((client, next) => {
 	try {
+		//console.log("\nclient.handshake.query:\n", client.handshake);
 		client.matchID = client.handshake.query.matchID;
 		if (!client.matchID) {
 			console.error('Authentication error: Missing matchID');

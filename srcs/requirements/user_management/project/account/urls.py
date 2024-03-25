@@ -42,7 +42,6 @@ urlpatterns = [
     path('updateSandbox', views.update_sandbox, name='updateSandbox'),
     path('verifySandBox', views.verify_sandBox, name='verifySandBox'),
     path('getUser', views.get_user, name='getUser'),
-    
 ]
 
 if settings.DEBUG:

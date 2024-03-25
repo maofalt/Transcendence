@@ -54,7 +54,7 @@ export default class Game extends AbstractView {
 	constructor(query='', screenWidth, screenHeight) {
 		super();
 		this.loader = new GLTFLoader();
-
+		console.log("Game View created with matchID: ", query);
 		this.query = 'matchID=' + query;
 		
         // controls
@@ -160,8 +160,12 @@ export default class Game extends AbstractView {
 		// socket initialization and event handling logic
 		const hostname = window.location.hostname;
 		const protocol = 'wss';
-		const query = window.location.search.replace('?', '');
+//		const query = window.location.search.replace('?', '');
+		const query = window.location.search.replace('?', '') || this.query;
+
+		
 		let accessTok = sessionStorage.getItem('accessToken');
+		console.log("Access Token: ", accessTok);
 		accessTok = accessTok.replace("Bearer ", ""); // replace the "Bearer " at the beginning of the value;
 
 		const io_url = hostname.includes("github.dev") ? `${protocol}://${hostname}` : `${protocol}://${hostname}:9443`;
@@ -348,7 +352,8 @@ export default class Game extends AbstractView {
 		window.removeEventListener("keyup", this.handleKeyRelease.bind(this));
 
 		// Additional cleanup (disposing Three.js objects, etc.)
-		this.scene.clear();
+		if (this.scene)
+			this.scene.clear();
 		// delete cam;
 		// delete controls;
 		// delete renderer;

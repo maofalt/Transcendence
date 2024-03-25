@@ -89,6 +89,7 @@ def get_user(request):
                 'username': user.username,
                 'last_valid_time': user.last_valid_time,
                 'avatar': avatar_data,
+                'playername': user.playername
             }
             return JsonResponse(user_data)
         except User.DoesNotExist:
