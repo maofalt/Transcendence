@@ -348,7 +348,8 @@ export default class Game extends AbstractView {
 		window.removeEventListener("keyup", this.handleKeyRelease.bind(this));
 
 		// Additional cleanup (disposing Three.js objects, etc.)
-		this.scene.clear();
+		if (this.scene)
+			this.scene.clear();
 		// delete cam;
 		// delete controls;
 		// delete renderer;
