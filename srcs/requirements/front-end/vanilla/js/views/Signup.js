@@ -336,9 +336,9 @@ export default class Signup extends AbstractComponent {
 				alert('Login successful: ' + body.message || JSON.stringify(body));
 
 				// Store the access token and details in memory
-				sessionStorage.setItem('expiryTimestamp', new Date().getTime() + body.expiresIn * 1000);
-				sessionStorage.setItem('accessToken', body.accessToken);
-				sessionStorage.setItem('tokenType', body.tokenType);
+				sessionStorage.setItem('expiryTimestamp', new Date().getTime() + body.expires_in * 1000);
+				sessionStorage.setItem('accessToken', body.access_token);
+				sessionStorage.setItem('tokenType', body.token_type);
 
 				Router.navigateTo("/");
 				valid = true;

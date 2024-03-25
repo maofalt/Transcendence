@@ -4,16 +4,19 @@ export function renewToken() {
 	
 	const now = new Date().getTime();
 
-	const expiryTimestamp = parseInt(sessionStorage.getItem("expiryTimestamp") || now + 120000, 10);
+	const expiryTimestamp = parseInt(sessionStorage.getItem("expiryTimestamp") || now + 60000, 10);
 	const accessToken = sessionStorage.getItem("accessToken") || null;
 	const tokenType = sessionStorage.getItem("tokenType") || "Bearer";
 
+	console.log('expiryTimestamp:', expiryTimestamp);
+	console.log('accessToken:', accessToken);
+	console.log('tokenType:', tokenType);
 
 	if (accessToken !== null && now >= expiryTimestamp - 60000) {
 		easyFetch('/api/user_management/auth/check_refresh', {
 			method: 'GET',
 			headers: {
-				'Authorization': tokenType + accessToken
+				'Authorization': tokenType + " " + accessToken
 			}
 		}).then(res => {
 			let response = res.response;
@@ -28,31 +31,33 @@ export function renewToken() {
 			if (response.status !== 200) {
 				throw new Error(body.message || body.error || body);
 			}
-			if (body.accessToken === null) {
+			if (body.access_token === null) {
 				throw new Error("Access token is null");
 			}
-			if (body.expiresIn === null) {
+			if (body.expires_in === null) {
 				throw new Error("Expires in is null");
 			}
-			if (body.tokenType === null) {
+			if (body.token_type === null) {
 				throw new Error("Token type is null");
 			}
 
 			console.log('Check refresh successful:', response);
 			
-			sessionStorage.setItem('expiryTimestamp', new Date().getTime() + body.expiresIn * 1000);
-			sessionStorage.setItem('accessToken', body.accessToken);
-			sessionStorage.setItem('tokenType', body.tokenType);
+			sessionStorage.setItem('expiryTimestamp', new Date().getTime() + body.expires_in * 1000);
+			sessionStorage.setItem('accessToken', body.access_token);
+			sessionStorage.setItem('tokenType', body.token_type);
 
 			console.log('Updated accessToken on Storage');
 		}).catch(error => {
 			console.error('Error checking refresh:', error);
 		});
 	}
+
 	// calculate remaining time until the token needs refreshing
-	let delayUntilRefresh = 60000;
-	if (expiryTimestamp !== null)
-		delayUntilRefresh = expiryTimestamp - now - 60000;
+	console.log('expiryTimestamp:', expiryTimestamp);
+	let delayUntilRefresh = expiryTimestamp - now - 30000;
+	if (delayUntilRefresh <= 0)
+		delayUntilRefresh = 120
 
 	console.log('Token will be refreshed in:', delayUntilRefresh);
 
