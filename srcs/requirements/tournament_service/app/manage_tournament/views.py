@@ -5,7 +5,7 @@ from rest_framework import generics, permissions, status, authentication, except
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from rest_framework.permissions import IsAuthenticated
-from .models import Tournament, TournamentMatch, MatchSetting, GameType, TournamentType, RegistrationType, TournamentPlayer, Player, MatchParticipants
+from .models import Tournament, TournamentMatch, MatchSetting, TournamentPlayer, Player, MatchParticipants
 from .serializers import TournamentSerializer, TournamentMatchSerializer, MatchSettingSerializer
 from .serializers import TournamentPlayerSerializer
 from .serializers import PlayerSerializer, MatchParticipantsSerializer, TournamentRegistrationSerializer, PlayerGameStatsSerializer, SimpleTournamentSerializer
@@ -54,7 +54,7 @@ class TournamentListCreate(generics.ListCreateAPIView):
         data = request.data
         print("POSTED DATA: ", data)
 
-        required_fields = ['tournament_name', 'tournament_type', 'registration', 'registration_period_min', 'nbr_of_player_total', 'nbr_of_player_match']
+        required_fields = ['tournament_name', 'registration_period_min', 'nbr_of_player_total', 'nbr_of_player_match']
         missing_or_empty_fields = [field for field in required_fields if field not in data or not data[field]]
         
         if missing_or_empty_fields:
@@ -62,11 +62,11 @@ class TournamentListCreate(generics.ListCreateAPIView):
             return Response({"error": error_message}, status=status.HTTP_400_BAD_REQUEST)
         
         tournament_name = data.get('tournament_name')
-        registration_type = data.get('registration')
+        # registration_type = data.get('registration')
         registration_period_min = data.get('registration_period_min')
         nbr_of_player_total = data.get('nbr_of_player_total')
         nbr_of_player_match = data.get('nbr_of_player_match')
-        tournament_type = data.get('tournament_type')
+        # tournament_type = data.get('tournament_type')
         uid = request.user
         host, created = Player.objects.get_or_create(id=uid) # created wiil return False if the player already exists
 
@@ -87,14 +87,14 @@ class TournamentListCreate(generics.ListCreateAPIView):
         # Create Tournament instance
         tournament = Tournament.objects.create(
             tournament_name=tournament_name,
-            registration=registration_type,
+            # registration=registration_type,
             registration_period_min=registration_period_min,
             nbr_of_player_total=nbr_of_player_total,
             nbr_of_player_match=nbr_of_player_match,
             host=host,
             setting=match_setting,
             created_at=timezone.now(),
-            tournament_type=tournament_type,
+            # tournament_type=tournament_type,
             # nbr_of_player   will be assigned when user joining the tournament
         )
         
@@ -594,19 +594,19 @@ class MatchEnd(APIView):
 #     queryset = GameType.objects.all()
 #     serializer_class = GameTypeSerializer
 
-class TournamentTypeList(ListAPIView):
-    #authentication_classes = [CustomJWTAuthentication]
-    # permission_classes = [IsAuthenticated] 
-    def list(self, request, *args, **kwargs):
-        tournament_types = Tournament.TOURNAMENT_TYPE
-        return JsonResponse({'tournament_types': tournament_types})
+# class TournamentTypeList(ListAPIView):
+#     #authentication_classes = [CustomJWTAuthentication]
+#     # permission_classes = [IsAuthenticated] 
+#     def list(self, request, *args, **kwargs):
+#         tournament_types = Tournament.TOURNAMENT_TYPE
+#         return JsonResponse({'tournament_types': tournament_types})
 
-class RegistrationTypeList(ListAPIView):
-    # authentication_classes = [CustomJWTAuthentication]
-    # permission_classes = [IsAuthenticated] 
-    def list(self, request, *args, **kwargs):
-        registration_types = Tournament.REGISTRATION_TYPE
-        return JsonResponse({'registration_types': registration_types})
+# class RegistrationTypeList(ListAPIView):
+#     # authentication_classes = [CustomJWTAuthentication]
+#     # permission_classes = [IsAuthenticated] 
+#     def list(self, request, *args, **kwargs):
+#         registration_types = Tournament.REGISTRATION_TYPE
+#         return JsonResponse({'registration_types': registration_types})
 
 class TournamentPlayerList(ListAPIView):
     authentication_classes = [CustomJWTAuthentication]

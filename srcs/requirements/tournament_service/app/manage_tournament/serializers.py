@@ -17,7 +17,7 @@ class TournamentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tournament
-        fields = ['id', 'tournament_name', 'nbr_of_player_total', 'nbr_of_player_match', 'setting', 'game_type', 'tournament_type', 'registration', 'registration_period_min', 'host_id', 'joined', 'is_full' ]
+        fields = ['id', 'tournament_name', 'nbr_of_player_total', 'nbr_of_player_match', 'setting', 'tournament_type', 'registration_period_min', 'host_id', 'joined', 'is_full' ]
 
     def create(self, validated_data):
         setting_data = validated_data.pop('setting')  # Extract data from MatchSetting
@@ -34,9 +34,9 @@ class TournamentSerializer(serializers.ModelSerializer):
         instance.tournament_name = validated_data.get('tournament_name', instance.tournament_name)
         instance.nbr_of_player_total = validated_data.get('nbr_of_player_total', instance.nbr_of_player_total)
         instance.nbr_of_player_match = validated_data.get('nbr_of_player_match', instance.nbr_of_player_match)
-        instance.game_type = validated_data.get('game_type', instance.game_type)
+        # instance.game_type = validated_data.get('game_type', instance.game_type)
         instance.tournament_type = validated_data.get('tournament_type', instance.tournament_type)
-        instance.registration = validated_data.get('registration', instance.registration)
+        # instance.registration = validated_data.get('registration', instance.registration)
         instance.registration_period_min = validated_data.get('registration_period_min', instance.registration_period_min)
         instance.host_id = validated_data.get('host_id', instance.host_id)
         instance.save()

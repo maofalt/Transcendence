@@ -28,20 +28,20 @@ class Tournament(models.Model):
     players = models.ManyToManyField('Player', related_name='tournaments')  # Direct many-to-many relationship with Player
     matches = models.ManyToManyField('TournamentMatch', related_name='tournaments')
     nbr_of_match = models.IntegerField(default=0)
-    TOURNAMENT_TYPE = [
-        ('Knock-out', 'Knock-Out'),
-        ('League', 'Round Robin'),
-    ]
-    tournament_type = models.CharField(max_length=15, choices=TOURNAMENT_TYPE, default='Knock-out', null=False)
-    REGISTRATION_TYPE = [
-        ('Public', 'Open game'),
-        ('Private', 'Invitation required'),
-    ]
-    registration = models.CharField(max_length=15, choices=REGISTRATION_TYPE, default='Public', null=False)
-    GAME_TYPE = [
-        ('pong', 'Pong'),
-    ]
-    game_type = models.CharField(max_length=15, choices=GAME_TYPE, default='pong', null=False)
+    # TOURNAMENT_TYPE = [
+    #     ('Knock-out', 'Knock-Out'),
+    #     ('League', 'Round Robin'),
+    # ]
+    # tournament_type = models.CharField(max_length=15, choices=TOURNAMENT_TYPE, default='Knock-out', null=False)
+    # REGISTRATION_TYPE = [
+    #     ('Public', 'Open game'),
+    #     ('Private', 'Invitation required'),
+    # ]
+    # registration = models.CharField(max_length=15, choices=REGISTRATION_TYPE, default='Public', null=False)
+    # GAME_TYPE = [
+    #     ('pong', 'Pong'),
+    # ]
+    # game_type = models.CharField(max_length=15, choices=GAME_TYPE, default='pong', null=False)
     state = models.CharField(max_length=15, default="waiting")
 
 
