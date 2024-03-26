@@ -104,13 +104,16 @@ function waitingRoom(matchID) {
 
 	// start the countdown timer
 	if (!match.gameState.timeLimit) {
-		match.gameState.timeLimit = Date.now() + 2 * 60 * 1000;  // 2 minutes from now
+		match.gameState.timeLimit = Date.now() + 10 * 1000;  // 2 minutes from now
 		console.log("GAME STARTS IN 2 MINUTES");
 	}
 
 	// calculate the remaining time
 	match.gameState.waitingRemainingTime = match.gameState.timeLimit - Date.now();
+	let minutes = Math.floor(match.gameState.waitingRemainingTime / 60000);
+	let seconds = Math.floor((match.gameState.waitingRemainingTime % 60000) / 1000);
 	console.log(match.gameState.waitingRemainingTime);
+	console.log(`MATCH STARTS IN ${minutes}:${seconds}`);
 
 	// if the countdown has finished, reset
 	if (match.gameState.waitingRemainingTime <= 0) {
@@ -119,11 +122,16 @@ function waitingRoom(matchID) {
 		match.gameState.waitingRemainingTime = 0;
 	}
 
-	// let gameState = render.updateData(match.gameState);
+	let gameState = render.updateData(match.gameState);
 	io.to(matchID).emit('render', match.gameState);
 
-	if (data.connectedPlayers == data.gamemodeData.nbrOfPlayers) {
+	if (match.gameState.connectedPlayers == match.gameState.gamemode.nbrOfPlayers || match.gameState.waitingRemainingTime == 0) {
 		clearInterval(match.gameInterval);
+		match.gameState.ball.pos.x = 0;
+		match.gameState.ball.pos.y = 0;
+		match.gameState.ball.dir.y = -1;
+		match.gameState.ball.dir.x = 0.01;
+		match.gameState.ongoing = true;
 		match.gameInterval = setInterval(gameLoop, 10, matchID);
 	}
 }
