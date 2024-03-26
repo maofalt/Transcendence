@@ -646,6 +646,20 @@ class GenerateRound(APIView):
 
     def post(self, request, tournament_id, round):
         tournament = get_object_or_404(Tournament, id=tournament_id)
-        matches = tournament.matches.filter(round_number=round)
+        matches = tournament.matches.filter(round_number=round).order_by('id')
+
+        serialized_matches = []
+        for match in matches:
+            match_data = {
+                    'tournament_id': match.tournament_id,
+                    'match_id': match.id,
+                    'gamemodeData': gamemodeDataSerializer(match).data,
+                    'fieldData': fieldDataSerializer(match.match_setting).data,
+                    'paddlesData': paddlesDataSerializer(match.match_setting).data,
+                    'ballData': ballDataSerializer(match.match_setting).data,
+                    'players': PlayerSerializer(match.players.all(), many=True).data,
+                }
+                serialized_matches.append(match_data)
+        return Response(serialized_matches, status=status.HTTP_200_OK)
 
 
