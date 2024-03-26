@@ -22,6 +22,8 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
+import threading
+import requests
 
 
     # compare total player > match player
@@ -461,7 +463,7 @@ class TournamentEnd(APIView):
     # permission_classes = [IsAuthenticated]
 
     def post(self, request, id):
-        tournament = get_object_or_404(Tournament, pk=id)
+        tournament = get_object_or_404(Tournament, id=id)
 
         # Verify if the user is the host of the tournament
         if tournament.host.id != request.user:
@@ -638,3 +640,12 @@ class PlayerStatsView(APIView):
 
         serializer = PlayerGameStatsSerializer(player_stats_data)
         return Response(serializer.data)
+
+class GenerateRound(APIView):
+    authentication_classes = [CustomJWTAuthentication]
+
+    def post(self, request, tournament_id, round):
+        tournament = get_object_or_404(Tournament, id=tournament_id)
+        matches = tournament.matches.filter(round_number=round)
+
+

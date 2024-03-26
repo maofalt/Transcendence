@@ -95,6 +95,12 @@ class TournamentMatchSerializer(serializers.ModelSerializer):
         model = TournamentMatch
         fields = ['id', 'state', 'tournament_id', 'round_number', 'match_time', 'players', 'participants']
 
+class TournamentMatchRoundSerializer(serializers.ModelSerializer):
+    matchSetting = MatchSettingSerializer()
+    class Meta:
+        model = TournamentMatch
+        fields = ['players', 'matchSetting']
+
 
 # class TournamentTypeSerializer(serializers.ModelSerializer):
 #     class Meta:
