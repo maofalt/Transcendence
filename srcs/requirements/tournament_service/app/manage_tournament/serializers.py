@@ -95,11 +95,29 @@ class TournamentMatchSerializer(serializers.ModelSerializer):
         model = TournamentMatch
         fields = ['id', 'state', 'tournament_id', 'round_number', 'match_time', 'players', 'participants']
 
+class gamemodeDataSerializer(serializers.ModelSerializer):
+    'nbrOfPlayers'
+    'nbrOfRounds'
+
+class fieldDataSerializer(serializers.ModelSerializer):
+	'wallsFactor'
+    'sizeOfGoals'
+
+class paddlesDataSerializer(serializers.ModelSerializer):
+    'width' = 2
+    'height'
+	'speed'
+    
+class ballDataSerializer(serializers.ModelSerializer):
+    'speed'
+    'radius'
+    'color'
+
 class TournamentMatchRoundSerializer(serializers.ModelSerializer):
-    matchSetting = MatchSettingSerializer()
+    players = PlayerSerializer(many=True)
     class Meta:
-        model = TournamentMatch
-        fields = ['players', 'matchSetting']
+        model = MatchSettingSerializer()
+        fields = ['nbr_of_player', 'players']
 
 
 # class TournamentTypeSerializer(serializers.ModelSerializer):
