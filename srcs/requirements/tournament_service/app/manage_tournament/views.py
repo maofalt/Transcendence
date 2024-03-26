@@ -661,13 +661,13 @@ class GenerateRound(APIView):
             }
             serialized_matches.append(match_data)
 
-        webhook_thread = Thread(target=self.send_webhook_request, args=(serialized_matches,))
-        webhook_thread.start()
+        # webhook_thread = Thread(target=self.send_webhook_request, args=(serialized_matches,))
+        # webhook_thread.start()
 
         return Response(serialized_matches, status=status.HTTP_200_OK)
 
     def send_webhook_request(self, serialized_matches):
-        game_backend_endpoint = 'https://'
+        game_backend_endpoint = 'https://game-logic/createMultipleMatches'
 
         payload = {'matches': serialized_matches}
         response = requests.post(game_backend_endpoint, json=payload)
