@@ -145,13 +145,13 @@ class TournamentPlayer(models.Model):
 
 class Player(models.Model):
     id = models.IntegerField(primary_key=True)
-    username = models.CharField(max_length=20)
+    username = models.CharField(max_length=20, default='unknown')
     total_played = models.IntegerField(default=0)
     won_match = models.ManyToManyField('TournamentMatch', related_name='won_match')
     won_tournament = models.ManyToManyField('Tournament', related_name='won_tournament')
 
     def __str__(self):
-        return f"ID: {self.id}, TOTAL: {self.total_played}, MATCH: {self.won_match}, TOURNAMENT: {self.won_tournament}"
+        return f"ID: {self.id}, USERNAME: {self.username}, TOTAL: {self.total_played}, MATCH: {self.won_match}, TOURNAMENT: {self.won_tournament}"
 
 class MatchParticipants(models.Model):
     match_id = models.IntegerField(null=False)
