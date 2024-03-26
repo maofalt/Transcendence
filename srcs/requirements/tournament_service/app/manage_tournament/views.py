@@ -22,6 +22,8 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
+#XSS protection
+from django.utils.html import escape
 
 
     # compare total player > match player
@@ -43,7 +45,8 @@ class TournamentListCreate(generics.ListCreateAPIView):
         print(">> GET: loading page\n")
         tournaments = self.get_queryset()
         serializer = self.get_serializer(tournaments, many=True)
-        return Response(serializer.data)
+        escaped_data = escape(serializer.data)
+        return Response(escaped_data)
 
     def post(self, request, *args, **kwargs):
         print(">> received POST to creat a new tournament\n")
@@ -80,7 +83,8 @@ class TournamentListCreate(generics.ListCreateAPIView):
         tournament.players.add(host)
 
         serialized_tournament  = TournamentSerializer(tournament)
-        return Response(serialized_tournament.data, status=status.HTTP_201_CREATED)
+        escaped_data = escape(serialized_tournament.data)
+        return Response(escaped_data, status=status.HTTP_201_CREATED)
 
 # ------------------------ Assigning Players on the Tournament Tree -----------------------------------
 
@@ -117,7 +121,8 @@ class JoinTournament(generics.ListCreateAPIView):
             print(player.id)
 
         serializer = TournamentSerializer(tournament)
-        return JsonResponse(serializer.data, status=status.HTTP_200_OK)
+        escaped_data = escape(serializer.data)
+        return JsonResponse(escaped_data, status=status.HTTP_200_OK)
 
 
 class MatchGenerator(generics.ListCreateAPIView):
@@ -188,19 +193,21 @@ class MatchGenerator(generics.ListCreateAPIView):
 
         tournament_matches = TournamentMatch.objects.filter(tournament_id=tournament.id).order_by('id')
         serializer = TournamentMatchSerializer(tournament_matches, many=True)
-
-        return JsonResponse(serializer.data, status=status.HTTP_201_CREATED, safe=False)
+        escaped_data = escape(serializer.data)
+        return JsonResponse(escaped_data, status=status.HTTP_201_CREATED, safe=False)
     
 class MatchResult(APIView):
     authentication_classes = [CustomJWTAuthentication]
 
     def post(self, request, match_id, winner_id):
         print("match_id : ", match_id,  "winner_id: ", winner_id)
+        match_id = escape(match_id)
+        winner_id = escape(winner_id)
         match = get_object_or_404(TournamentMatch, id=match_id)
         if match.state != "ended":
             return Response(f"Match {match_id} is not finished")
+
         for participant in match.participants.all():
-            print("participant id : ", participant.player_id)
             try:
                 player = match.players.get(id=player_id)
             except Player.DoesNotExist:
@@ -263,7 +270,6 @@ class MatchResult(APIView):
 class MatchUpdate(APIView):
     authentication_classes = [CustomJWTAuthentication]
     serializer_class = MatchGeneratorSerializer
-    # queryset = Tournament.objects.all()
 
     def post(self, request, tournament_id, round):
         tournament = get_object_or_404(Tournament, id=tournament_id)
@@ -317,7 +323,8 @@ class MatchUpdate(APIView):
                 print(f"No available matches for player {player}")
 
         serializer = TournamentMatchSerializer(next_matches, many=True)
-        return JsonResponse(serializer.data, status=status.HTTP_201_CREATED, safe=False)
+        escaped_data = escape(serializer.data)
+        return JsonResponse(escaped_data, status=status.HTTP_201_CREATED, safe=False)
 
 class TournamentRoundState(APIView):
     authentication_classes = [CustomJWTAuthentication]
