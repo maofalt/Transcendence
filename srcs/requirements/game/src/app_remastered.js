@@ -16,6 +16,7 @@ const lobbySettings = require('./gameLogic/lobbySettings');
 const init = require('./gameLogic/init');
 const debugDisp = require('./gameLogic/debugDisplay');
 const render = require('./gameLogic/rendering');
+const axios = require('axios');
 // const objects = require('./gameLogic/gameObjects');
 // const game = require('./gameLogic/gameLogic');
 // const objectsClasses = require('./gameLogic/gameObjectsClasses');
@@ -355,6 +356,18 @@ function verifyMatchSettings(settings) {
     // this part will be handled by the user management API
 
 	return null;
+}
+
+function postMatchResult(matchId, winnerId) {
+	const url = `http://tournament/matches/${matchId}/${winnerId}/`;
+	
+	axios.post(url)
+		.then(response => {
+			console.log('Match result posted successfully');
+		})
+		.catch(error => {
+			console.error('Error posting match result:', error);
+		});
 }
 
 // app.use(express.static('./public/remote/'));
