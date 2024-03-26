@@ -101,6 +101,24 @@ function waitingRoom(matchID) {
 		// client.disconnect();
 		return ;
 	}
+
+	// start the countdown timer
+	if (!match.gameState.timeLimit) {
+		match.gameState.timeLimit = Date.now() + 2 * 60 * 1000;  // 2 minutes from now
+		console.log("GAME STARTS IN 2 MINUTES");
+	}
+
+	// calculate the remaining time
+	match.gameState.waitingRemainingTime = match.gameState.timeLimit - Date.now();
+	console.log(match.gameState.waitingRemainingTime);
+
+	// if the countdown has finished, reset
+	if (match.gameState.waitingRemainingTime <= 0) {
+		console.log("Countdown finished");
+		match.gameState.timeLimit = null;
+		match.gameState.waitingRemainingTime = 0;
+	}
+
 	// let gameState = render.updateData(match.gameState);
 	io.to(matchID).emit('render', match.gameState);
 
@@ -434,7 +452,7 @@ app.post('/createMultipleMatches', (req, res) => {
 		
 		// Convert game settings to game state
 		const gameState = init.initLobby(settings);
-		gameState.jisus_matchID = matchID;
+		gameState.jisus_matchID = match_id;
 		
 		console.log("\nMATCH CREATED\n");
 		matches.set(matchID, { gameState: gameState, gameInterval: 0 });
