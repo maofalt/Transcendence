@@ -4,15 +4,22 @@ export function renewToken() {
 	
 	const now = new Date().getTime();
 
-	const expiryTimestamp = parseInt(sessionStorage.getItem("expiryTimestamp") || now + 60000, 10);
-	const accessToken = sessionStorage.getItem("accessToken") || null;
-	const tokenType = sessionStorage.getItem("tokenType") || "Bearer";
+	const expiryTimestamp = sessionStorage.getItem("expiryTimestamp");
+	let expiryTime = parseInt(expiryTimestamp, 10);
+	if (!(expiryTime > now) || !(expiryTime < now + 100*24*60*60*1000)) {
+		console.log("\n\nbanana\n\n");
+		expiryTime = now + 60000;
+	}
+	const accessToken = sessionStorage.getItem("accessToken");
+	const tokenType = sessionStorage.getItem("tokenType");
 
 	console.log('expiryTimestamp:', expiryTimestamp);
+	console.log('expiryTime:', expiryTime);
 	console.log('accessToken:', accessToken);
 	console.log('tokenType:', tokenType);
 
-	if (accessToken !== null && now >= expiryTimestamp - 60000) {
+	if (accessToken !== null && tokenType !== null && expiryTimestamp !== null 
+		&& now >= expiryTime - 60000) {
 		easyFetch('/api/user_management/auth/check_refresh', {
 			method: 'GET',
 			headers: {
@@ -54,11 +61,10 @@ export function renewToken() {
 	}
 
 	// calculate remaining time until the token needs refreshing
-	console.log('expiryTimestamp:', expiryTimestamp);
-	let delayUntilRefresh = expiryTimestamp - now - 30000;
-	if (delayUntilRefresh <= 0)
-		delayUntilRefresh = 120
+	// console.log('expiryTimestamp:', expiryTimestamp);
+	let delayUntilRefresh = expiryTime - now - 30000;
 
+	console.log("delay", delayUntilRefresh);
 	console.log('Token will be refreshed in:', delayUntilRefresh);
 
 	// timeout to refresh the token just before it expires
