@@ -45,6 +45,7 @@ class TournamentListCreate(generics.ListCreateAPIView):
         print(">> GET: loading page\n")
         tournaments = self.get_queryset()
         serializer = self.get_serializer(tournaments, many=True)
+        print("request.user: ", request.user)
         return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
@@ -53,7 +54,12 @@ class TournamentListCreate(generics.ListCreateAPIView):
         serializer.is_valid(raise_exception=True)
 
         validated_data = serializer.validated_data
-        host, _ = Player.objects.get_or_create(id=request.user) # created wiil return False if the player already exists
+        user_info, _ = request.user
+        uid, username = user_info.split(":")
+        
+        print("User ID:", uid)
+        print("Username:", username)
+        host, _ = Player.objects.get_or_create(id=uid, username=username) # created wiil return False if the player already exists
 
         match_setting_data = {
             'duration_sec': validated_data.get('duration_sec', 210),
@@ -96,8 +102,10 @@ class JoinTournament(generics.ListCreateAPIView):
         return self.list(request, *args, **kwargs)
 
     def post(self, request, tournament_id, player_id):
+        user_info, _ = request.user
+        uid, username = user_info.split(":")
         print("request.user: ", request.user)
-        if player_id != request.user:
+        if player_id != uid:
             return JsonResponse({'message': "You are not authorized to join the Tournament"}, status=status.HTTP_403_FORBIDDEN)
         print("All Tournaments:")
         for tournament in Tournament.objects.all():
@@ -108,15 +116,14 @@ class JoinTournament(generics.ListCreateAPIView):
         if tournament.is_full():
             return JsonResponse({'message': 'Tournament is full'}, status=status.HTTP_400_BAD_REQUEST)
 
-        uid = request.user
-        player, created = Player.objects.get_or_create(id=uid) # created wiil return False if the player already exists
+        player, created = Player.objects.get_or_create(id=uid, username=username) # created wiil return False if the player already exists
         tournament.players.add(player)
         if created:
             print("New Player joined\n")
         
         print("Players in the tournament:")
         for player in tournament.players.all():
-            print(player.id)
+            print(player.username)
 
         serializer = TournamentSerializer(tournament)
         return JsonResponse(serializer.data, status=status.HTTP_200_OK)
@@ -131,8 +138,9 @@ class MatchGenerator(generics.ListCreateAPIView):
 
         print("Tournament id: ", tournament_id)
         tournament = get_object_or_404(Tournament, id=tournament_id)
-        print("request.user: ", request.user, "tournament.host.id: ", tournament.host.id)
-        if tournament.host.id != request.user:
+        user_info, _ = request.user
+        uid, username = user_info.split(":")
+        if tournament.host.id != uid:
             return Response({"message": "You are not authorized to generate Tournament."}, status=status.HTTP_403_FORBIDDEN)
         match_setting = tournament.setting
         tournament.calculate_nbr_of_match()
@@ -196,19 +204,22 @@ class MatchGenerator(generics.ListCreateAPIView):
 class MatchResult(APIView):
     authentication_classes = [CustomJWTAuthentication]
 
-    def post(self, request, match_id, winner_id):
-        print("match_id : ", match_id,  "winner_id: ", winner_id)
+    def post(self, request, match_id, winner_username):
+        print("match_id : ", match_id,  "winner_id: ", winner_username)
         match = get_object_or_404(TournamentMatch, id=match_id)
+        user_info, _ = request.user
+        uid, username = user_info.split(":")
+        
         if match.state != "ended":
             return Response(f"Match {match_id} is not finished")
         for participant in match.participants.all():
             print("participant id : ", participant.player_id)
             try:
-                player = match.players.get(id=player_id)
+                player = match.players.get(id=participant.player_id)
             except Player.DoesNotExist:
                 return Response(f"Player with id {player_id} not found in the match", status=status.HTTP_404_NOT_FOUND)
             
-            if participant.player_id == winner_id:
+            if player.username == winner_username:
                 if participant.is_winner == False:
                     participant.is_winner = True
                     participant.save()

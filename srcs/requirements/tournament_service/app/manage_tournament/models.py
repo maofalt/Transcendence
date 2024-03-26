@@ -145,6 +145,7 @@ class TournamentPlayer(models.Model):
 
 class Player(models.Model):
     id = models.IntegerField(primary_key=True)
+    username = models.CharField(max_length=20)
     total_played = models.IntegerField(default=0)
     won_match = models.ManyToManyField('TournamentMatch', related_name='won_match')
     won_tournament = models.ManyToManyField('Tournament', related_name='won_tournament')
