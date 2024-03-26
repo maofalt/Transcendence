@@ -374,6 +374,7 @@ function postMatchResult(matchId, winnerId) {
 app.post('/createMatch', (req, res) => {
 	const gameSettings = req.body;
 
+	console.log("\nWAAAAA\n", gameSettings);
 	// check post comes from verified source;
 
 	const matchID = generateMatchID(gameSettings);
@@ -405,8 +406,9 @@ app.post('/createMultipleMatches', (req, res) => {
 
 	const matchIDs = [];
 	console.log("\nCREATE MULTIPLE MATCHES\n");
+	console.log("gameSettings", gameSettings);
 	// check post comes from verified source;
-	gameSettings.forEach(settings => {
+	gameSettings.matches.forEach(settings => {
 		const { tournament_id, match_id, ...rest } = settings;
 
 		const matchID = generateMatchID(rest);
