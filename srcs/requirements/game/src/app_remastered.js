@@ -402,11 +402,15 @@ app.post('/createMatch', (req, res) => {
 
 app.post('/createMultipleMatches', (req, res) => {
 	const gameSettings = req.body;
+
 	const matchIDs = [];
 	console.log("\nCREATE MULTIPLE MATCHES\n");
 	// check post comes from verified source;
 	gameSettings.forEach(settings => {
-		const matchID = generateMatchID(settings);
+		const { tournament_id, match_id, ...rest } = settings;
+
+		const matchID = generateMatchID(rest);
+		
 		matchIDs.push(matchID);
 		
 		if (matches.has(matchID)) {
