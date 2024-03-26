@@ -9,15 +9,12 @@ class MatchSettingSerializer(serializers.ModelSerializer):
 
 class TournamentSerializer(serializers.ModelSerializer):
     setting = MatchSettingSerializer()
-    # game_type = serializers.PrimaryKeyRelatedField(queryset=GameType.objects.all())  # Add this line
-    # tournament_type = serializers.PrimaryKeyRelatedField(queryset=TournamentType.objects.all())  # Add this line
-    # registration = serializers.PrimaryKeyRelatedField(queryset=RegistrationType.objects.all())  # Add this line
     is_full = serializers.SerializerMethodField()
     joined = serializers.SerializerMethodField()
 
     class Meta:
         model = Tournament
-        fields = ['id', 'tournament_name', 'nbr_of_player_total', 'nbr_of_player_match', 'setting', 'game_type', 'tournament_type', 'registration', 'registration_period_min', 'host_id', 'joined', 'is_full' ]
+        fields = ['id', 'tournament_name', 'nbr_of_player_total', 'nbr_of_player_match', 'setting', 'registration_period_min', 'host_id', 'joined', 'is_full' ]
 
     def create(self, validated_data):
         setting_data = validated_data.pop('setting')  # Extract data from MatchSetting
@@ -34,9 +31,6 @@ class TournamentSerializer(serializers.ModelSerializer):
         instance.tournament_name = validated_data.get('tournament_name', instance.tournament_name)
         instance.nbr_of_player_total = validated_data.get('nbr_of_player_total', instance.nbr_of_player_total)
         instance.nbr_of_player_match = validated_data.get('nbr_of_player_match', instance.nbr_of_player_match)
-        instance.game_type = validated_data.get('game_type', instance.game_type)
-        instance.tournament_type = validated_data.get('tournament_type', instance.tournament_type)
-        instance.registration = validated_data.get('registration', instance.registration)
         instance.registration_period_min = validated_data.get('registration_period_min', instance.registration_period_min)
         instance.host_id = validated_data.get('host_id', instance.host_id)
         instance.save()
@@ -67,12 +61,12 @@ class TournamentRegistrationSerializer(serializers.ModelSerializer):
 class PlayerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Player
-        fields = ['id']
+        fields = ['id', 'total_played', 'won_match', 'won_tournament']
 
 class MatchParticipantsSerializer(serializers.ModelSerializer):
     class Meta:
         model = MatchParticipants
-        fields = ['id', 'match_id', 'round_number', 'player_id', 'is_winner', 'participant_score']
+        fields = ['id', 'match_id', 'round_number', 'player_id', 'is_winner']
 
 class MatchGeneratorSerializer(serializers.Serializer):
     tournament_id = serializers.IntegerField()
@@ -118,3 +112,33 @@ class TournamentPlayerSerializer(serializers.ModelSerializer):
     class Meta:
         model = TournamentPlayer
         fields = ['tournament_id', 'players']
+
+class SimpleTournamentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tournament
+        fields = ['id', 'tournament_name']
+
+class SimpleMatchSerializer(serializers.ModelSerializer):
+    winner_id = serializers.SerializerMethodField()
+
+    class Meta:
+        model = TournamentMatch
+        fields = ['id', 'tournament_id', 'round_number', 'players', 'winner_id']
+
+    def get_winner_id(self, obj):
+        winner = obj.participants.filter(is_winner=True).first()
+        if winner:
+            return winner.player_id
+        return None
+
+
+class PlayerGameStatsSerializer(serializers.Serializer):
+    played_tournaments = SimpleTournamentSerializer(many=True, read_only=True)
+    played_matches = SimpleMatchSerializer(many=True, read_only=True)
+
+    total_played = serializers.IntegerField()
+    nbr_of_lost_matches = serializers.IntegerField()
+    nbr_of_won_matches = serializers.IntegerField()
+    nbr_of_won_tournaments = serializers.IntegerField()
+    # average_score = serializers.DecimalField(max_digits=5, decimal_places=2)
+    # highest_score = serializers.IntegerField()
