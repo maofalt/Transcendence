@@ -10,45 +10,47 @@ export default class CreateTournament extends AbstractView {
 
   constructor() {
       super();
-      //this.createTournament = this.createTournament.bind(this);
-      //this.createSettings = this.createSettings.bind(this);
       this.createGame = this.createGame.bind(this);
+      this.getBasicGameSettings = this.getBasicGameSettings.bind(this);
+      this.addPlayerDataToGameSettings = this.addPlayerDataToGameSettings.bind(this);
       this.game = new Game();
   }
   
   async init() {
-    // Initialize the game with basic settings
-    let basicGameSettings = await this.getBasicGameSettings();
-    console.log('Initializing game with basic settings:', basicGameSettings);
-    await this.initializeGame(basicGameSettings);
+    try {
+      // Initialize the game with basic settings
+      let basicGameSettings = await this.getBasicGameSettings();
+      console.log('Initializing game with basic settings:', basicGameSettings);
+      await this.initializeGame(basicGameSettings);
 
-    let gameSettingsForm = document.getElementById('game-settings-form');
-    gameSettingsForm.querySelectorAll('input').forEach(input => {
-      input.addEventListener('change', (event) => {
-        event.preventDefault();
-        console.log('Responding to form changes');
-        
-        // Get the game settings from the form
-        let gameSettings = this.getGameSettingsFromForm();
-        console.log('Updating game with new settings:', gameSettings);
-        
-        // Re-initialize the game with new settings
-        this.initializeGame(gameSettings);
+      let gameSettingsForm = document.getElementById('game-settings-form');
+      gameSettingsForm.querySelectorAll('input').forEach(input => {
+        input.addEventListener('change', async (event) => {
+          event.preventDefault();
+          console.log('Responding to form changes');
+
+          // Get the game settings from the form
+          let gameSettings = await this.getGameSettingsFromForm();
+          console.log('Updating game with new settings:', gameSettings);
+
+          // Re-initialize the game with new settings
+          await this.initializeGame(gameSettings);
+        });
       });
-    });
-    //Attach even lsitener to the submit button
-    const submitbutton = document.getElementById('submitTournament');
-    if (submitbutton) {
-      submitbutton.addEventListener('click', this.handleSubmit.bind(this));
+      //Attach even lsitener to the submit button
+      const submitbutton = document.getElementById('submitTournament');
+      if (submitbutton) {
+        submitbutton.addEventListener('click', this.handleSubmit.bind(this));
+      }
+    } catch (error) {
+      console.error('Failed to initialize CreateTournament:', error);
     }
   }
 
 // Helper method to initialize or update the game preview
   async initializeGame(gameSettings) {
-    console.log('Create/Update Game with settings:', gameSettings);
     let matchID = await this.createGame(gameSettings);
     console.log('Match ID:', matchID);
-  
     // Assuming the Game constructor or an update method can handle new settings
     if (!this.game) {
       this.game = new Game(matchID, 500, 830);
@@ -64,7 +66,6 @@ export default class CreateTournament extends AbstractView {
 
   async createGame(gameSettings) {
 	  console.log('Create Game');
-	  //const gameSettings = this.getGameSettings();
 	  try {
 	  	const response = await makeApiRequest('/game-logic/createMatch','POST',gameSettings);
 	  	console.log('Match created:', response.body);
@@ -75,25 +76,7 @@ export default class CreateTournament extends AbstractView {
 	  }
 	}
     
-  async getHtml() {
-    let tournamentTypeOptionsHtml = '';
-    let registrationTypeOptionsHtml = '';
-    try {
-      // Fetching tournament types0
-      const ResponseTypes = await makeApiRequest('/api/tournament/tournament-types/', 'GET');
-      const tournamentTypes = ResponseTypes.body.tournament_types;
-      tournamentTypeOptionsHtml = tournamentTypes.map(type => `<option value="${type[0]}">${type[1]}</option>`).join('');
-
-      // Fetching registration types
-      const answerRegistrationTypes = await makeApiRequest('/api/tournament/registration-types/', 'GET');
-      const registrationTypes = answerRegistrationTypes.body.registration_types;
-      registrationTypeOptionsHtml = registrationTypes.map(type => `<option value="${type[0]}">${type[1]}</option>`).join('');  
-    } catch (error) {
-      console.error('Failed to fetch types:', error);
-      tournamentTypeOptionsHtml = `<option value="1">Knockout</option>`;
-      registrationTypeOptionsHtml = '<option value="1">Open</option>';
-    }
-    
+  async getHtml() {    
     let htmlstuff = `
           <section class="create-tournament">
               <button type="submit" id="submitTournament">Create Tournament</button>
@@ -119,14 +102,6 @@ export default class CreateTournament extends AbstractView {
                           value="2"
                           required
                           oninput="this.nextElementSibling.value = this.value">
-                      <label for="tournament_type">Tournament Type:</label>
-                      <select id="tournament_type" name="tournament_type">
-                          ${tournamentTypeOptionsHtml}
-                      </select>
-                      <label for="registration">Registration:</label>
-                      <select id="registration" name="registration">
-                          ${registrationTypeOptionsHtml}
-                      </select>
                       <label for="registration_period_min">Registration Period (in minutes):</label>
                       <input 
                         type="number"
@@ -206,112 +181,151 @@ export default class CreateTournament extends AbstractView {
       return htmlElement.innerHTML;
   }
 
-  getGameSettingsFromForm() {
-    let gameSettings = {
-      "gamemodeData": {
-        "nbrOfPlayers": parseInt(document.getElementById('nbr_of_players_per_match').value, 10),
-        "nbrOfRounds": parseInt(document.getElementById('nbr_of_rounds').value, 10),
-        "timeLimit": parseInt(document.getElementById('time_limit').value, 10),
-        "gameType": 0
-      },
-      "fieldData": {
-        "wallsFactor": parseFloat(document.getElementById('walls_factor').value),
-        "sizeOfGoals": parseInt(document.getElementById('size_of_goals').value, 10)
-      },
-      "paddlesData": {
-        "width": parseInt(document.getElementById('paddle_width').value, 10),
-        "height": parseInt(document.getElementById('paddle_height').value, 10),
-        "speed": parseFloat(document.getElementById('paddle_speed').value)
-      },
-      "ballData": {
-        "speed": parseFloat(document.getElementById('ball_speed').value),
-        "radius": parseFloat(document.getElementById('ball_radius').value),
-        "color": document.getElementById('ball_color').value
-      },
-      "playersData": [
-        {
-          "accountID": "motero",
-          "color": "0x0000ff"
+  async getGameSettingsFromForm() {
+       
+    try {
+			let gameSettings = {
+        "gamemodeData": {
+          "nbrOfPlayers": parseInt(document.getElementById('nbr_of_players_per_match').value, 10),
+          "nbrOfRounds": parseInt(document.getElementById('nbr_of_rounds').value, 10),
+          "timeLimit": parseInt(document.getElementById('time_limit').value, 10),
+          "gameType": 0
         },
-      ]
-    }
-    console.log('Game settings from form recovered');
-    
-    //this.addPlayerDataToGameSettings(gameSettings, [], gameSettings.gamemodeData.nbrOfPlayers);
-    let nbr_of_players = gameSettings.gamemodeData.nbrOfPlayers;
-    let dummyPlayeName = 'banana';
-    let dummyPlayerColor = '0x00ff00';
-    for (let i = 1; i < nbr_of_players; i++) {
-      let dummyPlayer = {
-        "accountID": dummyPlayeName + i,
-        "color": dummyPlayerColor
+        "fieldData": {
+          "wallsFactor": parseFloat(document.getElementById('walls_factor').value),
+          "sizeOfGoals": parseInt(document.getElementById('size_of_goals').value, 10)
+        },
+        "paddlesData": {
+          "width": parseInt(document.getElementById('paddle_width').value, 10),
+          "height": parseInt(document.getElementById('paddle_height').value, 10),
+          "speed": parseFloat(document.getElementById('paddle_speed').value)
+        },
+        "ballData": {
+          "speed": parseFloat(document.getElementById('ball_speed').value),
+          "radius": parseFloat(document.getElementById('ball_radius').value),
+          "color": document.getElementById('ball_color').value
+        },
+        "playersData": [
+          {
+            "accountID": "motero",
+            "color": "0x0000ff"
+          },
+          {
+          "accountID": "yridgway",
+          "color": "0x00ff00"
+          },
+          {
+          "accountID": "tata3",
+          "color": "0x00ff00"
+          },
+        ]
       }
-      gameSettings.playersData.push(dummyPlayer);
-    }
-    console.log('Game settings automatically:', gameSettings);
+      const responseUser = await makeApiRequest(`/api/user_management/auth/getUser`,'GET');
+			console.log('User:', responseUser.body);
+			const userID = responseUser.body.user_id;
+      let userPlayer = {
+        "accountID": "motero2",
+        "color": "0x0000ff",
+      }
+      gameSettings.playersData.push(userPlayer);
+      
+      let nbr_of_players = gameSettings.gamemodeData.nbrOfPlayers;
+      console.log('Number of players:', nbr_of_players);
+      let dummyPlayeName = 'banana';
+      let dummyPlayerColor = '0x00ff00';
+      for (let i = 1; i < nbr_of_players; i++) {
+        let dummyPlayer = {
+          "accountID": dummyPlayeName + i,
+          "color": dummyPlayerColor
+        }
+        gameSettings.playersData.push(dummyPlayer);
+      }
+      console.log('Game settings automatically:', gameSettings);
+      return gameSettings;
+		} catch (error) {
+			console.error('Failed to join tournament:', error);
+		}
+
+
     
-    return gameSettings;
+    
   }
 
   // Add dummy players data in gameSetting depending on the number of players
-  addPlayerDataToGameSettings(gameSettings, playerNames=[], nbrOfPlayers=3) {
+  async addPlayerDataToGameSettings(gameSettings, playerNames=[], nbrOfPlayers=3) {
 
-    let dummyPlayeName = 'banana';
-    let dummyPlayerColor = '0x00ff00';
-
-    while (playerNames.length != nbrOfPlayers){
-      playerNames.push(dummyPlayeName + playerNames.length);
-    }
-    playerNames.forEach((playerName) => {
-      let dummyPlayer = {
-        "accountID": playerName,
-        "color": dummyPlayerColor
+    try {
+			const responseUser = await makeApiRequest(`/api/user_management/auth/getUser`,'GET');
+			console.log('User  tata:', responseUser.body);
+			
+      const userName = responseUser.body.username;
+      playerNames.push(userName);
+      console.log('Player names:', userName);
+      let dummyPlayeName = 'tanana';
+      let dummyPlayerColor = '0x00ff00';
+  
+      while (playerNames.length < nbrOfPlayers){
+        playerNames.push(dummyPlayeName + playerNames.length);
       }
-      gameSettings.playersData.push(dummyPlayer);
-    });
+      playerNames.forEach((playerName) => {
+        let dummyPlayer = {
+          "accountID": playerName,
+          "color": dummyPlayerColor
+        }
+        gameSettings.playersData.push(dummyPlayer);
+      });
+      console.log('Game settings automaticallysadadasdadad:', gameSettings);
+		} catch (error) {
+			console.error('Failed to join tournament:', error);
+		}
+
+
   }
 
   async getBasicGameSettings() {
-    const accessToken = sessionStorage.getItem('accessToken');
-    const response = await makeApiRequest('/api/user_management/auth/getUser', 'GET');
-    console.log('Basic game settings:', response.body);
-    let gameSettings = {
-	  	"gamemodeData": {
-	  	  "nbrOfPlayers": 3,
-	  	  "nbrOfRounds": 1,
-	  	  "timeLimit": 0,
-        "gameType": 0,
-	  	},
-	  	"fieldData": {
-	  	  "wallsFactor": 1,
-	  	  "sizeOfGoals": 20
-	  	},
-	  	"paddlesData": {
-	  	  "width": 1,
-	  	  "height": 10,
-	  	  "speed": 1
-	  	},
-	  	"ballData": {
-	  	  "speed": 0.5,
-	  	  "radius": 3,
-	  	  "color": "0xf00fff"
-	  	},
-	  	"playersData": [
-	  	  {
-	  		"accountID": "motero",
-	  		"color": "0x0000ff"
-	  	  },
-	  	  {
-	  		"accountID": "tata2",
-	  		"color": "0x00ff00"
-	  	  },
-	  	  {
-	  		"accountID": "tata3",
-	  		"color": "0x00ff00"
-	  	  }
-	  	]
-	  };
-    return gameSettings;
+    try {
+      let gameSettings = {
+        "gamemodeData": {
+          "nbrOfPlayers": 3,
+          "nbrOfRounds": 1,
+          "timeLimit": 0,
+          "gameType": 0,
+        },
+        "fieldData": {
+          "wallsFactor": 1,
+          "sizeOfGoals": 20
+        },
+        "paddlesData": {
+          "width": 1,
+          "height": 10,
+          "speed": 1
+        },
+        "ballData": {
+          "speed": 0.5,
+          "radius": 3,
+          "color": "0xf00fff"
+        },
+        "playersData": [
+          {
+            "accountID": "motero",
+            "color": "0x0000ff"
+            },
+          {
+            "accountID": "yridgway",
+            "color": "0x00ff00"
+          },
+          {
+            "accountID": "tata3",
+            "color": "0x00ff00"
+          },
+        ]
+      };
+     // await this.addPlayerDataToGameSettings(gameSettings);
+      console.log('Game settings automatically after call:', gameSettings)
+      return gameSettings;
+    } catch (error) {
+      console.error('Failed to get user:', error);
+    }
 	}
 
   async handleSubmit(event) {

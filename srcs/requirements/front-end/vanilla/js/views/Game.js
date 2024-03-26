@@ -54,8 +54,8 @@ export default class Game extends AbstractView {
 	constructor(query='', screenWidth, screenHeight) {
 		super();
 		this.loader = new GLTFLoader();
-		console.log("Game View created with matchID: ", query);
 		this.query = 'matchID=' + query;
+		console.log("Game View created with matchID: ", query);
 		
         // controls
         this.controls = null;

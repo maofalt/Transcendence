@@ -11,6 +11,8 @@ export async function makeApiRequest(url, method = 'GET', body = null, headers =
 			headers['Authorization'] = `${jwt}`;
 		}
 
+		//add bearer token
+		//headers['Authorization'] = `Bearer ${jwt}`;
 		const defaultHeaders = {
 			'Accept': 'application/json',
 			...headers,
