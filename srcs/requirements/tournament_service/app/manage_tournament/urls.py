@@ -83,7 +83,7 @@ urlpatterns = [
     path('stats/<int:user_id>', views.PlayerStatsView.as_view(), name='player-stat'),
 
 # Send POST match data to Game
-    path('<int:tournmanet_id>/<int:round>/generate-round', views.GenerateRound.as_view, name='generate-round'),
+    path('<int:tournament_id>/<int:round>/generate-round/', views.GenerateRound.as_view(), name='generate-round'),
 ]
 
 # 1. Create Tourenament with Host player.

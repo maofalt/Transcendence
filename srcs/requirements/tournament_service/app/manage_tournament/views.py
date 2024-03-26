@@ -7,7 +7,7 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.permissions import IsAuthenticated
 from .models import Tournament, TournamentMatch, MatchSetting, TournamentPlayer, Player, MatchParticipants
 from .serializers import TournamentSerializer, TournamentMatchSerializer, MatchSettingSerializer
-from .serializers import TournamentPlayerSerializer
+from .serializers import TournamentPlayerSerializer, GamemodeDataSerializer, FieldDataSerializer, PaddlesDataSerializer, BallDataSerializer, TournamentMatchRoundSerializer
 from .serializers import PlayerSerializer, MatchParticipantsSerializer, TournamentRegistrationSerializer, PlayerGameStatsSerializer, SimpleTournamentSerializer
 from .serializers import MatchGeneratorSerializer
 from django.conf import settings
@@ -22,8 +22,8 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
-# import threading
-# import requests
+from threading import Thread
+import requests
 
 
     # compare total player > match player
@@ -651,15 +651,29 @@ class GenerateRound(APIView):
         serialized_matches = []
         for match in matches:
             match_data = {
-                    'tournament_id': match.tournament_id,
-                    'match_id': match.id,
-                    'gamemodeData': gamemodeDataSerializer(match).data,
-                    'fieldData': fieldDataSerializer(match.match_setting).data,
-                    'paddlesData': paddlesDataSerializer(match.match_setting).data,
-                    'ballData': ballDataSerializer(match.match_setting).data,
-                    'players': PlayerSerializer(match.players.all(), many=True).data,
-                }
-                serialized_matches.append(match_data)
+                'tournament_id': match.tournament_id,
+                'match_id': match.id,
+                'gamemodeData': GamemodeDataSerializer(match).data,
+                'fieldData': FieldDataSerializer(tournament.setting).data,
+                'paddlesData': PaddlesDataSerializer(tournament.setting).data,
+                'ballData': BallDataSerializer(tournament.setting).data,
+                'players': PlayerSerializer(match.players.all(), many=True).data,
+            }
+            serialized_matches.append(match_data)
+
+        webhook_thread = Thread(target=self.send_webhook_request, args=(serialized_matches,))
+        webhook_thread.start()
+
         return Response(serialized_matches, status=status.HTTP_200_OK)
 
+    def send_webhook_request(self, serialized_matches):
+        game_backend_endpoint = 'https://'
+
+        payload = {'matches': serialized_matches}
+        response = requests.post(game_backend_endpoint, json=payload)
+
+        if response.status_code == 200:
+            print("Webhook request successfully sent to the game backend.")
+        else:
+            print("Failed to send webhook request to the game backend. Status code:", response.status_code)
 
