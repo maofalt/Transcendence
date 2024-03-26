@@ -387,4 +387,34 @@ app.post('/createMatch', (req, res) => {
 	res.json({ matchID });
 });
 
+app.post('/createMultipleMatches', (req, res) => {
+	const gameSettings = req.body;
+	const matchIDs = [];
+	console.log("\nCREATE MULTIPLE MATCHES\n");
+	// check post comes from verified source;
+	gameSettings.forEach(settings => {
+		const matchID = generateMatchID(settings);
+		matchIDs.push(matchID);
+		
+		if (matches.has(matchID)) {
+			console.log("Match already exists");
+			return ;
+		}
+
+		const matchValidity = verifyMatchSettings(settings);
+		if (matchValidity) {
+			console.log("Error: ",matchValidity);
+			return ;
+		}
+		
+		// Convert game settings to game state
+		const gameState = init.initLobby(settings);
+		
+		console.log("\nMATCH CREATED\n");
+		matches.set(matchID, { gameState: gameState, gameInterval: 0 });
+	});
+
+	res.json({ matchIDs });
+});
+
 // module.exports = { io };
