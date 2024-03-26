@@ -116,10 +116,12 @@ function initFieldShape(data) {
 function initLobby(lobbyData) {
     let data = new objectsClasses.Data(lobbyData);
 
+    data.gamemode.gameType = 0;
     // if the game mode is battleroyale, score is decrementing, and
     // when a player reaches 0 they're eliminated.
     // duel mode : default mode, score starts at 0, when reaches the max score = wins (only for 2 players)
-    if (data.gamemode.gameType == 1) {
+    if (data.gamemode.nbrOfPlayers > 2) {
+        data.gamemode.gameType = 1;
         for (let player of Object.values(data.players)) {
             player.score = data.gamemode.nbrOfRounds;
         }

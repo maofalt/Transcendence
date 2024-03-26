@@ -134,6 +134,7 @@ class Data {
         this.connectedPlayers = 0;
         this.gameInterval = 0;
         this.ongoing = false;
+        this.jisus_matchID = 0;
 
         // get the gamemode info from the lobby data;
         this.gamemode = new GameMode(lobbyData.gamemodeData);

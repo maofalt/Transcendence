@@ -75,7 +75,25 @@ server.listen(expressPort, () => {
 // global vars
 // let gameInterval = 0;
 
-function waitingLoop(matchID) {
+function gameLoop(matchID) {
+	let match = matches.get(matchID);
+	let gameState = render.updateData(match.gameState);
+	if (gameState == 1) {
+		io.to(matchID).emit('destroy', match.gameState);
+		io.to(matchID).emit('refresh', match.gameState);
+	} else if (gameState == -1) {
+		clearInterval(match.gameInterval); // stop the loop
+		match.gameState.ball.dir = match.gameState.camera.pos.sub(match.gameState.ball.pos);
+		io.to(matchID).emit('end-game', match.gameState);
+		postMatchResult(match.gameState.jisus_matchID, match.gameState.winner); // send the result of the match back;
+		matches.delete(matchID); // then delete the match;
+		return ;
+	}
+	// else if (gameState == 0) {
+	io.to(matchID).emit('render', match.gameState);
+}
+
+function waitingRoom(matchID) {
 	let match = matches.get(matchID);
 	if (!match) {
 		console.log("Match not found");
@@ -83,22 +101,13 @@ function waitingLoop(matchID) {
 		// client.disconnect();
 		return ;
 	}
-	let string = JSON.stringify(match.gameState);
-	let gameState = render.updateData(match.gameState);
-	if (gameState == 1) {
-		io.to(matchID).emit('destroy', match.gameState);
-		io.to(matchID).emit('refresh', match.gameState);
-	} else if (gameState == -1) {
-		clearInterval(match.gameInterval); // stop the loop
-		// render.endGame(match.gameState); // call end game animation
-		match.gameState.ball.dir = match.gameState.camera.pos.sub(match.gameState.ball.pos);
-		io.to(matchID).emit('end-game', match.gameState);
-		// something like a post of the gameState idk // send the result of the match back;
-		matches.delete(matchID); // then delete the match;
-		return ;
-	}
-	// else if (gameState == 0) {
+	// let gameState = render.updateData(match.gameState);
 	io.to(matchID).emit('render', match.gameState);
+
+	if (data.connectedPlayers == data.gamemodeData.nbrOfPlayers) {
+		clearInterval(match.gameInterval);
+		match.gameInterval = setInterval(gameLoop, 10, matchID);
+	}
 }
 
 // gameInterval = setInterval(waitingLoop, 20);
@@ -162,7 +171,7 @@ function handleConnectionV2(client) {
     client.emit('generate', match.gameState);
     
     if (match.gameState.connectedPlayers == 1) {
-        match.gameInterval = setInterval(waitingLoop, 10, client.matchID);
+        match.gameInterval = setInterval(waitingRoom, 10, client.matchID);
         match.gameState.ball.dir.y = -1;
 		match.gameState.ball.dir.x = 0.01;
     }
@@ -307,7 +316,6 @@ function verifyMatchSettings(settings) {
 
 	const checks = {
 		gamemodeData: {
-			gameType: value => (value === 0 || value === 1) ? null : "This Game Type is not recognized.",
 			nbrOfPlayers: value => (value >= 2 && value <= 8) ? null : "Nbr of players should be between 2 and 8",
 			nbrOfRounds: value => (value >= 1 && value <= 10) ? null : "Nbr of Rounds should be between 1 and 10",
 		},
@@ -426,6 +434,7 @@ app.post('/createMultipleMatches', (req, res) => {
 		
 		// Convert game settings to game state
 		const gameState = init.initLobby(settings);
+		gameState.jisus_matchID = matchID;
 		
 		console.log("\nMATCH CREATED\n");
 		matches.set(matchID, { gameState: gameState, gameInterval: 0 });
