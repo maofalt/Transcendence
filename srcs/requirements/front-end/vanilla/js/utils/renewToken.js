@@ -60,6 +60,37 @@ export function renewToken() {
 		});
 	}
 
+	easyFetch('/api/user_management/auth/detail', {
+		method: 'GET',
+		headers: {
+			'Authorization': tokenType + " " + accessToken
+		}
+	}).then(res => {
+		let response = res.response;
+		let body = res.body;
+
+		if (response === null) {
+			throw new Error("Response is null");
+		}
+		if (body === null) {
+			throw new Error("Body is null");
+		}
+		if (response.status !== 200) {
+			throw new Error(body.message || body.error || body);
+		}
+
+		console.log('User Details Retrieved', response);
+		
+		sessionStorage.setItem('username', body.username);
+		sessionStorage.setItem('playername', body.playername);
+		sessionStorage.setItem('avatar', "/api/user_management" + body.avatar);
+		sessionStorage.setItem('friends', body.friends_count);
+		sessionStorage.setItem('email', body.email);
+
+	}).catch(error => {
+		console.error('Error retrieving user details:', error);
+	});
+
 	// calculate remaining time until the token needs refreshing
 	// console.log('expiryTimestamp:', expiryTimestamp);
 	let delayUntilRefresh = expiryTime - now - 30000;

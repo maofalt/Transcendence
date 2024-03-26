@@ -10,6 +10,7 @@ import InputAugmented from '@components/InputAugmented';
 import { navigateTo } from "@utils/Router";
 import UserInfo from "./UserInfo";
 import FriendBlock from "./FriendBlock";
+import { easyFetch } from "@utils/easyFetch";
 
 export default class ProfilePage extends AbstractComponent {
 	constructor(options = {}) {
@@ -20,13 +21,16 @@ export default class ProfilePage extends AbstractComponent {
 		this.shadowRoot.appendChild(styleEl);
 
 		// let user = options.user;
-		let user = options;
+		// let user = options;
+
+		this.user = this.getUserDetails();
+
 		const userInfo = new UserInfo({
-			profilePicPath: user.avatar,
-			username: user.username,
-			status: user.status,
-			wins: user.wins,
-			losses: user.losses,
+			profilePicPath: this.user.avatar,
+			username: this.user.username,
+			status: this.user.status,
+			wins: this.user.wins,
+			losses: this.user.losses,
 			button1: {content: "Edit", action: true},
 			button2: {content: "Log out"}});
 
@@ -71,8 +75,8 @@ export default class ProfilePage extends AbstractComponent {
 				<h3>E-Mail :</h3>
 			</div>
 			<div class="values-container">
-				<p>${user.playername}</p>
-				<p>${user.email}</p>
+				<p>${this.user.playername}</p>
+				<p>${this.user.email}</p>
 			</div>
 		</div>
 		`;
@@ -114,10 +118,10 @@ export default class ProfilePage extends AbstractComponent {
 				<h3>Win rate :</h3>
 			</div>
 			<div class="values-container">
-				<p>${user.total}</p>
-				<p>${user.wins}</p>
-				<p>${user.losses}</p>
-				<p>${user.winrate}</p>
+				<p>${this.user.total}</p>
+				<p>${this.user.wins}</p>
+				<p>${this.user.losses}</p>
+				<p>${this.user.winrate}</p>
 			</div>
 		</div>
 		`;
@@ -130,8 +134,8 @@ export default class ProfilePage extends AbstractComponent {
 		});
 		addFriend.shadowRoot.querySelector("#input-button").style.setProperty("font-size", "28px");
 
-		// user.friends = 4;
-		const friendsList = new Pannel({dark: true, title: `Friends List  ( ${user.friends} )`});
+		// this.user.friends = 4;
+		const friendsList = new Pannel({dark: true, title: `Friends List  ( ${this.user.friends} )`});
 		const listContainer = document.createElement("div");
 		listContainer.id = "list-container";
 		listContainer.style.setProperty("height", "350px");
@@ -188,6 +192,34 @@ export default class ProfilePage extends AbstractComponent {
 		this.shadowRoot.appendChild(goBack);
 		this.shadowRoot.appendChild(profile);
 		this.shadowRoot.appendChild(friendsPannel);
+	}
+
+	getUserDetails = () => {
+		let tokenType = sessionStorage.getItem("tokenType");
+		let accessToken = sessionStorage.getItem("accessToken");
+		let username = sessionStorage.getItem("username");
+		let playername = sessionStorage.getItem("playername");
+		let avatar = sessionStorage.getItem("avatar");
+		let friends = sessionStorage.getItem("friends");
+		let email = sessionStorage.getItem("email");
+
+		// {"username": "yridgway", "playername": "Yoel", "avatar": "/media/default_avatar.jpeg", "friends_count": 0, "two_factor_method": null}
+
+		let user = {
+			avatar,
+			username,
+			status: "online",
+			wins: 10,
+			losses: 5,
+			playername,
+			email,
+			total: 15,
+			winrate: "66%",
+			friends
+		};
+
+		console.log("Returning user:", this.user);
+		return user;
 	}
 }
 
