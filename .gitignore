@@ -3,6 +3,8 @@ trenv/
 *.env
 .vscode/
 node_modules/
+srcs/requirements/game/node_modules/
+srcs/requirements/game/*.json
 ws-simple/
 trancendence-front-end/
 *.pyc
