@@ -16,6 +16,7 @@ const lobbySettings = require('./gameLogic/lobbySettings');
 const init = require('./gameLogic/init');
 const debugDisp = require('./gameLogic/debugDisplay');
 const render = require('./gameLogic/rendering');
+const axios = require('axios');
 // const objects = require('./gameLogic/gameObjects');
 // const game = require('./gameLogic/gameLogic');
 // const objectsClasses = require('./gameLogic/gameObjectsClasses');
@@ -357,6 +358,18 @@ function verifyMatchSettings(settings) {
 	return null;
 }
 
+function postMatchResult(matchId, winnerId) {
+	const url = `http://tournament/matches/${matchId}/${winnerId}/`;
+	
+	axios.post(url)
+		.then(response => {
+			console.log('Match result posted successfully');
+		})
+		.catch(error => {
+			console.error('Error posting match result:', error);
+		});
+}
+
 // app.use(express.static('./public/remote/'));
 app.post('/createMatch', (req, res) => {
 	const gameSettings = req.body;
@@ -385,6 +398,40 @@ app.post('/createMatch', (req, res) => {
 	matches.set(matchID, { gameState: gameState, gameInterval: 0 });
 
 	res.json({ matchID });
+});
+
+app.post('/createMultipleMatches', (req, res) => {
+	const gameSettings = req.body;
+
+	const matchIDs = [];
+	console.log("\nCREATE MULTIPLE MATCHES\n");
+	// check post comes from verified source;
+	gameSettings.forEach(settings => {
+		const { tournament_id, match_id, ...rest } = settings;
+
+		const matchID = generateMatchID(rest);
+		
+		matchIDs.push(matchID);
+		
+		if (matches.has(matchID)) {
+			console.log("Match already exists");
+			return ;
+		}
+
+		const matchValidity = verifyMatchSettings(settings);
+		if (matchValidity) {
+			console.log("Error: ",matchValidity);
+			return ;
+		}
+		
+		// Convert game settings to game state
+		const gameState = init.initLobby(settings);
+		
+		console.log("\nMATCH CREATED\n");
+		matches.set(matchID, { gameState: gameState, gameInterval: 0 });
+	});
+
+	res.json({ matchIDs });
 });
 
 // module.exports = { io };
