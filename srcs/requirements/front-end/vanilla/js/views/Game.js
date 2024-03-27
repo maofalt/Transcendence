@@ -140,8 +140,8 @@ export default class Game extends AbstractView {
 					margin: 0;
 				}
 			</style>
-			<p id="timer">00:00</p>
-			<p id="timer-message">Waiting for players...</p>
+			<p id="timer"></p>
+			<p id="timer-message"></p>
 		`;
 
 		let leaveButton = new CustomButton({ content: "< Leave", style: {
@@ -422,13 +422,27 @@ export default class Game extends AbstractView {
 		this.refreshScene(data);
 	};
 
-	// Other methods (generateScene, updateScene, etc.) here
-	updateScene(data, socket) {
+	displayTimer(data) {
 		let timer = document.getElementById('timer');
 		let timerMessage = document.getElementById('timer-message');
 
 		timer.textContent = data.ongoing ? "" : data.countDownDisplay;
-		timerMessage.textContent = data.ongoing ? "" : "Waiting for players...";
+		timerMessage.textContent = "";
+		
+		if (data.imminent) {
+			timer.style.color = "red";
+			timer.style.fontWeight = "bold";
+			timerMessage.textContent = "Game will start soon";
+		} else if (!data.ongoing) {
+			timer.style.color = "white";
+			timerMessage.textContent = "Waiting for players...";
+		}
+	}
+
+	// Other methods (generateScene, updateScene, etc.) here
+	updateScene(data, socket) {
+		this.displayTimer(data);
+
 		// console.log("Updating Scene...");
 		if (data.ball.model) {
 			this.ballModel.position.set(data.ball.pos.x, data.ball.pos.y, 0);

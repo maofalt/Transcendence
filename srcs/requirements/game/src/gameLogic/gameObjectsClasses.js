@@ -135,6 +135,7 @@ class Data {
         this.gameInterval = 0;
         this.jisus_matchID = 0;
 
+        this.imminent = false;
         this.ongoing = false;
         this.timeLimit = null;
         this.gameCountDown = null;
