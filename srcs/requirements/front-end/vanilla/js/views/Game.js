@@ -10,6 +10,7 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import CustomButton from '@components/CustomButton';
+import { navigateTo } from "@utils/Router";
 
 
 function createCallTracker() {
@@ -151,6 +152,8 @@ export default class Game extends AbstractView {
 			bottom: "30px",
 			// width: "100px",
 		}});
+
+		leaveButton.onclick = () => navigateTo("/");
 
 		this.container.appendChild(countDown);
 		this.container.appendChild(leaveButton);
@@ -328,6 +331,7 @@ export default class Game extends AbstractView {
 		leaveButton.style.position = "absolute";
 		leaveButton.style.left = "50px";
 		leaveButton.style.bottom = "30px";
+		leaveButton.onclick = () => navigateTo("/");
 		
 		uiLayer.appendChild(leaveButton);
 
@@ -423,6 +427,7 @@ export default class Game extends AbstractView {
 	};
 
 	displayTimer(data) {
+		// in here : formatting the timer interface;
 		let timer = document.getElementById('timer');
 		let timerMessage = document.getElementById('timer-message');
 

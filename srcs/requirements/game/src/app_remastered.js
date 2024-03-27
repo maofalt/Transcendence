@@ -127,7 +127,13 @@ function waitingRoom(matchID) {
 	}
 
 	if (!match.gameState.imminent && !match.gameState.ongoing) {
+		// this is called during the waiting of other players
+		// if the game is still waiting for players we count down from a chosen amount
+		// game status = !ongoing && !imminent;
 		if (countDown(match, 0, 10) || match.gameState.connectedPlayers == match.gameState.gamemode.nbrOfPlayers) {
+			// in here = timer has run out or enough players have joined
+			// we set the ball at the center and keep it there
+			// and put the game status to imminent;
 			match.gameState.ball.pos.x = 0;
 			match.gameState.ball.pos.y = 0;
 			match.gameState.ball.dir.x = 0;
@@ -136,7 +142,14 @@ function waitingRoom(matchID) {
 		}
 	}
 	else if (match.gameState.imminent) {
+		// this is called when the game status is imminent;
+		// it is just going to count down 3 seconds for players to get ready.
+		// game status = imminent but !ongoing;
 		if (countDown(match, 0, 3)) {
+			// in here = game is starting
+			// we get rid of the timer, send the ball and put the
+			// game status to ongoing, !imminent;
+			// and we call the loop for the game physics and scoring;
 			clearInterval(match.gameInterval);
 			match.gameState.ball.dir.x = 1;
 			match.gameState.ball.dir.y = 1;
@@ -211,6 +224,7 @@ function handleConnectionV2(client) {
     client.emit('generate', match.gameState);
     
     if (match.gameState.connectedPlayers == 1 && match.gameState.ongoing == false) {
+		console.log("SETTING INTERVAL");
         match.gameInterval = setInterval(waitingRoom, 10, client.matchID);
         match.gameState.ball.dir.y = -1;
 		match.gameState.ball.dir.x = 0.01;
@@ -314,8 +328,8 @@ io.on('connection', (client) => {
 			if (player)
 				player.connected = false;
 			if (data.connectedPlayers < 1) {
-				// console.log("CLEARING INTERVAL");
-				// clearInterval(match.gameInterval);
+				console.log("CLEARING INTERVAL");
+				clearInterval(match.gameInterval);
 				// matches.delete(client.matchID);
 				// delete data;
 			}
