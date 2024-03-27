@@ -1,4 +1,4 @@
-import AbstractView from "./AbstractView";
+import AbstractView from "../AbstractView";
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import io from 'socket.io-client';

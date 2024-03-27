@@ -1,4 +1,4 @@
-import { getCookie } from "@utils/getCookie";
+import getCookie from "@utils/getCookie";
 import { createElement } from "@utils/createElement";
 import { htmlToElement } from "@utils/htmlToElement";
 import styles from '@css/user.css?raw';

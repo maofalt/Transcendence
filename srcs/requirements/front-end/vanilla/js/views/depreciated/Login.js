@@ -1,6 +1,6 @@
-import { makeApiRequest } from "../utils/makeApiRequest";
-import AbstractView from "./AbstractView";
-import { getCookie } from "@utils/getCookie";
+import { makeApiRequest } from "../../utils/makeApiRequest";
+import AbstractView from "../AbstractView";
+import getCookie from "@utils/getCookie";
 import { createElement } from "@utils/createElement";
 import { htmlToElement } from "@utils/htmlToElement";
 import styles from '@css/login.css?raw';
