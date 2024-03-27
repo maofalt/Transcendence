@@ -30,6 +30,10 @@ import logging
 import base64
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.forms.models import model_to_dict
+from .authentication import CustomJWTAuthentication
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.permissions import AllowAny
+
 
 # from django.utils.encoding import force_bytes, force_str
 
@@ -176,6 +180,8 @@ def privacy_policy_view(request):
 @api_view(['POST'])
 @ensure_csrf_cookie
 @csrf_protect
+@authentication_classes([])
+@permission_classes([AllowAny])
 def api_login_view(request):
     print("\n\n       URL:", request.build_absolute_uri())
 
@@ -185,9 +191,6 @@ def api_login_view(request):
         user = authenticate(username=username, password=password)
         if user is not None:
             request.session['pending_username'] = user.username
-            # login(request, user)
-            # print("USer logged in temporary for 2FA.")
-            # Output information about the authenticated user
             print("User Information:")
             print(f"Username: {user.username}")
             print(f"email: {user.email}")
@@ -324,6 +327,9 @@ def api_logout_view(request):
         return JsonResponse({'error': escape('Invalid request method')}, status=400)
 
 @csrf_protect
+@api_view(['POST'])
+@authentication_classes([])
+@permission_classes([AllowAny])
 def api_signup_view(request):
     if request.method == "POST":
         username = request.POST["username"]
@@ -434,13 +440,14 @@ def friends_view(request):
         if friend.avatar:
             with open(friend.avatar.path, "rb") as image_file:
                 avatar_data = base64.b64encode(image_file.read()).decode('utf-8')
-            # avatar_url = urljoin(settings.MEDIA_URL, friend.avatar.url)
+            avatar_url = urljoin(settings.MEDIA_URL, friend.avatar.url)
             print("avatar_url: ", avatar_url)
         friend_info = {
+            'id': friend.id,
             'username': escape(friend.username),
             'playername': escape(friend.playername),
-            'avatar': avatar_data,
-            'pk': friend.pk,
+            'avatar': avatar_url,
+            'is_online': friend.is_online,
         }
         friend_data.append(friend_info)
 
@@ -489,18 +496,18 @@ def detail_view(request):
     # return render(request, 'detail.html', {'data': data})
 
 @login_required
-def add_friend(request, pk):
-    friend = get_object_or_404(User, pk=pk)
-    print("pk : ", pk)
+def add_friend(request, username):
+    friend = get_object_or_404(User, username=username)
+    print("username : ", username)
     print("friend: ", friend)
     request.user.add_friend(friend)
-    return JsonResponse({'message': 'Friend added successfully', 'friend_id': friend.pk})
+    return JsonResponse({'message': 'Friend added successfully', 'added_friend': friend.username})
 
 @login_required
-def remove_friend(request, pk):
-    friend = get_object_or_404(User, pk=pk)
+def remove_friend(request, username):
+    friend = get_object_or_404(User, username=username)
     request.user.friends.remove(friend)
-    return JsonResponse({})
+    return JsonResponse({f'message': '{username} removed from your friend list successfully', 'removed_friend': username})
 
 @login_required
 @csrf_protect
