@@ -93,16 +93,7 @@ export default class Game extends AbstractView {
 			height: 0.2,
 			curveSegments: 12,
 		}
-		this.countDownText = {
-			size: 5,
-			height: 0.2,
-			curveSegments: 12,
-		}
-		this.TKtext = {
-			size: 5,
-			height: 0.2,
-			curveSegments: 12,
-		}
+
 		this.prevScores = [];
 		this.dir = 0;
 
@@ -505,16 +496,6 @@ export default class Game extends AbstractView {
 
 		if (!loader)
 			return console.error("FontLoader not found");
-
-		loader.load( 'js/assets/fonts/Tk421-K7mv7.json', ( response ) => {
-
-		this.TKtext.font = response;
-
-		this.refreshScores(data);
-
-		console.log("Font TK loaded");
-
-		} );
 
 		loader.load( 'https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', ( response ) => {
 
