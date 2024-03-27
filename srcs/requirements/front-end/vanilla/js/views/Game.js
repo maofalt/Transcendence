@@ -383,6 +383,11 @@ export default class Game extends AbstractView {
 
 	// Other methods (generateScene, updateScene, etc.) here
 	updateScene(data, socket) {
+		let timer = document.getElementById('timer');
+		let timerMessage = document.getElementById('timer-message');
+
+		timer.textContent = data.ongoing ? "" : data.countDownDisplay;
+		timerMessage.textContent = data.ongoing ? "" : "Waiting for players...";
 		// console.log("Updating Scene...");
 		if (data.ball.model) {
 			this.ballModel.position.set(data.ball.pos.x, data.ball.pos.y, 0);
