@@ -1,5 +1,5 @@
-import { makeApiRequest } from "../utils/makeApiRequest";
-import AbstractView from "./AbstractView";
+import { makeApiRequest } from "../../utils/makeApiRequest";
+import AbstractView from "../AbstractView";
 import { getCookie } from "@utils/getCookie";
 import { createElement } from "@utils/createElement";
 import { htmlToElement } from "@utils/htmlToElement";

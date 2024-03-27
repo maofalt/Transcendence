@@ -1,6 +1,6 @@
 import { createElement } from "@utils/createElement";
 import { htmlToElement } from "@utils/htmlToElement";
-import AbstractComponent from "./AbstractComponent";
+import AbstractComponent from "../components/AbstractComponent";
 import AbstractView from "@views/AbstractView";
 import profilePageStyles from '@css/ProfilePage.css?raw';
 import BigTitle from '@components/BigTitle';
@@ -8,8 +8,8 @@ import Pannel from '@components/Pannel';
 import CustomButton from '@components/CustomButton';
 import InputAugmented from '@components/InputAugmented';
 import { navigateTo } from "@utils/Router";
-import UserInfo from "./UserInfo";
-import FriendBlock from "./FriendBlock";
+import UserInfo from "../components/UserInfo";
+import FriendBlock from "../components/FriendBlock";
 import { easyFetch } from "@utils/easyFetch";
 import { getCookie } from "@utils/getCookie";
 import fetchUserDetails from "@utils/fetchUserDetails";

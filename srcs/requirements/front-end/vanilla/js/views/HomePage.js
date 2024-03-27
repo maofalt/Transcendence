@@ -1,6 +1,6 @@
 import { createElement } from "@utils/createElement";
 import { htmlToElement } from "@utils/htmlToElement";
-import AbstractComponent from "./AbstractComponent";
+import AbstractComponent from "../components/AbstractComponent";
 import AbstractView from "@views/AbstractView";
 import homePageStyle from '@css/HomePage.css?raw';
 import BigTitle from '@components/BigTitle';
@@ -8,7 +8,7 @@ import Pannel from '@components/Pannel';
 import CustomButton from '@components/CustomButton';
 import { navigateTo } from "@utils/Router";
 import { displayPopup } from "@utils/displayPopup";
-import UserInfo from "./UserInfo";
+import UserInfo from "@components/UserInfo";
 
 export default class HomePage extends AbstractComponent {
 	constructor(options = {}) {

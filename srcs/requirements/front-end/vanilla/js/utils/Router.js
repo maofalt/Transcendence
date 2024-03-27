@@ -1,27 +1,24 @@
 // Router.js
-import Home from '@views/Home.js';
 import Tournament from '@views/Tournament.js';
 import Options from '@views/Options.js';
 import Game from '@views/Game.js';
-import Login from '@views/Login.js';
 import NotFound from '@views/NotFound.js';
 import CreateTournament from '@views/CreateTournament.js';
-import ProfilePage from '@components/ProfilePage.js';
-import SpaceBackground from '../components/SpaceBackground';
+import ProfilePage from '@views/ProfilePage.js';
+import SpaceBackground from '@components/SpaceBackground';
 import User from '@views/User';
-import Design from '@views/Design.js';
 import BasicGame from '@views/BasicGame.js';
 import TwoFactorAuth from '@views/2fa';
 import Signup from '@views/Signup.js';
 import EditProfile from '@components/EditProfile';
-import LoginUserProfile from '@views/LoginUserProfile';
-
-import { fadeIn, fadeOut } from '@utils/jqueryUtils.js';
-import { fadeInjava, fadeOutjava } from './jqueryUtils';
+import HomePage from '@views/HomePage';
+import LoginPage from '@views/LoginPage';
+import PlayMenu from '@views/PlayMenu';
 
 export const routes = {
 	'/': {
 		path: '/',
+		view: HomePage,
 		component: 'home-page',
 		title: 'Pongiverse',
 		buttonText: 'Home'
@@ -40,12 +37,14 @@ export const routes = {
 	},
 	'/game': {
 		path: '/game',
+		view: PlayMenu,
 		component: 'play-menu',
 		title: 'Game',
 		buttonText: 'Game'
 	},
 	'/profile': {
 		path: '/profile',
+		view: ProfilePage,
 		component: 'profile-page',
 		title: 'Profile',
 		buttonText: 'Profile',
@@ -76,30 +75,21 @@ export const routes = {
 	},
 	'/login': {
 		path: '/login',
+		view: LoginPage,
 		component: 'login-page-v2',
 		title: 'Login',
 		buttonText: 'Login'
 	},
-	'/signup-old': {
-		path: '/signup-old',
-		component: 'signup-page-v2',
-		title: 'Signup',
-		buttonText: 'Signup'
-	},
 	'/signup': {
 		path: '/signup',
+		view: Signup,
 		component: 'signup-page',
 		title: 'Signup',
 		buttonText: 'Signup'
 	},
-	'/forgot_password': {
-		path: '/forgot_password',
-		component: 'forgot-password',
-		title: 'Forgot Password',
-		buttonText: 'Forgot Password'
-	},
 	'/2fa': {
 		path: '/2fa',
+		view: TwoFactorAuth,
 		component: 'two-factor-auth',
 		title: 'Two Factor Authentication',
 		buttonText: '2FA'
@@ -109,13 +99,6 @@ export const routes = {
 		view: User,
 		title: 'Profile Page',
 		buttonText: 'Profile'
-	},
-	'/design': {
-		path: '/design',
-		view: Design,
-		title: 'Design',
-		buttonText: 'Design',
-		component: 'design-page'
 	},
 	'/basic': {
 		path: '/basic',
@@ -130,11 +113,6 @@ export const routes = {
 		title: '404 Not Found',
 		buttonText: 'Not Found Page'
 	}
-	// '/profile': {
-	// 	path: '/profile',
-	// 	component: 'profile-page',
-	// 	title: 'ProfilePage',
-	// }
 };
 
 let currentView = null;
@@ -150,6 +128,7 @@ export const router = async () => {
   const path = window.location.pathname;
   const View = routes[path] || routes['/404'];
   const viewContainer = document.querySelector('#view');
+
 
   if (View.component) {
 	if (previousView) {
