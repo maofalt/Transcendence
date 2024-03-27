@@ -132,7 +132,7 @@ export default class Game extends AbstractView {
 				}
 
 				p {
-					border: red 1px solid;
+					// border: red 1px solid;
 				}
 
 				#timer {
