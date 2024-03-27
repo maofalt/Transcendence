@@ -122,42 +122,27 @@ export default class Game extends AbstractView {
 		this.container = document.getElementById('gameContainer');
 
 		// Create a new div
-		let uiLayer = document.createElement('div');
-		uiLayer.innerHTML = `
-			<style>
-				#count-down {
-					text-align: center;
-					font-size: 30px;
-					color: white;
-				}
-
-				p {
-					// border: red 1px solid;
-				}
-
+		let countDown = document.createElement('div');
+		countDown.id = 'count-down';
+		countDown.style.position = 'absolute';
+		countDown.style.top = '0';
+		countDown.style.width = "100%";
+		countDown.style.textAlign = 'center';
+		countDown.style.fontSize = '30px';
+		countDown.style.color = 'white';
+		countDown.innerHTML = `
+			<style>			
 				#timer {
 					margin-bottom: 0;
-				}
-
+				}	
 				#timer-message {
 					font-size: 20px;
 					margin: 0;
 				}
 			</style>
-			<div id="count-down">
-				<p id="timer">00:00</p>
-				<p id="timer-message">Waiting for players...</p>
-			</div>
+			<p id="timer">00:00</p>
+			<p id="timer-message">Waiting for players...</p>
 		`;
-
-		// Set the div's style properties
-		uiLayer.id = 'uiLayer';
-		uiLayer.style.width = '100%';
-		uiLayer.style.height = '100%';
-		uiLayer.style.background = 'rgba(0, 0, 0, 0)';
-		uiLayer.style.position = 'absolute';
-		uiLayer.style.top = '0';
-		uiLayer.style.left = '0';
 
 		let leaveButton = new CustomButton({ content: "< Leave", style: {
 			padding: "0px 20px",
@@ -167,10 +152,8 @@ export default class Game extends AbstractView {
 			// width: "100px",
 		}});
 
-		uiLayer.appendChild(leaveButton);
-
-		// Append the new div to the parent of the renderer
-		this.container.appendChild(uiLayer);
+		this.container.appendChild(countDown);
+		this.container.appendChild(leaveButton);
 		
 		// Your game setup logic here (init socket, create scene, etc.)
 		// this.generateScene();
@@ -278,7 +261,7 @@ export default class Game extends AbstractView {
 			// this.launchEndGameAnimation();
 			this.controls.enabled = false;
 
-			this.launchEndGameAnimation();
+			this.launchEndGameAnimation(data.winner);
 
 			// this.scene.clear();
 			console.log("END OF GAME");
@@ -293,8 +276,63 @@ export default class Game extends AbstractView {
 
 	};
 
-	launchEndGameAnimation() {
-		let uiLayer = document.getElementById('uiLayer');
+	launchEndGameAnimation(winner) {
+		let winColor = winner.color.toString(16);
+		winColor = winColor.length < 6 ? "0".repeat(6 - winColor.length) + winColor : winColor;
+
+		let uiLayer = document.createElement('div');
+		uiLayer.id = 'uiLayer';
+		uiLayer.style.width = '100%';
+		uiLayer.style.height = '100%';
+		uiLayer.style.background = 'rgba(0, 0, 0, 0)';
+		uiLayer.style.position = 'absolute';
+		uiLayer.style.top = '0';
+		uiLayer.style.left = '0';
+		uiLayer.style.display = 'flex';
+		// uiLayer.style.textAlign = "center";
+		uiLayer.style.setProperty("flex-direction", "column");
+		uiLayer.style.justifyContent = 'center';
+		uiLayer.innerHTML = `
+			<style>
+				#end-game-block {
+					color: white;
+					text-align: center;
+					display: flex;
+					flex-direction: column;
+					// justify-content: center;
+					// align-items: center;
+				}
+				h3 {
+					margin: 0;
+					padding: 0;
+					font-family: 'tk-421', sans-serif;
+					font-size: 100px;
+				}
+				p {
+					display: inline;
+					font-size: 50px;
+				}
+				#winner-name {
+					color: #${winColor};
+				}
+			</style>
+			<div id="end-game-block">
+				<h3>Game Over</h3>
+				<div id="winner-info">
+					<p>Winner : </p><p id="winner-name">${winner.accountID}</p>
+				</div>
+			</div>
+		`;
+
+		let leaveButton = new CustomButton({ content: "< Leave", style: {padding: "0px 20px"}});
+		leaveButton.style.position = "absolute";
+		leaveButton.style.left = "50px";
+		leaveButton.style.bottom = "30px";
+		
+		uiLayer.appendChild(leaveButton);
+
+		this.container.appendChild(uiLayer);
+
 		this.endGameAnimation(uiLayer);
 	}
 
@@ -302,7 +340,10 @@ export default class Game extends AbstractView {
 	endGameAnimation = (uiLayer, frame = 0) => {
 		let maxFrame = 50;
 
-		uiLayer.style.setProperty("background", `rgba(0, 0, 0, ${frame / maxFrame})`);
+		uiLayer.style.background = `rgba(0, 0, 0, ${frame / (maxFrame * 1.8)})`;
+		uiLayer.style.opacity = frame / maxFrame;
+		uiLayer.style.backdropFilter = `blur(${frame / maxFrame * 16}px)`;
+		console.log(`blur(${frame / maxFrame * 16}px)`);
 		if (frame == maxFrame) {
 			console.log("End of Game !!");
 			return ;

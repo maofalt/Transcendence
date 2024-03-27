@@ -85,7 +85,7 @@ function gameLoop(matchID) {
 		clearInterval(match.gameInterval); // stop the loop
 		match.gameState.ball.dir = match.gameState.camera.pos.sub(match.gameState.ball.pos);
 		io.to(matchID).emit('end-game', match.gameState);
-		postMatchResult(match.gameState.jisus_matchID, match.gameState.winner); // send the result of the match back;
+		postMatchResult(match.gameState.jisus_matchID, match.gameState.winner.accountID); // send the result of the match back;
 		matches.delete(matchID); // then delete the match;
 		return ;
 	}
@@ -104,7 +104,7 @@ function waitingRoom(matchID) {
 
 	// start the countdown timer
 	let minToWait = 0;
-	let secToWait = 10;
+	let secToWait = 5;
 	if (!match.gameState.timeLimit) {
 		match.gameState.timeLimit = Date.now() + ((minToWait * 60) + secToWait) * 1000;
 		console.log(`GAME STARTS IN ${minToWait}:${secToWait}`);
