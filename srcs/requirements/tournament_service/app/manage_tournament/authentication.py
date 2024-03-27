@@ -9,8 +9,8 @@ from django.conf import settings
 # ------------------------ Authentication -----------------------------------
 class CustomJWTAuthentication(authentication.BaseAuthentication):
     def authenticate(self, request):
-        # accessToken = request.headers.get('Authorization', None)
-        accessToken = request.COOKIES.get('refreshToken')
+        accessToken = request.headers.get('Authorization', None)
+        # accessToken = request.COOKIES.get('refreshToken')
         # print("refreshToken print: ", str(refreshToken))
         if not accessToken:
             raise exceptions.AuthenticationFailed('access token is missing')
@@ -18,8 +18,8 @@ class CustomJWTAuthentication(authentication.BaseAuthentication):
         try:
             decoded_token = jwt.decode(accessToken, settings.SECRET_KEY, algorithms=["HS256"])
             uid = decoded_token['user_id']
-            username = 'jisu2'
-            # username = decoded_token.get('username', None)
+            # username = 'jisu2'
+            username = decoded_token.get('username', None)
             user_info = (uid, username)
             return user_info, accessToken
 
