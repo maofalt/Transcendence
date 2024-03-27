@@ -5,7 +5,7 @@ from .models import RegistrationType, TournamentPlayer, Player, MatchParticipant
 class MatchSettingSerializer(serializers.ModelSerializer):
     class Meta:
         model = MatchSetting
-        fields = fields = '__all__'
+        fields = '__all__'
 
 class TournamentSerializer(serializers.ModelSerializer):
     setting = MatchSettingSerializer()
@@ -61,7 +61,7 @@ class TournamentRegistrationSerializer(serializers.ModelSerializer):
 class PlayerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Player
-        fields = ['id', 'total_played', 'won_match', 'won_tournament']
+        fields = '__all__'
 
 class MatchParticipantsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -94,6 +94,80 @@ class TournamentMatchSerializer(serializers.ModelSerializer):
     class Meta:
         model = TournamentMatch
         fields = ['id', 'state', 'tournament_id', 'round_number', 'match_time', 'players', 'participants']
+
+class GamemodeDataSerializer(serializers.ModelSerializer):
+    nbrOfRounds = serializers.IntegerField(source='round_number') #assume it is for current round number
+    nbrOfPlayers = serializers.SerializerMethodField() # it is returning not a nbr_of_player for match setting, it returns actaul number of payer for a current match
+
+    class Meta:
+        model = TournamentMatch
+        fields = ['nbrOfPlayers', 'nbrOfRounds']
+
+    def get_nbrOfPlayers(self, obj):
+        return obj.players.count()
+
+class FieldDataSerializer(serializers.ModelSerializer):
+    wallsFactor = serializers.IntegerField(source='walls_factor')
+    sizeOfGoals = serializers.IntegerField(source='size_of_goals')
+
+    class Meta:
+        model = MatchSetting
+        fields = ['wallsFactor', 'sizeOfGoals']
+
+class PaddlesDataSerializer(serializers.ModelSerializer):
+    width = serializers.IntegerField(default=2)
+    height = serializers.IntegerField(source='paddle_height')
+    speed = serializers.DecimalField(max_digits=3, decimal_places=2, source='paddle_speed')
+
+    class Meta:
+        model = MatchSetting
+        fields = ['width', 'height', 'speed']
+    
+class BallDataSerializer(serializers.ModelSerializer):
+    speed = serializers.DecimalField(max_digits=3, decimal_places=2, source='ball_speed')
+    radius = serializers.DecimalField(max_digits=3, decimal_places=2, source='ball_radius')
+    color = serializers.CharField(source='ball_color')
+    
+    class Meta:
+        model = MatchSetting
+        fields = ['speed', 'radius', 'color']
+
+class SimplePlayerSerializer(serializers.ModelSerializer):
+    assigned_colors = [
+        '#FF0000',  # Red
+        '#0000FF',  # Blue
+        '#00FF00',  # Green
+        '#FFFF00',  # Yellow
+        '#444444',  # Dark Grey
+        '#FFC0CB',  # Magenta
+        '#00FFFF',  # Cyan
+        '#FFFFFF',  # White
+    ]
+
+    class Meta:
+        model = Player
+        fields = ['id', 'username']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        queryset = Player.objects.all()
+        player_count = queryset.count()
+        index = list(queryset).index(instance)  # Get the index of the instance in the queryset
+        color_index = index % len(self.assigned_colors)
+        representation['color'] = self.assigned_colors[color_index]
+        return representation
+
+class TournamentMatchRoundSerializer(serializers.ModelSerializer):
+    gamemodeData = GamemodeDataSerializer()
+    fieldData = FieldDataSerializer()
+    paddlesData = PaddlesDataSerializer()
+    ballData = BallDataSerializer()
+    players = SimplePlayerSerializer(many=True)
+    match_id = serializers.IntegerField(source='id')
+
+    class Meta:
+        model = TournamentMatch
+        fields = ['tournament_id', 'match_id', 'gamemodeData', 'fieldData', 'paddlesData', 'ballData', 'players']
 
 
 # class TournamentTypeSerializer(serializers.ModelSerializer):
