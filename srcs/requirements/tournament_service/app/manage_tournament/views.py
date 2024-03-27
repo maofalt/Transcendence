@@ -667,7 +667,7 @@ class GenerateRound(APIView):
         return Response(serialized_matches, status=status.HTTP_200_OK)
 
     def send_webhook_request(self, serialized_matches):
-        game_backend_endpoint = 'https://'
+        game_backend_endpoint = 'http://game:3000/createMultipleMatches'
 
         payload = {'matches': serialized_matches}
         response = requests.post(game_backend_endpoint, json=payload)
