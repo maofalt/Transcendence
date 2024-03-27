@@ -149,6 +149,7 @@ def refresh_accessToken(request, accessToken, refreshToken):
         user.save()
         refresh = RefreshToken(refreshToken)
         access = refresh.access_token
+        access['username'] = user.username
         new_accessToken = str(access)
 
         current_time = timezone.now()

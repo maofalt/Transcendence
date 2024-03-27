@@ -53,7 +53,7 @@ urlpatterns = [
     # POST /tournament/{id}/end - End the tournament, finalizing its state and possibly triggering the calculation of rankings.
     path('matches/<int:match_id>/end/', views.MatchEnd.as_view(), name='match-end'),
     # PUT /tournament/{match_id}/{winner_id}/matches/ - Update the status or result of a match.
-    path('matches/<int:match_id>/<int:winner_id>/', views.MatchResult.as_view(), name='match-result'),
+    path('matches/<int:match_id>/<str:winner_username>/', views.MatchResult.as_view(), name='match-result'),
     # PUT /tournament/{match_id}/{player_id}/{participant_score}/matches/ - Update the status or result of a match.
     # path('matches/<int:match_id>/<int:player_id>/<int:score>/', views.MatchResult.as_view(), name='match-result'),
     
@@ -82,6 +82,8 @@ urlpatterns = [
     path('<int:tournament_id>/matches/participants/', views.MatchParticipantsList.as_view(), name='matches-participants-list'),
     path('stats/<int:user_id>', views.PlayerStatsView.as_view(), name='player-stat'),
 
+# Send POST match data to Game
+    path('<int:tournament_id>/<int:round>/generate-round/', views.GenerateRound.as_view(), name='generate-round'),
 ]
 
 # 1. Create Tourenament with Host player.
