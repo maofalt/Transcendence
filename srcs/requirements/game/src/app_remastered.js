@@ -103,17 +103,20 @@ function waitingRoom(matchID) {
 	}
 
 	// start the countdown timer
+	let minToWait = 0;
+	let secToWait = 10;
 	if (!match.gameState.timeLimit) {
-		match.gameState.timeLimit = Date.now() + 10 * 1000;  // 2 minutes from now
-		console.log("GAME STARTS IN 2 MINUTES");
+		match.gameState.timeLimit = Date.now() + ((minToWait * 60) + secToWait) * 1000;
+		console.log(`GAME STARTS IN ${minToWait}:${secToWait}`);
 	}
 
 	// calculate the remaining time
 	match.gameState.waitingRemainingTime = match.gameState.timeLimit - Date.now();
 	let minutes = Math.floor(match.gameState.waitingRemainingTime / 60000);
 	let seconds = Math.floor((match.gameState.waitingRemainingTime % 60000) / 1000);
+	match.gameState.countDownDisplay = `${minutes}:${seconds}`;
 	console.log(match.gameState.waitingRemainingTime);
-	console.log(`MATCH STARTS IN ${minutes}:${seconds}`);
+	console.log(`MATCH ${matchID} STARTS IN ${minutes}:${seconds}`);
 
 	// if the countdown has finished, reset
 	if (match.gameState.waitingRemainingTime <= 0) {
@@ -196,7 +199,7 @@ function handleConnectionV2(client) {
 	console.log('---DATA---\n', match.gameState, '\n---END---\n');
     client.emit('generate', match.gameState);
     
-    if (match.gameState.connectedPlayers == 1) {
+    if (match.gameState.connectedPlayers == 1 && match.gameState.ongoing == false) {
         match.gameInterval = setInterval(waitingRoom, 10, client.matchID);
         match.gameState.ball.dir.y = -1;
 		match.gameState.ball.dir.x = 0.01;
@@ -300,8 +303,8 @@ io.on('connection', (client) => {
 			if (player)
 				player.connected = false;
 			if (data.connectedPlayers < 1) {
-				console.log("CLEARING INTERVAL");
-				clearInterval(match.gameInterval);
+				// console.log("CLEARING INTERVAL");
+				// clearInterval(match.gameInterval);
 				// matches.delete(client.matchID);
 				// delete data;
 			}

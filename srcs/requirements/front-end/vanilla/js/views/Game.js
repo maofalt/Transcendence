@@ -91,6 +91,11 @@ export default class Game extends AbstractView {
 			height: 0.2,
 			curveSegments: 12,
 		}
+		this.countDownText = {
+			size: 5,
+			height: 0.2,
+			curveSegments: 12,
+		}
 		this.TKtext = {
 			size: 5,
 			height: 0.2,
@@ -102,14 +107,6 @@ export default class Game extends AbstractView {
 		this.screenWidth = screenWidth || window.innerWidth;
 		this.screenHeight = screenHeight || window.innerHeight;
 		console.log("Screen size: ", this.screenWidth, this.screenHeight);
-
-		// Create an EffectComposer
-		this.composer = null;
-		this.renderPass = null;
-		this.darkenShader = null;
-		this.darkenPass = null;
-		this.sRGBToLinearShader = null;
-		this.sRGBToLinearPass = null;
 	};
 
 	async getHtml() {
@@ -122,6 +119,21 @@ export default class Game extends AbstractView {
 		console.log("init Game View...");
 		// Set up the game container
 		this.container = document.getElementById('gameContainer');
+
+		// Create a new div
+		let uiLayer = document.createElement('div');
+
+		// Set the div's style properties
+		uiLayer.id = 'uiLayer';
+		uiLayer.style.width = '100%';
+		uiLayer.style.height = '100%';
+		uiLayer.style.background = 'rgba(0, 0, 0, 0.1)'; // black background with 50% opacity
+		uiLayer.style.position = 'absolute';
+		uiLayer.style.top = '0';
+		uiLayer.style.left = '0';
+
+		// Append the new div to the parent of the renderer
+		this.container.appendChild(uiLayer);
 		
 		// Your game setup logic here (init socket, create scene, etc.)
 		// this.generateScene();
@@ -245,95 +257,12 @@ export default class Game extends AbstractView {
 	};
 
 	launchEndGameAnimation() {
-		// Create an EffectComposer
-		this.composer = new EffectComposer(this.renderer);
-
-		// Add a RenderPass
-		this.renderPass = new RenderPass(this.scene, this.camera);
-		this.composer.addPass(this.renderPass);
-
-		// Create a ShaderPass
-		this.sRGBToLinearShader = new THREE.ShaderMaterial({
-			uniforms: {
-				tDiffuse: { value: null }
-			},
-			vertexShader: `
-				varying vec2 vUv;
-				void main() {
-					vUv = uv;
-					gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-				}
-			`,
-			fragmentShader: `
-				uniform sampler2D tDiffuse;
-				varying vec2 vUv;
-
-				void main() {
-					vec4 color = texture2D(tDiffuse, vUv);
-					color.rgb = pow(color.rgb, vec3(2.2)); // sRGB to Linear
-					gl_FragColor = color;
-				}
-			`
-		});
-
-		this.sRGBToLinearPass = new ShaderPass(this.sRGBToLinearShader);
-
-		// Create a ShaderPass
-		this.darkenShader = new THREE.ShaderMaterial({
-			uniforms: {
-				tDiffuse: { value: null },
-				amount: { value: 0 }
-			},
-			vertexShader: `
-				varying vec2 vUv;
-				void main() {
-					vUv = uv;
-					gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-				}
-			`,
-			fragmentShader: `
-				uniform sampler2D tDiffuse;
-				uniform float amount;
-				varying vec2 vUv;
-
-				void main() {
-					vec4 color = texture2D(tDiffuse, vUv);
-					gl_FragColor = mix(color, vec4(0.0, 0.0, 0.0, 1.0), amount);
-				}
-			`,
-			blending: THREE.AdditiveBlending
-		});
-		
-		this.darkenShader.toneMapped = false;
-		this.darkenPass = new ShaderPass(this.darkenShader);
-
-		this.composer.addPass(this.sRGBToLinearPass);
-		this.composer.addPass(this.darkenPass);
-
-		this.controls.enabled = false;
-
 		this.endGameAnimation();
 	}
 
 	// Define your animation function
 	endGameAnimation = (frame = 0) => {
-		let scaleFactor = 1.1;
 		let maxFrame = 300;
-		// let lightStep = this.ambientLight.intensity / maxFrame;
-		// let dirLightStep = this.directionalLight.intensity / maxFrame;
-		
-
-		if (!this.ballModel) {
-			this.ball.mesh.scale.multiplyScalar(scaleFactor);
-			// this.ballModel.position.add(direction);
-		}
-
-		// console.log(this.darkenShader.uniforms.amount.value);
-		// console.log(frame);
-		this.darkenShader.uniforms.amount.value += (1 / maxFrame); // Increase this value to darken faster
-		this.composer.render();
-
-		console.log("end of game");
 		if (frame == maxFrame)
 			return ;
 

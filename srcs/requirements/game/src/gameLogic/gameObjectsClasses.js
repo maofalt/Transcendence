@@ -133,10 +133,12 @@ class Data {
     constructor(lobbyData) {
         this.connectedPlayers = 0;
         this.gameInterval = 0;
+        this.jisus_matchID = 0;
+
+        this.ongoing = false;
         this.timeLimit = null;
         this.gameCountDown = null;
-        this.ongoing = false;
-        this.jisus_matchID = 0;
+        this.countDownDisplay = null;
 
         // get the gamemode info from the lobby data;
         this.gamemode = new GameMode(lobbyData.gamemodeData);
@@ -145,10 +147,10 @@ class Data {
         this.camera = new Camera();
         this.field = new Field(lobbyData.fieldData);
         this.ball = new Ball(lobbyData.ballData);
-        this.winner = 0;
-
+        
         // create and fill the array of players
         this.players = {};
+        this.winner = 0;
 
 		this.playersArray = [];
 
