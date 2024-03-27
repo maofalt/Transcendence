@@ -5,7 +5,7 @@ from .models import RegistrationType, TournamentPlayer, Player, MatchParticipant
 class MatchSettingSerializer(serializers.ModelSerializer):
     class Meta:
         model = MatchSetting
-        fields = fields = '__all__'
+        fields = '__all__'
 
 class TournamentSerializer(serializers.ModelSerializer):
     setting = MatchSettingSerializer()
@@ -61,7 +61,7 @@ class TournamentRegistrationSerializer(serializers.ModelSerializer):
 class PlayerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Player
-        fields = ['id', 'total_played', 'won_match', 'won_tournament']
+        fields = '__all__'
 
 class MatchParticipantsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -133,30 +133,28 @@ class BallDataSerializer(serializers.ModelSerializer):
         fields = ['speed', 'radius', 'color']
 
 class SimplePlayerSerializer(serializers.ModelSerializer):
-    COLOR_CHOICES = ['red', 'blue', 'green', 'yellow', 'dark grey', 'pink', 'white', 'cyan']
-    color = serializers.ChoiceField(choices=COLOR_CHOICES)
-
+    assigned_colors = [
+        '#FF0000',  # Red
+        '#0000FF',  # Blue
+        '#00FF00',  # Green
+        '#FFFF00',  # Yellow
+        '#444444',  # Dark Grey
+        '#FFC0CB',  # Magenta
+        '#00FFFF',  # Cyan
+        '#FFFFFF',  # White
+    ]
 
     class Meta:
         model = Player
-        fields = ['id', 'username', 'color']
+        fields = ['id', 'username']
 
-    def color_to_rgb(color_name):
-        colors = {
-            'red': '#FF0000',
-            'blue': '#0000FF',
-            'green': '#00FF00',
-            'yellow': '#FFFF00',
-            'dark grey': '#444444',
-            'pink': '#FFC0CB',
-            'white': '#FFFFFF',
-            'cyan': '#00FFFF'
-        }
-        return colors.get(color_name.lower(), '#000000')
-        
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation['color'] = self.color_to_rgb(representation['color'])
+        queryset = Player.objects.all()
+        player_count = queryset.count()
+        index = list(queryset).index(instance)  # Get the index of the instance in the queryset
+        color_index = index % len(self.assigned_colors)
+        representation['color'] = self.assigned_colors[color_index]
         return representation
 
 class TournamentMatchRoundSerializer(serializers.ModelSerializer):
