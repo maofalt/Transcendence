@@ -1,3 +1,4 @@
+import getCookie from "@utils/getCookie";
 
 export default async function easyFetch(url, options = { method: 'GET', body: null, headers: {} }) {
 
@@ -10,6 +11,7 @@ export default async function easyFetch(url, options = { method: 'GET', body: nu
 
 		const defaultHeaders = {
 			'Accept': 'application/json',
+			'X-CSRFToken': getCookie('csrftoken'),
 			...options.headers,
 		};
 

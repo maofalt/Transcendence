@@ -14,6 +14,7 @@ import logOut from "@utils/logOut";
 import easyFetch from "@utils/easyFetch";
 import getCookie from "@utils/getCookie";
 import displayPopup from "@utils/displayPopup";
+import FriendsList from "@components/FriendsList";
 
 export default class ProfilePage extends AbstractComponent {
 	constructor(options = {}) {
@@ -144,43 +145,45 @@ export default class ProfilePage extends AbstractComponent {
 
 		// this.user.friends = 4;
 		const friendsList = new Pannel({dark: true, title: `Friends List  ( ${this.user.friends} )`});
-		const listContainer = document.createElement("div");
-		listContainer.id = "list-container";
-		listContainer.style.setProperty("height", "350px");
-		listContainer.style.setProperty("padding-top", "10px");
-		listContainer.style.setProperty("overflow-y", "scroll");
-		listContainer.style.setProperty("border-top", "2px solid rgba(255, 255, 255, 0.1)");
-		listContainer.style.setProperty("border-radius", "0px 0px 20px 20px");
-		listContainer.style.setProperty("scrollbar-color", "rgba(255, 255, 255, 0.1) rgba(255, 255, 255, 0.1)");
-		listContainer.style.setProperty("scrollbar-width", "thin");
+		// const listContainer = document.createElement("div");
+		// listContainer.id = "list-container";
+		// listContainer.style.setProperty("height", "350px");
+		// listContainer.style.setProperty("padding-top", "10px");
+		// listContainer.style.setProperty("overflow-y", "scroll");
+		// listContainer.style.setProperty("border-top", "2px solid rgba(255, 255, 255, 0.1)");
+		// listContainer.style.setProperty("border-radius", "0px 0px 20px 20px");
+		// listContainer.style.setProperty("scrollbar-color", "rgba(255, 255, 255, 0.1) rgba(255, 255, 255, 0.1)");
+		// listContainer.style.setProperty("scrollbar-width", "thin");
 
-		let friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "online"});
+		// let friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "online"});
 
-		friendsList.shadowRoot.querySelector("#pannel-title").style.setProperty("font-size", "22px");
-		friendsList.shadowRoot.querySelector("#pannel-title").style.setProperty("font-family", "Space Grotesk, sans-serif");
-		friendsList.shadowRoot.querySelector("#pannel-title").style.setProperty("font-weight", "bold");
+		// friendsList.shadowRoot.querySelector("#pannel-title").style.setProperty("font-size", "22px");
+		// friendsList.shadowRoot.querySelector("#pannel-title").style.setProperty("font-family", "Space Grotesk, sans-serif");
+		// friendsList.shadowRoot.querySelector("#pannel-title").style.setProperty("font-weight", "bold");
 
-		listContainer.appendChild(friend);
-		friendsList.shadowRoot.appendChild(listContainer);
+		// listContainer.appendChild(friend);
+		// friendsList.shadowRoot.appendChild(listContainer);
 
-		// TESTING
-		friend = new FriendBlock({avatar: "", userName: "Jean", status: "in game"});
-		listContainer.appendChild(friend);
-		friend = new FriendBlock({avatar: "", userName: "Miguel", status: "offline"});
-		listContainer.appendChild(friend);
-		// friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
+		// // TESTING
+		// friend = new FriendBlock({avatar: "", userName: "Jean", status: "in game"});
 		// listContainer.appendChild(friend);
-		// friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
+		// friend = new FriendBlock({avatar: "", userName: "Miguel", status: "offline"});
 		// listContainer.appendChild(friend);
-		// friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
-		// listContainer.appendChild(friend);
-		// friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
-		// listContainer.appendChild(friend);
-		// friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
-		// listContainer.appendChild(friend);
-		// friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
-		// listContainer.appendChild(friend);
+		// // friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
+		// // listContainer.appendChild(friend);
+		// // friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
+		// // listContainer.appendChild(friend);
+		// // friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
+		// // listContainer.appendChild(friend);
+		// // friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
+		// // listContainer.appendChild(friend);
+		// // friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
+		// // listContainer.appendChild(friend);
+		// // friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
+		// // listContainer.appendChild(friend);
 
+		const friendsContainer = new FriendsList();
+		friendsList.shadowRoot.appendChild(friendsContainer);
 
 		friendsPannel.shadowRoot.appendChild(addFriend);
 		friendsPannel.shadowRoot.appendChild(friendsList);
