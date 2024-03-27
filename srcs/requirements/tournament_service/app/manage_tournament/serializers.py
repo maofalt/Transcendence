@@ -5,7 +5,7 @@ from .models import RegistrationType, TournamentPlayer, Player, MatchParticipant
 class MatchSettingSerializer(serializers.ModelSerializer):
     class Meta:
         model = MatchSetting
-        fields = fields = '__all__'
+        fields = '__all__'
 
 class TournamentSerializer(serializers.ModelSerializer):
     setting = MatchSettingSerializer()
@@ -61,7 +61,7 @@ class TournamentRegistrationSerializer(serializers.ModelSerializer):
 class PlayerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Player
-        fields = ['id', 'total_played', 'won_match', 'won_tournament']
+        fields = '__all__'
 
 class MatchParticipantsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -132,8 +132,37 @@ class BallDataSerializer(serializers.ModelSerializer):
         model = MatchSetting
         fields = ['speed', 'radius', 'color']
 
+class SimplePlayerSerializer(serializers.ModelSerializer):
+    assigned_colors = [
+        '#FF0000',  # Red
+        '#0000FF',  # Blue
+        '#00FF00',  # Green
+        '#FFFF00',  # Yellow
+        '#444444',  # Dark Grey
+        '#FFC0CB',  # Magenta
+        '#00FFFF',  # Cyan
+        '#FFFFFF',  # White
+    ]
+
+    class Meta:
+        model = Player
+        fields = ['id', 'username']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        queryset = Player.objects.all()
+        player_count = queryset.count()
+        index = list(queryset).index(instance)  # Get the index of the instance in the queryset
+        color_index = index % len(self.assigned_colors)
+        representation['color'] = self.assigned_colors[color_index]
+        return representation
+
 class TournamentMatchRoundSerializer(serializers.ModelSerializer):
-    players = PlayerSerializer(many=True)
+    gamemodeData = GamemodeDataSerializer()
+    fieldData = FieldDataSerializer()
+    paddlesData = PaddlesDataSerializer()
+    ballData = BallDataSerializer()
+    players = SimplePlayerSerializer(many=True)
     match_id = serializers.IntegerField(source='id')
 
     class Meta:
