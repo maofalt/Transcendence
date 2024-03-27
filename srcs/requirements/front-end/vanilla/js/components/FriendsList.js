@@ -2,8 +2,8 @@
 import AbstractComponent from "./AbstractComponent";
 import FriendBlock from "./FriendBlock";
 import easyFetch from "@utils/easyFetch";
-import getCookie from "@utils/getCookie";
 import displayPopup from "@utils/displayPopup";
+import { router } from "@utils/Router";
 
 export default class FriendsList extends AbstractComponent {
 	constructor(options = {}) {
@@ -22,10 +22,6 @@ export default class FriendsList extends AbstractComponent {
 		listContainer.style.setProperty("border-radius", "0px 0px 20px 20px");
 		listContainer.style.setProperty("scrollbar-color", "rgba(255, 255, 255, 0.1) rgba(255, 255, 255, 0.1)");
 		listContainer.style.setProperty("scrollbar-width", "thin");
-
-		let friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "online"});
-
-		listContainer.appendChild(friend);
 
 		this.fillList(listContainer);
 	}
@@ -60,11 +56,44 @@ export default class FriendsList extends AbstractComponent {
 					userName: friend.username,
 					status: friend.is_online ? "online" : "offline",
 				});
+			let image = friendBlock.shadowRoot.querySelector("#img-container img");
+			friendBlock.onmouseover = () => {
+				image.src = '../js/assets/images/delete-avatar.webp';
+			}
+			friendBlock.onmouseout = () => {
+				image.src = '/api/user_management' + friend.avatar;
+			}
+			friendBlock.onclick = () => this.removeFriend(friend.username);
 			listContainer.appendChild(friendBlock);
 		}
 		this.shadowRoot.appendChild(listContainer);
 	}
 
+	removeFriend = async (username) => {
+
+		await easyFetch(`/api/user_management/auth/remove_friend/${username}`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded',
+			},
+		})
+		.then(res => {
+			let response = res.response;
+			let body = res.body;
+
+			if (!response || !body) {
+				throw new Error("Response is null");
+			} else if (response.status === 200) {
+				displayPopup("Friend removed", "info");
+				router();
+			} else {
+				throw new Error(body.error || JSON.stringify(body));
+			}
+		})
+		.catch(error => {
+			displayPopup(error.message || error, "error");
+		});
+	}
 }
 
 customElements.define('friends-list', FriendsList);

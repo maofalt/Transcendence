@@ -15,6 +15,7 @@ import easyFetch from "@utils/easyFetch";
 import getCookie from "@utils/getCookie";
 import displayPopup from "@utils/displayPopup";
 import FriendsList from "@components/FriendsList";
+import { router } from "@utils/Router";
 
 export default class ProfilePage extends AbstractComponent {
 	constructor(options = {}) {
@@ -144,49 +145,13 @@ export default class ProfilePage extends AbstractComponent {
 		addFriend.shadowRoot.querySelector("#input-button").style.setProperty("font-size", "28px");
 
 		// this.user.friends = 4;
-		const friendsList = new Pannel({dark: true, title: `Friends List  ( ${this.user.friends} )`});
-		// const listContainer = document.createElement("div");
-		// listContainer.id = "list-container";
-		// listContainer.style.setProperty("height", "350px");
-		// listContainer.style.setProperty("padding-top", "10px");
-		// listContainer.style.setProperty("overflow-y", "scroll");
-		// listContainer.style.setProperty("border-top", "2px solid rgba(255, 255, 255, 0.1)");
-		// listContainer.style.setProperty("border-radius", "0px 0px 20px 20px");
-		// listContainer.style.setProperty("scrollbar-color", "rgba(255, 255, 255, 0.1) rgba(255, 255, 255, 0.1)");
-		// listContainer.style.setProperty("scrollbar-width", "thin");
+		const friendsListPannel = new Pannel({dark: true, title: `Friends List  ( ${this.user.friends} )`});
 
-		// let friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "online"});
-
-		// friendsList.shadowRoot.querySelector("#pannel-title").style.setProperty("font-size", "22px");
-		// friendsList.shadowRoot.querySelector("#pannel-title").style.setProperty("font-family", "Space Grotesk, sans-serif");
-		// friendsList.shadowRoot.querySelector("#pannel-title").style.setProperty("font-weight", "bold");
-
-		// listContainer.appendChild(friend);
-		// friendsList.shadowRoot.appendChild(listContainer);
-
-		// // TESTING
-		// friend = new FriendBlock({avatar: "", userName: "Jean", status: "in game"});
-		// listContainer.appendChild(friend);
-		// friend = new FriendBlock({avatar: "", userName: "Miguel", status: "offline"});
-		// listContainer.appendChild(friend);
-		// // friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
-		// // listContainer.appendChild(friend);
-		// // friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
-		// // listContainer.appendChild(friend);
-		// // friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
-		// // listContainer.appendChild(friend);
-		// // friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
-		// // listContainer.appendChild(friend);
-		// // friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
-		// // listContainer.appendChild(friend);
-		// // friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
-		// // listContainer.appendChild(friend);
-
-		const friendsContainer = new FriendsList();
-		friendsList.shadowRoot.appendChild(friendsContainer);
+		const friendsList = new FriendsList();
+		friendsListPannel.shadowRoot.appendChild(friendsList);
 
 		friendsPannel.shadowRoot.appendChild(addFriend);
-		friendsPannel.shadowRoot.appendChild(friendsList);
+		friendsPannel.shadowRoot.appendChild(friendsListPannel);
 
 		personalInfo.shadowRoot.appendChild(infos);
 		gameStats.shadowRoot.appendChild(stats);
@@ -212,33 +177,24 @@ export default class ProfilePage extends AbstractComponent {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/x-www-form-urlencoded',
-				'X-CSRFToken': getCookie('csrftoken')
 			},
-			// body: new URLSearchParams({ 'search': email })
 		})
 		.then(res => {
 			let response = res.response;
 			let body = res.body;
 
 			if (!response || !body) {
-				alert('Request Failed');
-				valid = false;
-			} else if (response.status === 400) {
-				alert(body.error || JSON.stringify(body));
-				valid = false;
-			} else if (!response.ok) {
-				alert('Response Error: ' + (body.error || JSON.stringify(body)));
-				valid = false;
+				throw new Error("Response is null");
 			} else if (response.status === 200) {
-				// alert(body.message || JSON.stringify(body));
 				displayPopup("Friend added", "success");
+				router();
 				valid = true;
 			} else {
-				alert(body.error || JSON.stringify(body));
+				throw new Error(body.error || JSON.stringify(body));
 			}
 		})
 		.catch(error => {
-			console.error('Request Failed:', error);
+			displayPopup(error.message || error, "error");
 			valid = false;
 		});
 		return valid;
