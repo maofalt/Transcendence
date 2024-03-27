@@ -7,12 +7,13 @@ import CustomButton from "@components/CustomButton";
 import BigTitle from "@components/BigTitle";
 import InputField from "@components/InputField";
 import Router from "@utils/Router";
-import { getCookie } from "@utils/getCookie";
-import { easyFetch } from "@utils/easyFetch";
+import getCookie from "@utils/getCookie";
+import easyFetch from "@utils/easyFetch";
 import WarnIndicator from "@components/WarnIndicator";
 import InputAugmented from "@components/InputAugmented";
 import InfoPopup from "@components/InfoPopup";
-import { displayPopup } from "@utils/displayPopup";
+import displayPopup from "@utils/displayPopup";
+import fetchUserDetails from "@utils/fetchUserDetails";
 
 export default class Signup extends AbstractComponent {
 	constructor(options = {}) {
@@ -194,7 +195,7 @@ export default class Signup extends AbstractComponent {
 				access_code: verifyCodeBlock.input.getValue()
 			});
 			if (isSignedUp) {
-				displayPopup("Sign Up Successful:\nYou have successfully signed up. You can now log in.", "success");
+				displayPopup("Sign Up Successful:\nYou now have an account and are connected.", "success");
 				Router.navigateTo("/");
 			}
 		}
@@ -319,7 +320,7 @@ export default class Signup extends AbstractComponent {
 			},
 			body: new URLSearchParams(formData)
 		})
-		.then(res => {
+		.then(async res => {
 			let response = res.response;
 			let body = res.body;
 
@@ -339,6 +340,9 @@ export default class Signup extends AbstractComponent {
 				sessionStorage.setItem('expiryTimestamp', new Date().getTime() + body.expires_in * 1000);
 				sessionStorage.setItem('accessToken', body.access_token);
 				sessionStorage.setItem('tokenType', body.token_type);
+
+				// get user details for the profile page
+				await fetchUserDetails();
 
 				Router.navigateTo("/");
 				valid = true;

@@ -1,4 +1,4 @@
-import { getCookie } from "@utils/getCookie";
+import getCookie from "@utils/getCookie";
 
 document.addEventListener("DOMContentLoaded", function() {
   var updateButton = document.getElementById("update-button");
