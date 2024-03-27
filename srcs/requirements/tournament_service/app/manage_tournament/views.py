@@ -212,8 +212,11 @@ class MatchResult(APIView):
     def post(self, request, match_id, winner_username):
         print("match_id : ", match_id,  "winner_id: ", winner_username)
         match = get_object_or_404(TournamentMatch, id=match_id)
-        user_info, _ = request.user
-        uid, username = user_info.split(":")
+        user_info = request.user
+        if not isinstance(user_info, tuple) or len(user_info) != 2:
+            raise exceptions.AuthenticationFailed('User information is not in the expected format')
+
+        uid, username = user_info
         
         if match.state != "ended":
             return Response(f"Match {match_id} is not finished")
@@ -416,8 +419,11 @@ class TournamentParticipantList(APIView):
         tournament = get_object_or_404(Tournament, id=id)
         
         # Check if the user is the tournament host or a registered participant
-        user_info, _ = request.user
-        uid, username = user_info.split(":")
+        user_info = request.user
+        if not isinstance(user_info, tuple) or len(user_info) != 2:
+            raise exceptions.AuthenticationFailed('User information is not in the expected format')
+
+        uid, username = user_info
         if tournament.host != uid:
             return Response({"message": "You are not authorized to view the participant list."}, status=status.HTTP_403_FORBIDDEN)
         
@@ -434,8 +440,11 @@ class TournamentParticipantDetail(APIView):
         tournament = get_object_or_404(Tournament, id=id)
         participant = get_object_or_404(TournamentPlayer, tournament_id=tournament, player__player_id=participant_id)
 
-        user_info, _ = request.user
-        uid, username = user_info.split(":")
+        user_info = request.user
+        if not isinstance(user_info, tuple) or len(user_info) != 2:
+            raise exceptions.AuthenticationFailed('User information is not in the expected format')
+
+        uid, username = user_info
 
         if uid != tournament.host.id and uid != participant.player.id:
             return Response({"message": "You do not have permission to deregister this participant."}, status=status.HTTP_403_FORBIDDEN)
@@ -469,9 +478,12 @@ class TournamentStart(APIView):
     def post(self, request, id):
         tournament = get_object_or_404(Tournament, id=id)
 
-         # Verify if the user is the host of the tournament
-        user_info, _ = request.user
-        uid, username = user_info.split(":")
+        user_info = request.user
+        if not isinstance(user_info, tuple) or len(user_info) != 2:
+            raise exceptions.AuthenticationFailed('User information is not in the expected format')
+
+        uid, username = user_info
+
         if tournament.host.id != uid:
             return Response({"message": "Only the tournament host can start the tournament."}, status=403)
 
@@ -488,9 +500,12 @@ class TournamentEnd(APIView):
     def post(self, request, id):
         tournament = get_object_or_404(Tournament, id=id)
 
-        # Verify if the user is the host of the tournament
-        user_info, _ = request.user
-        uid, username = user_info.split(":")
+        user_info = request.user
+        if not isinstance(user_info, tuple) or len(user_info) != 2:
+            raise exceptions.AuthenticationFailed('User information is not in the expected format')
+
+        uid, username = user_info
+        
         if tournament.host.id != uid:
             return Response({"message": "Only the tournament host can end the tournament."}, status=403)
 
