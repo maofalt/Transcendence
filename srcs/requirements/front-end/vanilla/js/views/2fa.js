@@ -4,8 +4,8 @@ import Pannel from "@components/Pannel";
 import InputField from "@components/InputField";
 import CustomButton from "@components/CustomButton";
 import Router from "@utils/Router";
-import { getCookie } from "@utils/getCookie";
-import { easyFetch } from "@utils/easyFetch";
+import getCookie from "@utils/getCookie";
+import easyFetch from "@utils/easyFetch";
 
 export default class TwoFactorAuth extends AbstractComponent {
 	constructor(options = {}) {
