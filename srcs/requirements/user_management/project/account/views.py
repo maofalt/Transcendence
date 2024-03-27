@@ -16,7 +16,6 @@ from django.views.decorators.csrf import csrf_exempt, csrf_protect, ensure_csrf_
 from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db import transaction
-from django.utils import timezone
 from django.urls import reverse, reverse_lazy
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
@@ -169,7 +168,9 @@ def refresh_accessToken(request, accessToken, refreshToken):
             'exp_datetime': exp_datetime
         }
         print("expires_in: ", expires_in, "exp_datetime: ", exp_datetime)
-        return response_data 
+        return response_data
+    except Http404
+        return JsonResponse({'error': 'User not found'}, status=404)
     except jwt.ExpiredSignatureError:
             return JsonResponse({'error': 'Access/Refresh token has expired'}, status=401)
 
@@ -497,17 +498,21 @@ def detail_view(request):
 
 @login_required
 def add_friend(request, username):
-    friend = get_object_or_404(User, username=username)
-    print("username : ", username)
-    print("friend: ", friend)
-    request.user.add_friend(friend)
-    return JsonResponse({'message': 'Friend added successfully', 'added_friend': friend.username})
-
+    try:
+        friend = get_object_or_404(User, username=username)
+        request.user.add_friend(friend)
+        return JsonResponse({'message': 'Friend added successfully', 'added_friend': friend.username})
+    except Http404:
+        return JsonResponse({'error': 'Friend not found'}, status=404)
+    
 @login_required
 def remove_friend(request, username):
-    friend = get_object_or_404(User, username=username)
-    request.user.friends.remove(friend)
-    return JsonResponse({f'message': '{username} removed from your friend list successfully', 'removed_friend': username})
+    try:
+        friend = get_object_or_404(User, username=username)
+        request.user.friends.remove(friend)
+        return JsonResponse({f'message': '{username} removed from your friend list successfully', 'removed_friend': username})
+    except Http404:
+        return JsonResponse({'error': 'Friend not found'}, status=404)
 
 @login_required
 @csrf_protect
@@ -645,7 +650,7 @@ class UserAPIView(APIView):
 
 
 def print_all_user_data(request):
-    all_users = User.objects.all()
+    all_users = User.objects.all().order_by('id')
     context = {'users': all_users}
 
     return render(request, 'print_user_data.html', context)
