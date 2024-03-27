@@ -11,6 +11,9 @@ import { navigateTo } from "@utils/Router";
 import UserInfo from "../components/UserInfo";
 import FriendBlock from "../components/FriendBlock";
 import logOut from "@utils/logOut";
+import easyFetch from "@utils/easyFetch";
+import getCookie from "@utils/getCookie";
+import displayPopup from "@utils/displayPopup";
 
 export default class ProfilePage extends AbstractComponent {
 	constructor(options = {}) {
@@ -129,9 +132,14 @@ export default class ProfilePage extends AbstractComponent {
 		const addFriend = new InputAugmented({
 			title: "Add Friend",
 			content: "Username",
+			indicators: {
+				emptyIndicator: ["Please enter a username", () => addFriend.input.getValue() != ""],
+				invalidIndicator: ["Username not found", () => this.postAddFriend(addFriend.input.getValue())]
+			},
 			type: "text",
 			button: {content: "+ Add Friend", action: false}
 		});
+		addFriend.button.onclick = async () => await addFriend.validate();
 		addFriend.shadowRoot.querySelector("#input-button").style.setProperty("font-size", "28px");
 
 		// this.user.friends = 4;
@@ -193,6 +201,46 @@ export default class ProfilePage extends AbstractComponent {
 		this.shadowRoot.appendChild(profile);
 		this.shadowRoot.appendChild(friendsPannel);
 	}
+
+	postAddFriend = async (username) => {
+		let valid = false;
+
+		await easyFetch(`/api/user_management/auth/add_friend/${username}`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded',
+				'X-CSRFToken': getCookie('csrftoken')
+			},
+			// body: new URLSearchParams({ 'search': email })
+		})
+		.then(res => {
+			let response = res.response;
+			let body = res.body;
+
+			if (!response || !body) {
+				alert('Request Failed');
+				valid = false;
+			} else if (response.status === 400) {
+				alert(body.error || JSON.stringify(body));
+				valid = false;
+			} else if (!response.ok) {
+				alert('Response Error: ' + (body.error || JSON.stringify(body)));
+				valid = false;
+			} else if (response.status === 200) {
+				// alert(body.message || JSON.stringify(body));
+				displayPopup("Friend added", "success");
+				valid = true;
+			} else {
+				alert(body.error || JSON.stringify(body));
+			}
+		})
+		.catch(error => {
+			console.error('Request Failed:', error);
+			valid = false;
+		});
+		return valid;
+	}
+
 
 	getUserDetails = () => {
 		let tokenType = sessionStorage.getItem("tokenType");
