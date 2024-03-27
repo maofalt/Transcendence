@@ -319,7 +319,7 @@ export default class Signup extends AbstractComponent {
 			},
 			body: new URLSearchParams(formData)
 		})
-		.then(res => {
+		.then(async res => {
 			let response = res.response;
 			let body = res.body;
 
@@ -339,6 +339,9 @@ export default class Signup extends AbstractComponent {
 				sessionStorage.setItem('expiryTimestamp', new Date().getTime() + body.expires_in * 1000);
 				sessionStorage.setItem('accessToken', body.access_token);
 				sessionStorage.setItem('tokenType', body.token_type);
+
+				// get user details for the profile page
+				await fetchUserDetails();
 
 				Router.navigateTo("/");
 				valid = true;

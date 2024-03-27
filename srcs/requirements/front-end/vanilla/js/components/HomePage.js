@@ -61,7 +61,16 @@ export default class HomePage extends AbstractComponent {
 
 		// footerContainer.appendChild(userInfo);
 
-		const userInfo = new UserInfo();
+		this.user = this.getUserDetails();
+
+		const userInfo = new UserInfo({
+			profilePicPath: this.user.avatar,
+			username: this.user.username,
+			status: this.user.status,
+			wins: this.user.wins,
+			losses: this.user.losses
+		});
+
 		userInfo.style.setProperty("position", "absolute");
 		userInfo.style.setProperty("bottom", "15px");
 		userInfo.style.setProperty("right", "35px");
@@ -110,6 +119,34 @@ export default class HomePage extends AbstractComponent {
 
 		// if user not logged in : first button -> log in
 		//							second button -> sign up
+	}
+
+	getUserDetails = () => {
+		let tokenType = sessionStorage.getItem("tokenType");
+		let accessToken = sessionStorage.getItem("accessToken");
+		let username = sessionStorage.getItem("username");
+		let playername = sessionStorage.getItem("playername");
+		let avatar = sessionStorage.getItem("avatar");
+		let friends = sessionStorage.getItem("friends");
+		let email = sessionStorage.getItem("email");
+
+		// {"username": "yridgway", "playername": "Yoel", "avatar": "/media/default_avatar.jpeg", "friends_count": 0, "two_factor_method": null}
+
+		let user = {
+			avatar,
+			username,
+			status: "online",
+			wins: 10,
+			losses: 5,
+			playername,
+			email,
+			total: 15,
+			winrate: "66%",
+			friends
+		};
+
+		console.log("Returning user:", this.user);
+		return user;
 	}
 }
 

@@ -9,6 +9,7 @@ import InputField from "@components/InputField";
 import Router from "@utils/Router";
 import { getCookie } from "@utils/getCookie";
 import { easyFetch } from "@utils/easyFetch";
+import fetchUserDetails from "@utils/fetchUserDetails";
 
 export default class LoginPage extends AbstractComponent {
 	constructor(options = {}) {
@@ -80,7 +81,7 @@ export default class LoginPage extends AbstractComponent {
 			},
 			body: new URLSearchParams(formData)
 		})
-		.then(res => {
+		.then(async res => {
 			let response = res.response;
 			let body = res.body;
 
@@ -106,12 +107,17 @@ export default class LoginPage extends AbstractComponent {
 				sessionStorage.setItem('accessToken', body.access_token);
 				sessionStorage.setItem('tokenType', body.token_type);
 				
+				// get user details for the profile page
+				await fetchUserDetails();
+				
 				if (body.requires_2fa) {
 					Router.navigateTo("/2fa");
 					return ;
 				}
 	
 				console.log('Login successful:', body);
+
+
 				Router.navigateTo("/");
 			}
 		})
