@@ -1,14 +1,16 @@
 import { createElement } from "@utils/createElement";
 import { htmlToElement } from "@utils/htmlToElement";
-import AbstractComponent from "../components/AbstractComponent";
+import AbstractComponent from "@components/AbstractComponent";
 import AbstractView from "@views/AbstractView";
 import homePageStyle from '@css/HomePage.css?raw';
 import BigTitle from '@components/BigTitle';
 import Pannel from '@components/Pannel';
 import CustomButton from '@components/CustomButton';
 import { navigateTo } from "@utils/Router";
-import { displayPopup } from "@utils/displayPopup";
+import displayPopup from "@utils/displayPopup";
 import UserInfo from "@components/UserInfo";
+import isLoggedIn from "@utils/isLoggedIn";
+import logOut from "@utils/logOut";
 
 export default class HomePage extends AbstractComponent {
 	constructor(options = {}) {
@@ -63,12 +65,36 @@ export default class HomePage extends AbstractComponent {
 
 		this.user = this.getUserDetails();
 
+		// let button1 = {content: "Log iny", action: true, onclick: (e) => {
+		// 	e.stopPropagation();
+		// 	console.log("clicked on log in");
+		// 	navigateTo("/login")
+		// }};
+		// let button2 = {content: "Sign up", onclick: (e) => {
+		// 	e.stopPropagation();
+		// 	console.log("clicked on sign in");
+		// 	navigateTo("/signup")
+		// }};
+
+		// if (isLoggedIn()) {
+		// 	button1 = {content: "Edit", action: true, onclick: (e) => {
+		// 		e.stopPropagation();
+		// 		navigateTo("/profile")
+		// 	}};
+		// 	button2 = {content: "Log out", onclick: (e) => {
+		// 		e.stopPropagation();
+		// 		logOut()
+		// 	}};
+		// }
+
 		const userInfo = new UserInfo({
 			profilePicPath: this.user.avatar,
 			username: this.user.username,
 			status: this.user.status,
 			wins: this.user.wins,
-			losses: this.user.losses
+			losses: this.user.losses,
+			// button1,
+			// button2
 		});
 
 		userInfo.style.setProperty("position", "absolute");

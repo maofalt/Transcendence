@@ -7,8 +7,8 @@ import CustomButton from "@components/CustomButton";
 import BigTitle from "@components/BigTitle";
 import InputField from "@components/InputField";
 import Router from "@utils/Router";
-import { getCookie } from "@utils/getCookie";
-import { easyFetch } from "@utils/easyFetch";
+import getCookie from "@utils/getCookie";
+import easyFetch from "@utils/easyFetch";
 import fetchUserDetails from "@utils/fetchUserDetails";
 
 export default class LoginPage extends AbstractComponent {

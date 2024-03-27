@@ -10,9 +10,7 @@ import InputAugmented from '@components/InputAugmented';
 import { navigateTo } from "@utils/Router";
 import UserInfo from "../components/UserInfo";
 import FriendBlock from "../components/FriendBlock";
-import { easyFetch } from "@utils/easyFetch";
-import { getCookie } from "@utils/getCookie";
-import fetchUserDetails from "@utils/fetchUserDetails";
+import logOut from "@utils/logOut";
 
 export default class ProfilePage extends AbstractComponent {
 	constructor(options = {}) {
@@ -34,7 +32,7 @@ export default class ProfilePage extends AbstractComponent {
 			wins: this.user.wins,
 			losses: this.user.losses,
 			button1: {content: "Edit", action: true},
-			button2: {content: "Log out", onclick: () => {this.logOut();}}});
+			button2: {content: "Log out", onclick: () => logOut()}});
 
 		const profile = new Pannel({dark: false, title: "Profile"});
 		const friendsPannel = new Pannel({dark: false, title: "Friends"});
@@ -222,46 +220,6 @@ export default class ProfilePage extends AbstractComponent {
 
 		console.log("Returning user:", this.user);
 		return user;
-	}
-
-	logOut = async () => {
-		sessionStorage.removeItem("accessToken");
-		sessionStorage.removeItem("tokenType");
-		await easyFetch('/api/user_management/auth/logout', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/x-www-form-urlencoded',
-				'X-CSRFToken': getCookie('csrftoken')
-			}
-		}).then(res => {
-			let response = res.response;
-			let body = res.body;
-
-			if (!response || !body) {
-				console.error('Request Failed');
-				return ;
-			}
-
-			if (response.status === 400) {
-				alert('Wrong username or password');
-				return ;
-			}
-
-			if (!response.ok) {
-				console.error('Request Failed:', body.error || JSON.stringify(body));
-				return ;
-			}
-
-			if (response.status === 200 && body.success === true) {
-				alert('Logout successful: ' + body.message);
-			}
-		}).catch(error => {
-			console.error('Request Failed:', error);
-		});
-		
-		await fetchUserDetails();
-
-		navigateTo("/");
 	}
 }
 

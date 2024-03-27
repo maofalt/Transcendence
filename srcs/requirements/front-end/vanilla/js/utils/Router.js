@@ -12,7 +12,8 @@ import EditProfile from '@components/EditProfile';
 import HomePage from '@views/HomePage';
 import LoginPage from '@views/LoginPage';
 import PlayMenu from '@views/PlayMenu';
-import { displayPopup } from "@utils/displayPopup";
+import displayPopup from "@utils/displayPopup";
+import isLoggedIn from '@utils/isLoggedIn';
 
 export const routes = {
 	'/': {
@@ -122,7 +123,7 @@ export const router = async () => {
   const View = routes[path] || routes['/404'];
   const viewContainer = document.querySelector('#view');
 
-  if (View.requiresLogin && !sessionStorage.getItem('accessToken')) {
+  if (View.requiresLogin && isLoggedIn() === false) {
 	displayPopup(`Please Log In to visit ${View.title} page`, "info");
 	navigateTo('/login');
 	return;

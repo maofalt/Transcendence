@@ -1,5 +1,5 @@
 
-export async function easyFetch(url, options = { method: 'GET', body: null, headers: {} }) {
+export default async function easyFetch(url, options = { method: 'GET', body: null, headers: {} }) {
 
 	let response;
 

@@ -1,4 +1,4 @@
-import { easyFetch } from "@utils/easyFetch";
+import easyFetch from "@utils/easyFetch";
 import fetchUserDetails from "@utils/fetchUserDetails";
 
 export async function renewToken() {
@@ -73,6 +73,10 @@ function refreshTokenLoop() {
 
 	console.log("delay", delayUntilRefresh);
 	console.log('Token will be refreshed in:', delayUntilRefresh);
+
+	if (delayUntilRefresh < 0) {
+		delayUntilRefresh = 30000;
+	}
 
 	// timeout to refresh the token just before it expires
 	setTimeout(refreshTokenLoop, delayUntilRefresh);

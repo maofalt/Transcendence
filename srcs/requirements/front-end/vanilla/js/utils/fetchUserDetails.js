@@ -1,4 +1,4 @@
-import { easyFetch } from "@utils/easyFetch";
+import easyFetch from "@utils/easyFetch";
 
 export default async function fetchUserDetails() {
 	const accessToken = sessionStorage.getItem("accessToken");
