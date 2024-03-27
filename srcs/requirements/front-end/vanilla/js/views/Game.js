@@ -595,11 +595,13 @@ export default class Game extends AbstractView {
 		this.scores[i] = scoreBox;
 		this.scores[i].add(profilePicMesh);
 		this.scores[i].add(loginMesh);
+		// if (data.ongoing || data.imminent)
 		this.scores[i].add(scoreMesh);
 
 		// positioning ui items
-		profilePicMesh.position.set(-ppRadius - spaceBetween / 2, totalHeight / 2 - ppRadius, 0);
-		scoreMesh.position.set(spaceBetween / 2, (totalHeight - textHeight) / 2 - ppRadius, 0);
+
+		profilePicMesh.position.set(-topWidth / 2 + ppRadius, spaceBetween, 0);
+		scoreMesh.position.set(topWidth / 2 - scoreWidth, (totalHeight - textHeight) / 2 - ppRadius, 0);
 		loginMesh.position.set(-loginWidth / 2, -totalHeight / 2, 0);
 	
 		// positionning ui box

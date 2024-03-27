@@ -145,14 +145,14 @@ function waitingRoom(matchID) {
 		// this is called when the game status is imminent;
 		// it is just going to count down 3 seconds for players to get ready.
 		// game status = imminent but !ongoing;
-		if (countDown(match, 0, 3)) {
+		if (countDown(match, 0, 4)) {
 			// in here = game is starting
 			// we get rid of the timer, send the ball and put the
 			// game status to ongoing, !imminent;
 			// and we call the loop for the game physics and scoring;
 			clearInterval(match.gameInterval);
-			match.gameState.ball.dir.x = 1;
-			match.gameState.ball.dir.y = 1;
+			// match.gameState.ball.dir.x = 0;
+			match.gameState.ball.dir.y = -1;
 			match.gameState.ongoing = true;
 			match.gameState.imminent = false;
 			match.gameInterval = setInterval(gameLoop, 10, matchID);
@@ -330,8 +330,8 @@ io.on('connection', (client) => {
 			if (data.connectedPlayers < 1) {
 				console.log("CLEARING INTERVAL");
 				clearInterval(match.gameInterval);
-				// matches.delete(client.matchID);
-				// delete data;
+				matches.delete(client.matchID);
+				delete data;
 			}
 			console.log(`Client disconnected with ID: ${client.id} (num clients: ${io.engine.clientsCount})`);
 		});
