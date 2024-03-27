@@ -65,27 +65,25 @@ export default class HomePage extends AbstractComponent {
 
 		this.user = this.getUserDetails();
 
-		// let button1 = {content: "Log iny", action: true, onclick: (e) => {
-		// 	e.stopPropagation();
-		// 	console.log("clicked on log in");
-		// 	navigateTo("/login")
-		// }};
-		// let button2 = {content: "Sign up", onclick: (e) => {
-		// 	e.stopPropagation();
-		// 	console.log("clicked on sign in");
-		// 	navigateTo("/signup")
-		// }};
+		let button1 = {content: "Log in", action: true, onclick: (e) => {
+			e.stopPropagation();
+			navigateTo("/login")
+		}};
+		let button2 = {content: "Sign up", onclick: (e) => {
+			e.stopPropagation();
+			navigateTo("/signup")
+		}};
 
-		// if (isLoggedIn()) {
-		// 	button1 = {content: "Edit", action: true, onclick: (e) => {
-		// 		e.stopPropagation();
-		// 		navigateTo("/profile")
-		// 	}};
-		// 	button2 = {content: "Log out", onclick: (e) => {
-		// 		e.stopPropagation();
-		// 		logOut()
-		// 	}};
-		// }
+		if (isLoggedIn()) {
+			button1 = {content: "Edit", action: true, onclick: (e) => {
+				e.stopPropagation();
+				navigateTo("/edit-profile")
+			}};
+			button2 = {content: "Log out", onclick: (e) => {
+				e.stopPropagation();
+				logOut();
+			}};
+		}
 
 		const userInfo = new UserInfo({
 			profilePicPath: this.user.avatar,
@@ -93,8 +91,8 @@ export default class HomePage extends AbstractComponent {
 			status: this.user.status,
 			wins: this.user.wins,
 			losses: this.user.losses,
-			// button1,
-			// button2
+			button1,
+			button2
 		});
 
 		userInfo.style.setProperty("position", "absolute");

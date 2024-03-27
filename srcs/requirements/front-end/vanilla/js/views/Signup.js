@@ -13,6 +13,7 @@ import WarnIndicator from "@components/WarnIndicator";
 import InputAugmented from "@components/InputAugmented";
 import InfoPopup from "@components/InfoPopup";
 import displayPopup from "@utils/displayPopup";
+import fetchUserDetails from "@utils/fetchUserDetails";
 
 export default class Signup extends AbstractComponent {
 	constructor(options = {}) {
@@ -194,7 +195,7 @@ export default class Signup extends AbstractComponent {
 				access_code: verifyCodeBlock.input.getValue()
 			});
 			if (isSignedUp) {
-				displayPopup("Sign Up Successful:\nYou have successfully signed up. You can now log in.", "success");
+				displayPopup("Sign Up Successful:\nYou now have an account and are connected.", "success");
 				Router.navigateTo("/");
 			}
 		}

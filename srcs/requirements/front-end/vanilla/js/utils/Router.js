@@ -111,46 +111,52 @@ export const routes = {
 
 let currentView = null;
 
-export const navigateTo = (url) => {
-  history.pushState(null, null, url);
-  console.log('url: ', url);
-  router();
+export const redirectTo = (url) => {
+	history.replaceState(null, null, url);
+	router();
 };
+
+export const navigateTo = (url) => {
+	history.pushState(null, null, url);
+	console.log('url: ', url);
+	router();
+};
+
 let previousView = null;
 
 export const router = async () => {
-  const path = window.location.pathname;
-  const View = routes[path] || routes['/404'];
-  const viewContainer = document.querySelector('#view');
+	const path = window.location.pathname;
+	const View = routes[path] || routes['/404'];
+	const viewContainer = document.querySelector('#view');
 
-  if (View.requiresLogin && isLoggedIn() === false) {
-	displayPopup(`Please Log In to visit ${View.title} page`, "info");
-	navigateTo('/login');
-	return;
-  }
-
-  if (View.component) {
-	if (previousView) {
-		// fadeOut(previousView);
-	}
-	viewContainer.innerHTML = `<${View.component}></${View.component}>`;
-	previousView = viewContainer.querySelector(View.component);
-	// fadeIn(viewContainer.querySelector(View.component));
-  } else {
-	console.log('path: ', path);
-
-	if (currentView && currentView.destroy && currentView !== View) {
-		currentView.destroy();
+	if (View.requiresLogin && !sessionStorage.getItem('accessToken')) {
+		displayPopup(`Please Log In to visit ${View.title} page`, "info");
+		redirectTo('/login');
+		return;
 	}
 
-	currentView = new View.view();
+	if (View.component) {
+		if (previousView) {
+			// fadeOut(previousView);
+		}
+		viewContainer.innerHTML = `<${View.component}></${View.component}>`;
+		previousView = viewContainer.querySelector(View.component);
+		// fadeIn(viewContainer.querySelector(View.component));
+	} else {
+		console.log('path: ', path);
 
-	document.querySelector('#view').innerHTML = await currentView.getHtml();
-	document.title = View.title;
-    if (currentView.init) {
-        currentView.init();
-    }
-  }
+		if (currentView && currentView.destroy && currentView !== View) {
+			currentView.destroy();
+		}
+
+		currentView = new View.view();
+
+		document.querySelector('#view').innerHTML = await currentView.getHtml();
+		document.title = View.title;
+		if (currentView.init) {
+			currentView.init();
+		}
+	}
 };
 
 window.addEventListener("popstate", router);
