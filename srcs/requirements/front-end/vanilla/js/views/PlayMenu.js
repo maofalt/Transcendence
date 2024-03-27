@@ -1,6 +1,6 @@
 import { createElement } from "@utils/createElement";
 import { htmlToElement } from "@utils/htmlToElement";
-import AbstractComponent from "./AbstractComponent";
+import AbstractComponent from "../components/AbstractComponent";
 import AbstractView from "@views/AbstractView";
 import style from '@css/PlayMenu.css?raw';
 import BigTitle from '@components/BigTitle';

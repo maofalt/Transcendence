@@ -127,6 +127,9 @@ export default class UserInfo extends AbstractComponent {
         let button2;
         if (options.button1) {
             button1 = new CustomButton({content: options.button1.content, action: options.button1.action, style: {display: "block", margin: "15px 0px"}});
+			if (options.button1.onclick) {
+				button1.onclick = options.button1.onclick;
+			}
         } else {
             button1 = new CustomButton({content: "Log in", action: true, style: {display: "block", margin: "15px 0px"}});
 			button1.onclick = (e) => { 
@@ -136,7 +139,10 @@ export default class UserInfo extends AbstractComponent {
         }
         if (options.button2) {
             button2 = new CustomButton({content: options.button2.content, action: options.button2.action, style: {display: "block", margin: "15px 0px"}});
-        } else {
+			if (options.button2.onclick) {
+				button2.onclick = options.button2.onclick;
+			}
+		} else {
             button2 = new CustomButton({content: "Sign Up", style: {display: "block", margin: "15px 0px"}});
 			button2.onclick = (e) => {
 				e.stopPropagation();

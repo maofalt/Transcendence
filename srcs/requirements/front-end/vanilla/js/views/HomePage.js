@@ -1,14 +1,16 @@
 import { createElement } from "@utils/createElement";
 import { htmlToElement } from "@utils/htmlToElement";
-import AbstractComponent from "./AbstractComponent";
+import AbstractComponent from "@components/AbstractComponent";
 import AbstractView from "@views/AbstractView";
 import homePageStyle from '@css/HomePage.css?raw';
 import BigTitle from '@components/BigTitle';
 import Pannel from '@components/Pannel';
 import CustomButton from '@components/CustomButton';
 import { navigateTo } from "@utils/Router";
-import { displayPopup } from "@utils/displayPopup";
-import UserInfo from "./UserInfo";
+import displayPopup from "@utils/displayPopup";
+import UserInfo from "@components/UserInfo";
+import isLoggedIn from "@utils/isLoggedIn";
+import logOut from "@utils/logOut";
 
 export default class HomePage extends AbstractComponent {
 	constructor(options = {}) {
@@ -61,7 +63,38 @@ export default class HomePage extends AbstractComponent {
 
 		// footerContainer.appendChild(userInfo);
 
-		const userInfo = new UserInfo();
+		this.user = this.getUserDetails();
+
+		let button1 = {content: "Log in", action: true, onclick: (e) => {
+			e.stopPropagation();
+			navigateTo("/login")
+		}};
+		let button2 = {content: "Sign up", onclick: (e) => {
+			e.stopPropagation();
+			navigateTo("/signup")
+		}};
+
+		if (isLoggedIn()) {
+			button1 = {content: "Edit", action: true, onclick: (e) => {
+				e.stopPropagation();
+				navigateTo("/edit-profile")
+			}};
+			button2 = {content: "Log out", onclick: (e) => {
+				e.stopPropagation();
+				logOut();
+			}};
+		}
+
+		const userInfo = new UserInfo({
+			profilePicPath: this.user.avatar,
+			username: this.user.username,
+			status: this.user.status,
+			wins: this.user.wins,
+			losses: this.user.losses,
+			button1,
+			button2
+		});
+
 		userInfo.style.setProperty("position", "absolute");
 		userInfo.style.setProperty("bottom", "15px");
 		userInfo.style.setProperty("right", "35px");
@@ -110,6 +143,34 @@ export default class HomePage extends AbstractComponent {
 
 		// if user not logged in : first button -> log in
 		//							second button -> sign up
+	}
+
+	getUserDetails = () => {
+		let tokenType = sessionStorage.getItem("tokenType");
+		let accessToken = sessionStorage.getItem("accessToken");
+		let username = sessionStorage.getItem("username");
+		let playername = sessionStorage.getItem("playername");
+		let avatar = sessionStorage.getItem("avatar");
+		let friends = sessionStorage.getItem("friends");
+		let email = sessionStorage.getItem("email");
+
+		// {"username": "yridgway", "playername": "Yoel", "avatar": "/media/default_avatar.jpeg", "friends_count": 0, "two_factor_method": null}
+
+		let user = {
+			avatar,
+			username,
+			status: "online",
+			wins: 10,
+			losses: 5,
+			playername,
+			email,
+			total: 15,
+			winrate: "66%",
+			friends
+		};
+
+		console.log("Returning user:", this.user);
+		return user;
 	}
 }
 

@@ -479,7 +479,7 @@ def detail_view(request):
         data = {
             'username': user.username,
             'playername': user.playername,
-            # 'email': user.email,
+            'email': user.email,
             'avatar': user.avatar.url if user.avatar else None,
             'friends_count': user.friends.count(),
             'two_factor_method': user.two_factor_method,

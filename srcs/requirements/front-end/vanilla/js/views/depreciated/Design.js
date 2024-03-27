@@ -1,4 +1,4 @@
-import AbstractView from "./AbstractView";
+import AbstractView from "../AbstractView";
 import Pannel from "@components/Pannel";
 import CustomButton from "@components/CustomButton";
 import BigTitle from "@components/BigTitle";
@@ -10,7 +10,7 @@ import LoginPage from '@components/LoginPage'
 import HomePage from "@components/HomePage";
 import PlayMenu from "@components/PlayMenu";
 import InputAugmented from "@components/InputAugmented";
-import ProfilePage from "../components/ProfilePage";
+import ProfilePage from "../ProfilePage";
 
 export default class Design extends HTMLElement {
 	constructor(element) {
