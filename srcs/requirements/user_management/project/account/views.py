@@ -30,6 +30,10 @@ import logging
 import base64
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.forms.models import model_to_dict
+from .authentication import CustomJWTAuthentication
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.permissions import AllowAny
+
 
 # from django.utils.encoding import force_bytes, force_str
 
@@ -176,6 +180,8 @@ def privacy_policy_view(request):
 @api_view(['POST'])
 @ensure_csrf_cookie
 @csrf_protect
+@authentication_classes([])
+@permission_classes([AllowAny])
 def api_login_view(request):
     print("\n\n       URL:", request.build_absolute_uri())
 
@@ -185,9 +191,6 @@ def api_login_view(request):
         user = authenticate(username=username, password=password)
         if user is not None:
             request.session['pending_username'] = user.username
-            # login(request, user)
-            # print("USer logged in temporary for 2FA.")
-            # Output information about the authenticated user
             print("User Information:")
             print(f"Username: {user.username}")
             print(f"email: {user.email}")
@@ -324,6 +327,9 @@ def api_logout_view(request):
         return JsonResponse({'error': escape('Invalid request method')}, status=400)
 
 @csrf_protect
+@api_view(['POST'])
+@authentication_classes([])
+@permission_classes([AllowAny])
 def api_signup_view(request):
     if request.method == "POST":
         username = request.POST["username"]
