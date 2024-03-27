@@ -9,6 +9,7 @@ import { FontLoader } from 'three/addons/loaders/FontLoader.js';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+import CustomButton from '@components/CustomButton';
 
 
 function createCallTracker() {
@@ -122,15 +123,51 @@ export default class Game extends AbstractView {
 
 		// Create a new div
 		let uiLayer = document.createElement('div');
+		uiLayer.innerHTML = `
+			<style>
+				#count-down {
+					text-align: center;
+					font-size: 30px;
+					color: white;
+				}
+
+				p {
+					border: red 1px solid;
+				}
+
+				#timer {
+					margin-bottom: 0;
+				}
+
+				#timer-message {
+					font-size: 20px;
+					margin: 0;
+				}
+			</style>
+			<div id="count-down">
+				<p id="timer">00:00</p>
+				<p id="timer-message">Waiting for players...</p>
+			</div>
+		`;
 
 		// Set the div's style properties
 		uiLayer.id = 'uiLayer';
 		uiLayer.style.width = '100%';
 		uiLayer.style.height = '100%';
-		uiLayer.style.background = 'rgba(0, 0, 0, 0.1)'; // black background with 50% opacity
+		uiLayer.style.background = 'rgba(0, 0, 0, 0.0)'; // black background with 50% opacity
 		uiLayer.style.position = 'absolute';
 		uiLayer.style.top = '0';
 		uiLayer.style.left = '0';
+
+		let leaveButton = new CustomButton({ content: "< Leave", style: {
+			padding: "0px 20px",
+			position: "absolute",
+			left: "50px",
+			bottom: "30px",
+			// width: "100px",
+		}});
+
+		uiLayer.appendChild(leaveButton);
 
 		// Append the new div to the parent of the renderer
 		this.container.appendChild(uiLayer);
@@ -178,7 +215,7 @@ export default class Game extends AbstractView {
 		
 		let accessTok = sessionStorage.getItem('accessToken');
 		console.log("Access Token: ", accessTok);
-		accessTok = accessTok.replace("Bearer ", ""); // replace the "Bearer " at the beginning of the value;
+		// accessTok = accessTok.replace("Bearer ", ""); // replace the "Bearer " at the beginning of the value;
 
 		const io_url = hostname.includes("github.dev") ? `${protocol}://${hostname}` : `${protocol}://${hostname}:9443`;
 		console.log(`Connecting to ${io_url}`)
