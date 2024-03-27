@@ -11,6 +11,11 @@ import { navigateTo } from "@utils/Router";
 import UserInfo from "../components/UserInfo";
 import FriendBlock from "../components/FriendBlock";
 import logOut from "@utils/logOut";
+import easyFetch from "@utils/easyFetch";
+import getCookie from "@utils/getCookie";
+import displayPopup from "@utils/displayPopup";
+import FriendsList from "@components/FriendsList";
+import { router } from "@utils/Router";
 
 export default class ProfilePage extends AbstractComponent {
 	constructor(options = {}) {
@@ -129,53 +134,24 @@ export default class ProfilePage extends AbstractComponent {
 		const addFriend = new InputAugmented({
 			title: "Add Friend",
 			content: "Username",
+			indicators: {
+				emptyIndicator: ["Please enter a username", () => addFriend.input.getValue() != ""],
+				invalidIndicator: ["Username not found", () => this.postAddFriend(addFriend.input.getValue())]
+			},
 			type: "text",
 			button: {content: "+ Add Friend", action: false}
 		});
+		addFriend.button.onclick = async () => await addFriend.validate();
 		addFriend.shadowRoot.querySelector("#input-button").style.setProperty("font-size", "28px");
 
 		// this.user.friends = 4;
-		const friendsList = new Pannel({dark: true, title: `Friends List  ( ${this.user.friends} )`});
-		const listContainer = document.createElement("div");
-		listContainer.id = "list-container";
-		listContainer.style.setProperty("height", "350px");
-		listContainer.style.setProperty("padding-top", "10px");
-		listContainer.style.setProperty("overflow-y", "scroll");
-		listContainer.style.setProperty("border-top", "2px solid rgba(255, 255, 255, 0.1)");
-		listContainer.style.setProperty("border-radius", "0px 0px 20px 20px");
-		listContainer.style.setProperty("scrollbar-color", "rgba(255, 255, 255, 0.1) rgba(255, 255, 255, 0.1)");
-		listContainer.style.setProperty("scrollbar-width", "thin");
+		const friendsListPannel = new Pannel({dark: true, title: `Friends List  ( ${this.user.friends} )`});
 
-		let friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "online"});
-
-		friendsList.shadowRoot.querySelector("#pannel-title").style.setProperty("font-size", "22px");
-		friendsList.shadowRoot.querySelector("#pannel-title").style.setProperty("font-family", "Space Grotesk, sans-serif");
-		friendsList.shadowRoot.querySelector("#pannel-title").style.setProperty("font-weight", "bold");
-
-		listContainer.appendChild(friend);
-		friendsList.shadowRoot.appendChild(listContainer);
-
-		// TESTING
-		friend = new FriendBlock({avatar: "", userName: "Jean", status: "in game"});
-		listContainer.appendChild(friend);
-		friend = new FriendBlock({avatar: "", userName: "Miguel", status: "offline"});
-		listContainer.appendChild(friend);
-		// friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
-		// listContainer.appendChild(friend);
-		// friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
-		// listContainer.appendChild(friend);
-		// friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
-		// listContainer.appendChild(friend);
-		// friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
-		// listContainer.appendChild(friend);
-		// friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
-		// listContainer.appendChild(friend);
-		// friend = new FriendBlock({avatar: "../js/assets/images/yridgway.jpg", userName: "Yoel", status: "offline"});
-		// listContainer.appendChild(friend);
-
+		const friendsList = new FriendsList();
+		friendsListPannel.shadowRoot.appendChild(friendsList);
 
 		friendsPannel.shadowRoot.appendChild(addFriend);
-		friendsPannel.shadowRoot.appendChild(friendsList);
+		friendsPannel.shadowRoot.appendChild(friendsListPannel);
 
 		personalInfo.shadowRoot.appendChild(infos);
 		gameStats.shadowRoot.appendChild(stats);
@@ -193,6 +169,43 @@ export default class ProfilePage extends AbstractComponent {
 		this.shadowRoot.appendChild(profile);
 		this.shadowRoot.appendChild(friendsPannel);
 	}
+
+	postAddFriend = async (username) => {
+		let valid = false;
+
+		if (!username) {
+			// displayPopup("Please enter a username", "error");
+			return true;
+		}
+		await easyFetch(`/api/user_management/auth/add_friend/${username}`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded',
+			},
+		})
+		.then(res => {
+			let response = res.response;
+			let body = res.body;
+			console.log("Response:", response);
+			if (!response) {
+				throw new Error("Response is null");
+			} else if (response.status === 404) {
+				throw new Error("Username not found");
+			} else if (response.status === 200) {
+				displayPopup("Friend added", "success");
+				router();
+				valid = true;
+			} else {
+				throw new Error(body.error || JSON.stringify(body));
+			}
+		})
+		.catch(error => {
+			displayPopup(error.message || error, "error");
+			valid = false;
+		});
+		return valid;
+	}
+
 
 	getUserDetails = () => {
 		let tokenType = sessionStorage.getItem("tokenType");

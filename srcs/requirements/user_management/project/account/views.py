@@ -456,7 +456,8 @@ def friends_view(request):
     if (search_query != user.username):
         if search_query:
             print(search_query)
-            search_results = User.objects.filter(username__icontains=search_query)
+            # search_results = User.objects.filter(username__icontains=search_query)
+            search_results = list(User.objects.filter(username__icontains=search_query).values())
             print("search_resuls : ", search_results)
 
     return JsonResponse({'friends': friend_data, 'search_query': escape(search_query), 'search_results': search_results})
@@ -497,6 +498,7 @@ def detail_view(request):
 
 @login_required
 def add_friend(request, username):
+    print("\nWAAAAAAAAAAAA\n")
     friend = get_object_or_404(User, username=username)
     print("username : ", username)
     print("friend: ", friend)
