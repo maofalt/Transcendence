@@ -411,7 +411,9 @@ class TournamentParticipantList(APIView):
         tournament = get_object_or_404(Tournament, id=id)
         
         # Check if the user is the tournament host or a registered participant
-        if tournament.host != request.user and not TournamentPlayer.objects.filter(tournament_id=tournament, player=request.user).exists():
+        user_info, _ = request.user
+        uid, username = user_info.split(":")
+        if tournament.host != uid:
             return Response({"message": "You are not authorized to view the participant list."}, status=status.HTTP_403_FORBIDDEN)
         
         participants = TournamentPlayer.objects.filter(tournament_id=tournament)
@@ -427,7 +429,10 @@ class TournamentParticipantDetail(APIView):
         tournament = get_object_or_404(Tournament, id=id)
         participant = get_object_or_404(TournamentPlayer, tournament_id=tournament, player__player_id=participant_id)
 
-        if request.user != tournament.host.id and request.user != participant.player.id:
+        user_info, _ = request.user
+        uid, username = user_info.split(":")
+
+        if uid != tournament.host.id and uid != participant.player.id:
             return Response({"message": "You do not have permission to deregister this participant."}, status=status.HTTP_403_FORBIDDEN)
 
         participant.delete()
@@ -460,7 +465,9 @@ class TournamentStart(APIView):
         tournament = get_object_or_404(Tournament, id=id)
 
          # Verify if the user is the host of the tournament
-        if tournament.host.id != request.user:
+        user_info, _ = request.user
+        uid, username = user_info.split(":")
+        if tournament.host.id != uid:
             return Response({"message": "Only the tournament host can start the tournament."}, status=403)
 
         # Update tournament state to start
@@ -477,7 +484,9 @@ class TournamentEnd(APIView):
         tournament = get_object_or_404(Tournament, id=id)
 
         # Verify if the user is the host of the tournament
-        if tournament.host.id != request.user:
+        user_info, _ = request.user
+        uid, username = user_info.split(":")
+        if tournament.host.id != uid:
             return Response({"message": "Only the tournament host can end the tournament."}, status=403)
 
         matches_in_progress = tournament.matches.filter(Q(state="waiting") | Q(state="playing"))
