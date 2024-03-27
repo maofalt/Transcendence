@@ -58,7 +58,7 @@ export default class FriendsList extends AbstractComponent {
 				});
 			let image = friendBlock.shadowRoot.querySelector("#img-container img");
 			friendBlock.onmouseover = () => {
-				image.src = '../js/assets/images/delete-avatar.webp';
+				image.src = '../js/assets/images/delete-icon.png';
 			}
 			friendBlock.onmouseout = () => {
 				image.src = '/api/user_management' + friend.avatar;
