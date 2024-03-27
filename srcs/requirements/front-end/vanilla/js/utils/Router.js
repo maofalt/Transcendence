@@ -1,12 +1,10 @@
 // Router.js
 import Tournament from '@views/Tournament.js';
-import Options from '@views/Options.js';
 import Game from '@views/Game.js';
 import NotFound from '@views/NotFound.js';
 import CreateTournament from '@views/CreateTournament.js';
 import ProfilePage from '@views/ProfilePage.js';
 import SpaceBackground from '@components/SpaceBackground';
-import User from '@views/User';
 import BasicGame from '@views/BasicGame.js';
 import TwoFactorAuth from '@views/2fa';
 import Signup from '@views/Signup.js';
@@ -14,6 +12,7 @@ import EditProfile from '@components/EditProfile';
 import HomePage from '@views/HomePage';
 import LoginPage from '@views/LoginPage';
 import PlayMenu from '@views/PlayMenu';
+import { displayPopup } from "@utils/displayPopup";
 
 export const routes = {
 	'/': {
@@ -21,10 +20,11 @@ export const routes = {
 		view: HomePage,
 		component: 'home-page',
 		title: 'Pongiverse',
-		buttonText: 'Home'
+		buttonText: 'Home',
 	},
 	'/space-background': {
 		path: '/space-background',
+		view: SpaceBackground,
 		component: 'space-background',
 		title: 'Space Background',
 		buttonText: 'Space Background'
@@ -48,30 +48,29 @@ export const routes = {
 		component: 'profile-page',
 		title: 'Profile',
 		buttonText: 'Profile',
+		requiresLogin: true,
 	},
 	'/edit-profile': {
 		path: '/edit-profile',
+		view: EditProfile,
 		component: 'edit-profile',
 		title: 'Edit Profile',
 		buttonText: 'Edit Profile',
+		requiresLogin: true,
 	},
 	'/tournament': {
 		path: '/tournament',
 		view: Tournament,
 		title: 'Tournament',
-		buttonText: 'Tournament'
+		buttonText: 'Tournament',
+		requiresLogin: true,
 	},
 	'/create-tournament': {
 		path: '/create-tournament',
 		view: CreateTournament,
 		title: 'Tournament Creation',
-		buttonText: 'Create Tournament'
-	},
-	'/options': {
-		path: '/options',
-		view: Options,
-		title: 'Options',
-		buttonText: 'Options'
+		buttonText: 'Create Tournament',
+		requiresLogin: true,
 	},
 	'/login': {
 		path: '/login',
@@ -93,12 +92,6 @@ export const routes = {
 		component: 'two-factor-auth',
 		title: 'Two Factor Authentication',
 		buttonText: '2FA'
-	},
-	'/user': {
-		path: '/user',
-		view: User,
-		title: 'Profile Page',
-		buttonText: 'Profile'
 	},
 	'/basic': {
 		path: '/basic',
@@ -129,6 +122,11 @@ export const router = async () => {
   const View = routes[path] || routes['/404'];
   const viewContainer = document.querySelector('#view');
 
+  if (View.requiresLogin && !sessionStorage.getItem('accessToken')) {
+	displayPopup(`Please Log In to visit ${View.title} page`, "info");
+	navigateTo('/login');
+	return;
+  }
 
   if (View.component) {
 	if (previousView) {

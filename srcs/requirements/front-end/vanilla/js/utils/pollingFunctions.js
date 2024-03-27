@@ -51,7 +51,7 @@ function refreshTokenLoop() {
 	const expiryTimestamp = sessionStorage.getItem("expiryTimestamp");
 	let expiryTime = parseInt(expiryTimestamp, 10);
 	if (!(expiryTime > now) || !(expiryTime < now + 100*24*60*60*1000)) {
-		expiryTime = now + 100;
+		expiryTime = now + 60000;
 	}
 	const accessToken = sessionStorage.getItem("accessToken");
 	const tokenType = sessionStorage.getItem("tokenType");
@@ -69,7 +69,7 @@ function refreshTokenLoop() {
 	fetchUserDetails();
 
 	// calculate remaining time until the token needs refreshing
-	let delayUntilRefresh = expiryTime - now - 60000;
+	let delayUntilRefresh = expiryTime - now - 30000;
 
 	console.log("delay", delayUntilRefresh);
 	console.log('Token will be refreshed in:', delayUntilRefresh);
