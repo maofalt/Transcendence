@@ -54,11 +54,11 @@ class TournamentListCreate(generics.ListCreateAPIView):
         serializer.is_valid(raise_exception=True)
 
         validated_data = serializer.validated_data
-        user_info, _ = request.user
-        uid, username = user_info.split(":")
-        
-        print("User ID:", uid)
-        print("Username:", username)
+        user_info = request.user
+        if not isinstance(user_info, tuple) or len(user_info) != 2:
+            raise exceptions.AuthenticationFailed('User information is not in the expected format')
+
+        uid, username = user_info
         host, _ = Player.objects.get_or_create(id=uid, username=username) # created wiil return False if the player already exists
 
         match_setting_data = {
@@ -102,9 +102,11 @@ class JoinTournament(generics.ListCreateAPIView):
         return self.list(request, *args, **kwargs)
 
     def post(self, request, tournament_id, player_id):
-        user_info, _ = request.user
-        uid, username = user_info.split(":")
-        print("request.user: ", request.user)
+        user_info = request.user
+        if not isinstance(user_info, tuple) or len(user_info) != 2:
+            raise exceptions.AuthenticationFailed('User information is not in the expected format')
+
+        uid, username = user_info
         if player_id != uid:
             return JsonResponse({'message': "You are not authorized to join the Tournament"}, status=status.HTTP_403_FORBIDDEN)
         print("All Tournaments:")
@@ -138,8 +140,11 @@ class MatchGenerator(generics.ListCreateAPIView):
 
         print("Tournament id: ", tournament_id)
         tournament = get_object_or_404(Tournament, id=tournament_id)
-        user_info, _ = request.user
-        uid, username = user_info.split(":")
+        user_info = request.user
+        if not isinstance(user_info, tuple) or len(user_info) != 2:
+            raise exceptions.AuthenticationFailed('User information is not in the expected format')
+
+        uid, username = user_info
         if tournament.host.id != uid:
             return Response({"message": "You are not authorized to generate Tournament."}, status=status.HTTP_403_FORBIDDEN)
         match_setting = tournament.setting
