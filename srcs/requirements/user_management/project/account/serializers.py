@@ -9,3 +9,8 @@ class UserSerializer(serializers.ModelSerializer):
 class AnonymousUserSerializer(serializers.Serializer):
     class Meta:
         fields = []
+
+class FriendUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'playername', 'avatar', 'is_online']

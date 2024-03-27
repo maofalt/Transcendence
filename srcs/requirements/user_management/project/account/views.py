@@ -42,7 +42,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .models import User
-from .serializers import UserSerializer, AnonymousUserSerializer
+from .serializers import FriendUserSerializer, UserSerializer, AnonymousUserSerializer
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework_simplejwt.tokens import RefreshToken
 import jwt
@@ -169,7 +169,7 @@ def refresh_accessToken(request, accessToken, refreshToken):
         }
         print("expires_in: ", expires_in, "exp_datetime: ", exp_datetime)
         return response_data
-    except Http404
+    except Http404:
         return JsonResponse({'error': 'User not found'}, status=404)
     except jwt.ExpiredSignatureError:
             return JsonResponse({'error': 'Access/Refresh token has expired'}, status=401)
@@ -426,31 +426,39 @@ def friends_view(request):
     user = request.user
     friends = user.friends.all()
 
-    friend_data = []
-    for friend in friends:
-        print("friend: ", friend)
-        current_time = int(timezone.now().timestamp())
-        print("last_valid_time_unix_timestamp = int(last_valid_time.timestamp())", int(friend.last_valid_time.timestamp()))
-        print("current_time: ", current_time)
-        print("current_time - friend.last_valid_time: ", current_time - int(friend.last_valid_time.timestamp()))
-        if friend.is_online == True and (current_time - int(friend.last_valid_time.timestamp())) > 300:
-            friend.is_online = False
-            friend.save()
+    friend_data = FriendUserSerializer(friends, many=True).data
 
-        avatar_url = None
-        if friend.avatar:
-            with open(friend.avatar.path, "rb") as image_file:
-                avatar_data = base64.b64encode(image_file.read()).decode('utf-8')
-            avatar_url = urljoin(settings.MEDIA_URL, friend.avatar.url)
-            print("avatar_url: ", avatar_url)
-        friend_info = {
-            'id': friend.id,
-            'username': escape(friend.username),
-            'playername': escape(friend.playername),
-            'avatar': avatar_url,
-            'is_online': friend.is_online,
-        }
-        friend_data.append(friend_info)
+    current_time = int(timezone.now().timestamp())
+    for friend_info in friend_data:
+        if friend_info['is_online'] and (current_time - int(friend_info['last_valid_time'])) > 300:
+            friend_info['is_online'] = False
+
+        if friend_info['avatar']:
+            friend_info['avatar'] = urljoin(settings.MEDIA_URL, friend_info['avatar'])
+
+    # friend_data = []
+    # for friend in friends:
+    #     print("friend: ", friend)
+    #     current_time = int(timezone.now().timestamp())
+        
+    #     if friend.is_online == True and (current_time - int(friend.last_valid_time.timestamp())) > 300:
+    #         friend.is_online = False
+    #         friend.save()
+
+    #     avatar_url = None
+    #     if friend.avatar:
+    #         with open(friend.avatar.path, "rb") as image_file:
+    #             avatar_data = base64.b64encode(image_file.read()).decode('utf-8')
+    #         avatar_url = urljoin(settings.MEDIA_URL, friend.avatar.url)
+    #         print("avatar_url: ", avatar_url)
+    #     friend_info = {
+    #         'id': friend.id,
+    #         'username': escape(friend.username),
+    #         'playername': escape(friend.playername),
+    #         'avatar': avatar_url,
+    #         'is_online': friend.is_online,
+    #     }
+    #     friend_data.append(friend_info)
 
     search_query = request.GET.get('search')
     search_results = []
@@ -459,8 +467,8 @@ def friends_view(request):
             print(search_query)
             search_results = User.objects.filter(username__icontains=search_query)
             print("search_resuls : ", search_results)
-
-    return JsonResponse({'friends': friend_data, 'search_query': escape(search_query), 'search_results': search_results})
+    search_results_serialized = FriendUserSerializer(search_results, many=True).data
+    return JsonResponse({'friends': friend_data, 'search_query': escape(search_query), 'search_results': search_results_serialized})
     # return render(request, 'friends.html', {'friends': friend_data, 'search_query': search_query, 'search_results': search_results})
 
 @login_required
