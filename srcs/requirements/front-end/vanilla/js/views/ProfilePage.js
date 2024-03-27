@@ -173,6 +173,10 @@ export default class ProfilePage extends AbstractComponent {
 	postAddFriend = async (username) => {
 		let valid = false;
 
+		if (!username) {
+			// displayPopup("Please enter a username", "error");
+			return true;
+		}
 		await easyFetch(`/api/user_management/auth/add_friend/${username}`, {
 			method: 'POST',
 			headers: {
@@ -182,9 +186,11 @@ export default class ProfilePage extends AbstractComponent {
 		.then(res => {
 			let response = res.response;
 			let body = res.body;
-
-			if (!response || !body) {
+			console.log("Response:", response);
+			if (!response) {
 				throw new Error("Response is null");
+			} else if (response.status === 404) {
+				throw new Error("Username not found");
 			} else if (response.status === 200) {
 				displayPopup("Friend added", "success");
 				router();
