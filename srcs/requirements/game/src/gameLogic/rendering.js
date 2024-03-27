@@ -259,6 +259,15 @@ function eliminatePlayer(data, player) {
     // call init() again to setup the field correctly;
 }
 
+function getBallDir(data) {
+    let playersArray = Object.values(data.players);
+    let randomIndex = Math.floor(Math.random() * playersArray.length);
+    let randomPlayer = playersArray[randomIndex];
+
+    data.ball.dir = randomPlayer.paddle.dirToCenter.scale(-1);
+    return data.ball.dir;
+}
+
 function handleScoring(data, player) {
     if (data.ongoing) {
         if (data.gamemode.gameType == 0) {
@@ -288,6 +297,7 @@ function handleScoring(data, player) {
         }
     }
     data.ball.pos = new Vector(0, 0, 0);
+    getBallDir(data);
     return 0;
 }
 
@@ -332,4 +342,4 @@ function updateData(data) {
     return result;
 }
 
-module.exports = { updateData };
+module.exports = { updateData, getBallDir };

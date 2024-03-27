@@ -151,8 +151,7 @@ function waitingRoom(matchID) {
 			// game status to ongoing, !imminent;
 			// and we call the loop for the game physics and scoring;
 			clearInterval(match.gameInterval);
-			// match.gameState.ball.dir.x = 0;
-			match.gameState.ball.dir.y = -1;
+			render.getBallDir(match.gameState);
 			match.gameState.ongoing = true;
 			match.gameState.imminent = false;
 			match.gameInterval = setInterval(gameLoop, 10, matchID);
@@ -226,8 +225,7 @@ function handleConnectionV2(client) {
     if (match.gameState.connectedPlayers == 1 && match.gameState.ongoing == false) {
 		console.log("SETTING INTERVAL");
         match.gameInterval = setInterval(waitingRoom, 10, client.matchID);
-        match.gameState.ball.dir.y = -1;
-		match.gameState.ball.dir.x = 0.01;
+        render.getBallDir(match.gameState);
     }
 
     console.log(`Player connected with ID: ${client.playerID}`);
