@@ -154,7 +154,7 @@ export default class Game extends AbstractView {
 		uiLayer.id = 'uiLayer';
 		uiLayer.style.width = '100%';
 		uiLayer.style.height = '100%';
-		uiLayer.style.background = 'rgba(0, 0, 0, 0.0)'; // black background with 50% opacity
+		uiLayer.style.background = 'rgba(0, 0, 0, 0)';
 		uiLayer.style.position = 'absolute';
 		uiLayer.style.top = '0';
 		uiLayer.style.left = '0';
@@ -294,17 +294,22 @@ export default class Game extends AbstractView {
 	};
 
 	launchEndGameAnimation() {
-		this.endGameAnimation();
+		let uiLayer = document.getElementById('uiLayer');
+		this.endGameAnimation(uiLayer);
 	}
 
 	// Define your animation function
-	endGameAnimation = (frame = 0) => {
-		let maxFrame = 300;
-		if (frame == maxFrame)
+	endGameAnimation = (uiLayer, frame = 0) => {
+		let maxFrame = 50;
+
+		uiLayer.style.setProperty("background", `rgba(0, 0, 0, ${frame / maxFrame})`);
+		if (frame == maxFrame) {
+			console.log("End of Game !!");
 			return ;
+		}
 
 		// Request the next frame
-		requestAnimationFrame(() => this.endGameAnimation(frame + 1));
+		requestAnimationFrame(() => this.endGameAnimation(uiLayer, frame + 1));
 	}
 
 	destroy() {
