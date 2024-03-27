@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from rest_framework.permissions import IsAuthenticated
 from .models import Tournament, TournamentMatch, MatchSetting, TournamentPlayer, Player, MatchParticipants
-from .serializers import TournamentSerializer, TournamentMatchSerializer, MatchSettingSerializer
+from .serializers import TournamentSerializer, TournamentMatchSerializer, MatchSettingSerializer, SimplePlayerSerializer
 from .serializers import TournamentPlayerSerializer, GamemodeDataSerializer, FieldDataSerializer, PaddlesDataSerializer, BallDataSerializer, TournamentMatchRoundSerializer
 from .serializers import PlayerSerializer, MatchParticipantsSerializer, TournamentRegistrationSerializer, PlayerGameStatsSerializer, SimpleTournamentSerializer
 from .serializers import MatchGeneratorSerializer
@@ -677,7 +677,7 @@ class GenerateRound(APIView):
                 'fieldData': FieldDataSerializer(tournament.setting).data,
                 'paddlesData': PaddlesDataSerializer(tournament.setting).data,
                 'ballData': BallDataSerializer(tournament.setting).data,
-                'players': PlayerSerializer(match.players.all(), many=True).data,
+                'players': SimplePlayerSerializer(match.players.all(), many=True).data,
             }
             serialized_matches.append(match_data)
 

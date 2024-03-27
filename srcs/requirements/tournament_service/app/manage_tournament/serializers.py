@@ -132,8 +132,39 @@ class BallDataSerializer(serializers.ModelSerializer):
         model = MatchSetting
         fields = ['speed', 'radius', 'color']
 
+class SimplePlayerSerializer(serializers.ModelSerializer):
+    COLOR_CHOICES = ['red', 'blue', 'green', 'yellow', 'dark grey', 'pink', 'white', 'cyan']
+    color = serializers.ChoiceField(choices=COLOR_CHOICES)
+
+
+    class Meta:
+        model = Player
+        fields = ['id', 'username', 'color']
+
+    def color_to_rgb(color_name):
+        colors = {
+            'red': '#FF0000',
+            'blue': '#0000FF',
+            'green': '#00FF00',
+            'yellow': '#FFFF00',
+            'dark grey': '#444444',
+            'pink': '#FFC0CB',
+            'white': '#FFFFFF',
+            'cyan': '#00FFFF'
+        }
+        return colors.get(color_name.lower(), '#000000')
+        
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['color'] = self.color_to_rgb(representation['color'])
+        return representation
+
 class TournamentMatchRoundSerializer(serializers.ModelSerializer):
-    players = PlayerSerializer(many=True)
+    gamemodeData = GamemodeDataSerializer()
+    fieldData = FieldDataSerializer()
+    paddlesData = PaddlesDataSerializer()
+    ballData = BallDataSerializer()
+    players = SimplePlayerSerializer(many=True)
     match_id = serializers.IntegerField(source='id')
 
     class Meta:
