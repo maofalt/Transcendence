@@ -1,7 +1,7 @@
 import anim from '@utils/animate.js';
 import InfoPopup from '@components/InfoPopup';
 
-export const displayPopup = (message, infoType) => {
+export default function displayPopup(message, infoType) {
 	let info = new InfoPopup();
 	info.setAttribute('message', message);
 	info.setAttribute('type', infoType);

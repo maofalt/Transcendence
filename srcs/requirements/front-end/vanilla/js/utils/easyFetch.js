@@ -1,5 +1,5 @@
 
-export async function easyFetch(url, options = { method: 'GET', body: null, headers: {} }) {
+export default async function easyFetch(url, options = { method: 'GET', body: null, headers: {} }) {
 
 	let response;
 
@@ -37,7 +37,7 @@ export async function easyFetch(url, options = { method: 'GET', body: null, head
 
 		if (response && response.status === 401) {
 			// Redirect to the login page
-			window.location.href = '/login';
+			// window.location.href = '/login';
 			return Promise.reject('Unauthorized');
 		}
 

@@ -1,6 +1,6 @@
-import AbstractView from "./AbstractView";
+import AbstractView from "../AbstractView";
 
-export default class Options extends AbstractView {
+export default class Home extends AbstractView {
 	constructor(element) {
 		super(element);
 	}
@@ -8,7 +8,7 @@ export default class Options extends AbstractView {
 	async getHtml() {
 		return `
 		<div class="card">
-			<h1>Options</h1>
+			<h1>HOME</h1>
 		</div>
 		`;
 	}
