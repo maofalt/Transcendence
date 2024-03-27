@@ -4,11 +4,11 @@ export default async function fetchUserDetails() {
 	const accessToken = sessionStorage.getItem("accessToken");
 	const tokenType = sessionStorage.getItem("tokenType");
 	let details = {
-		username: "Not Logged In",
-		playername: "Not Logged In",
-		avatar: "",
+		username: "Logged Out",
+		playername: "Logged Out",
+		avatar: "../js/assets/images/default-avatar.webp",
 		friends_count: 0,
-		email: "Not Logged In"
+		email: "Logged Out"
 	}
 
 	await easyFetch('/api/user_management/auth/detail', {
@@ -32,7 +32,7 @@ export default async function fetchUserDetails() {
 			details = {
 				username: body.username,
 				playername: body.playername,
-				avatar: body.avatar,
+				avatar: "/api/user_management" + body.avatar,
 				friends_count: body.friends_count,
 				email: body.email
 			}
@@ -43,7 +43,7 @@ export default async function fetchUserDetails() {
 
 	sessionStorage.setItem('username', details.username);
 	sessionStorage.setItem('playername', details.playername);
-	sessionStorage.setItem('avatar', "/api/user_management" + details.avatar);
+	sessionStorage.setItem('avatar', details.avatar);
 	sessionStorage.setItem('friends', details.friends_count);
 	sessionStorage.setItem('email', details.email);
 
