@@ -21,7 +21,7 @@ export default class SpaceBackground extends AbstractComponent {
 		// Camera setup
 		const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
 		camera.position.z = 5;
-		
+
 		// Create a container for the renderer's DOM element
 		const container = document.createElement('div');
 		this.shadowRoot.appendChild(container);
@@ -34,8 +34,8 @@ export default class SpaceBackground extends AbstractComponent {
 
 		// Resize listener
 		window.addEventListener('resize', () => {
-			renderer.setSize(container.clientWidth, container.clientHeight);
-			camera.aspect = container.clientWidth / container.clientHeight;
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			camera.aspect = window.innerWidth / window.innerHeight;
 			camera.updateProjectionMatrix();
 		});
 		
