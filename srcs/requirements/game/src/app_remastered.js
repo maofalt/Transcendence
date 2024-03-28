@@ -479,6 +479,7 @@ app.post('/createMultipleMatches', (req, res) => {
 		
 		if (matches.has(matchID)) {
 			console.log("Match already exists");
+			res.json({ matchID });
 			return ;
 		}
 
