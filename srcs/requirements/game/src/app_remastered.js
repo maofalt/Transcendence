@@ -328,11 +328,16 @@ io.on('connection', (client) => {
 				player.connected = false;
 			if (data.connectedPlayers < 1) {
 				console.log("CLEARING INTERVAL");
-				data.winner = player;
 				clearInterval(match.gameInterval);
-				if (data.jisus_matchID)
-					postMatchResult(match.gameState.jisus_matchID, match.gameState.winner.accountID);
-				matches.delete(client.matchID);
+				if (data.ongoing) {
+					data.winner = player;
+					if (data.jisus_matchID) {
+						postMatchResult(match.gameState.jisus_matchID, match.gameState.winner.accountID);
+					}
+					matches.delete(client.matchID);
+				}
+				console.log("SENDING CLEAN MSG");
+				client.emit("clean-all");
 				delete data;
 			}
 			console.log(`Client disconnected with ID: ${client.id} (num clients: ${io.engine.clientsCount})`);

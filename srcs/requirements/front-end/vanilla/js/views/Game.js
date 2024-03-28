@@ -144,7 +144,25 @@ export default class Game extends AbstractView {
 			// width: "100px",
 		}});
 
-		leaveButton.onclick = () => navigateTo("/");
+		leaveButton.onclick = () => {
+			if (this.socket)
+				this.socket.disconnect();
+
+			if (this.scene)
+				this.scene.clear();
+			// Dispose of the renderer and remove its DOM element
+			if (this.renderer) {
+				this.renderer.dispose();
+				this.renderer.domElement.remove();
+				this.renderer = null;
+			}
+		
+			// Set the scene and camera to null
+			this.scene = null;
+			this.camera = null;
+
+			navigateTo("/");
+		}
 
 		this.container.appendChild(countDown);
 		this.container.appendChild(leaveButton);
@@ -268,6 +286,23 @@ export default class Game extends AbstractView {
 			//console.log(str);
 		});
 
+		this.socket.on("clean-all", () => {
+			console.log("CLEANING CLIENT !!");
+
+			// Remove all objects from the scene
+			this.scene.clear();
+		
+			// Dispose of the renderer and remove its DOM element
+			if (renderer) {
+				renderer.dispose();
+				renderer.domElement.remove();
+				renderer = null;
+			}
+		
+			// Set the scene and camera to null
+			scene = null;
+			camera = null;
+		});
 	};
 
 	launchEndGameAnimation(winner) {
@@ -322,7 +357,25 @@ export default class Game extends AbstractView {
 		leaveButton.style.position = "absolute";
 		leaveButton.style.left = "50px";
 		leaveButton.style.bottom = "30px";
-		leaveButton.onclick = () => navigateTo("/");
+		leaveButton.onclick = () => {
+			if (this.socket)
+				this.socket.disconnect();
+
+			if (this.scene)
+				this.scene.clear();
+			// Dispose of the renderer and remove its DOM element
+			if (this.renderer) {
+				this.renderer.dispose();
+				this.renderer.domElement.remove();
+				this.renderer = null;
+			}
+		
+			// Set the scene and camera to null
+			this.scene = null;
+			this.camera = null;
+
+			navigateTo("/");
+		}
 		
 		uiLayer.appendChild(leaveButton);
 
