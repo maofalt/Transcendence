@@ -43,6 +43,7 @@ export async function renewToken() {
 	}).catch(error => {
 		console.error('Error checking refresh:', error);
 		sessionStorage.clear();
+		console.log(sessionStorage);
 	});
 }
 
@@ -66,8 +67,9 @@ function refreshTokenLoop() {
 		renewToken();
 	}
 
-	// get user details
-	fetchUserDetails();
+	if (accessToken !== null && expiryTime !== null && expiryTime < now) {
+		sessionStorage.clear();
+	}
 
 	// calculate remaining time until the token needs refreshing
 	let delayUntilRefresh = expiryTime - now - 30000;

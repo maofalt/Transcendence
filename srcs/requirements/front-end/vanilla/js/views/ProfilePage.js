@@ -16,6 +16,7 @@ import getCookie from "@utils/getCookie";
 import displayPopup from "@utils/displayPopup";
 import FriendsList from "@components/FriendsList";
 import { router } from "@utils/Router";
+import fetchUserDetails from "@utils/fetchUserDetails";
 
 export default class ProfilePage extends AbstractComponent {
 	constructor(options = {}) {
@@ -28,7 +29,7 @@ export default class ProfilePage extends AbstractComponent {
 		// let user = options.user;
 		// let user = options;
 
-		this.user = this.getUserDetails();
+		this.user = fetchUserDetails();
 
 		const userInfo = new UserInfo({
 			profilePicPath: this.user.avatar,
@@ -145,7 +146,7 @@ export default class ProfilePage extends AbstractComponent {
 		addFriend.shadowRoot.querySelector("#input-button").style.setProperty("font-size", "28px");
 
 		// this.user.friends = 4;
-		const friendsListPannel = new Pannel({dark: true, title: `Friends List  ( ${this.user.friends} )`});
+		const friendsListPannel = new Pannel({dark: true, title: `Friends List  ( ${this.user.friends_count} )`});
 
 		const friendsList = new FriendsList();
 		friendsListPannel.shadowRoot.appendChild(friendsList);
@@ -204,35 +205,6 @@ export default class ProfilePage extends AbstractComponent {
 			valid = false;
 		});
 		return valid;
-	}
-
-
-	getUserDetails = () => {
-		let tokenType = sessionStorage.getItem("tokenType");
-		let accessToken = sessionStorage.getItem("accessToken");
-		let username = sessionStorage.getItem("username");
-		let playername = sessionStorage.getItem("playername");
-		let avatar = sessionStorage.getItem("avatar");
-		let friends = sessionStorage.getItem("friends");
-		let email = sessionStorage.getItem("email");
-
-		// {"username": "yridgway", "playername": "Yoel", "avatar": "/media/default_avatar.jpeg", "friends_count": 0, "two_factor_method": null}
-
-		let user = {
-			avatar,
-			username,
-			status: "online",
-			wins: 10,
-			losses: 5,
-			playername,
-			email,
-			total: 15,
-			winrate: "66%",
-			friends
-		};
-
-		console.log("Returning user:", this.user);
-		return user;
 	}
 }
 

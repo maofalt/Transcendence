@@ -61,6 +61,8 @@ export default class LoginPage extends AbstractComponent {
 		p.style.setProperty("margin-bottom", "35px");
 		p.style.setProperty("padding", "0px");
 		p.style.setProperty("cursor", "pointer");
+		p.style.setProperty("text-decoration", "underline");
+		p.style.setProperty("color", "rgba(0, 217, 255, 1)");
 
 		pannel.shadowRoot.appendChild(usernameBlock);
 		pannel.shadowRoot.appendChild(passwordBlock);
@@ -71,15 +73,19 @@ export default class LoginPage extends AbstractComponent {
 			if (!await usernameBlock.validate() || ! await passwordBlock.validate()) {
 				return ;
 			}
-			if (!await this.submitLoginForm(e, 
-			{
-				username: usernameBlock.input.getValue(),
-				password: passwordBlock.input.getValue()
-			})) {
-				usernameBlock.input.input.style.outline = "2px solid red";
-				passwordBlock.input.input.style.outline = "2px solid red";
+			let ready = await this.submitLoginForm(e, usernameBlock, passwordBlock);
+			if (!ready) {
+
 			}
 		};
+
+		passwordBlock.input.oninput = () => {
+			passwordBlock.input.input.style.outline = "none";
+		}
+
+		usernameBlock.input.oninput = () => {
+			usernameBlock.input.input.style.outline = "none";
+		}
 
 		p.onclick = () => Router.navigateTo("/forgot_password");
 
@@ -98,7 +104,12 @@ export default class LoginPage extends AbstractComponent {
 	}
 	
 	// Implement other methods or properties as needed
-	submitLoginForm = async (e, formData) => {
+	submitLoginForm = async (e, usernameBlock, passwordBlock) => {
+		let formData = {
+			username: usernameBlock.input.getValue(),
+			password: passwordBlock.input.getValue()
+		}
+		let valid = false;
 		if (e)
 			e.preventDefault();
 		console.log('values:', formData);
@@ -115,47 +126,33 @@ export default class LoginPage extends AbstractComponent {
 			let body = res.body;
 
 			if (!response || !body) {
-				displayPopup('Request Failed', 'error');
-				return false;
-			}
-
-			if (response.status === 400) {
+				throw new Error('Empty response or body');
+			} else if (response.status === 400) {
 				displayPopup('Wrong username or password', 'error');
-				return false;
-			}
-	
-			if (!response.ok) {
+				usernameBlock.input.input.style.outline = "2px solid red";
+				passwordBlock.input.input.style.outline = "2px solid red";
+			} else if (!response.ok) {
 				throw new Error(body.error || JSON.stringify(body));
-			}
-
-			if (response.status === 200 && body.success === true) {
+			} else if (response.status === 200 && body.success === true) {
 
 				// Store the access token and details in memory
 				sessionStorage.setItem('expiryTimestamp', new Date().getTime() + body.expires_in * 1000);
 				sessionStorage.setItem('accessToken', body.access_token);
 				sessionStorage.setItem('tokenType', body.token_type);
 				
-				// get user details for the profile page
-				await fetchUserDetails();
-				
 				if (body.requires_2fa) {
 					displayPopup('login successful, please enter your 2fa code', 'info');
 					Router.navigateTo("/2fa");
-					return true;
 				}
 
 				displayPopup('Login successful', 'success');
 
 				Router.navigateTo("/");
-				return true;
 			}
 		})
 		.catch(error => {
-			console.error('Request Failed:', error);
 			displayPopup(`Request Failed: ${error}` , 'error');
-			return false;
 		});
-		return false;
 	}
 }
 

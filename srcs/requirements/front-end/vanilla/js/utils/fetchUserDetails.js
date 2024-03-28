@@ -1,16 +1,26 @@
 import easyFetch from "@utils/easyFetch";
+import isLoggedIn from "@utils/isLoggedIn";
 
 export default async function fetchUserDetails() {
 	let details = {
 		username: "Logged Out",
 		playername: "Logged Out",
+		email: "Logged Out",
 		avatar: "../js/assets/images/default-avatar.webp",
+		status: "Offline",
 		friends_count: 0,
-		email: "Logged Out"
-	}
+		wins: "-",
+		losses: "-",
+		total: 15,
+		winrate: "66%",
+	};
 	try {
 		const accessToken = sessionStorage.getItem("accessToken");
 		const tokenType = sessionStorage.getItem("tokenType");
+	
+		if (!isLoggedIn()) {
+			return details;
+		}
 
 		await easyFetch('/api/user_management/auth/detail', {
 			method: 'GET',
@@ -33,23 +43,22 @@ export default async function fetchUserDetails() {
 				details = {
 					username: body.username,
 					playername: body.playername,
+					email: body.email,
 					avatar: "/api/user_management" + body.avatar,
+					status: "online",
 					friends_count: body.friends_count,
-					email: body.email
+					wins: body.wins,
+					losses: body.losses,
+					total: body.total,
+					winrate: body.winrate,
 				}
 			}
 		}).catch(error => {
 			console.error('Error retrieving user details:', error);
 		});
-
-		sessionStorage.setItem('username', details.username);
-		sessionStorage.setItem('playername', details.playername);
-		sessionStorage.setItem('avatar', details.avatar);
-		sessionStorage.setItem('friends', details.friends_count);
-		sessionStorage.setItem('email', details.email);
+		// console.log("details:", details);
 	} catch (error) {
 		console.error('Error fetching user details:', error);
 	}
-
 	return details;
 }
