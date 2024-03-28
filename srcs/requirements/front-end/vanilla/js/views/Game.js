@@ -102,6 +102,11 @@ export default class Game extends AbstractView {
 		console.log("Screen size: ", this.screenWidth, this.screenHeight);
 	};
 
+	// ??
+	// disconnectedCallBack() {
+	// 	this.cleanAll();
+	// }
+
 	async getHtml() {
 		return `
 			<div id="gameContainer"></div>
@@ -279,6 +284,10 @@ export default class Game extends AbstractView {
 
 	cleanAll() {
 		console.log("CLEANING CLIENT !!");
+		// Cleanup logic here (remove event listeners, etc.)
+		window.removeEventListener('resize', this.onWindowResize.bind(this));
+		window.removeEventListener("keydown", this.handleKeyPress.bind(this));
+		window.removeEventListener("keyup", this.handleKeyRelease.bind(this));
 
 		if (this.socket)
 			this.socket.disconnect();
@@ -378,25 +387,6 @@ export default class Game extends AbstractView {
 		// Request the next frame
 		requestAnimationFrame(() => this.endGameAnimation(uiLayer, frame + 1));
 	}
-
-	destroy() {
-		if (this.socket) {
-			this.socket.disconnect();
-		}
-		console.log("Destroying Game View...");
-		// Cleanup logic here (remove event listeners, etc.)
-		window.removeEventListener('resize', this.onWindowResize.bind(this));
-		window.removeEventListener("keydown", this.handleKeyPress.bind(this));
-		window.removeEventListener("keyup", this.handleKeyRelease.bind(this));
-
-		// Additional cleanup (disposing Three.js objects, etc.)
-		if (this.scene)
-			this.scene.clear();
-		// delete cam;
-		// delete controls;
-		// delete renderer;
-	};
-
 
 	refreshScene(data) {
 		this.scene = new THREE.Scene();

@@ -450,15 +450,14 @@ app.post('/createMatch', (req, res) => {
 	
 	if (matches.has(matchID)) {
 		console.log("Match already exists");
-		res.json({ matchID });
+		res.status(400).json({ matchID });
 		return ;
 	}
 
-	let matchValidity = verifyMatchSettings(gameSettings);
-	if (matchValidity) {
-		let createMatch = `ERROR: ${matchValidity}`;
-		console.log(createMatch);
-		res.json({ createMatch });
+	let error = verifyMatchSettings(gameSettings);
+	if (error) {
+		console.log("Error:", error);
+		res.status(400).json({ error });
 		return ;
 	}
 	
@@ -487,15 +486,14 @@ app.post('/createMultipleMatches', (req, res) => {
 		
 		if (matches.has(matchID)) {
 			console.log("Match already exists");
-			res.json({ matchID });
+			res.status(400).json({ matchID });
 			return ;
 		}
 
-		let matchValidity = verifyMatchSettings(gameSettings);
-		if (matchValidity) {
-			let createMatch = `ERROR: ${matchValidity}`;
-			console.log(createMatch);
-			res.json({ createMatch });
+		let error = verifyMatchSettings(gameSettings);
+		if (error) {
+			console.log("Error:", error);
+			res.status(400).json({ error });
 			return ;
 		}
 		
