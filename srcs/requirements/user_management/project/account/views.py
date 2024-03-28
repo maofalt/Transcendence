@@ -483,8 +483,10 @@ def friends_view(request):
 @csrf_protect
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@authentication_classes([CustomJWTAuthentication])
 def detail_view(request):
     user = request.user
+    print("user: ", user)
     if user:
         # Serialize user data
         data = {
