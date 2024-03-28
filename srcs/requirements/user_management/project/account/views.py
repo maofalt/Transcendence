@@ -1,6 +1,6 @@
 from .models import User
 from django import forms
-from .forms import ProfileUpdateForm, PasswordUpdateForm, CustomPasswordChangeForm
+from .forms import CustomPasswordResetForm, ProfileUpdateForm, PasswordUpdateForm, CustomPasswordChangeForm, CustomPasswordResetForm
 from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
 from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView, PasswordResetDoneView
 from django.db.utils import IntegrityError
@@ -41,7 +41,7 @@ from rest_framework.generics import ListAPIView
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from .serializers import PasswordChangeSerializer, FriendUserSerializer, UserSerializer, AnonymousUserSerializer, ProfileUSerSerializer
+from .serializers import SendResetLinkSerializer, PasswordResetSerializer, SimpleUserSerializer, PasswordResetSerializer, PasswordChangeSerializer, FriendUserSerializer, UserSerializer, AnonymousUserSerializer, ProfileUSerSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -631,80 +631,64 @@ class TokenGenerator(PasswordResetTokenGenerator):
 
 token_generator = TokenGenerator()
 
-@ensure_csrf_cookie
-@csrf_protect
-# @require_POST
-@authentication_classes([])
-@permission_classes([AllowAny])
-def send_password_reset_link(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        print("usernamen: ", username)
-        try:
-            user = User.objects.get(username=username)
-        except User.DoesNotExist:
-            return JsonResponse({'success': False, 'error': escape('User not found')})
-
-        uid = urlsafe_base64_encode(force_bytes(user.pk))
-        token = token_generator.make_token(user)
-
-        reset_url = request.build_absolute_uri(reverse_lazy('account:password_reset', kwargs={'uidb64': uid, 'token': token}))
-        print("reset_link: ", reset_url)
-
-        print("\n\nCHECK UNIQUE TOKEN: ", token)
-        subject = 'Pong Password Reset'
-        email_content = render_to_string('password_reset_email.html', {'reset_url': reset_url, 'user': user})
-        from_email = 'no-reply@student.42.fr' 
-        to_email = user.email
-        send_mail(subject, email_content, from_email, [to_email], fail_silently=False)
-
-        return JsonResponse({'success': True, 'message': escape('Password reset link sent successfully')})
-
-    else:
-        return JsonResponse({'success': False, 'error': escape('Invalid request method')})
-
 # @ensure_csrf_cookie
 # @csrf_protect
-# @api_view(['GET', 'POST'])
+# # @require_POST
 # @authentication_classes([])
 # @permission_classes([AllowAny])
-# def password_reset_view(request, uidb64, token):
-#     print("uidb64: ", uidb64, "token: ", token)
-#     try:
-#         uid = urlsafe_base64_decode(uidb64).decode()
-#         user = User.objects.get(pk=uid)
-#     except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-#         user = None
-#     print("user? : ", user.username)
-#     if user is not None and token_generator.check_token(user, token):
-#         if request.method == 'POST':
-#             new_password1 = request.POST.get('new_password1')
-#             new_password2 = request.POST.get('new_password2')
-#             try:
-#                 validate_password(new_password1, user=User(username=user.username))
-#             except ValidationError as e:
-#                 return JsonResponse({'success': False, 'error': e.messages[0]}, status=400)
+# def send_password_reset_link(request):
+class SendResetLinkView(generics.ListCreateAPIView):
+    token_generator = TokenGenerator()  
 
-#             if new_password1 == new_password2:
-#                 user.set_password(new_password1)
-#                 user.save()
-#                 user = authenticate(request, username=user.username, password=new_password1)
-#                 return JsonResponse({'success': True, 'message': escape('Password reset successfully')})
-#             else:
-#                 return JsonResponse({'success': False, 'error': escape('Passwords do not match')}, status=400)
-#         else:
-#             # return render(request, 'password_reset.html', {'uidb64': uidb64, 'token': token, 'user': user})
-#             html = render_to_string('password_reset.html', {'uidb64': uidb64, 'token': token, 'user': user})
-#             return JsonResponse({'html': html})
-#     else:
-#         # return HttpResponse('Invalid password reset link', status=400)
-#         return JsonResponse({'success': False, 'error': escape('Invalid password reset link')}, status=400)
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return SimpleUserSerializer
+        elif self.request.method == 'POST':
+            return SendResetLinkSerializer
+        return SimpleUserSerializer
+
+    def get(self, request):
+        fields = {
+            'username': 'username',
+            }
+        serializer = SimpleUserSerializer(data=request.data)
+        if serializer.is_valid():
+            return Response({'message': 'Reset link sent successfully'}, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def post(self, request):
+    # if request.method == 'POST':
+        serializer = SendResetLinkSerializer(data=request.POST)
+        if serializer.is_valid():
+            username = serializer.validated_data['username']
+            try:
+                user = User.objects.get(username=username)
+            except User.DoesNotExist:
+                return JsonResponse({'success': False, 'error': escape('User not found')})
+
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = token_generator.make_token(user)
+
+            reset_url = request.build_absolute_uri(reverse_lazy('account:password_reset', kwargs={'uidb64': uid, 'token': token}))
+            print("reset_link: ", reset_url)
+
+            print("\n\nCHECK UNIQUE TOKEN: ", token)
+            subject = 'Pong Password Reset'
+            email_content = render_to_string('password_reset_email.html', {'reset_url': reset_url, 'user': user})
+            from_email = 'no-reply@student.42.fr' 
+            to_email = user.email
+            send_mail(subject, email_content, from_email, [to_email], fail_silently=False)
+
+            return JsonResponse({'success': True, 'message': escape('Password reset link sent successfully')})
+        else:
+            return JsonResponse({'success': False, 'errors': serializer.errors}, status=400)
 
 
-class PasswordResetView(APIView):
-    token_generator = PasswordResetTokenGenerator()
-    # serializer_class = ProfileUSerSerializer
-    permission_classes = [IsAuthenticated]
+class PasswordResetView(generics.ListCreateAPIView):
+    token_generator = TokenGenerator()  
+    serializer_class = PasswordResetSerializer
+    # permission_classes = [IsAuthenticated]
 
     def post(self, request, uidb64, token):
         try:
@@ -714,35 +698,36 @@ class PasswordResetView(APIView):
             user = None
 
         if user is not None and self.token_generator.check_token(user, token):
-            new_password1 = request.POST.get('new_password1')
-            new_password2 = request.POST.get('new_password2')
-            try:
-                validate_password(new_password1, user=User(username=user.username))
-            except ValidationError as e:
-                return JsonResponse({'success': False, 'error': e.messages[0]}, status=400)
-
-            if new_password1 == new_password2:
-                user.set_password(new_password1)
-                user.save()
-                user = authenticate(request, username=user.username, password=new_password1)
+            form = CustomPasswordResetForm(user=user, data=request.POST)
+            if form.is_valid():
+                form.save()
+                user = authenticate(request, username=user.username, password=form.cleaned_data['new_password1'])
                 return JsonResponse({'success': True, 'message': escape('Password reset successfully')})
             else:
-                return JsonResponse({'success': False, 'error': escape('Passwords do not match')}, status=400)
+                return JsonResponse({'success': False, 'error': escape(form.errors)}, status=400)
         else:
             return JsonResponse({'success': False, 'error': escape('Invalid password reset link')}, status=400)
 
     def get(self, request, uidb64, token):
         try:
             uid = urlsafe_base64_decode(uidb64).decode()
-            user = User.objects.get(pk=uid)
+            print("uid:::: ", uid)
+            user = User.objects.get(id=uid)
+            print("user: ", user)
         except (TypeError, ValueError, OverflowError, User.DoesNotExist):
             user = None
 
         if user is not None and self.token_generator.check_token(user, token):
-            html = render_to_string('password_reset.html', {'uidb64': uidb64, 'token': token, 'user': user})
-            return JsonResponse({'html': html})
+            serializer = self.get_serializer(data={})
+            serializer.is_valid(raise_exception=True)
+            fields = serializer.data
+            return Response(fields)
         else:
             return JsonResponse({'success': False, 'error': escape('Invalid password reset link')}, status=400)
+
+
+        
+        
 
 def password_reset_done(request):
     html = render_to_string('password_reset_done.html')
