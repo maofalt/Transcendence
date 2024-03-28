@@ -531,15 +531,61 @@ def remove_friend(request, username):
     except Http404:
         return JsonResponse({'error': 'Friend not found'}, status=404)
 
-@login_required
-@ensure_csrf_cookie
-@csrf_protect
-@api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])
-def profile_update_view(request):
-    user = request.user
-    if request.method == 'POST':
+# @login_required
+# @ensure_csrf_cookie
+# @csrf_protect
+# @api_view(['GET', 'POST'])
+# @permission_classes([IsAuthenticated])
+# def profile_update_view(request):
+#     user = request.user
+#     if request.method == 'POST':
+#         user_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user)
+#         if user_form.is_valid():
+#             user = user_form.save(commit=False)
+#             if 'two_factor_method' in request.POST:
+#                 if request.POST['two_factor_method'] == '':
+#                     user.two_factor_method = None
+#                 else:
+#                     user.two_factor_method = request.POST['two_factor_method']
+#             if User.objects.filter(playername=user.playername).exclude(username=request.user.username).exists():
+#                 return JsonResponse({'error': 'Playername already exists. Please choose a different one.'})
+#             else:
+#                 user.save()    
+#                 return JsonResponse({'success': 'Your profile has been updated.'})
+#         else:
+#             return JsonResponse({'error': 'Form is not valid.'}, status=400)
+#     else:
+#         user_form = ProfileUpdateForm(instance=request.user)
+#         print("user_form: ", user_form)
+#         # serialized_form = model_to_dict(user_form.instance)
+#         serialized_form = model_to_dict(user_form.instance, fields=['id', 'username', 'playername', 'avatar', 'email', 'phone', 'two_factor_method'])
+#         if 'avatar' in serialized_form:
+#             avatar_url = request.build_absolute_uri(user_form.instance.avatar.url)
+#             serialized_form['avatar'] = avatar_url
+#         return JsonResponse({'form': serialized_form})
+from rest_framework import generics, permissions, status, authentication, exceptions, viewsets
+from rest_framework.generics import ListAPIView
+from rest_framework.renderers import JSONRenderer
+
+
+class ProfileUpdateView(generics.ListCreateAPIView):
+    serializer_class = ProfileUSerSerializer
+
+    def get(self, request):
+        user_form = ProfileUpdateForm(instance=request.user)
+        serialized_form = model_to_dict(user_form.instance, fields=['id', 'username', 'playername', 'avatar', 'email', 'phone', 'two_factor_method'])
+        if 'avatar' in serialized_form:
+            avatar_url = request.build_absolute_uri(user_form.instance.avatar.url)
+            serialized_form['avatar'] = avatar_url
+        serialized_form['username'] = user_form.instance.username
+        # return JsonResponse({'form': serialized_form})
+        return Response(serialized_form)
+
+    def post(self, request):
+        user = request.user
+        print("request.FILES: ", request.POST)
         user_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user)
+        print("user_form: ", user_form)
         if user_form.is_valid():
             user = user_form.save(commit=False)
             if 'two_factor_method' in request.POST:
@@ -547,23 +593,14 @@ def profile_update_view(request):
                     user.two_factor_method = None
                 else:
                     user.two_factor_method = request.POST['two_factor_method']
-            if User.objects.filter(playername=user.playername).exclude(username=request.user.username).exists():
-                return JsonResponse({'error': 'Playername already exists. Please choose a different one.'})
+            if request.POST['playername'] != '':
+                if User.objects.filter(playername=user.playername).exclude(username=request.user.username).exists():
+                    return JsonResponse({'error': 'Playername already exists. Please choose a different one.'})
             else:
                 user.save()    
                 return JsonResponse({'success': 'Your profile has been updated.'})
         else:
             return JsonResponse({'error': 'Form is not valid.'}, status=400)
-    else:
-        user_form = ProfileUpdateForm(instance=request.user)
-        print("user_form: ", user_form)
-        # serialized_form = model_to_dict(user_form.instance)
-        serialized_form = model_to_dict(user_form.instance, fields=['id', 'username', 'playername', 'avatar', 'email', 'phone', 'two_factor_method'])
-        if 'avatar' in serialized_form:
-            avatar_url = request.build_absolute_uri(user_form.instance.avatar.url)
-            serialized_form['avatar'] = avatar_url
-        return JsonResponse({'form': serialized_form})
-        # return render(request, 'profile_update.html', {'user_form': user_form})
 
 @login_required
 @ensure_csrf_cookie

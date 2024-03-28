@@ -17,11 +17,11 @@ class User(AbstractUser):
     ]
     
     TWO_FACTOR_OPTIONS = [
-        (None, 'Off'),
+        ('', '---------'),
         *TWO_FACTOR_METHODS
     ]
     
-    two_factor_method = models.CharField(max_length=10, choices=TWO_FACTOR_OPTIONS, default=None, null=True, blank=True)
+    two_factor_method = models.CharField(max_length=10, choices=TWO_FACTOR_OPTIONS, default='', null=True, blank=True)
 
     def add_friend(self, friend):
         self.friends.add(friend)
