@@ -42,6 +42,7 @@ export async function renewToken() {
 		console.log('Updated accessToken on Storage');
 	}).catch(error => {
 		console.error('Error checking refresh:', error);
+		sessionStorage.clear();
 	});
 }
 
