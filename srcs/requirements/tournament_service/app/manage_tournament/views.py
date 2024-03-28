@@ -20,7 +20,6 @@ from django.contrib.auth.models import User
 from collections import defaultdict
 from django.http import JsonResponse
 from django.utils import timezone
-from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from threading import Thread
 import requests
@@ -113,8 +112,10 @@ class JoinTournament(generics.ListCreateAPIView):
         for tournament in Tournament.objects.all():
             print(tournament.id)
         print("tournament_id: ", tournament_id)
-        tournament = get_object_or_404(Tournament, id=tournament_id)
-
+        try:
+            tournament = get_object_or_404(Tournament, id=tournament_id)
+        except Http404:
+            return JsonResponse({'error': 'Tournament not found'}, status=404)
         if tournament.is_full():
             return JsonResponse({'message': 'Tournament is full'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -139,7 +140,10 @@ class MatchGenerator(generics.ListCreateAPIView):
     def post(self, request, tournament_id):
 
         print("Tournament id: ", tournament_id)
-        tournament = get_object_or_404(Tournament, id=tournament_id)
+        try:
+            tournament = get_object_or_404(Tournament, id=tournament_id)
+        except Http404:
+            return JsonResponse({'error': 'Tournament not found'}, status=404)
         user_info = request.user
         if not isinstance(user_info, tuple) or len(user_info) != 2:
             raise exceptions.AuthenticationFailed('User information is not in the expected format')
@@ -211,7 +215,10 @@ class MatchResult(APIView):
 
     def post(self, request, match_id, winner_username):
         print("match_id : ", match_id,  "winner_id: ", winner_username)
-        match = get_object_or_404(TournamentMatch, id=match_id)
+        try:
+            match = get_object_or_404(TournamentMatch, id=match_id)
+        except Http404:
+            return JsonResponse({'error': 'Match not found'}, status=404)
         user_info = request.user
         if not isinstance(user_info, tuple) or len(user_info) != 2:
             raise exceptions.AuthenticationFailed('User information is not in the expected format')
@@ -287,7 +294,10 @@ class MatchUpdate(APIView):
     # queryset = Tournament.objects.all()
 
     def post(self, request, tournament_id, round):
-        tournament = get_object_or_404(Tournament, id=tournament_id)
+        try:
+            tournament = get_object_or_404(Tournament, id=tournament_id)
+        except Http404:
+            return JsonResponse({'error': 'Tournament not found'}, status=404)
         finished_matches = tournament.matches.filter(round_number=round - 1).order_by('id')
         finished_match_ids = finished_matches.values_list('id', flat=True)
 
@@ -344,7 +354,10 @@ class TournamentRoundState(APIView):
     authentication_classes = [CustomJWTAuthentication]
     
     def get(self, request, tournament_id):
-        tournament = get_object_or_404(Tournament, id=tournament_id)
+        try:
+            tournament = get_object_or_404(Tournament, id=tournament_id)
+        except Http404:
+            return JsonResponse({'error': 'Tournament not found'}, status=404)
         matches = tournament.matches.all()
         print("matches: ", matches)
         match_in_progress = matches.filter(state='playing').first()
@@ -416,8 +429,10 @@ class TournamentParticipantList(APIView):
     # permission_classes = [IsAuthenticated] # Only authenticated users can view the participant list
 
     def get(self, request, id):
-        tournament = get_object_or_404(Tournament, id=id)
-        
+        try:
+            tournament = get_object_or_404(Tournament, id=id)
+        except Http404:
+            return JsonResponse({'error': 'Tournament not found'}, status=404)
         # Check if the user is the tournament host or a registered participant
         user_info = request.user
         if not isinstance(user_info, tuple) or len(user_info) != 2:
@@ -437,9 +452,14 @@ class TournamentParticipantDetail(APIView):
     # permission_classes = [IsAuthenticated]
 
     def delete(self, request, id, participant_id):
-        tournament = get_object_or_404(Tournament, id=id)
-        participant = get_object_or_404(TournamentPlayer, tournament_id=tournament, player__player_id=participant_id)
-
+        try:
+            tournament = get_object_or_404(Tournament, id=id)
+        except Http404:
+            return JsonResponse({'error': 'Tournament not found'}, status=404)
+        try:
+            participant = get_object_or_404(TournamentPlayer, tournament_id=tournament, player__player_id=participant_id)
+        except Http404:
+            return JsonResponse({'error': 'Participant not found'}, status=404)
         user_info = request.user
         if not isinstance(user_info, tuple) or len(user_info) != 2:
             raise exceptions.AuthenticationFailed('User information is not in the expected format')
@@ -459,8 +479,10 @@ class TournamentVisualization(APIView):
     # permission_classes = [IsAuthenticated, IsHostOrParticipant]
 
     def get(self, request, id):
-        tournament = get_object_or_404(Tournament, id=id)
-
+        try:
+            tournament = get_object_or_404(Tournament, id=id)
+        except Http404:
+            return JsonResponse({'error': 'Tournament not found'}, status=404)
         # Verify the permissions of the user object
         self.check_object_permissions(request, tournament)
 
@@ -476,8 +498,10 @@ class TournamentStart(APIView):
     # permission_classes = [IsAuthenticated]
 
     def post(self, request, id):
-        tournament = get_object_or_404(Tournament, id=id)
-
+        try:
+            tournament = get_object_or_404(Tournament, id=id)
+        except Http404:
+            return JsonResponse({'error': 'Tournament not found'}, status=404)
         user_info = request.user
         if not isinstance(user_info, tuple) or len(user_info) != 2:
             raise exceptions.AuthenticationFailed('User information is not in the expected format')
@@ -498,8 +522,10 @@ class TournamentEnd(APIView):
     # permission_classes = [IsAuthenticated]
 
     def post(self, request, id):
-        tournament = get_object_or_404(Tournament, id=id)
-
+        try:
+            tournament = get_object_or_404(Tournament, id=id)
+        except Http404:
+            return JsonResponse({'error': 'Tournament not found'}, status=404)
         user_info = request.user
         if not isinstance(user_info, tuple) or len(user_info) != 2:
             raise exceptions.AuthenticationFailed('User information is not in the expected format')
@@ -525,7 +551,10 @@ class TournamentMatchList(APIView):
     # permission_classes = [IsAuthenticated, IsHostOrParticipant]
 
     def get(self, request, id):
-        tournament = get_object_or_404(Tournament, id=id)
+        try:
+            tournament = get_object_or_404(Tournament, id=id)
+        except Http404:
+            return JsonResponse({'error': 'Tournament not found'}, status=404)
         self.check_object_permissions(request, tournament)
         matches = TournamentMatch.objects.filter(tournament_id=tournament)
         serializer = TournamentMatchSerializer(matches, many=True)
@@ -544,7 +573,10 @@ class TournamentMatchDetail(APIView):
     # permission_classes = [IsAuthenticated]
     
     def put(self, request, id, match_id):
-        match = get_object_or_404(TournamentMatch, id=match_id, tournament_id=id)
+        try:
+            match = get_object_or_404(TournamentMatch, id=match_id, tournament_id=id)
+        except Http404:
+            return JsonResponse({'error': 'Match not found'}, status=404)
         serializer = TournamentMatchSerializer(match, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -552,7 +584,10 @@ class TournamentMatchDetail(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, id, match_id):
-        match = get_object_or_404(TournamentMatch, id=match_id, tournament_id=id)
+        try:
+            match = get_object_or_404(TournamentMatch, id=match_id, tournament_id=id)
+        except Http404:
+            return JsonResponse({'error': 'Match not found'}, status=404)
         match.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -572,7 +607,10 @@ class MatchStart(APIView):
     # permission_classes = [IsAuthenticated] 
 
     def post(self, request, match_id):
-        match = get_object_or_404(TournamentMatch, id=match_id)
+        try:
+            match = get_object_or_404(TournamentMatch, id=match_id)
+        except Http404:
+            return JsonResponse({'error': 'Match not found'}, status=404)
         match.state = "playing"
         match.save()
         # Mettre à jour l'état du match pour le démarrer
@@ -583,7 +621,10 @@ class MatchEnd(APIView):
     # permission_classes = [IsAuthenticated] 
 
     def post(self, request, match_id):
-        match = get_object_or_404(TournamentMatch, id=match_id)
+        try:
+            match = get_object_or_404(TournamentMatch, id=match_id)
+        except Http404:
+            return JsonResponse({'error': 'Match not found'}, status=404)
         match.state="ended"
         match.save()
         # Enregistrer les résultats du match et mettre à jour son état
@@ -685,7 +726,10 @@ class GenerateRound(APIView):
     authentication_classes = [CustomJWTAuthentication]
 
     def post(self, request, tournament_id, round):
-        tournament = get_object_or_404(Tournament, id=tournament_id)
+        try:
+            tournament = get_object_or_404(Tournament, id=tournament_id)
+        except Http404:
+            return JsonResponse({'error': 'Tournament not found'}, status=404)
         matches = tournament.matches.filter(round_number=round).order_by('id')
 
         serialized_matches = []

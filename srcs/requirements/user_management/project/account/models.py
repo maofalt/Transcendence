@@ -1,6 +1,7 @@
 import os
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.utils import timezone
 
 class User(AbstractUser):
     token = models.CharField(max_length=255, blank=True, null=True)
@@ -9,18 +10,18 @@ class User(AbstractUser):
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True, default='default_avatar.jpeg')
     friends = models.ManyToManyField('self', symmetrical=False, blank=True)
     phone = models.CharField(max_length=15, blank=True, null=True)
-    last_valid_time = models.DateTimeField(null=True, blank=True)
+    last_valid_time = models.DateTimeField(default=timezone.now)
     TWO_FACTOR_METHODS = [
         ('sms', 'SMS'),
         ('email', 'Email'),
     ]
     
     TWO_FACTOR_OPTIONS = [
-        (None, 'Off'),
+        ('', '---------'),
         *TWO_FACTOR_METHODS
     ]
     
-    two_factor_method = models.CharField(max_length=10, choices=TWO_FACTOR_OPTIONS, default=None, null=True, blank=True)
+    two_factor_method = models.CharField(max_length=10, choices=TWO_FACTOR_OPTIONS, default='', null=True, blank=True)
 
     def add_friend(self, friend):
         self.friends.add(friend)
