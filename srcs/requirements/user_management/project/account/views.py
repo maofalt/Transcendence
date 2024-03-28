@@ -38,11 +38,12 @@ from rest_framework.permissions import AllowAny
 
 #JWT
 from rest_framework.views import APIView
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from .models import User
 from .serializers import FriendUserSerializer, UserSerializer, AnonymousUserSerializer
+from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework_simplejwt.tokens import RefreshToken
 import jwt
@@ -64,9 +65,12 @@ import boto3
 import re
 from botocore.exceptions import ClientError
 
-
 #XSS protection
 from django.utils.html import escape
+
+
+custom_jwt_auth = CustomJWTAuthentication()
+
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -74,6 +78,8 @@ User = get_user_model()
 def home(request):
     return render(request, 'home.html')
 
+@ensure_csrf_cookie
+@csrf_protect
 def get_user(request):
     refreshToken = request.COOKIES.get('refreshToken', None)
     try:
@@ -102,6 +108,10 @@ def get_user(request):
     except jwt.InvalidTokenError:
         return JsonResponse({'error': 'Invalid refresh token'}, status=400)
 
+@ensure_csrf_cookie
+@csrf_protect
+@authentication_classes([])
+@permission_classes([AllowAny])
 # call this function from frontend everytime user calls any API
 def check_refresh(request):
     accessToken = request.headers.get('Authorization', None)
@@ -140,6 +150,10 @@ def check_refresh(request):
         print("An error occurred:", e)
         return JsonResponse({'error': 'An error occurred while processing the request'}, status=500)
 
+@ensure_csrf_cookie
+@csrf_protect
+@authentication_classes([])
+@permission_classes([AllowAny])
 def refresh_accessToken(request, accessToken, refreshToken):
     try:
         decoded_refresh_token = jwt.decode(refreshToken, settings.SECRET_KEY, algorithms=["HS256"])
@@ -174,11 +188,13 @@ def refresh_accessToken(request, accessToken, refreshToken):
     except jwt.ExpiredSignatureError:
             return JsonResponse({'error': 'Access/Refresh token has expired'}, status=401)
 
-
+@authentication_classes([])
+@permission_classes([AllowAny])
 def privacy_policy_view(request):
     return render(request, 'privacy_policy.html')
 
 @api_view(['POST'])
+@require_POST
 @ensure_csrf_cookie
 @csrf_protect
 @authentication_classes([])
@@ -211,7 +227,10 @@ def api_login_view(request):
             return JsonResponse({'error': escape('Authentication failed: Wrong user data')}, status=400)
     return JsonResponse({'error': escape('Invalid request method')}, status=400)
 
-
+@ensure_csrf_cookie
+@csrf_protect
+@authentication_classes([])
+@permission_classes([AllowAny])
 def generate_tokens_and_response(request, user):
     accessToken = AccessToken.for_user(user)
     accessToken['username'] = user.username
@@ -261,7 +280,10 @@ def generate_tokens_and_response(request, user):
 def generate_one_time_code():
     return get_random_string(length=6, allowed_chars='1234567890')
 
+@ensure_csrf_cookie
 @csrf_protect
+@authentication_classes([])
+@permission_classes([AllowAny])
 def send_one_time_code(request, email=None):
     if email is None and request.method == 'POST':
         email = request.POST.get('email', None)
@@ -274,10 +296,13 @@ def send_one_time_code(request, email=None):
     from_email = 'no-reply@student.42.fr' 
     to_email = email
     send_mail(subject, message, from_email, [to_email])
-
     return JsonResponse({'success': True})
 
+@ensure_csrf_cookie
 @csrf_protect
+@require_POST
+@authentication_classes([])
+@permission_classes([AllowAny])
 def verify_one_time_code(request):
     if request.method == 'POST':
         csrf_token = get_token(request)
@@ -314,6 +339,8 @@ def get_serializer(user):
 
 @csrf_protect
 @login_required
+@require_POST
+@permission_classes([IsAuthenticated])
 def api_logout_view(request):
     if request.method == 'POST':
         request.user.is_online = False
@@ -328,7 +355,7 @@ def api_logout_view(request):
         return JsonResponse({'error': escape('Invalid request method')}, status=400)
 
 @csrf_protect
-@api_view(['POST'])
+@require_POST
 @authentication_classes([])
 @permission_classes([AllowAny])
 def api_signup_view(request):
@@ -395,6 +422,8 @@ def send_notification_to_microservices(user):
 
 @require_POST
 @login_required
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def delete_account(request):
     user = request.user
     try:
@@ -411,17 +440,17 @@ def delete_account(request):
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 @login_required
+@ensure_csrf_cookie
 @csrf_protect
+@api_view(['GET'])
 def settings_view(request):
     return JsonResponse({})
 
 @login_required
+@ensure_csrf_cookie
 @csrf_protect
-def game_history_view(requset):
-    return JsonResponse({})
-
-@login_required
-@csrf_protect
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def friends_view(request):
     user = request.user
     friends = user.friends.all()
@@ -436,30 +465,6 @@ def friends_view(request):
         if friend_info['avatar']:
             friend_info['avatar'] = urljoin(settings.MEDIA_URL, friend_info['avatar'])
 
-    # friend_data = []
-    # for friend in friends:
-    #     print("friend: ", friend)
-    #     current_time = int(timezone.now().timestamp())
-        
-    #     if friend.is_online == True and (current_time - int(friend.last_valid_time.timestamp())) > 300:
-    #         friend.is_online = False
-    #         friend.save()
-
-    #     avatar_url = None
-    #     if friend.avatar:
-    #         with open(friend.avatar.path, "rb") as image_file:
-    #             avatar_data = base64.b64encode(image_file.read()).decode('utf-8')
-    #         avatar_url = urljoin(settings.MEDIA_URL, friend.avatar.url)
-    #         print("avatar_url: ", avatar_url)
-    #     friend_info = {
-    #         'id': friend.id,
-    #         'username': escape(friend.username),
-    #         'playername': escape(friend.playername),
-    #         'avatar': avatar_url,
-    #         'is_online': friend.is_online,
-    #     }
-    #     friend_data.append(friend_info)
-
     search_query = request.GET.get('search')
     search_results = []
     if (search_query != user.username):
@@ -472,17 +477,12 @@ def friends_view(request):
     # return render(request, 'friends.html', {'friends': friend_data, 'search_query': search_query, 'search_results': search_results})
 
 @login_required
+@ensure_csrf_cookie
 @csrf_protect
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def detail_view(request):
-    # access_token = request.headers.get('Authorization')  # Get the access token from the request headers
-    # if access_token:
-    #     decoded_token = jwt.decode(access_token.split()[1], settings.SECRET_KEY, algorithms=["HS256"])
-    #     print("\nDECODED from detail_view: ", decoded_token)
-    #     user_id = decoded_token.get('user_id')
     user = request.user
-        # if user_id:
-        #     user = User.objects.filter(pk=user_id).first()
-
     if user:
         # Serialize user data
         data = {
@@ -505,6 +505,10 @@ def detail_view(request):
     # return render(request, 'detail.html', {'data': data})
 
 @login_required
+@ensure_csrf_cookie
+@csrf_protect
+@require_POST
+@permission_classes([IsAuthenticated])
 def add_friend(request, username):
     try:
         friend = get_object_or_404(User, username=username)
@@ -514,6 +518,10 @@ def add_friend(request, username):
         return JsonResponse({'error': 'Friend not found'}, status=404)
     
 @login_required
+@ensure_csrf_cookie
+@csrf_protect
+@require_POST
+@permission_classes([IsAuthenticated])
 def remove_friend(request, username):
     try:
         friend = get_object_or_404(User, username=username)
@@ -523,7 +531,10 @@ def remove_friend(request, username):
         return JsonResponse({'error': 'Friend not found'}, status=404)
 
 @login_required
+@ensure_csrf_cookie
 @csrf_protect
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
 def profile_update_view(request):
     user = request.user
     if request.method == 'POST':
@@ -550,6 +561,10 @@ def profile_update_view(request):
         # return render(request, 'profile_update.html', {'user_form': user_form})
 
 @login_required
+@ensure_csrf_cookie
+@csrf_protect
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
 def password_update_view(request):
     if request.method == 'POST':
         form = PasswordUpdateForm(request.user, request.POST)
@@ -576,6 +591,11 @@ class TokenGenerator(PasswordResetTokenGenerator):
 
 token_generator = TokenGenerator()
 
+@ensure_csrf_cookie
+@csrf_protect
+@require_POST
+@authentication_classes([])
+@permission_classes([AllowAny])
 def send_password_reset_link(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -603,7 +623,11 @@ def send_password_reset_link(request):
     else:
         return JsonResponse({'success': False, 'error': escape('Invalid request method')})
 
+@ensure_csrf_cookie
 @csrf_protect
+@api_view(['GET', 'POST'])
+@authentication_classes([])
+@permission_classes([AllowAny])
 def password_reset_view(request, uidb64, token):
     print("uidb64: ", uidb64, "token: ", token)
     try:
@@ -625,9 +649,6 @@ def password_reset_view(request, uidb64, token):
                 user.set_password(new_password1)
                 user.save()
                 user = authenticate(request, username=user.username, password=new_password1)
-                # if user is not None:
-                #     login(request, user)
-                # return redirect('account:password_reset_done')
                 return JsonResponse({'success': True, 'message': escape('Password reset successfully')})
             else:
                 return JsonResponse({'success': False, 'error': escape('Passwords do not match')}, status=400)
@@ -676,6 +697,12 @@ def is_valid_phone_number(phone_number):
     phone_number_pattern = r'^\+\d{1,15}$'
     return bool(re.match(phone_number_pattern, phone_number))
 
+
+@ensure_csrf_cookie
+@csrf_protect
+@require_POST
+@authentication_classes([])
+@permission_classes([AllowAny])
 def send_sms_code(request, phone_number=None):
     if request.method == 'POST':
         if phone_number is None:
@@ -703,7 +730,7 @@ def send_sms_code(request, phone_number=None):
             except Exception as e:
                 print("Error sending SMS message:", e)
                 return JsonResponse({'success': False, 'error': 'Failed to send SMS message'})
-    else:
+    else:subscribe_user_to_sns_topic
         return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 def subscribe_user_to_sns_topic(phone_number):
@@ -730,6 +757,11 @@ def subscribe_user_to_sns_topic(phone_number):
         print("Error subscribing user:", e)
         return None
 
+@login_required
+@ensure_csrf_cookie
+@csrf_protect
+@require_POST
+@permission_classes([IsAuthenticated])
 def update_sandbox(request, phone_number=None):
     if request.method == 'POST':
         if phone_number is None:
@@ -755,6 +787,12 @@ def update_sandbox(request, phone_number=None):
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=405)
 
+@login_required
+@ensure_csrf_cookie
+@csrf_protect
+@require_POST
+@authentication_classes([])
+@permission_classes([AllowAny])
 def verify_sandBox(request, otp=None, phone_number=None):
     print("\n--Verify SandBox\n")
     if request.method == 'POST':
@@ -790,6 +828,11 @@ def is_phone_number_verified(phone_number):
         print("Error listing SMS sandbox phone numbers:", e)
         return False
 
+@login_required
+@ensure_csrf_cookie
+@csrf_protect
+@require_POST
+@permission_classes([IsAuthenticated])
 def update_phone(request, phone_number=None):
     user = request.user
     if phone_number is None:
