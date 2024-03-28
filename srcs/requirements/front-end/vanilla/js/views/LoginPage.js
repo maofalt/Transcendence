@@ -10,6 +10,8 @@ import Router from "@utils/Router";
 import getCookie from "@utils/getCookie";
 import easyFetch from "@utils/easyFetch";
 import fetchUserDetails from "@utils/fetchUserDetails";
+import InputAugmented from "@components/InputAugmented";
+import displayPopup from "@utils/displayPopup";
 
 export default class LoginPage extends AbstractComponent {
 	constructor(options = {}) {
@@ -21,8 +23,27 @@ export default class LoginPage extends AbstractComponent {
 
 		let bigTitle = new BigTitle({content: "Cosmic<br>Pong", style: {margin: "-10vh 0 10vh 0"}});
 		let pannel = new Pannel({title: "Log In", dark: false});
-		let usernameInput = new InputField({content: "Username", name: "username", type: "text"});
-		let passwordInput = new InputField({content: "Password", name: "password", type: "password"});
+		// let usernameInput = new InputField({content: "Username", name: "username", type: "text"});
+		// let passwordInput = new InputField({content: "Password", name: "password", type: "password"});
+		
+		let usernameBlock = new InputAugmented({
+			title: "Username",
+			content: "Username",
+			indicators: {
+				emptyIndicator: ["Please enter a username", () => usernameBlock.input.getValue() != ""],
+			},
+			type: "text"
+		});
+
+		let passwordBlock = new InputAugmented({
+			title: "Password",
+			content: "Password",
+			indicators: {
+				emptyIndicator: ["Please enter a password", () => passwordBlock.input.getValue() != ""],
+			},
+			type: "password"
+		});
+		
 		let loginButton = new CustomButton({content: "Log In", action: true, style: {margin: "15px 0px 0px 0px"}});
 		let signUpButton = new CustomButton({content: "Sign Up", action: false, style: {margin: "20px 0px 20px 0px"}});
 
@@ -41,16 +62,24 @@ export default class LoginPage extends AbstractComponent {
 		p.style.setProperty("padding", "0px");
 		p.style.setProperty("cursor", "pointer");
 
-		pannel.shadowRoot.appendChild(usernameInput);
-		pannel.shadowRoot.appendChild(passwordInput);
+		pannel.shadowRoot.appendChild(usernameBlock);
+		pannel.shadowRoot.appendChild(passwordBlock);
 		pannel.shadowRoot.appendChild(p);
 		pannel.shadowRoot.appendChild(buttons);
 
-		loginButton.onclick = (e) => this.submitLoginForm(e, 
+		loginButton.onclick = async (e) => {
+			if (!await usernameBlock.validate() || ! await passwordBlock.validate()) {
+				return ;
+			}
+			if (!await this.submitLoginForm(e, 
 			{
-				username: usernameInput.getValue(),
-				password: passwordInput.getValue()
-			});
+				username: usernameBlock.input.getValue(),
+				password: passwordBlock.input.getValue()
+			})) {
+				usernameBlock.input.input.style.outline = "2px solid red";
+				passwordBlock.input.input.style.outline = "2px solid red";
+			}
+		};
 
 		p.onclick = () => Router.navigateTo("/forgot_password");
 
@@ -69,7 +98,7 @@ export default class LoginPage extends AbstractComponent {
 	}
 	
 	// Implement other methods or properties as needed
-	submitLoginForm = (e, formData) => {
+	submitLoginForm = async (e, formData) => {
 		if (e)
 			e.preventDefault();
 		console.log('values:', formData);
@@ -86,18 +115,17 @@ export default class LoginPage extends AbstractComponent {
 			let body = res.body;
 
 			if (!response || !body) {
-				console.error('Request Failed');
-				return ;
+				displayPopup('Request Failed', 'error');
+				return false;
 			}
 
 			if (response.status === 400) {
-				alert('Wrong username or password');
-				return ;
+				displayPopup('Wrong username or password', 'error');
+				return false;
 			}
 	
 			if (!response.ok) {
-				console.error('Request Failed:', body.error || JSON.stringify(body));
-				return ;
+				throw new Error(body.error || JSON.stringify(body));
 			}
 
 			if (response.status === 200 && body.success === true) {
@@ -111,19 +139,23 @@ export default class LoginPage extends AbstractComponent {
 				await fetchUserDetails();
 				
 				if (body.requires_2fa) {
+					displayPopup('login successful, please enter your 2fa code', 'info');
 					Router.navigateTo("/2fa");
-					return ;
+					return true;
 				}
-	
-				console.log('Login successful:', body);
 
+				displayPopup('Login successful', 'success');
 
 				Router.navigateTo("/");
+				return true;
 			}
 		})
 		.catch(error => {
 			console.error('Request Failed:', error);
+			displayPopup(`Request Failed: ${error}` , 'error');
+			return false;
 		});
+		return false;
 	}
 }
 
