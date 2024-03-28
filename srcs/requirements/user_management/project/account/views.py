@@ -341,7 +341,7 @@ def get_serializer(user):
 @csrf_protect
 @login_required
 # @require_POST
-@permission_classes([IsAuthenticated])
+@authentication_classes([CustomJWTAuthentication])
 def api_logout_view(request):
     if request.method == 'POST':
         request.user.is_online = False
@@ -424,7 +424,7 @@ def send_notification_to_microservices(user):
 # @require_POST
 @login_required
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@authentication_classes([CustomJWTAuthentication])
 def delete_account(request):
     user = request.user
     try:
@@ -451,7 +451,7 @@ def settings_view(request):
 @ensure_csrf_cookie
 @csrf_protect
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@authentication_classes([CustomJWTAuthentication])
 def friends_view(request):
     user = request.user
     friends = user.friends.all()
@@ -482,7 +482,6 @@ def friends_view(request):
 @ensure_csrf_cookie
 @csrf_protect
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
 @authentication_classes([CustomJWTAuthentication])
 def detail_view(request):
     user = request.user
@@ -512,7 +511,7 @@ def detail_view(request):
 @ensure_csrf_cookie
 @csrf_protect
 # @require_POST
-@permission_classes([IsAuthenticated])
+@authentication_classes([CustomJWTAuthentication])
 def add_friend(request, username):
     try:
         friend = get_object_or_404(User, username=username)
@@ -525,7 +524,7 @@ def add_friend(request, username):
 @ensure_csrf_cookie
 @csrf_protect
 # @require_POST
-@permission_classes([IsAuthenticated])
+@authentication_classes([CustomJWTAuthentication])
 def remove_friend(request, username):
     try:
         friend = get_object_or_404(User, username=username)
@@ -538,7 +537,7 @@ def remove_friend(request, username):
 # @ensure_csrf_cookie
 # @csrf_protect
 # @api_view(['GET', 'POST'])
-# @permission_classes([IsAuthenticated])
+# @authentication_classes([CustomJWTAuthentication])
 # def profile_update_view(request):
 #     user = request.user
 #     if request.method == 'POST':
@@ -834,7 +833,7 @@ def subscribe_user_to_sns_topic(phone_number):
 @ensure_csrf_cookie
 @csrf_protect
 # @require_POST
-@permission_classes([IsAuthenticated])
+@authentication_classes([CustomJWTAuthentication])
 def update_sandbox(request, phone_number=None):
     if request.method == 'POST':
         if phone_number is None:
@@ -905,7 +904,7 @@ def is_phone_number_verified(phone_number):
 @ensure_csrf_cookie
 @csrf_protect
 # @require_POST
-@permission_classes([IsAuthenticated])
+@authentication_classes([CustomJWTAuthentication])
 def update_phone(request, phone_number=None):
     user = request.user
     if phone_number is None:
