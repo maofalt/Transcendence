@@ -9,11 +9,11 @@ export default function displayPopup(message, infoType) {
 	container.appendChild(info);
 	// anim.transition(info, [['transform', 'scale(0.5)', 'scale(1)'], ['opacity', 0, 1]]);
 	anim.slideIn(info, 500, 'block');
-	// if (infoType != "sticky") {
-	// 	setTimeout(() => {
-	// 		anim.slideOut(info, 500, true);
-	// 	}, 3000);
-	// }
+	if (!infoType.includes("sticky")) {
+		setTimeout(() => {
+			anim.slideOut(info, 500, true);
+		}, 3000);
+	}
 	// // Check if the browser supports notifications
 	// if ('Notification' in window) {
 	// 	// Ask for permission

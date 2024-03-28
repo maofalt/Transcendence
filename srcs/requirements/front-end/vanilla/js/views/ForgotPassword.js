@@ -13,7 +13,7 @@ import fetchUserDetails from "@utils/fetchUserDetails";
 import InputAugmented from "@components/InputAugmented";
 import displayPopup from "@utils/displayPopup";
 
-export default class LoginPage extends AbstractComponent {
+export default class ForgotPassword extends AbstractComponent {
 	constructor(options = {}) {
 		super();
 
@@ -156,4 +156,4 @@ export default class LoginPage extends AbstractComponent {
 	}
 }
 
-customElements.define('login-page-v2', LoginPage);
+customElements.define('forgot-password', ForgotPassword);

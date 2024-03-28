@@ -34,6 +34,7 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.permissions import AllowAny
 from rest_framework import serializers, generics, permissions, status, authentication, exceptions, viewsets
 from rest_framework.generics import ListAPIView
+from django.http import Http404
 
 # from django.utils.encoding import force_bytes, force_str
 

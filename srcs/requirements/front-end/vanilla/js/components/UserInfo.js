@@ -5,6 +5,7 @@ import AbstractComponent from '@components/AbstractComponent';
 import Pannel from '@components/Pannel';
 import CustomButton from '@components/CustomButton';
 import { navigateTo } from "@utils/Router";
+import fetchUserDetails from "@utils/fetchUserDetails";
 
 export default class UserInfo extends AbstractComponent {
 	constructor(options = {}) {
@@ -14,7 +15,11 @@ export default class UserInfo extends AbstractComponent {
 		styleEl.textContent = styles;
 		this.shadowRoot.appendChild(styleEl);
 
-        const pannel = new Pannel({title: "", dark: false, style: {width: "520px", height: "150px"}});
+		this.addLater(options);
+	}
+
+	async addLater(options) {
+		const pannel = new Pannel({title: "", dark: false, style: {width: "520px", height: "150px"}});
         pannel.id = "pannel";
         const ppContainer = new Pannel({title: "", dark: true, style: {width: "120px", height: "120px"}});
         ppContainer.id = "pp-container";
@@ -28,8 +33,10 @@ export default class UserInfo extends AbstractComponent {
         const imgBox = document.createElement('div');
         this.setUpImageBox(imgBox);
 
-        const userText = this.createUserText(options);
-        const profilePicture = this.createProfilePicture(options);
+		const details = await fetchUserDetails();
+
+        const userText = this.createUserText(details);
+        const profilePicture = this.createProfilePicture(details);
         
         imgBox.appendChild(profilePicture);
         ppContainer.shadowRoot.appendChild(imgBox);
@@ -57,7 +64,7 @@ export default class UserInfo extends AbstractComponent {
     createProfilePicture(options) {
         const profilePicture = new Image();
         profilePicture.id = "profile-picture";
-        profilePicture.src = options.profilePicPath ? options.profilePicPath : "../js/assets/images/default-avatar.webp";
+        profilePicture.src = options.avatar ? options.avatar : "../js/assets/images/default-avatar.webp";
 		profilePicture.style.setProperty("width", "100%");
 		profilePicture.style.setProperty("height", "100%");
 		profilePicture.style.setProperty("object-fit", "cover");

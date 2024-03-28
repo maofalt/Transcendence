@@ -110,16 +110,7 @@ export default class HomePage extends AbstractComponent {
 			}};
 		}
 
-		this.user = await fetchUserDetails();
-
-		console.log("\nAAAAHHH\n", this.user);
-
 		const userInfo = new UserInfo({
-			profilePicPath: this.user.avatar,
-			username: this.user.username,
-			status: this.user.status,
-			wins: this.user.wins,
-			losses: this.user.losses,
 			button1,
 			button2
 		});
