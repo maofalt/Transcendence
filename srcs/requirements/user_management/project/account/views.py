@@ -126,13 +126,13 @@ def check_refresh(request):
     exp_datetime = None
     try:
         decoded_token = jwt.decode(accessToken.split()[1], settings.SECRET_KEY, algorithms=["HS256"])
+        # print("decoded_token: ", decoded_token)
         local_tz = pytz.timezone('Europe/Paris')
         exp_timestamp = decoded_token['exp']
         exp_datetime = datetime.datetime.fromtimestamp(exp_timestamp, tz=pytz.utc).astimezone(local_tz).strftime('%Y-%m-%d %H:%M:%S')
         print("exp_datetime: ", exp_datetime)
 
-        response_data = refresh_accessToken(request, accessToken, refreshToken)
-        response = JsonResponse(response_data)
+        response = refresh_accessToken(request, accessToken, refreshToken)
         return response
         # return JsonResponse({'message': 'Access token is still valid'})
 
@@ -143,6 +143,7 @@ def check_refresh(request):
         return response        
 
     except jwt.InvalidTokenError:
+        print("from here>>??")
         print("Invalid token")
         return JsonResponse({'error': 'Invalid token'}, status=401)
 
@@ -157,7 +158,7 @@ def check_refresh(request):
 def refresh_accessToken(request, accessToken, refreshToken):
     try:
         decoded_refresh_token = jwt.decode(refreshToken, settings.SECRET_KEY, algorithms=["HS256"])
-        print("DECODED REFRESHTOKEN: ", decoded_refresh_token)
+        # print("DECODED REFRESHTOKEN: ", decoded_refresh_token)
         uid = decoded_refresh_token['user_id']
         user = get_object_or_404(User, pk=uid)
         local_tz = pytz.timezone('Europe/Paris')
@@ -182,7 +183,7 @@ def refresh_accessToken(request, accessToken, refreshToken):
             'exp_datetime': exp_datetime
         }
         print("expires_in: ", expires_in, "exp_datetime: ", exp_datetime)
-        return response_data
+        return JsonResponse(response_data)
     except Http404:
         return JsonResponse({'error': 'User not found'}, status=404)
     except jwt.ExpiredSignatureError:
