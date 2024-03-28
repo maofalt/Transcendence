@@ -84,7 +84,7 @@ function gameLoop(matchID) {
 		io.to(matchID).emit('refresh', match.gameState);
 	} else if (gameState == -1) {
 		clearInterval(match.gameInterval); // stop the loop
-		match.gameState.ball.dir = match.gameState.camera.pos.sub(match.gameState.ball.pos);
+		// match.gameState.ball.dir = match.gameState.camera.pos.sub(match.gameState.ball.pos);
 		io.to(matchID).emit('end-game', match.gameState);
 		postMatchResult(match.gameState.jisus_matchID, match.gameState.winner.accountID); // send the result of the match back;
 		matches.delete(matchID); // then delete the match;
@@ -328,7 +328,10 @@ io.on('connection', (client) => {
 				player.connected = false;
 			if (data.connectedPlayers < 1) {
 				console.log("CLEARING INTERVAL");
+				data.winner = player;
 				clearInterval(match.gameInterval);
+				if (data.jisus_matchID)
+					postMatchResult(match.gameState.jisus_matchID, match.gameState.winner.accountID);
 				matches.delete(client.matchID);
 				delete data;
 			}
