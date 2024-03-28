@@ -77,6 +77,7 @@ CORS_ALLOWED_ORIGINS = [
 REST_FRAMWORK = {
 	'DEFAULT_AUTHENTICATION_CLASSES': (
 		'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'project.account.authentication.CustomJWTAuthentication'
 	)
 }
 
