@@ -13,7 +13,7 @@ class ProfileUpdateForm(forms.ModelForm):
     
     class Meta:
         model = User
-        fields = ['playername', 'avatar']
+        fields = ['username','playername', 'avatar']
 
     def __init__(self, *args, **kwargs):
         super(ProfileUpdateForm, self).__init__(*args, **kwargs)
@@ -26,10 +26,6 @@ class ProfileUpdateForm(forms.ModelForm):
             self.fields['two_factor_method'].widget = forms.HiddenInput()
             self.fields['two_factor_enabled'].widget = forms.HiddenInput()
 
-
-    # def clean_password(self):
-    #     return self.initial.get('password')
-        
 class PasswordUpdateForm(PasswordChangeForm):
     class Meta:
         model = User

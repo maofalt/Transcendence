@@ -17,7 +17,6 @@ urlpatterns = [
     path('policy', views.privacy_policy_view, name='privacy_policy'),
     path("friends", views.friends_view, name="friends"),
     path("settings", views.settings_view, name="settings"),
-    path("gameHistory", views.game_history_view, name="game_history"),
     path("add_friend/<str:username>", views.add_friend, name="add_friend"),
     path("remove_friend/<str:username>", views.remove_friend, name="remove_friend"),
     path("detail", views.detail_view, name="detail"),

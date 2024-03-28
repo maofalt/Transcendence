@@ -42,7 +42,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from .models import User
-from .serializers import FriendUserSerializer, UserSerializer, AnonymousUserSerializer
+from .serializers import FriendUserSerializer, UserSerializer, AnonymousUserSerializer, ProfileUSerSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -470,7 +470,8 @@ def friends_view(request):
     if (search_query != user.username):
         if search_query:
             print(search_query)
-            search_results = User.objects.filter(username__icontains=search_query)
+            # search_results = User.objects.filter(username__icontains=search_query)
+            search_results = list(User.objects.filter(username__icontains=search_query).values())
             print("search_resuls : ", search_results)
     search_results_serialized = FriendUserSerializer(search_results, many=True).data
     return JsonResponse({'friends': friend_data, 'search_query': escape(search_query), 'search_results': search_results_serialized})
@@ -555,9 +556,13 @@ def profile_update_view(request):
             return JsonResponse({'error': 'Form is not valid.'}, status=400)
     else:
         user_form = ProfileUpdateForm(instance=request.user)
-        # serialized_form = model_to_dict(user_form)
-        html = render_to_string('profile_update.html', {'form': user_form})
-        return JsonResponse({'html': html})
+        print("user_form: ", user_form)
+        # serialized_form = model_to_dict(user_form.instance)
+        serialized_form = model_to_dict(user_form.instance, fields=['id', 'username', 'playername', 'avatar', 'email', 'phone', 'two_factor_method'])
+        if 'avatar' in serialized_form:
+            avatar_url = request.build_absolute_uri(user_form.instance.avatar.url)
+            serialized_form['avatar'] = avatar_url
+        return JsonResponse({'form': serialized_form})
         # return render(request, 'profile_update.html', {'user_form': user_form})
 
 @login_required
@@ -730,7 +735,7 @@ def send_sms_code(request, phone_number=None):
             except Exception as e:
                 print("Error sending SMS message:", e)
                 return JsonResponse({'success': False, 'error': 'Failed to send SMS message'})
-    else:subscribe_user_to_sns_topic
+    else:
         return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 def subscribe_user_to_sns_topic(phone_number):

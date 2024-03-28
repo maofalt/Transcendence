@@ -14,3 +14,8 @@ class FriendUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'playername', 'avatar', 'is_online']
+
+class ProfileUSerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'playername', 'avatar', 'email', 'phone', 'two_factor_method']
