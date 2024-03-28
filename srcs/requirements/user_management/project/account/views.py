@@ -461,8 +461,9 @@ def friends_view(request):
     for friend_info in friend_data:
         friend = friends.get(username=friend_info['username'])
         last_valid_time = friend.last_valid_time.timestamp()
-        if friend_info['is_online'] and (current_time - last_valid_time) > 300:
+        if friend.is_online == True and (current_time - last_valid_time) > 300:
             friend_info['is_online'] = False
+            friend.is_online = False
 
         if friend_info['avatar']:
             friend_info['avatar'] = urljoin(settings.MEDIA_URL, friend_info['avatar'])
