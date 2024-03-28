@@ -1,6 +1,8 @@
 from django import forms
 from .models import User
 from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.forms import SetPasswordForm
+from django.contrib.auth import password_validation
 
 class ProfileUpdateForm(forms.ModelForm):
     TWO_FACTOR_OPTIONS = [
@@ -35,3 +37,46 @@ class ProfileUpdateForm(forms.ModelForm):
 class PasswordUpdateForm(PasswordChangeForm):
     class Meta:
         model = User
+
+class CustomPasswordChangeForm(SetPasswordForm):
+    error_messages = {
+        'password_mismatch': "The two password fields didn't match.",
+    }
+
+    old_password = forms.CharField(
+        label="Old password",
+        strip=False,
+        widget=forms.PasswordInput(attrs={'autofocus': True}),
+    )
+
+    new_password1 = forms.CharField(
+        label="New password",
+        strip=False,
+        widget=forms.PasswordInput,
+        help_text=password_validation.password_validators_help_text_html(),
+    )
+
+    new_password2 = forms.CharField(
+        label="New password confirmation",
+        strip=False,
+        widget=forms.PasswordInput,
+    )
+
+    def clean_old_password(self):
+        old_password = self.cleaned_data["old_password"]
+        if not self.user.check_password(old_password):
+            raise forms.ValidationError(
+                self.error_messages['password_incorrect'],
+                code='password_incorrect',
+            )
+        return old_password
+
+    def clean_new_password2(self):
+        new_password1 = self.cleaned_data.get('new_password1')
+        new_password2 = self.cleaned_data.get('new_password2')
+        if new_password1 and new_password2 and new_password1 != new_password2:
+            raise forms.ValidationError(
+                self.error_messages['password_mismatch'],
+                code='password_mismatch',
+            )
+        return new_password2

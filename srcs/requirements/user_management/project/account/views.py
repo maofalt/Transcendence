@@ -1,6 +1,6 @@
 from .models import User
 from django import forms
-from .forms import ProfileUpdateForm, PasswordUpdateForm
+from .forms import ProfileUpdateForm, PasswordUpdateForm, CustomPasswordChangeForm
 from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
 from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView, PasswordResetDoneView
 from django.db.utils import IntegrityError
@@ -32,7 +32,8 @@ from django.forms.models import model_to_dict
 from .authentication import CustomJWTAuthentication
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import AllowAny
-
+from rest_framework import serializers, generics, permissions, status, authentication, exceptions, viewsets
+from rest_framework.generics import ListAPIView
 
 # from django.utils.encoding import force_bytes, force_str
 
@@ -40,9 +41,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework import status
-from .models import User
-from .serializers import FriendUserSerializer, UserSerializer, AnonymousUserSerializer, ProfileUSerSerializer
+from .serializers import PasswordChangeSerializer, FriendUserSerializer, UserSerializer, AnonymousUserSerializer, ProfileUSerSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -194,7 +193,7 @@ def privacy_policy_view(request):
     return render(request, 'privacy_policy.html')
 
 @api_view(['POST'])
-@require_POST
+# @require_POST
 @ensure_csrf_cookie
 @csrf_protect
 @authentication_classes([])
@@ -300,7 +299,7 @@ def send_one_time_code(request, email=None):
 
 @ensure_csrf_cookie
 @csrf_protect
-@require_POST
+# @require_POST
 @authentication_classes([])
 @permission_classes([AllowAny])
 def verify_one_time_code(request):
@@ -339,7 +338,7 @@ def get_serializer(user):
 
 @csrf_protect
 @login_required
-@require_POST
+# @require_POST
 @permission_classes([IsAuthenticated])
 def api_logout_view(request):
     if request.method == 'POST':
@@ -355,7 +354,7 @@ def api_logout_view(request):
         return JsonResponse({'error': escape('Invalid request method')}, status=400)
 
 @csrf_protect
-@require_POST
+# @require_POST
 @authentication_classes([])
 @permission_classes([AllowAny])
 def api_signup_view(request):
@@ -420,7 +419,7 @@ def send_notification_to_microservices(user):
     except Exception as e:
         logger.error(f"Error sending POST request to tournament: {str(e)}")
 
-@require_POST
+# @require_POST
 @login_required
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -508,7 +507,7 @@ def detail_view(request):
 @login_required
 @ensure_csrf_cookie
 @csrf_protect
-@require_POST
+# @require_POST
 @permission_classes([IsAuthenticated])
 def add_friend(request, username):
     try:
@@ -521,7 +520,7 @@ def add_friend(request, username):
 @login_required
 @ensure_csrf_cookie
 @csrf_protect
-@require_POST
+# @require_POST
 @permission_classes([IsAuthenticated])
 def remove_friend(request, username):
     try:
@@ -563,13 +562,11 @@ def remove_friend(request, username):
 #             avatar_url = request.build_absolute_uri(user_form.instance.avatar.url)
 #             serialized_form['avatar'] = avatar_url
 #         return JsonResponse({'form': serialized_form})
-from rest_framework import generics, permissions, status, authentication, exceptions, viewsets
-from rest_framework.generics import ListAPIView
-from rest_framework.renderers import JSONRenderer
 
 
 class ProfileUpdateView(generics.ListCreateAPIView):
     serializer_class = ProfileUSerSerializer
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         user_form = ProfileUpdateForm(instance=request.user)
@@ -602,27 +599,28 @@ class ProfileUpdateView(generics.ListCreateAPIView):
         else:
             return JsonResponse({'error': 'Form is not valid.'}, status=400)
 
-@login_required
-@ensure_csrf_cookie
-@csrf_protect
-@api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])
-def password_update_view(request):
-    if request.method == 'POST':
-        form = PasswordUpdateForm(request.user, request.POST)
+class PasswordUpdateView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = PasswordChangeSerializer
+
+    def get_queryset(self):
+        return []
+    def get(self, request):
+        serializer = self.get_serializer(data={})
+        serializer.is_valid(raise_exception=True)
+        fields = serializer.data
+        return Response(fields)
+
+    def post(self, request):
+        form = CustomPasswordChangeForm(request.user, request.POST)
         if form.is_valid():
             form.save()
             request.user.save()
             messages.success(request, 'Your password has changed successfully. Please login again.')
             return JsonResponse({'success': True, 'message': "Please login again"}) # needed to redirect to login homepage
         else:
-            return JsonResponse({'error': 'Form is not valid.'}, status=400)
-    else:
-        form = PasswordUpdateForm(request.user)
-        serialized_form = model_to_dict(form)
-        html = render_to_string('password_update.html')
-        # return render(request, 'password_update.html', {'form': form})
-        return JsonResponse({'form': serialized_form, 'html': html})
+            errors = form.error_messages
+            return JsonResponse({'error': f'Form is not valid: {errors}'}, status=400)
 
 
 class TokenGenerator(PasswordResetTokenGenerator):
@@ -635,7 +633,7 @@ token_generator = TokenGenerator()
 
 @ensure_csrf_cookie
 @csrf_protect
-@require_POST
+# @require_POST
 @authentication_classes([])
 @permission_classes([AllowAny])
 def send_password_reset_link(request):
@@ -665,21 +663,57 @@ def send_password_reset_link(request):
     else:
         return JsonResponse({'success': False, 'error': escape('Invalid request method')})
 
-@ensure_csrf_cookie
-@csrf_protect
-@api_view(['GET', 'POST'])
-@authentication_classes([])
-@permission_classes([AllowAny])
-def password_reset_view(request, uidb64, token):
-    print("uidb64: ", uidb64, "token: ", token)
-    try:
-        uid = urlsafe_base64_decode(uidb64).decode()
-        user = User.objects.get(pk=uid)
-    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-        user = None
-    print("user? : ", user.username)
-    if user is not None and token_generator.check_token(user, token):
-        if request.method == 'POST':
+# @ensure_csrf_cookie
+# @csrf_protect
+# @api_view(['GET', 'POST'])
+# @authentication_classes([])
+# @permission_classes([AllowAny])
+# def password_reset_view(request, uidb64, token):
+#     print("uidb64: ", uidb64, "token: ", token)
+#     try:
+#         uid = urlsafe_base64_decode(uidb64).decode()
+#         user = User.objects.get(pk=uid)
+#     except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+#         user = None
+#     print("user? : ", user.username)
+#     if user is not None and token_generator.check_token(user, token):
+#         if request.method == 'POST':
+#             new_password1 = request.POST.get('new_password1')
+#             new_password2 = request.POST.get('new_password2')
+#             try:
+#                 validate_password(new_password1, user=User(username=user.username))
+#             except ValidationError as e:
+#                 return JsonResponse({'success': False, 'error': e.messages[0]}, status=400)
+
+#             if new_password1 == new_password2:
+#                 user.set_password(new_password1)
+#                 user.save()
+#                 user = authenticate(request, username=user.username, password=new_password1)
+#                 return JsonResponse({'success': True, 'message': escape('Password reset successfully')})
+#             else:
+#                 return JsonResponse({'success': False, 'error': escape('Passwords do not match')}, status=400)
+#         else:
+#             # return render(request, 'password_reset.html', {'uidb64': uidb64, 'token': token, 'user': user})
+#             html = render_to_string('password_reset.html', {'uidb64': uidb64, 'token': token, 'user': user})
+#             return JsonResponse({'html': html})
+#     else:
+#         # return HttpResponse('Invalid password reset link', status=400)
+#         return JsonResponse({'success': False, 'error': escape('Invalid password reset link')}, status=400)
+
+
+class PasswordResetView(APIView):
+    token_generator = PasswordResetTokenGenerator()
+    # serializer_class = ProfileUSerSerializer
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, uidb64, token):
+        try:
+            uid = urlsafe_base64_decode(uidb64).decode()
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+
+        if user is not None and self.token_generator.check_token(user, token):
             new_password1 = request.POST.get('new_password1')
             new_password2 = request.POST.get('new_password2')
             try:
@@ -695,12 +729,20 @@ def password_reset_view(request, uidb64, token):
             else:
                 return JsonResponse({'success': False, 'error': escape('Passwords do not match')}, status=400)
         else:
-            # return render(request, 'password_reset.html', {'uidb64': uidb64, 'token': token, 'user': user})
+            return JsonResponse({'success': False, 'error': escape('Invalid password reset link')}, status=400)
+
+    def get(self, request, uidb64, token):
+        try:
+            uid = urlsafe_base64_decode(uidb64).decode()
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+
+        if user is not None and self.token_generator.check_token(user, token):
             html = render_to_string('password_reset.html', {'uidb64': uidb64, 'token': token, 'user': user})
             return JsonResponse({'html': html})
-    else:
-        # return HttpResponse('Invalid password reset link', status=400)
-        return JsonResponse({'success': False, 'error': escape('Invalid password reset link')}, status=400)
+        else:
+            return JsonResponse({'success': False, 'error': escape('Invalid password reset link')}, status=400)
 
 def password_reset_done(request):
     html = render_to_string('password_reset_done.html')
@@ -742,7 +784,7 @@ def is_valid_phone_number(phone_number):
 
 @ensure_csrf_cookie
 @csrf_protect
-@require_POST
+# @require_POST
 @authentication_classes([])
 @permission_classes([AllowAny])
 def send_sms_code(request, phone_number=None):
@@ -802,7 +844,7 @@ def subscribe_user_to_sns_topic(phone_number):
 @login_required
 @ensure_csrf_cookie
 @csrf_protect
-@require_POST
+# @require_POST
 @permission_classes([IsAuthenticated])
 def update_sandbox(request, phone_number=None):
     if request.method == 'POST':
@@ -832,7 +874,7 @@ def update_sandbox(request, phone_number=None):
 @login_required
 @ensure_csrf_cookie
 @csrf_protect
-@require_POST
+# @require_POST
 @authentication_classes([])
 @permission_classes([AllowAny])
 def verify_sandBox(request, otp=None, phone_number=None):
@@ -873,7 +915,7 @@ def is_phone_number_verified(phone_number):
 @login_required
 @ensure_csrf_cookie
 @csrf_protect
-@require_POST
+# @require_POST
 @permission_classes([IsAuthenticated])
 def update_phone(request, phone_number=None):
     user = request.user
