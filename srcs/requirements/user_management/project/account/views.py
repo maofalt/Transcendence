@@ -339,9 +339,10 @@ def get_serializer(user):
         return AnonymousUserSerializer()
 
 @csrf_protect
-@login_required
+# @login_required
 # @require_POST
 @authentication_classes([CustomJWTAuthentication])
+@permission_classes([IsAuthenticated])
 def api_logout_view(request):
     if request.method == 'POST':
         request.user.is_online = False
@@ -422,9 +423,10 @@ def send_notification_to_microservices(user):
         logger.error(f"Error sending POST request to tournament: {str(e)}")
 
 # @require_POST
-@login_required
+# @login_required
 @api_view(['POST'])
 @authentication_classes([CustomJWTAuthentication])
+@permission_classes([IsAuthenticated])
 def delete_account(request):
     user = request.user
     try:
@@ -440,18 +442,20 @@ def delete_account(request):
         logger.error(f"Error deleting account: {str(e)}")
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
-@login_required
+# @login_required
 @ensure_csrf_cookie
 @csrf_protect
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def settings_view(request):
     return JsonResponse({})
 
-@login_required
+# @login_required
 @ensure_csrf_cookie
 @csrf_protect
 @api_view(['GET'])
 @authentication_classes([CustomJWTAuthentication])
+@permission_classes([IsAuthenticated])
 def friends_view(request):
     user = request.user
     friends = user.friends.all()
@@ -478,11 +482,12 @@ def friends_view(request):
     return JsonResponse({'friends': friend_data, 'search_query': escape(search_query), 'search_results': search_results_serialized})
     # return render(request, 'friends.html', {'friends': friend_data, 'search_query': search_query, 'search_results': search_results})
 
-@login_required
+# @login_required
 @ensure_csrf_cookie
 @csrf_protect
 @api_view(['GET'])
 @authentication_classes([CustomJWTAuthentication])
+@permission_classes([IsAuthenticated])
 def detail_view(request):
     user = request.user
     print("user: ", user)
@@ -507,11 +512,12 @@ def detail_view(request):
     #     return JsonResponse({'error': 'Access token is missing'}, status=401)
     # return render(request, 'detail.html', {'data': data})
 
-@login_required
+# @login_required
 @ensure_csrf_cookie
 @csrf_protect
 # @require_POST
 @authentication_classes([CustomJWTAuthentication])
+@permission_classes([IsAuthenticated])
 def add_friend(request, username):
     try:
         friend = get_object_or_404(User, username=username)
@@ -520,11 +526,12 @@ def add_friend(request, username):
     except Http404:
         return JsonResponse({'error': 'Friend not found'}, status=404)
     
-@login_required
+# @login_required
 @ensure_csrf_cookie
 @csrf_protect
 # @require_POST
 @authentication_classes([CustomJWTAuthentication])
+@permission_classes([IsAuthenticated])
 def remove_friend(request, username):
     try:
         friend = get_object_or_404(User, username=username)
@@ -829,11 +836,12 @@ def subscribe_user_to_sns_topic(phone_number):
         print("Error subscribing user:", e)
         return None
 
-@login_required
+# @login_required
 @ensure_csrf_cookie
 @csrf_protect
 # @require_POST
 @authentication_classes([CustomJWTAuthentication])
+@permission_classes([IsAuthenticated])
 def update_sandbox(request, phone_number=None):
     if request.method == 'POST':
         if phone_number is None:
@@ -859,7 +867,7 @@ def update_sandbox(request, phone_number=None):
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=405)
 
-@login_required
+# @login_required
 @ensure_csrf_cookie
 @csrf_protect
 # @require_POST
@@ -900,11 +908,12 @@ def is_phone_number_verified(phone_number):
         print("Error listing SMS sandbox phone numbers:", e)
         return False
 
-@login_required
+# @login_required
 @ensure_csrf_cookie
 @csrf_protect
 # @require_POST
 @authentication_classes([CustomJWTAuthentication])
+@permission_classes([IsAuthenticated])
 def update_phone(request, phone_number=None):
     user = request.user
     if phone_number is None:
