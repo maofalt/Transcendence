@@ -32,6 +32,7 @@
     <form id="forgotPasswordForm">
       {% csrf_token %}
       <input name="username_f" type="text" placeholder="Enter your username" style="width: 200px; margin-right: 5px;">
+      <button type="button" onclick="sendUrlToEmail()">Send Password Reset Link</button>
     </form>
   </div>
   {% include 'signup.html' %}
@@ -164,6 +165,27 @@
         console.log('Request complete. Status:', textStatus);
       }
     });
+  }
+  
+  function sendUrlToEmail() {
+    var username = $('input[name="username_f"]').val();
+    $.ajax({
+      url: '{% url "account:send_resetLink" %}',
+      type: 'POST',
+      data: { 'username': username },
+      headers: { "X-CSRFToken": getCookie('csrftoken') },
+      success: function (data) {
+        console.log('Password reset link sent successfully:', data);
+        closeForgotPasswordModal();
+      },
+      error: function (xhr, textStatus, errorThrown) {
+        console.log('Error sending reset Link:', errorThrown);
+      },
+      complete: function (xhr, textStatus) {
+        console.log('Request complete. Status:', textStatus);
+      }
+    });
+    return false;
   }
 
   function displayErrorMessage(message) {
