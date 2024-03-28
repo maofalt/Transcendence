@@ -145,21 +145,7 @@ export default class Game extends AbstractView {
 		}});
 
 		leaveButton.onclick = () => {
-			if (this.socket)
-				this.socket.disconnect();
-
-			if (this.scene)
-				this.scene.clear();
-			// Dispose of the renderer and remove its DOM element
-			if (this.renderer) {
-				this.renderer.dispose();
-				this.renderer.domElement.remove();
-				this.renderer = null;
-			}
-		
-			// Set the scene and camera to null
-			this.scene = null;
-			this.camera = null;
+			this.cleanAll();
 
 			navigateTo("/");
 		}
@@ -287,23 +273,29 @@ export default class Game extends AbstractView {
 		});
 
 		this.socket.on("clean-all", () => {
-			console.log("CLEANING CLIENT !!");
-
-			// Remove all objects from the scene
-			this.scene.clear();
-		
-			// Dispose of the renderer and remove its DOM element
-			if (renderer) {
-				renderer.dispose();
-				renderer.domElement.remove();
-				renderer = null;
-			}
-		
-			// Set the scene and camera to null
-			scene = null;
-			camera = null;
+			this.cleanAll();
 		});
 	};
+
+	cleanAll() {
+		console.log("CLEANING CLIENT !!");
+
+		if (this.socket)
+			this.socket.disconnect();
+
+		if (this.scene)
+			this.scene.clear();
+		// Dispose of the renderer and remove its DOM element
+		if (this.renderer) {
+			this.renderer.dispose();
+			this.renderer.domElement.remove();
+			this.renderer = null;
+		}
+	
+		// Set the scene and camera to null
+		this.scene = null;
+		this.camera = null;
+	}
 
 	launchEndGameAnimation(winner) {
 		let winColor = winner.color.toString(16);
@@ -358,21 +350,7 @@ export default class Game extends AbstractView {
 		leaveButton.style.left = "50px";
 		leaveButton.style.bottom = "30px";
 		leaveButton.onclick = () => {
-			if (this.socket)
-				this.socket.disconnect();
-
-			if (this.scene)
-				this.scene.clear();
-			// Dispose of the renderer and remove its DOM element
-			if (this.renderer) {
-				this.renderer.dispose();
-				this.renderer.domElement.remove();
-				this.renderer = null;
-			}
-		
-			// Set the scene and camera to null
-			this.scene = null;
-			this.camera = null;
+			this.cleanAll();
 
 			navigateTo("/");
 		}
