@@ -17,6 +17,7 @@ const init = require('./gameLogic/init');
 const debugDisp = require('./gameLogic/debugDisplay');
 const render = require('./gameLogic/rendering');
 const axios = require('axios');
+const { match } = require('assert');
 // const objects = require('./gameLogic/gameObjects');
 // const game = require('./gameLogic/gameLogic');
 // const objectsClasses = require('./gameLogic/gameObjectsClasses');
@@ -445,10 +446,11 @@ app.post('/createMatch', (req, res) => {
 		return ;
 	}
 
-	const matchValidity = verifyMatchSettings(gameSettings);
+	let matchValidity = verifyMatchSettings(gameSettings);
 	if (matchValidity) {
-		console.log("Error: ",matchValidity);
-		res.json({ matchID });
+		let createMatch = `ERROR: ${matchValidity}`;
+		console.log(createMatch);
+		res.json({ createMatch });
 		return ;
 	}
 	
@@ -480,9 +482,11 @@ app.post('/createMultipleMatches', (req, res) => {
 			return ;
 		}
 
-		const matchValidity = verifyMatchSettings(settings);
+		let matchValidity = verifyMatchSettings(gameSettings);
 		if (matchValidity) {
-			console.log("Error: ",matchValidity);
+			let createMatch = `ERROR: ${matchValidity}`;
+			console.log(createMatch);
+			res.json({ createMatch });
 			return ;
 		}
 		
