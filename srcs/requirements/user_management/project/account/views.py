@@ -581,7 +581,7 @@ def remove_friend(request, username):
 #         return JsonResponse({'form': serialized_form})
 
 
-class ProfileUpdateView(generics.ListCreateAPIView):
+class ProfileUpdateView(APIView):
     serializer_class = ProfileUSerSerializer
     permission_classes = [IsAuthenticated]
 
@@ -601,18 +601,22 @@ class ProfileUpdateView(generics.ListCreateAPIView):
         user_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user)
         print("user_form: ", user_form)
         if user_form.is_valid():
-            user = user_form.save(commit=False)
-            if 'two_factor_method' in request.POST:
-                if request.POST['two_factor_method'] == '':
-                    user.two_factor_method = None
-                else:
-                    user.two_factor_method = request.POST['two_factor_method']
-            if request.POST['playername'] != '':
-                if User.objects.filter(playername=user.playername).exclude(username=request.user.username).exists():
+            # user_form.save()
+            # if 'two_factor_method' in request.POST:
+            #     if request.POST['two_factor_method'] == '':
+            #         user.two_factor_method = None
+            #         user.save() 
+            #     else:
+            #         user.two_factor_method = request.POST['two_factor_method']
+            #         user.save() 
+            if 'playername' in request.POST and request.POST['playername'] != '':
+                if user.playername != request.POST['playername'] and User.objects.filter(playername=request.POST['playername']).exists():
+                # if User.objects.filter(playername=user.playername).exclude(username=request.user.username).exists():
                     return JsonResponse({'error': 'Playername already exists. Please choose a different one.'})
-            else:
-                user.save()    
-                return JsonResponse({'success': 'Your profile has been updated.'})
+                # user.playername = request.POST['playername']
+                # user.save()  
+            user_form.save()
+            return JsonResponse({'success': 'Your profile has been updated.'})
         else:
             return JsonResponse({'error': 'Form is not valid.'}, status=400)
 
