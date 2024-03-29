@@ -188,6 +188,8 @@ export default class ProfilePage extends AbstractComponent {
 		gameStats.shadowRoot.appendChild(stats);
 
 		const deleteButton = new CustomButton({content: "Delete Account", delete: true, style: {margin: "10px"}});
+		deleteButton.onclick = () => this.deleteAccount();
+		
 		const goBack = new CustomButton({content: "< Back", style: {padding: "0px 20px", position: "absolute", left: "50px", bottom: "30px"}});
 		goBack.onclick = () => window.history.back();
 
@@ -199,6 +201,32 @@ export default class ProfilePage extends AbstractComponent {
 		this.shadowRoot.appendChild(goBack);
 		this.shadowRoot.appendChild(profile);
 		this.shadowRoot.appendChild(friendsPannel);
+	}
+
+	deleteAccount = async () => {
+		await easyFetch(`/api/user_management/auth/delete_account`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded',
+			},
+		})
+		.then(res => {
+			let response = res.response;
+			let body = res.body;
+
+			if (!response || !body) {
+				throw new Error("Response is null");
+			} else if (response.status === 200) {
+				displayPopup("Account Deleted!", "info");
+				sessionStorage.clear();
+				navigateTo("/");
+			} else {
+				throw new Error(body.error || JSON.stringify(body));
+			}
+		})
+		.catch(error => {
+			displayPopup(error.message || error, "error");
+		});
 	}
 
 	postAddFriend = async (username) => {
