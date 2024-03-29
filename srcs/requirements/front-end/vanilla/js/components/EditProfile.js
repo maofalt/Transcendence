@@ -80,9 +80,7 @@ export default class EditProfile extends AbstractComponent {
 		saveButton.onclick = async () => {
 			if (!await playernameBlock.validate() 
 				|| !await emailBlock.validate() 
-				|| !await avatarBlock.validate() 
-				|| !await passwordBlock.validate() 
-				|| !await confirmPasswordBlock.validate()) {
+				|| !await avatarBlock.validate()) {
 				return ;
 			}
 			updateUser({
@@ -93,8 +91,6 @@ export default class EditProfile extends AbstractComponent {
 				phone: "",
 				two_factor_method: "",
 			});
-			// password: passwordBlock.input.getValue() || "",
-			// confirmPassword: confirmPasswordBlock.input.getValue() || "",
 		}
 
 		const form = document.createElement('div');
