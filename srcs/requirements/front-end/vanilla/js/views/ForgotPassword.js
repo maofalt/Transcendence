@@ -26,11 +26,8 @@ export default class ForgotPassword extends AbstractComponent {
 		let pannel = new Pannel({title: "Reset Password", dark: false});
 
 		let inputContainer;
-		if (window.location.search.includes("reset")) {
-			const urlParams = new URLSearchParams(window.location.search);
-			const token = urlParams.get("token");
-			const uidb = urlParams.get("uidb");
-			inputContainer = this.resetPassPage(token, uidb);
+		if (window.location.search.includes("token")) {
+			inputContainer = this.resetPassPage(window.location.search);
 		} else {
 			inputContainer = this.sendLinkPage();
 		}
@@ -94,11 +91,14 @@ export default class ForgotPassword extends AbstractComponent {
 	}
 
 	resetPassword = (query, passwordBlock, confirmPasswordBlock) => {
+		const urlParams = new URLSearchParams(window.location.search);
+		const token = urlParams.get("token");
+		const uidb = urlParams.get("uidb");
 		let formData = {
 			new_password1: passwordBlock.input.getValue(),
 			new_password2: confirmPasswordBlock.input.getValue(),
 		}
-		easyFetch(`/api/user_management/auth/password_reset/MTY/${query}/`, {
+		easyFetch(`/api/user_management/auth/password_reset/${uidb}/${token}/`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/x-www-form-urlencoded',
