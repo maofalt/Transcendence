@@ -40,7 +40,7 @@ export default class ProfilePage extends AbstractComponent {
 		}
 
 		this.user = JSON.parse(sessionStorage.getItem("userDetails"));
-		console.log("USER:", this.user);
+		// console.log("USER:", this.user);
 		if (!this.user)
 			this.user = fetchUserDetails();
 
@@ -52,18 +52,21 @@ export default class ProfilePage extends AbstractComponent {
 				transition(userInfo.editOverlay, [["opacity", 0.5, 0]], 100).then(() => userInfo.editOverlay.style.setProperty("display", "none"));
 			}
 		};
+
+		const fileInput = document.createElement('input');
+		fileInput.type = 'file';
+		fileInput.style.display = 'none';
+
+		userInfo.shadowRoot.appendChild(fileInput);
+
 		userInfo.editOverlay.onclick = () => {
-			const fileInput = document.createElement('input');
-			fileInput.type = 'file';
-			fileInput.style.display = 'none';
 			fileInput.onchange = () => {
 				if (fileInput.files.length > 0) {
 					const file = fileInput.files[0];
 					data.avatar = file;
-					this.uploadAvatar(data);
+					this.updateUser(data);
 				}
 			};
-			document.body.appendChild(fileInput); // Append it to the body
 			fileInput.click(); // Trigger the click event
 		};
 
@@ -172,7 +175,6 @@ export default class ProfilePage extends AbstractComponent {
 		addFriend.button.onclick = async () => await addFriend.validate();
 		addFriend.shadowRoot.querySelector("#input-button").style.setProperty("font-size", "28px");
 
-		// this.user.friends = 4;
 		const friendsListPannel = new Pannel({dark: true, title: `Friends List  ( ${this.user.friends_count} )`});
 
 		const friendsList = new FriendsList();
@@ -198,7 +200,7 @@ export default class ProfilePage extends AbstractComponent {
 		this.shadowRoot.appendChild(friendsPannel);
 	}
 
-	uploadAvatar = async (data) => {
+	updateUser = async (data) => {
 		const formData = new FormData();
 		formData.append('username', data.username);
 		formData.append('playername', data.playername);
@@ -222,6 +224,7 @@ export default class ProfilePage extends AbstractComponent {
 				throw new Error(body.error || JSON.stringify(body));
 			} else if (response.status === 200) {
 				displayPopup(body.success || JSON.stringify(body), 'success');
+				navigateTo("/profile");
 			} else {
 				throw new Error(body.error || JSON.stringify(body));
 			}
