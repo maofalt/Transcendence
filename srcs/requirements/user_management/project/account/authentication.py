@@ -1,19 +1,21 @@
 import jwt
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from rest_framework import authentication, exceptions
 import time
 import datetime
 from django.http import JsonResponse
 from django.conf import settings
 
+User = get_user_model()
+
 # ------------------------ Authentication -----------------------------------
 class CustomJWTAuthentication(authentication.BaseAuthentication):
     def authenticate(self, request):
         accessToken = request.headers.get('Authorization', None)
-
+        print(">>   accessToken: ", accessToken)
         if not accessToken:
             return None
-
+        
         try:
             token = accessToken.split()[1]
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
