@@ -195,7 +195,7 @@ export default class Signup extends AbstractComponent {
 				access_code: verifyCodeBlock.input.getValue()
 			});
 			if (isSignedUp) {
-				displayPopup("Sign Up Successful:\nYou now have an account and are connected.", "success");
+				displayPopup("Sign Up Successful: \nYou now have an account and are connected.", "success");
 				Router.navigateTo("/");
 			}
 		}
