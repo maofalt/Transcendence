@@ -355,10 +355,6 @@ export default class Signup extends AbstractComponent {
 	}
 
 	sendCodeToEmail = async (e, email) => {
-		// let formData = {
-		// 	email: email
-		// }
-		// console.log("formData: ", formData);
 		if (e)
 			e.preventDefault();
 		let valid = false;
