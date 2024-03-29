@@ -355,16 +355,20 @@ export default class Signup extends AbstractComponent {
 	}
 
 	sendCodeToEmail = async (e, email) => {
+		// let formData = {
+		// 	email: email
+		// }
+		// console.log("formData: ", formData);
 		if (e)
 			e.preventDefault();
 		let valid = false;
 		await easyFetch('/api/user_management/auth/access_code', {
 			method: 'POST',
 			headers: {
-				'Content-Type': 'application/json',
+				'Content-Type': 'application/x-www-form-urlencoded',
 				'X-CSRFToken': getCookie('csrftoken')
 			},
-			body: JSON.stringify({ 'email': email })
+			body: new URLSearchParams({ email })
 		})
 		.then(res => {
 			let response = res.response;
