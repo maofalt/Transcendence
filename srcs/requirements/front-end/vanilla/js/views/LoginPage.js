@@ -73,10 +73,7 @@ export default class LoginPage extends AbstractComponent {
 			if (!await usernameBlock.validate() || ! await passwordBlock.validate()) {
 				return ;
 			}
-			let ready = await this.submitLoginForm(e, usernameBlock, passwordBlock);
-			if (!ready) {
-
-			}
+			this.submitLoginForm(e, usernameBlock, passwordBlock);
 		};
 
 		passwordBlock.input.oninput = () => {
@@ -109,7 +106,6 @@ export default class LoginPage extends AbstractComponent {
 			username: usernameBlock.input.getValue(),
 			password: passwordBlock.input.getValue()
 		}
-		let valid = false;
 		if (e)
 			e.preventDefault();
 		console.log('values:', formData);

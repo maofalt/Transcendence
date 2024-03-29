@@ -22,74 +22,21 @@ export default class ForgotPassword extends AbstractComponent {
 		this.shadowRoot.appendChild(styleEl);
 
 		let bigTitle = new BigTitle({content: "Cosmic<br>Pong", style: {margin: "-10vh 0 10vh 0"}});
-		let pannel = new Pannel({title: "Log In", dark: false});
-		// let usernameInput = new InputField({content: "Username", name: "username", type: "text"});
-		// let passwordInput = new InputField({content: "Password", name: "password", type: "password"});
-		
-		let usernameBlock = new InputAugmented({
-			title: "Username",
-			content: "Username",
-			indicators: {
-				emptyIndicator: ["Please enter a username", () => usernameBlock.input.getValue() != ""],
-			},
-			type: "text"
-		});
+		let pannel = new Pannel({title: "Reset Password", dark: false});
 
-		let passwordBlock = new InputAugmented({
-			title: "Password",
-			content: "Password",
-			indicators: {
-				emptyIndicator: ["Please enter a password", () => passwordBlock.input.getValue() != ""],
-			},
-			type: "password"
-		});
-		
-		let loginButton = new CustomButton({content: "Log In", action: true, style: {margin: "15px 0px 0px 0px"}});
-		let signUpButton = new CustomButton({content: "Sign Up", action: false, style: {margin: "20px 0px 20px 0px"}});
-
-		let buttons = document.createElement('div');
-		buttons.appendChild(loginButton);
-		buttons.appendChild(signUpButton);
-		buttons.id = "buttons";
-
-		let p = document.createElement('p');
-		p.id = "forgot-password";
-		p.textContent = "Forgot Password ?";
-
-		p.style.setProperty("font-size", "20px");
-		p.style.setProperty("margin", "0px");
-		p.style.setProperty("margin-bottom", "35px");
-		p.style.setProperty("padding", "0px");
-		p.style.setProperty("cursor", "pointer");
-		p.style.setProperty("text-decoration", "underline");
-		p.style.setProperty("color", "rgba(0, 217, 255, 1)");
-
-		pannel.shadowRoot.appendChild(usernameBlock);
-		pannel.shadowRoot.appendChild(passwordBlock);
-		pannel.shadowRoot.appendChild(p);
-		pannel.shadowRoot.appendChild(buttons);
-
-		loginButton.onclick = async (e) => {
-			if (!await usernameBlock.validate() || ! await passwordBlock.validate()) {
-				return ;
-			}
-			let ready = await this.submitLoginForm(e, usernameBlock, passwordBlock);
-			if (!ready) {
-
-			}
-		};
-
-		passwordBlock.input.oninput = () => {
-			passwordBlock.input.input.style.outline = "none";
+		let inputContainer;
+		if (window.location.search.includes("reset")) {
+			const query = window.location.search.split("=")[1];
+			inputContainer = this.resetPassPage(query);
+		} else {
+			inputContainer = this.sendLinkPage();
 		}
+
+		pannel.shadowRoot.appendChild(inputContainer);
 
 		usernameBlock.input.oninput = () => {
 			usernameBlock.input.input.style.outline = "none";
 		}
-
-		p.onclick = () => Router.navigateTo("/forgot");
-
-		signUpButton.onclick = () => Router.navigateTo("/signup");
 		
 		const goBack = new CustomButton({content: "< Back", style: {padding: "0px 20px", position: "absolute", left: "50px", bottom: "30px"}});
 		goBack.onclick = () => Router.navigateTo("/"); // do adapt if needed
@@ -99,6 +46,106 @@ export default class ForgotPassword extends AbstractComponent {
 		this.shadowRoot.appendChild(pannel);
 	}
 	
+	resetPassPage = (query) => {
+		let container = document.createElement('div');
+
+		let passwordBlock = new InputAugmented({
+			title: "New Password",
+			content: "Password",
+			indicators: {
+				emptyIndicator: ["Please enter a password", () => passwordBlock.input.getValue() != ""],
+				lengthIndicator: ["Minimum 8 characters", () => passwordBlock.input.getValue().length >= 8],
+				digitIndicator: ["At least 1 digit", () => /\d/.test(passwordBlock.input.getValue())],
+				letterIndicator: ["At least 1 letter", () => /[a-zA-Z]/.test(passwordBlock.input.getValue())],
+				// differentIndicator: ["Different from your Playername and your Email" () => this.],
+			},
+			type: "password"
+		});
+
+		let confirmPasswordBlock = new InputAugmented({
+			title: "Confirm Password",
+			content: "Password",
+			indicators: {
+				emptyIndicator: ["Please confirm your password", () => confirmPasswordBlock.input.getValue() != ""],
+				matchIndicator: ["Passwords don't match", () => passwordBlock.input.getValue() == confirmPasswordBlock.input.getValue()],
+			},
+			type: "password"
+		});
+
+		let resetButton = new CustomButton({content: "Reset Password", action: true, style: {margin: "15px 0px 0px 0px"}});
+		
+		let buttons = document.createElement('div');
+		buttons.appendChild(resetButton);
+		buttons.id = "buttons";
+
+		container.appendChild(passwordBlock);
+		container.appendChild(confirmPasswordBlock);
+		container.appendChild(buttons);
+		return container;
+	}
+
+	sendLinkPage = () => {
+		let container = document.createElement('div');
+
+		let usernameBlock = new InputAugmented({
+			title: "Username",
+			content: "Username",
+			indicators: {
+				emptyIndicator: ["Please enter a username", () => usernameBlock.input.getValue() != ""],
+			},
+			type: "text"
+		});
+		
+		let sendLinkButton = new CustomButton({content: "Send Reset Link", action: true, style: {margin: "15px 0px 0px 0px"}});
+		sendLinkButton.onclick = async (e) => {
+			if (!await usernameBlock.validate()) {
+				return ;
+			}
+			this.sendLink(usernameBlock);
+		};
+		sendLinkButton.oninput = () => {usernameBlock.validate()};
+
+		let buttons = document.createElement('div');
+		buttons.appendChild(sendLinkButton);
+		buttons.id = "buttons";
+
+		container.appendChild(usernameBlock);
+		container.appendChild(buttons);
+		return container;
+	}
+
+	sendLink = (usernameBlock) => {
+		let formData = {
+			username: usernameBlock.input.getValue()
+		}
+		easyFetch('/api/user_management/auth/send_reset_link', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded',
+			},
+			body: new URLSearchParams(formData)
+		})
+		.then(res => {
+			let response = res.response;
+			let body = res.body;
+
+			if (!response || !body) {
+				throw new Error('Empty response or body');
+			} else if (!response.ok) {
+				throw new Error(body.error || JSON.stringify(body));
+			} else if (response.status === 200 && body.success === true) {
+				displayPopup('Reset link sent:\nPlease follow instructions in the link sent to your email', 'success');
+				navigateTo("/login");
+			} else {
+				throw new Error(body.error || JSON.stringify(body));
+			}
+		})
+		.catch(error => {
+			displayPopup(`Request Failed: ${error}` , 'error');
+			usernameBlock.input.input.style.outline = "2px solid red";
+		});
+	}
+
 	buttonOnClick = (e, arg) => {
 		console.log(arg);
 	}
