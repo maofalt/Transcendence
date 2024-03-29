@@ -27,6 +27,7 @@ import secrets
 import requests
 import logging
 import base64
+from urllib.parse import urlencode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.forms.models import model_to_dict
 from .authentication import CustomJWTAuthentication
@@ -126,13 +127,13 @@ def check_refresh(request):
     exp_datetime = None
     try:
         decoded_token = jwt.decode(accessToken.split()[1], settings.SECRET_KEY, algorithms=["HS256"])
+        # print("decoded_token: ", decoded_token)
         local_tz = pytz.timezone('Europe/Paris')
         exp_timestamp = decoded_token['exp']
         exp_datetime = datetime.datetime.fromtimestamp(exp_timestamp, tz=pytz.utc).astimezone(local_tz).strftime('%Y-%m-%d %H:%M:%S')
         print("exp_datetime: ", exp_datetime)
 
-        response_data = refresh_accessToken(request, accessToken, refreshToken)
-        response = JsonResponse(response_data)
+        response = refresh_accessToken(request, accessToken, refreshToken)
         return response
         # return JsonResponse({'message': 'Access token is still valid'})
 
@@ -143,6 +144,7 @@ def check_refresh(request):
         return response        
 
     except jwt.InvalidTokenError:
+        print("from here>>??")
         print("Invalid token")
         return JsonResponse({'error': 'Invalid token'}, status=401)
 
@@ -157,7 +159,7 @@ def check_refresh(request):
 def refresh_accessToken(request, accessToken, refreshToken):
     try:
         decoded_refresh_token = jwt.decode(refreshToken, settings.SECRET_KEY, algorithms=["HS256"])
-        print("DECODED REFRESHTOKEN: ", decoded_refresh_token)
+        # print("DECODED REFRESHTOKEN: ", decoded_refresh_token)
         uid = decoded_refresh_token['user_id']
         user = get_object_or_404(User, pk=uid)
         local_tz = pytz.timezone('Europe/Paris')
@@ -182,7 +184,7 @@ def refresh_accessToken(request, accessToken, refreshToken):
             'exp_datetime': exp_datetime
         }
         print("expires_in: ", expires_in, "exp_datetime: ", exp_datetime)
-        return response_data
+        return JsonResponse(response_data)
     except Http404:
         return JsonResponse({'error': 'User not found'}, status=404)
     except jwt.ExpiredSignatureError:
@@ -338,8 +340,9 @@ def get_serializer(user):
         return AnonymousUserSerializer()
 
 @csrf_protect
-@login_required
+# @login_required
 # @require_POST
+@authentication_classes([CustomJWTAuthentication])
 @permission_classes([IsAuthenticated])
 def api_logout_view(request):
     if request.method == 'POST':
@@ -421,8 +424,9 @@ def send_notification_to_microservices(user):
         logger.error(f"Error sending POST request to tournament: {str(e)}")
 
 # @require_POST
-@login_required
+# @login_required
 @api_view(['POST'])
+@authentication_classes([CustomJWTAuthentication])
 @permission_classes([IsAuthenticated])
 def delete_account(request):
     user = request.user
@@ -439,17 +443,19 @@ def delete_account(request):
         logger.error(f"Error deleting account: {str(e)}")
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
-@login_required
+# @login_required
 @ensure_csrf_cookie
 @csrf_protect
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def settings_view(request):
     return JsonResponse({})
 
-@login_required
+# @login_required
 @ensure_csrf_cookie
 @csrf_protect
 @api_view(['GET'])
+@authentication_classes([CustomJWTAuthentication])
 @permission_classes([IsAuthenticated])
 def friends_view(request):
     user = request.user
@@ -481,13 +487,17 @@ def friends_view(request):
     return JsonResponse({'friends': friend_data, 'search_query': escape(search_query), 'search_results': search_results_serialized})
     # return render(request, 'friends.html', {'friends': friend_data, 'search_query': search_query, 'search_results': search_results})
 
-@login_required
+# @login_required
 @ensure_csrf_cookie
 @csrf_protect
 @api_view(['GET'])
+@authentication_classes([CustomJWTAuthentication])
 @permission_classes([IsAuthenticated])
+# @authentication_classes([])
+# @permission_classes([AllowAny])
 def detail_view(request):
     user = request.user
+    print("user: ", user)
     if user:
         # Serialize user data
         data = {
@@ -509,10 +519,11 @@ def detail_view(request):
     #     return JsonResponse({'error': 'Access token is missing'}, status=401)
     # return render(request, 'detail.html', {'data': data})
 
-@login_required
+# @login_required
 @ensure_csrf_cookie
 @csrf_protect
 # @require_POST
+@authentication_classes([CustomJWTAuthentication])
 @permission_classes([IsAuthenticated])
 def add_friend(request, username):
     try:
@@ -522,10 +533,11 @@ def add_friend(request, username):
     except Http404:
         return JsonResponse({'error': 'Friend not found'}, status=404)
     
-@login_required
+# @login_required
 @ensure_csrf_cookie
 @csrf_protect
 # @require_POST
+@authentication_classes([CustomJWTAuthentication])
 @permission_classes([IsAuthenticated])
 def remove_friend(request, username):
     try:
@@ -539,7 +551,7 @@ def remove_friend(request, username):
 # @ensure_csrf_cookie
 # @csrf_protect
 # @api_view(['GET', 'POST'])
-# @permission_classes([IsAuthenticated])
+# @authentication_classes([CustomJWTAuthentication])
 # def profile_update_view(request):
 #     user = request.user
 #     if request.method == 'POST':
@@ -674,8 +686,9 @@ class SendResetLinkView(generics.ListCreateAPIView):
 
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             token = token_generator.make_token(user)
-
-            reset_url = request.build_absolute_uri(reverse_lazy('account:password_reset', kwargs={'uidb64': uid, 'token': token}))
+            
+            # reset_url = request.build_absolute_uri(reverse_lazy('account:password_reset', kwargs={'uidb64': uid, 'token': token}))
+            reset_url = request.build_absolute_uri('/forgot?{}'.format(urlencode({'token': token, 'uidb': uid})))
             print("reset_link: ", reset_url)
 
             print("\n\nCHECK UNIQUE TOKEN: ", token)
@@ -693,9 +706,12 @@ class SendResetLinkView(generics.ListCreateAPIView):
 class PasswordResetView(generics.ListCreateAPIView):
     token_generator = TokenGenerator()  
     serializer_class = PasswordResetSerializer
+    authentication_classes = []
     # permission_classes = [IsAuthenticated]
 
-    def post(self, request, uidb64, token):
+    def post(self, request):
+        uidb64 = request.query_params.get('uidb')
+        token = request.query_params.get('token')
         try:
             uid = urlsafe_base64_decode(uidb64).decode()
             user = User.objects.get(pk=uid)
@@ -713,7 +729,9 @@ class PasswordResetView(generics.ListCreateAPIView):
         else:
             return JsonResponse({'success': False, 'error': escape('Invalid password reset link')}, status=400)
 
-    def get(self, request, uidb64, token):
+    def get(self, request):
+        uidb64 = request.query_params.get('uidb')
+        token = request.query_params.get('token')
         try:
             uid = urlsafe_base64_decode(uidb64).decode()
             print("uid:::: ", uid)
@@ -831,10 +849,11 @@ def subscribe_user_to_sns_topic(phone_number):
         print("Error subscribing user:", e)
         return None
 
-@login_required
+# @login_required
 @ensure_csrf_cookie
 @csrf_protect
 # @require_POST
+@authentication_classes([CustomJWTAuthentication])
 @permission_classes([IsAuthenticated])
 def update_sandbox(request, phone_number=None):
     if request.method == 'POST':
@@ -861,7 +880,7 @@ def update_sandbox(request, phone_number=None):
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=405)
 
-@login_required
+# @login_required
 @ensure_csrf_cookie
 @csrf_protect
 # @require_POST
@@ -902,10 +921,11 @@ def is_phone_number_verified(phone_number):
         print("Error listing SMS sandbox phone numbers:", e)
         return False
 
-@login_required
+# @login_required
 @ensure_csrf_cookie
 @csrf_protect
 # @require_POST
+@authentication_classes([CustomJWTAuthentication])
 @permission_classes([IsAuthenticated])
 def update_phone(request, phone_number=None):
     user = request.user
