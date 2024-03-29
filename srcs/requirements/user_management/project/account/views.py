@@ -465,15 +465,19 @@ def friends_view(request):
 
     current_time = int(timezone.now().timestamp())
     for friend_info in friend_data:
-        if friend_info['is_online'] and (current_time - int(friend_info['last_valid_time'])) > 300:
+        friend = friends.get(username=friend_info['username'])
+        last_valid_time = friend.last_valid_time.timestamp()
+        if friend.is_online == True and (current_time - last_valid_time) > 300:
             friend_info['is_online'] = False
+            friend.is_online = False
 
         if friend_info['avatar']:
             friend_info['avatar'] = urljoin(settings.MEDIA_URL, friend_info['avatar'])
 
     search_query = request.GET.get('search')
     search_results = []
-    if (search_query != user.username):
+    print("search_query: ", search_query, "user.username: ", user.username)
+    if search_query is not None and search_query != user.username:
         if search_query:
             print(search_query)
             # search_results = User.objects.filter(username__icontains=search_query)

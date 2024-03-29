@@ -20,6 +20,7 @@ export default class WarnIndicator extends AbstractComponent {
 		this.div.appendChild(htmlToElement(alertTriangle));
 		this.div.style.setProperty("display", "flex");
 		this.div.style.setProperty("justify-content", "center");
+		this.div.style.setProperty("align-items", "center");
 		this.div.style.setProperty("color", "red");
 		this.shadowRoot.appendChild(this.div);
 
@@ -52,6 +53,7 @@ export default class WarnIndicator extends AbstractComponent {
 				this.div.style.setProperty("color", "green");
 				this.div.append(this.options.content);
 			}
+			this.div.querySelector('svg').style.setProperty("margin-right", "5px");
 		}
 	}
 }

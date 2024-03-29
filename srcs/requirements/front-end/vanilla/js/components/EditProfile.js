@@ -71,7 +71,7 @@ export default class EditProfile extends AbstractComponent {
 
 		const saveButton = new CustomButton({content: "Save", action: true, style: {width: "520px"}});
 		const goBack = new CustomButton({content: "< Back", style: {padding: "0px 20px", position: "absolute", left: "50px", bottom: "30px"}});
-		goBack.onclick = () => navigateTo("/"); // do adapt if needed
+		goBack.onclick = () => navigateTo("/profile"); // do adapt if needed
 
 		let playernameBlock = new InputAugmented({
 			title: "New Playername",

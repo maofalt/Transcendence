@@ -9,7 +9,7 @@ export default function displayPopup(message, infoType) {
 	container.appendChild(info);
 	// anim.transition(info, [['transform', 'scale(0.5)', 'scale(1)'], ['opacity', 0, 1]]);
 	anim.slideIn(info, 500, 'block');
-	if (infoType != "error") {
+	if (!infoType.includes("sticky")) {
 		setTimeout(() => {
 			anim.slideOut(info, 500, true);
 		}, 3000);
