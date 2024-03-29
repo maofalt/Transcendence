@@ -31,10 +31,7 @@ export default class ProfilePage extends AbstractComponent {
 
 		this.user = fetchUserDetails();
 
-		const userInfo = new UserInfo({
-			button1: {content: "Edit", action: true},
-			button2: {content: "Log out", onclick: () => logOut()}
-		});
+		const userInfo = new UserInfo({});
 
 		const profile = new Pannel({dark: false, title: "Profile"});
 		const friendsPannel = new Pannel({dark: false, title: "Friends"});

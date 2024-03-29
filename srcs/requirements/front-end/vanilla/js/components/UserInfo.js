@@ -5,7 +5,9 @@ import AbstractComponent from '@components/AbstractComponent';
 import Pannel from '@components/Pannel';
 import CustomButton from '@components/CustomButton';
 import { navigateTo } from "@utils/Router";
+import isLoggedIn from "@utils/isLoggedIn";
 import fetchUserDetails from "@utils/fetchUserDetails";
+import logOut from "@utils/logOut";
 
 export default class UserInfo extends AbstractComponent {
 	constructor(options = {}) {
@@ -130,32 +132,34 @@ export default class UserInfo extends AbstractComponent {
     }
 
     createButtons(options, pannel) {
-        let button1;
-        let button2;
-        if (options.button1) {
-            button1 = new CustomButton({content: options.button1.content, action: options.button1.action, style: {display: "block", margin: "15px 0px"}});
-			if (options.button1.onclick) {
-				button1.onclick = options.button1.onclick;
-			}
-        } else {
-            button1 = new CustomButton({content: "Log in", action: true, style: {display: "block", margin: "15px 0px"}});
-			button1.onclick = (e) => { 
+        let button1, button2;
+		let style = {display: "block", margin: "15px 0px"};
+
+		if (isLoggedIn()) {
+			button1 = new CustomButton({content: "Edit", action: true, style});
+			button1.onclick = (e) => {
+				e.stopPropagation();
+				navigateTo("/edit-profile");
+			};
+			button2 = new CustomButton({content: "Log out", style});
+			button2.onclick = (e) => {
+				e.stopPropagation();
+				logOut();
+			};
+		} else {
+			button1 = new CustomButton({content: "Log in", action: true, style});
+			button1.onclick = (e) => {
 				e.stopPropagation();
 				navigateTo("/login");
 			};
-        }
-        if (options.button2) {
-            button2 = new CustomButton({content: options.button2.content, action: options.button2.action, style: {display: "block", margin: "15px 0px"}});
-			if (options.button2.onclick) {
-				button2.onclick = options.button2.onclick;
-			}
-		} else {
-            button2 = new CustomButton({content: "Sign Up", style: {display: "block", margin: "15px 0px"}});
+	
+			button2 = new CustomButton({content: "Sign up", style});
 			button2.onclick = (e) => {
 				e.stopPropagation();
 				navigateTo("/signup");
 			};
-        }
+		}
+
         const container = document.createElement("div");
         container.id = "button-container";
         container.appendChild(button1);

@@ -89,31 +89,7 @@ export default class HomePage extends AbstractComponent {
 
 	addLater = async () => {
 
-		let button1 = {content: "Log in", action: true, onclick: (e) => {
-			e.stopPropagation();
-			navigateTo("/login")
-		}};
-
-		let button2 = {content: "Sign up", onclick: (e) => {
-			e.stopPropagation();
-			navigateTo("/signup")
-		}};
-
-		if (isLoggedIn()) {
-			button1 = {content: "Edit", action: true, onclick: (e) => {
-				e.stopPropagation();
-				navigateTo("/edit-profile")
-			}};
-			button2 = {content: "Log out", onclick: (e) => {
-				e.stopPropagation();
-				logOut();
-			}};
-		}
-
-		const userInfo = new UserInfo({
-			button1,
-			button2
-		});
+		const userInfo = new UserInfo({});
 
 		userInfo.style.setProperty("position", "absolute");
 		userInfo.style.setProperty("bottom", "15px");
