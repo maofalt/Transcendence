@@ -1,14 +1,17 @@
 import { createElement } from "@utils/createElement";
 import { htmlToElement } from "@utils/htmlToElement";
-import AbstractComponent from "./AbstractComponent";
+import AbstractComponent from "@components/AbstractComponent";
 import AbstractView from "@views/AbstractView";
 import homePageStyle from '@css/HomePage.css?raw';
 import BigTitle from '@components/BigTitle';
 import Pannel from '@components/Pannel';
 import CustomButton from '@components/CustomButton';
 import { navigateTo } from "@utils/Router";
-import { displayPopup } from "@utils/displayPopup";
-import UserInfo from "./UserInfo";
+import displayPopup from "@utils/displayPopup";
+import UserInfo from "@components/UserInfo";
+import isLoggedIn from "@utils/isLoggedIn";
+import logOut from "@utils/logOut";
+import fetchUserDetails from "@utils/fetchUserDetails";
 
 export default class HomePage extends AbstractComponent {
 	constructor(options = {}) {
@@ -38,36 +41,9 @@ export default class HomePage extends AbstractComponent {
 		menu.appendChild(profileButton);
 		// menu.appendChild(loginButton);
 
-		// const footerContainer = document.createElement('div');
-		// footerContainer.id = "footerContainer";
-		// // footerContainer.style.setProperty("border", "1px red solid");
-
-		// const userInfo = new Pannel({title: " ", dark: true, style: {width: "550px", height: "150px"}});
-		// userInfo.id = "userInfo";
-		// userInfo.shadowRoot.removeChild(userInfo.shadowRoot.querySelector("#pannel-title"));
-
-		// const profilePicture = new Pannel({title: " ", dark: false, style: {width: "120px", height: "120px"}});
-		// profilePicture.id = "profilePicture";
-		// profilePicture.shadowRoot.removeChild(profilePicture.shadowRoot.querySelector("#pannel-title"));
-
-		// const userText = document.createElement('div');
-		// userText.id = 'userText';
-		// // userText.style.setProperty("border", "1px blue solid");
-		// userText.style.setProperty("flex", "2");
-		// userText.style.setProperty("height", "100%");
-
-		// userInfo.shadowRoot.appendChild(profilePicture);
-		// userInfo.shadowRoot.appendChild(userText);
-
-		// footerContainer.appendChild(userInfo);
-
-		const userInfo = new UserInfo();
-		userInfo.style.setProperty("position", "absolute");
-		userInfo.style.setProperty("bottom", "15px");
-		userInfo.style.setProperty("right", "35px");
+		this.addLater();
 
 		this.shadowRoot.appendChild(menu);
-		this.shadowRoot.appendChild(userInfo);
 
 		const errorButton = new CustomButton({
 				content: "error", 
@@ -102,7 +78,6 @@ export default class HomePage extends AbstractComponent {
 		playButton.onclick = () => navigateTo("/game");
 		// tournamentsButton.onclick = () => navigateTo("/tournament");
 		profileButton.onclick = () => navigateTo("/profile");
-		userInfo.onclick = () => navigateTo("/profile");
 
 		// to add : method inside the user Info class that calls the navigate function corresponding
 		// if user logged in : first button -> edit profile
@@ -110,6 +85,20 @@ export default class HomePage extends AbstractComponent {
 
 		// if user not logged in : first button -> log in
 		//							second button -> sign up
+	}
+
+	addLater = () => {
+
+		const userInfo = new UserInfo({});
+
+		userInfo.style.setProperty("position", "absolute");
+		userInfo.style.setProperty("bottom", "15px");
+		userInfo.style.setProperty("right", "35px");
+
+		this.shadowRoot.appendChild(userInfo);
+
+		userInfo.onclick = () => navigateTo("/profile");
+
 	}
 }
 

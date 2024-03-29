@@ -5,6 +5,9 @@ import AbstractComponent from '@components/AbstractComponent';
 import Pannel from '@components/Pannel';
 import CustomButton from '@components/CustomButton';
 import { navigateTo } from "@utils/Router";
+import isLoggedIn from "@utils/isLoggedIn";
+import fetchUserDetails from "@utils/fetchUserDetails";
+import logOut from "@utils/logOut";
 
 export default class UserInfo extends AbstractComponent {
 	constructor(options = {}) {
@@ -14,7 +17,11 @@ export default class UserInfo extends AbstractComponent {
 		styleEl.textContent = styles;
 		this.shadowRoot.appendChild(styleEl);
 
-        const pannel = new Pannel({title: "", dark: false, style: {width: "520px", height: "150px"}});
+		this.addLater(options);
+	}
+
+	async addLater(options) {
+		const pannel = new Pannel({title: "", dark: false, style: {width: "520px", height: "150px"}});
         pannel.id = "pannel";
         const ppContainer = new Pannel({title: "", dark: true, style: {width: "120px", height: "120px"}});
         ppContainer.id = "pp-container";
@@ -28,8 +35,13 @@ export default class UserInfo extends AbstractComponent {
         const imgBox = document.createElement('div');
         this.setUpImageBox(imgBox);
 
-        const userText = this.createUserText(options);
-        const profilePicture = this.createProfilePicture(options);
+		let details = JSON.parse(sessionStorage.getItem("userDetails"));
+		console.log("DETAILS:", details);
+		if (!details)
+			details = await fetchUserDetails();
+
+        const userText = this.createUserText(details);
+        const profilePicture = this.createProfilePicture(details);
         
         imgBox.appendChild(profilePicture);
         ppContainer.shadowRoot.appendChild(imgBox);
@@ -57,7 +69,7 @@ export default class UserInfo extends AbstractComponent {
     createProfilePicture(options) {
         const profilePicture = new Image();
         profilePicture.id = "profile-picture";
-        profilePicture.src = options.profilePicPath ? options.profilePicPath : "../js/assets/images/default-avatar.webp";
+        profilePicture.src = options.avatar ? options.avatar : "../js/assets/images/default-avatar.webp";
 		profilePicture.style.setProperty("width", "100%");
 		profilePicture.style.setProperty("height", "100%");
 		profilePicture.style.setProperty("object-fit", "cover");
@@ -123,26 +135,34 @@ export default class UserInfo extends AbstractComponent {
     }
 
     createButtons(options, pannel) {
-        let button1;
-        let button2;
-        if (options.button1) {
-            button1 = new CustomButton({content: options.button1.content, action: options.button1.action, style: {display: "block", margin: "15px 0px"}});
-        } else {
-            button1 = new CustomButton({content: "Log in", action: true, style: {display: "block", margin: "15px 0px"}});
-			button1.onclick = (e) => { 
+        let button1, button2;
+		let style = {display: "block", margin: "15px 0px"};
+
+		if (isLoggedIn()) {
+			button1 = new CustomButton({content: "Edit", action: true, style});
+			button1.onclick = (e) => {
+				e.stopPropagation();
+				navigateTo("/edit-profile");
+			};
+			button2 = new CustomButton({content: "Log out", style});
+			button2.onclick = (e) => {
+				e.stopPropagation();
+				logOut();
+			};
+		} else {
+			button1 = new CustomButton({content: "Log in", action: true, style});
+			button1.onclick = (e) => {
 				e.stopPropagation();
 				navigateTo("/login");
 			};
-        }
-        if (options.button2) {
-            button2 = new CustomButton({content: options.button2.content, action: options.button2.action, style: {display: "block", margin: "15px 0px"}});
-        } else {
-            button2 = new CustomButton({content: "Sign Up", style: {display: "block", margin: "15px 0px"}});
+	
+			button2 = new CustomButton({content: "Sign up", style});
 			button2.onclick = (e) => {
 				e.stopPropagation();
 				navigateTo("/signup");
 			};
-        }
+		}
+
         const container = document.createElement("div");
         container.id = "button-container";
         container.appendChild(button1);

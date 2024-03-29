@@ -16,9 +16,8 @@ class CustomJWTAuthentication(authentication.BaseAuthentication):
             raise exceptions.AuthenticationFailed('access token is missing')
             # return None, None
         try:
-            decoded_token = jwt.decode(accessToken, settings.SECRET_KEY, algorithms=["HS256"])
+            decoded_token = jwt.decode(accessToken.split()[1], settings.SECRET_KEY, algorithms=["HS256"])
             uid = decoded_token['user_id']
-            # username = 'jisu2'
             username = decoded_token.get('username', None)
             user_info = (uid, username)
             return user_info, accessToken

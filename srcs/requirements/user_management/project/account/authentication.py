@@ -1,0 +1,28 @@
+import jwt
+from django.contrib.auth.models import User
+from rest_framework import authentication, exceptions
+import time
+import datetime
+from django.http import JsonResponse
+from django.conf import settings
+
+# ------------------------ Authentication -----------------------------------
+class CustomJWTAuthentication(authentication.BaseAuthentication):
+    def authenticate(self, request):
+        accessToken = request.headers.get('Authorization', None)
+
+        if not accessToken:
+            return None
+
+        try:
+            token = accessToken.split()[1]
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+            username = payload['username']
+            user = User.objects.get(username=username)
+            return (user, None)
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationFailed('Token has expired. Please obtain a new one.')
+        except jwt.InvalidTokenError:
+            raise AuthenticationFailed('Invalid token. Please provide a valid token.')
+        except User.DoesNotExist:
+            raise AuthenticationFailed('No such user found.')
