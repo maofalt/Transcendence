@@ -27,6 +27,7 @@ import secrets
 import requests
 import logging
 import base64
+from urllib.parse import urlencode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.forms.models import model_to_dict
 from .authentication import CustomJWTAuthentication
@@ -488,6 +489,8 @@ def friends_view(request):
 @api_view(['GET'])
 @authentication_classes([CustomJWTAuthentication])
 @permission_classes([IsAuthenticated])
+# @authentication_classes([])
+# @permission_classes([AllowAny])
 def detail_view(request):
     user = request.user
     print("user: ", user)
@@ -679,8 +682,9 @@ class SendResetLinkView(generics.ListCreateAPIView):
 
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             token = token_generator.make_token(user)
-
-            reset_url = request.build_absolute_uri(reverse_lazy('account:password_reset', kwargs={'uidb64': uid, 'token': token}))
+            
+            # reset_url = request.build_absolute_uri(reverse_lazy('account:password_reset', kwargs={'uidb64': uid, 'token': token}))
+            reset_url = request.build_absolute_uri('/forgot?{}'.format(urlencode({'token': token, 'uidb': uid})))
             print("reset_link: ", reset_url)
 
             print("\n\nCHECK UNIQUE TOKEN: ", token)
@@ -698,9 +702,12 @@ class SendResetLinkView(generics.ListCreateAPIView):
 class PasswordResetView(generics.ListCreateAPIView):
     token_generator = TokenGenerator()  
     serializer_class = PasswordResetSerializer
+    authentication_classes = []
     # permission_classes = [IsAuthenticated]
 
-    def post(self, request, uidb64, token):
+    def post(self, request):
+        uidb64 = request.query_params.get('uidb')
+        token = request.query_params.get('token')
         try:
             uid = urlsafe_base64_decode(uidb64).decode()
             user = User.objects.get(pk=uid)
@@ -718,7 +725,9 @@ class PasswordResetView(generics.ListCreateAPIView):
         else:
             return JsonResponse({'success': False, 'error': escape('Invalid password reset link')}, status=400)
 
-    def get(self, request, uidb64, token):
+    def get(self, request):
+        uidb64 = request.query_params.get('uidb')
+        token = request.query_params.get('token')
         try:
             uid = urlsafe_base64_decode(uidb64).decode()
             print("uid:::: ", uid)
