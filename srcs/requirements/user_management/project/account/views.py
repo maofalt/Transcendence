@@ -709,9 +709,9 @@ class PasswordResetView(generics.ListCreateAPIView):
     authentication_classes = []
     # permission_classes = [IsAuthenticated]
 
-    def post(self, request):
-        uidb64 = request.query_params.get('uidb')
-        token = request.query_params.get('token')
+    def post(self, request, uidb64, token):
+        # uidb64 = request.query_params.get('uidb')
+        # token = request.query_params.get('token')
         try:
             uid = urlsafe_base64_decode(uidb64).decode()
             user = User.objects.get(pk=uid)
@@ -729,9 +729,9 @@ class PasswordResetView(generics.ListCreateAPIView):
         else:
             return JsonResponse({'success': False, 'error': escape('Invalid password reset link')}, status=400)
 
-    def get(self, request):
-        uidb64 = request.query_params.get('uidb')
-        token = request.query_params.get('token')
+    def get(self, request, uidb64, token):
+        # uidb64 = request.query_params.get('uidb')
+        # token = request.query_params.get('token')
         try:
             uid = urlsafe_base64_decode(uidb64).decode()
             print("uid:::: ", uid)
