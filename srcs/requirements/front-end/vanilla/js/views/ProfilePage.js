@@ -189,7 +189,7 @@ export default class ProfilePage extends AbstractComponent {
 
 		const deleteButton = new CustomButton({content: "Delete Account", delete: true, style: {margin: "10px"}});
 		const goBack = new CustomButton({content: "< Back", style: {padding: "0px 20px", position: "absolute", left: "50px", bottom: "30px"}});
-		goBack.onclick = () => navigateTo("/"); // do adapt if needed
+		goBack.onclick = () => window.history.back();
 
 		profile.shadowRoot.appendChild(userInfo);
 		profile.shadowRoot.appendChild(personalInfo);

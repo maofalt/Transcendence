@@ -39,9 +39,11 @@ export default class EditProfile extends AbstractComponent {
 
 		this.shadowRoot.appendChild(friendsPannel);
 
-		const saveButton = new CustomButton({content: "Save", action: true, style: {width: "520px"}});
+		const saveButton = new CustomButton({content: "Save", action: true, style: {width: "520px", margin: "20px 0px"}});
+		const resetPasswordButton = new CustomButton({content: "Reset Password", action: false, style: {width: "520px", margin: "20px 0px"}});
+		
 		const goBack = new CustomButton({content: "< Back", style: {padding: "0px 20px", position: "absolute", left: "50px", bottom: "30px"}});
-		goBack.onclick = () => navigateTo("/profile"); // do adapt if needed
+		goBack.onclick = () => window.history.back();
 
 		let playernameBlock = new InputAugmented({
 			title: "New Playername",
@@ -73,28 +75,7 @@ export default class EditProfile extends AbstractComponent {
 			}
 		}
 
-		let passwordBlock = new InputAugmented({
-			title: "New Password",
-			content: "Password",
-			indicators: {
-				lengthIndicator: ["Minimum 8 characters", () => passwordBlock.input.getValue().length >= 8 || passwordBlock.input.getValue() == ""],
-				digitIndicator: ["At least 1 digit", () => /\d/.test(passwordBlock.input.getValue()) || passwordBlock.input.getValue() == ""],
-				letterIndicator: ["At least 1 letter", () => /[a-zA-Z]/.test(passwordBlock.input.getValue()) || passwordBlock.input.getValue() == ""],
-			},
-			type: "password"
-		});
-
-		let confirmPasswordBlock = new InputAugmented({
-			title: "Confirm Password",
-			content: "Password",
-			indicators: {
-				matchIndicator: ["Passwords don't match", () => passwordBlock.input.getValue() == confirmPasswordBlock.input.getValue()],
-			},
-			type: "password"
-		});
-
-		passwordBlock.input.oninput = (e) => passwordBlock.validate();
-		confirmPasswordBlock.input.oninput = (e) => confirmPasswordBlock.validate();
+		resetPasswordButton.onclick = () => navigateTo("/reset");
 
 		saveButton.onclick = async () => {
 			if (!await playernameBlock.validate() 
@@ -122,8 +103,7 @@ export default class EditProfile extends AbstractComponent {
 		form.appendChild(playernameBlock);
 		form.appendChild(emailBlock);
 		form.appendChild(avatarBlock);
-		form.appendChild(passwordBlock);
-		form.appendChild(confirmPasswordBlock);
+		form.appendChild(resetPasswordButton);
 		form.appendChild(saveButton);
 
 		profile.shadowRoot.appendChild(form);
