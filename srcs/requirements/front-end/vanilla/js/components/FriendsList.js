@@ -57,11 +57,16 @@ export default class FriendsList extends AbstractComponent {
 					status: friend.is_online ? "online" : "offline",
 				});
 			let image = friendBlock.shadowRoot.querySelector("#img-container img");
+			let container = friendBlock.shadowRoot.querySelector("#container");
+			container.style.setProperty("background-color", "rgba(0, 0, 0, 0)");
+			container.style.setProperty("transition", "background-color 0.1s ease-in-out");
 			friendBlock.onmouseover = () => {
 				image.src = '../js/assets/images/delete-icon.png';
+				container.style.setProperty("background-color", "rgba(0, 0, 0, 0.3)");
 			}
 			friendBlock.onmouseout = () => {
 				image.src = '/api/user_management' + friend.avatar;
+				container.style.setProperty("background-color", "rgba(0, 0, 0, 0)");
 			}
 			friendBlock.onclick = () => this.removeFriend(friend.username);
 			listContainer.appendChild(friendBlock);
