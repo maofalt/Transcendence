@@ -27,17 +27,15 @@ export default class ForgotPassword extends AbstractComponent {
 
 		let inputContainer;
 		if (window.location.search.includes("reset")) {
-			const query = window.location.search.split("=")[1];
-			inputContainer = this.resetPassPage(query);
+			const urlParams = new URLSearchParams(window.location.search);
+			const token = urlParams.get("token");
+			const uidb = urlParams.get("uidb");
+			inputContainer = this.resetPassPage(token, uidb);
 		} else {
 			inputContainer = this.sendLinkPage();
 		}
 
 		pannel.shadowRoot.appendChild(inputContainer);
-
-		// usernameBlock.input.oninput = () => {
-		// 	usernameBlock.input.input.style.outline = "none";
-		// }
 		
 		const goBack = new CustomButton({content: "< Back", style: {padding: "0px 20px", position: "absolute", left: "50px", bottom: "30px"}});
 		goBack.onclick = () => Router.navigateTo("/"); // do adapt if needed
