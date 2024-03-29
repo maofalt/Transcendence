@@ -35,7 +35,10 @@ export default class UserInfo extends AbstractComponent {
         const imgBox = document.createElement('div');
         this.setUpImageBox(imgBox);
 
-		const details = await fetchUserDetails();
+		let details = JSON.parse(sessionStorage.getItem("userDetails"));
+		console.log("DETAILS:", details);
+		if (!details)
+			details = await fetchUserDetails();
 
         const userText = this.createUserText(details);
         const profilePicture = this.createProfilePicture(details);

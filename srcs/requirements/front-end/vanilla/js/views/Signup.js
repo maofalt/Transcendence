@@ -338,7 +338,8 @@ export default class Signup extends AbstractComponent {
 				sessionStorage.setItem('tokenType', body.token_type);
 
 				// get user details for the profile page
-				await fetchUserDetails();
+				let details = await fetchUserDetails();
+				sessionStorage.setItem('userDetails', JSON.stringify(details));
 
 				Router.navigateTo("/");
 				valid = true;

@@ -29,7 +29,10 @@ export default class ProfilePage extends AbstractComponent {
 		// let user = options.user;
 		// let user = options;
 
-		this.user = fetchUserDetails();
+		this.user = JSON.parse(sessionStorage.getItem("userDetails"));
+		console.log("USER:", this.user);
+		if (!this.user)
+			this.user = fetchUserDetails();
 
 		const userInfo = new UserInfo({});
 

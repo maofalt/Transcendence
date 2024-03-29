@@ -140,6 +140,9 @@ export default class LoginPage extends AbstractComponent {
 				sessionStorage.setItem('accessToken', body.access_token);
 				sessionStorage.setItem('tokenType', body.token_type);
 				
+				let details = await fetchUserDetails();
+				sessionStorage.setItem('userDetails', JSON.stringify(details));
+
 				if (body.requires_2fa) {
 					displayPopup('login successful, please enter your 2fa code', 'info');
 					Router.navigateTo("/2fa");

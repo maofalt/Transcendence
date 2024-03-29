@@ -87,7 +87,7 @@ export default class HomePage extends AbstractComponent {
 		//							second button -> sign up
 	}
 
-	addLater = async () => {
+	addLater = () => {
 
 		const userInfo = new UserInfo({});
 
