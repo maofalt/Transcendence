@@ -38,9 +38,9 @@ export default async function logOut() {
 	}).catch(error => {
 		console.error('Request Failed:', error);
 	});
-	
-	await fetchUserDetails();
 
+	sessionStorage.clear();
+	
 	displayPopup("You have been logged out", "success");
 
 	navigateTo("/");

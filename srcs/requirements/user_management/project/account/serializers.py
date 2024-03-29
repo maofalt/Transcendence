@@ -13,7 +13,7 @@ class AnonymousUserSerializer(serializers.Serializer):
 class FriendUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'playername', 'avatar', 'is_online']
+        fields = ['id', 'username', 'playername', 'avatar', 'is_online', 'last_valid_time']
 
 class ProfileUSerSerializer(serializers.ModelSerializer):
     class Meta:

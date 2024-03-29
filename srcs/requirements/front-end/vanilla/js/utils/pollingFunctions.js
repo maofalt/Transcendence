@@ -10,7 +10,7 @@ export async function renewToken() {
 		headers: {
 			'Authorization': tokenType + " " + accessToken
 		}
-	}).then(res => {
+	}).then(async res => {
 		let response = res.response;
 		let body = res.body;
 		console.log("body", body);
@@ -39,10 +39,14 @@ export async function renewToken() {
 		sessionStorage.setItem('accessToken', body.access_token);
 		sessionStorage.setItem('tokenType', body.token_type);
 
+		let details = await fetchUserDetails();
+		sessionStorage.setItem('userDetails', JSON.stringify(details));
+
 		console.log('Updated accessToken on Storage');
 	}).catch(error => {
 		console.error('Error checking refresh:', error);
 		sessionStorage.clear();
+		console.log(sessionStorage);
 	});
 }
 
@@ -66,8 +70,9 @@ function refreshTokenLoop() {
 		renewToken();
 	}
 
-	// get user details
-	fetchUserDetails();
+	if (accessToken !== null && expiryTime !== null && expiryTime < now) {
+		sessionStorage.clear();
+	}
 
 	// calculate remaining time until the token needs refreshing
 	let delayUntilRefresh = expiryTime - now - 30000;
