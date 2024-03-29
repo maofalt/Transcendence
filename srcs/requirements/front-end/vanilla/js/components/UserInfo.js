@@ -8,6 +8,8 @@ import { navigateTo } from "@utils/Router";
 import isLoggedIn from "@utils/isLoggedIn";
 import fetchUserDetails from "@utils/fetchUserDetails";
 import logOut from "@utils/logOut";
+import defaultAvatar from "@images/default-avatar.webp";
+import editIcon from "@images/square_edit_outline_icon.png";
 
 export default class UserInfo extends AbstractComponent {
 	constructor(options = {}) {
@@ -32,8 +34,8 @@ export default class UserInfo extends AbstractComponent {
         ppContainer.style.setProperty("display", "flex");
         ppContainer.style.setProperty("justify-content", "center");
 
-        const imgBox = document.createElement('div');
-        this.setUpImageBox(imgBox);
+        this.imgBox = document.createElement('div');
+        this.setUpImageBox(this.imgBox);
 
 		let details = JSON.parse(sessionStorage.getItem("userDetails"));
 		console.log("DETAILS:", details);
@@ -41,10 +43,22 @@ export default class UserInfo extends AbstractComponent {
 			details = await fetchUserDetails();
 
         const userText = this.createUserText(details);
-        const profilePicture = this.createProfilePicture(details);
+        const profilePicture = this.createProfilePicture(details.avatar);
+		this.editOverlay = this.createProfilePicture(editIcon);
+		this.editOverlay.style.display = "none";
+		this.editOverlay.style.setProperty("position", "absolute"); 
+		this.editOverlay.style.setProperty("width", "60%");
+		this.editOverlay.style.setProperty("height", "60%");
+		this.editOverlay.style.setProperty("border-radius", "20%");
+		this.editOverlay.style.setProperty("backdrop-filter", "blur(5px)");
+		this.editOverlay.style.setProperty("border", "10px solid transparent");
+		this.editOverlay.style.setProperty("background-clip", "padding-box");
+		this.editOverlay.style.setProperty("box-shadow", "0 0 0 10px rgba(0,0,0,0.5)");
+		this.editOverlay.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
         
-        imgBox.appendChild(profilePicture);
-        ppContainer.shadowRoot.appendChild(imgBox);
+		this.imgBox.appendChild(this.editOverlay);
+        this.imgBox.appendChild(profilePicture);
+        ppContainer.shadowRoot.appendChild(this.imgBox);
         pannel.shadowRoot.appendChild(ppContainer);
         pannel.shadowRoot.appendChild(userText);
 
@@ -66,10 +80,10 @@ export default class UserInfo extends AbstractComponent {
         this.shadowRoot.appendChild(pannel);
 	}
 
-    createProfilePicture(options) {
+    createProfilePicture(avatar) {
         const profilePicture = new Image();
-        profilePicture.id = "profile-picture";
-        profilePicture.src = options.avatar ? options.avatar : "../js/assets/images/default-avatar.webp";
+        profilePicture.classList.add("profile-picture");
+        profilePicture.src = avatar || defaultAvatar;
 		profilePicture.style.setProperty("width", "100%");
 		profilePicture.style.setProperty("height", "100%");
 		profilePicture.style.setProperty("object-fit", "cover");
@@ -176,6 +190,9 @@ export default class UserInfo extends AbstractComponent {
         imgBox.id = "img-box";
         imgBox.style.setProperty("width", "85%");
         imgBox.style.setProperty("height", "85%");
+		imgBox.style.setProperty("display", "flex");
+		imgBox.style.setProperty("justify-content", "center");
+		imgBox.style.setProperty("align-items", "center");
     }
 
     pannelHover = (e, pannel, arg) => {

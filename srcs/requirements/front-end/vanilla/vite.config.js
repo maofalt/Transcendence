@@ -14,7 +14,8 @@ export default defineConfig({
 	  '@components': '/js/components',
 	  '@html': '/js/html',
 	  '@assets': '/js/assets',
-	  '@gameLogic': '/js/gameLogic'
+	  '@images': '/js/assets/images',
+	  '@gameLogic': '/js/gameLogic',
 	}
   }
 });

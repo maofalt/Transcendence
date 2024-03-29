@@ -17,6 +17,7 @@ import displayPopup from "@utils/displayPopup";
 import FriendsList from "@components/FriendsList";
 import { router } from "@utils/Router";
 import fetchUserDetails from "@utils/fetchUserDetails";
+import { fadeIn, fadeOut, transition } from "@utils/animate";
 
 export default class ProfilePage extends AbstractComponent {
 	constructor(options = {}) {
@@ -29,12 +30,42 @@ export default class ProfilePage extends AbstractComponent {
 		// let user = options.user;
 		// let user = options;
 
+		let data = {
+			username: "",
+			playername: "",
+			avatar: "",
+			email: "",
+			phone: "",
+			two_factor_method: "",
+		}
+
 		this.user = JSON.parse(sessionStorage.getItem("userDetails"));
 		console.log("USER:", this.user);
 		if (!this.user)
 			this.user = fetchUserDetails();
 
 		const userInfo = new UserInfo({});
+		userInfo.imgBox.onmouseover = (e) => {
+			userInfo.editOverlay.style.display = "block";
+			transition(userInfo.editOverlay, [["opacity", 0, 0.5]], 100);
+			userInfo.imgBox.onmouseleave = (e) => {
+				transition(userInfo.editOverlay, [["opacity", 0.5, 0]], 100).then(() => userInfo.editOverlay.style.setProperty("display", "none"));
+			}
+		};
+		userInfo.editOverlay.onclick = () => {
+			const fileInput = document.createElement('input');
+			fileInput.type = 'file';
+			fileInput.style.display = 'none';
+			fileInput.onchange = () => {
+				if (fileInput.files.length > 0) {
+					const file = fileInput.files[0];
+					data.avatar = file;
+					this.uploadAvatar(data);
+				}
+			};
+			document.body.appendChild(fileInput); // Append it to the body
+			fileInput.click(); // Trigger the click event
+		};
 
 		const profile = new Pannel({dark: false, title: "Profile"});
 		const friendsPannel = new Pannel({dark: false, title: "Friends"});
@@ -166,6 +197,40 @@ export default class ProfilePage extends AbstractComponent {
 		this.shadowRoot.appendChild(profile);
 		this.shadowRoot.appendChild(friendsPannel);
 	}
+
+	uploadAvatar = async (data) => {
+		const formData = new FormData();
+		formData.append('username', data.username);
+		formData.append('playername', data.playername);
+		formData.append('avatar', data.avatar);
+		formData.append('email', data.email);
+		formData.append('phone', data.phone);
+		formData.append('two_factor_method', data.two_factor_method);
+
+		await easyFetch('/api/user_management/auth/profile_update', {
+			method: 'POST',
+			headers: {},
+			body: formData
+		})
+		.then(res => {
+			let response = res.response;
+			let body = res.body;
+
+			if (!response || !body) {
+				throw new Error('Empty Response');
+			} else if (!response.ok) {
+				throw new Error(body.error || JSON.stringify(body));
+			} else if (response.status === 200) {
+				displayPopup(body.success || JSON.stringify(body), 'success');
+			} else {
+				throw new Error(body.error || JSON.stringify(body));
+			}
+		})
+		.catch(error => {
+			displayPopup(`Profile Modification Failed: ${error}`, 'error');
+		});
+	}
+
 
 	postAddFriend = async (username) => {
 		let valid = false;
