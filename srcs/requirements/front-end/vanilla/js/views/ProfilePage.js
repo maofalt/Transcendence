@@ -72,14 +72,36 @@ export default class ProfilePage extends AbstractComponent {
 		};
 
 		const profile = new Pannel({dark: false, title: "Profile"});
-		const friendsPannel = new Pannel({dark: false, title: "Friends"});
-		const personalInfo = new Pannel({dark: true, title: "Personal Info", style: {display: "block",  padding: "0px 0px 0px 20px"}});
-		const gameStats = new Pannel({dark: true, title: "Game Stats", style: {display: "block", padding: "0px 0px 0px 20px"}});
-		gameStats.shadowRoot.querySelector("#pannel-title").style.setProperty("margin", "10px 0px");
-		personalInfo.shadowRoot.querySelector("#pannel-title").style.setProperty("margin", "10px 0px");
-
 		profile.shadowRoot.querySelector("#pannel-title").style.setProperty("padding", "0px 0px 0px 30px");
 		profile.style.setProperty("display", "block");
+		
+		const friendsPannel = new Pannel({dark: false, title: "Friends"});
+		
+		const personalInfo = new Pannel({dark: true, title: "Personal Info", style: {display: "block",  padding: "0px 0px 0px 20px"}});
+		personalInfo.shadowRoot.querySelector("#pannel-title").style.setProperty("margin", "10px 0px");
+		
+		const gameStats = new Pannel({dark: true, title: "Game Stats", style: {display: "block", padding: "0px 0px 0px 20px"}});
+		gameStats.shadowRoot.querySelector("#pannel-title").style.setProperty("margin", "10px 0px");
+
+		const areYouSure = new Pannel({dark: true, title: "Are you sure you want to delete your account?\nThis can't be undone!", style: {display: "none", padding: "20px 20px 20px 20px"}});
+		areYouSure.style.position = "fixed";
+		areYouSure.style.top = "50%";
+		areYouSure.style.left = "50%";
+		areYouSure.style.transform = "translate(-50%, -50%)";
+		areYouSure.style.zIndex = "9999";
+
+		const confirmDeleteButton = new CustomButton({content: "Yes, delete my account", delete: true, style: {margin: "10px"}});
+		confirmDeleteButton.onclick = () => {
+			this.deleteAccount();
+		};
+		const cancelDeleteButton = new CustomButton({content: "No, keep my account", style: {margin: "10px"}});
+		cancelDeleteButton.onclick = () => {
+			areYouSure.style.display = "none";
+		};
+
+		areYouSure.shadowRoot.appendChild(confirmDeleteButton);
+		areYouSure.shadowRoot.appendChild(cancelDeleteButton);
+
 
 		let infos = document.createElement("div");
 		infos.innerHTML = `
@@ -188,7 +210,10 @@ export default class ProfilePage extends AbstractComponent {
 		gameStats.shadowRoot.appendChild(stats);
 
 		const deleteButton = new CustomButton({content: "Delete Account", delete: true, style: {margin: "10px"}});
-		deleteButton.onclick = () => this.deleteAccount();
+		deleteButton.onclick = () => {
+			areYouSure.style.display = "block";
+			// this.deleteAccount();
+		};
 		
 		const goBack = new CustomButton({content: "< Back", style: {padding: "0px 20px", position: "absolute", left: "50px", bottom: "30px"}});
 		goBack.onclick = () => window.history.back();
@@ -196,8 +221,11 @@ export default class ProfilePage extends AbstractComponent {
 		profile.shadowRoot.appendChild(userInfo);
 		profile.shadowRoot.appendChild(personalInfo);
 		profile.shadowRoot.appendChild(gameStats);
+		
 		profile.shadowRoot.appendChild(deleteButton);
-
+		
+		this.shadowRoot.appendChild(areYouSure);
+		
 		this.shadowRoot.appendChild(goBack);
 		this.shadowRoot.appendChild(profile);
 		this.shadowRoot.appendChild(friendsPannel);
