@@ -10,6 +10,8 @@ import InputAugmented from '@components/InputAugmented';
 import { navigateTo } from "@utils/Router";
 import UserInfo from "./UserInfo";
 import FriendsList from "@components/FriendsList";
+import updateUser from "@utils/updateUser";
+import fetchUserDetails from "@utils/fetchUserDetails";
 
 export default class EditProfile extends AbstractComponent {
 	constructor(options = {}) {
@@ -44,9 +46,6 @@ export default class EditProfile extends AbstractComponent {
 		let playernameBlock = new InputAugmented({
 			title: "New Playername",
 			content: "Playername",
-			indicators: {
-				emptyIndicator: ["Please enter your name", () => playernameBlock.input.getValue() != ""],
-			},
 			description: "Your Playername will be displayed in games and tournaments.",
 			type: "text"
 		});
@@ -55,7 +54,6 @@ export default class EditProfile extends AbstractComponent {
 			title: "New Email",
 			content: "example@example.com",
 			indicators: {
-				emptyIndicator: ["Please enter your email", () => emailBlock.input.getValue() != ""],
 				invalidEmailIndicator: ["Invalid Email", () => this.emailIsValid(emailBlock)],
 			},
 			type: "email",
@@ -65,22 +63,23 @@ export default class EditProfile extends AbstractComponent {
 		let avatarBlock = new InputAugmented({
 			title: "Upload Avatar",
 			content: "Avatar",
-			indicators: {
-				emptyIndicator: ["Please upload a file", () => avatarBlock.input.getValue() != ""],
-				// differentIndicator: ["Different from your Playername and your Email" () => this.],
-			},
 			type: "file"
-		})
+		});
+		let avatarFile = "";
+		avatarBlock.input.onchange = (e) => {
+			if (e.target.files.length > 0) {
+				avatarFile = e.target.files[0];
+				console.log(file);
+			}
+		}
 
 		let passwordBlock = new InputAugmented({
 			title: "New Password",
 			content: "Password",
 			indicators: {
-				emptyIndicator: ["Please enter a password", () => passwordBlock.input.getValue() != ""],
-				lengthIndicator: ["Minimum 8 characters", () => passwordBlock.input.getValue().length >= 8],
-				digitIndicator: ["At least 1 digit", () => /\d/.test(passwordBlock.input.getValue())],
-				letterIndicator: ["At least 1 letter", () => /[a-zA-Z]/.test(passwordBlock.input.getValue())],
-				// differentIndicator: ["Different from your Playername and your Email" () => this.],
+				lengthIndicator: ["Minimum 8 characters", () => passwordBlock.input.getValue().length >= 8 || passwordBlock.input.getValue() == ""],
+				digitIndicator: ["At least 1 digit", () => /\d/.test(passwordBlock.input.getValue()) || passwordBlock.input.getValue() == ""],
+				letterIndicator: ["At least 1 letter", () => /[a-zA-Z]/.test(passwordBlock.input.getValue()) || passwordBlock.input.getValue() == ""],
 			},
 			type: "password"
 		});
@@ -89,11 +88,33 @@ export default class EditProfile extends AbstractComponent {
 			title: "Confirm Password",
 			content: "Password",
 			indicators: {
-				emptyIndicator: ["Please confirm your password", () => confirmPasswordBlock.input.getValue() != ""],
 				matchIndicator: ["Passwords don't match", () => passwordBlock.input.getValue() == confirmPasswordBlock.input.getValue()],
 			},
 			type: "password"
 		});
+
+		passwordBlock.input.oninput = (e) => passwordBlock.validate();
+		confirmPasswordBlock.input.oninput = (e) => confirmPasswordBlock.validate();
+
+		saveButton.onclick = async () => {
+			if (!await playernameBlock.validate() 
+				|| !await emailBlock.validate() 
+				|| !await avatarBlock.validate() 
+				|| !await passwordBlock.validate() 
+				|| !await confirmPasswordBlock.validate()) {
+				return ;
+			}
+			updateUser({
+				username: "",
+				playername: playernameBlock.input.getValue() || "",
+				avatar: avatarFile || "",
+				email: emailBlock.input.getValue() || "",
+				phone: "",
+				two_factor_method: "",
+			});
+			// password: passwordBlock.input.getValue() || "",
+			// confirmPassword: confirmPasswordBlock.input.getValue() || "",
+		}
 
 		const form = document.createElement('div');
 		form.style.setProperty("display", "block");
@@ -110,6 +131,15 @@ export default class EditProfile extends AbstractComponent {
 		this.shadowRoot.appendChild(profile);
 		this.shadowRoot.appendChild(friendsPannel);
 	}
+
+	emailIsValid = (emailBlock) => {
+		if (!emailBlock.input.getValue())
+			return true;
+		let value = emailBlock.input.getValue();
+		let valid = value.includes('@');
+		return valid;
+	}
+
 }
 
 /* To add :

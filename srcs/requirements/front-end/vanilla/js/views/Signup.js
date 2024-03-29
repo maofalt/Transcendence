@@ -163,10 +163,7 @@ export default class Signup extends AbstractComponent {
 			});
 		});
 
-		passwordBlock.input.oninput = (e) => {
-			passwordBlock.validate();
-		};
-
+		passwordBlock.input.oninput = (e) => passwordBlock.validate();
 		confirmPasswordBlock.input.oninput = (e) => confirmPasswordBlock.validate();
 
 		nextButton.onclick = async (e) => {
