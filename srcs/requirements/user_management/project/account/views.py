@@ -218,7 +218,7 @@ def api_login_view(request):
             print(f"Date Joined: {user.date_joined}")
             serializer = UserSerializer(user)
             redirect_url = '/api/user_management/'
-            if (user.two_factor_method != None):
+            if (user.two_factor_method != 'off'):
                 if (user.two_factor_method == 'email'):
                     send_one_time_code(request, user.email)
                 elif(user.two_factor_method == 'sms'):
@@ -237,7 +237,7 @@ def generate_tokens_and_response(request, user):
     accessToken = AccessToken.for_user(user)
     accessToken['username'] = user.username
     print("---> ACCESS TOKEN: ", str(accessToken))
-    if user.two_factor_method == '' or user.two_factor_method is None:
+    if user.two_factor_method == 'off':
         twoFA = False
         login(request, user)
         user.is_online = True
@@ -587,34 +587,23 @@ class ProfileUpdateView(APIView):
 
     def get(self, request):
         user_form = ProfileUpdateForm(instance=request.user)
+        print("user_form: \n", user_form)
         serialized_form = model_to_dict(user_form.instance, fields=['id', 'username', 'playername', 'avatar', 'email', 'phone', 'two_factor_method'])
         if 'avatar' in serialized_form:
             avatar_url = request.build_absolute_uri(user_form.instance.avatar.url)
             serialized_form['avatar'] = avatar_url
         serialized_form['username'] = user_form.instance.username
-        # return JsonResponse({'form': serialized_form})
+        print("serialized_form: \n", serialized_form)
         return Response(serialized_form)
 
     def post(self, request):
         user = request.user
-        print("request.FILES: ", request.POST)
         user_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user)
-        print("user_form: ", user_form)
-        if user_form.is_valid():
-            # user_form.save()
-            # if 'two_factor_method' in request.POST:
-            #     if request.POST['two_factor_method'] == '':
-            #         user.two_factor_method = None
-            #         user.save() 
-            #     else:
-            #         user.two_factor_method = request.POST['two_factor_method']
-            #         user.save() 
+        print("\n\n---------------\nuser_form: ", user_form)
+        if user_form.is_valid():        
             if 'playername' in request.POST and request.POST['playername'] != '':
                 if user.playername != request.POST['playername'] and User.objects.filter(playername=request.POST['playername']).exists():
-                # if User.objects.filter(playername=user.playername).exclude(username=request.user.username).exists():
                     return JsonResponse({'error': 'Playername already exists. Please choose a different one.'})
-                # user.playername = request.POST['playername']
-                # user.save()  
             user_form.save()
             return JsonResponse({'success': 'Your profile has been updated.'})
         else:
