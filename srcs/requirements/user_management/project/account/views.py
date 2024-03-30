@@ -351,7 +351,7 @@ def api_logout_view(request):
         print(request.user.username, ": is_online status", request.user.is_online)
         logout(request)
         serializer = get_serializer(request.user)
-        redirect_url = "/api/user_management/"
+        redirect_url = "/"
         response_data = {'redirect_url': escape(redirect_url)}
         return JsonResponse(response_data)
     else:
@@ -484,7 +484,9 @@ def friends_view(request):
             search_results = list(User.objects.filter(username__icontains=search_query).values())
             print("search_resuls : ", search_results)
     search_results_serialized = FriendUserSerializer(search_results, many=True).data
-    return JsonResponse({'friends': friend_data, 'search_query': escape(search_query), 'search_results': search_results_serialized})
+    escaped_result_data = escape(search_results_serialized.data)
+    escaped_friend_data = escape(friend_data.data)
+    return JsonResponse({'friends': escaped_friend_data, 'search_query': escape(search_query), 'search_results': escaped_result_data})
     # return render(request, 'friends.html', {'friends': friend_data, 'search_query': search_query, 'search_results': search_results})
 
 # @login_required
@@ -629,7 +631,7 @@ class PasswordUpdateView(generics.ListCreateAPIView):
     def get(self, request):
         serializer = self.get_serializer(data={})
         serializer.is_valid(raise_exception=True)
-        fields = serializer.data
+        fields = escape(serializer.data)
         return Response(fields)
 
     def post(self, request):
@@ -747,7 +749,7 @@ class PasswordResetView(generics.ListCreateAPIView):
         if user is not None and self.token_generator.check_token(user, token):
             serializer = self.get_serializer(data={})
             serializer.is_valid(raise_exception=True)
-            fields = serializer.data
+            fields = escape(serializer.data)
             return Response(fields)
         else:
             return JsonResponse({'success': False, 'error': escape('Invalid password reset link')}, status=400)
@@ -769,7 +771,8 @@ class UserAPIView(APIView):
         try:
             user = User.objects.get(id=user_id)
             serializer = UserSerializer(user)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            escaped_data = escape(serializer.data)
+            return Response(escaped_data, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response({"detail": escape("User not found")}, status=status.HTTP_404_NOT_FOUND)
 
