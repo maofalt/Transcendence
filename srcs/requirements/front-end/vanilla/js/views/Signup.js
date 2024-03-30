@@ -163,10 +163,7 @@ export default class Signup extends AbstractComponent {
 			});
 		});
 
-		passwordBlock.input.oninput = (e) => {
-			passwordBlock.validate();
-		};
-
+		passwordBlock.input.oninput = (e) => passwordBlock.validate();
 		confirmPasswordBlock.input.oninput = (e) => confirmPasswordBlock.validate();
 
 		nextButton.onclick = async (e) => {
@@ -361,10 +358,10 @@ export default class Signup extends AbstractComponent {
 		await easyFetch('/api/user_management/auth/access_code', {
 			method: 'POST',
 			headers: {
-				'Content-Type': 'application/json',
+				'Content-Type': 'application/x-www-form-urlencoded',
 				'X-CSRFToken': getCookie('csrftoken')
 			},
-			body: JSON.stringify({ 'email': email })
+			body: new URLSearchParams({ email })
 		})
 		.then(res => {
 			let response = res.response;

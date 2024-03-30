@@ -7,16 +7,17 @@ from django.utils.translation import gettext as _
 
 class ProfileUpdateForm(forms.ModelForm):
     TWO_FACTOR_OPTIONS = [
+        ('', '---------'),
         ('sms', 'SMS'),
         ('email', 'Email'),
     ]
     
-    two_factor_enabled = forms.BooleanField(required=False, label='Enable 2FA')
+    # two_factor_enabled = forms.BooleanField(required=False, label='Enable 2FA')
     two_factor_method = forms.ChoiceField(choices=[], required=False, label='2FA Method')
     
     class Meta:
         model = User
-        fields = ['playername', 'avatar']
+        fields = ['playername', 'avatar', 'two_factor_method', 'phone']
 
     def __init__(self, *args, **kwargs):
         super(ProfileUpdateForm, self).__init__(*args, **kwargs)
@@ -25,15 +26,21 @@ class ProfileUpdateForm(forms.ModelForm):
         self.fields['two_factor_method'].choices = self.TWO_FACTOR_OPTIONS
 
         # Hide 2FA settings if not enabled
-        if not self.initial.get('two_factor_enabled'):
-            self.fields['two_factor_method'].widget = forms.HiddenInput()
-            self.fields['two_factor_enabled'].widget = forms.HiddenInput()
+        # if not self.initial.get('two_factor_enabled'):
+        #     self.fields['two_factor_method'].widget = forms.HiddenInput()
+        #     self.fields['two_factor_enabled'].widget = forms.HiddenInput()
 
-    def clean_username(self):
-        username = self.cleaned_data.get('username')
-        if not username:
-            return self.instance.username
-        return username
+    def clean(self):
+        cleaned_data = super().clean()
+        if cleaned_data.get('two_factor_method') == '':
+            del cleaned_data['two_factor_method']
+        if cleaned_data.get('playername') is None:
+            del cleaned_data['playername']
+        if cleaned_data.get('avatar') is None:
+            del cleaned_data['avatar']
+        if cleaned_data.get('phone') is None:
+            del cleaned_data['phone']
+        return cleaned_data
 
 class PasswordUpdateForm(PasswordChangeForm):
     class Meta:
@@ -42,6 +49,7 @@ class PasswordUpdateForm(PasswordChangeForm):
 class CustomPasswordChangeForm(SetPasswordForm):
     error_messages = {
         'password_mismatch': "The two password fields didn't match.",
+        'password_incorrect': "Your old password was entered incorrectly. Please enter it again.",
     }
 
     old_password = forms.CharField(

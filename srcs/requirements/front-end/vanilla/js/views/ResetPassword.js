@@ -14,7 +14,7 @@ import InputAugmented from "@components/InputAugmented";
 import displayPopup from "@utils/displayPopup";
 import { navigateTo } from "@utils/Router";
 
-export default class ForgotPassword extends AbstractComponent {
+export default class ResetPassword extends AbstractComponent {
 	constructor(options = {}) {
 		super();
 
@@ -25,25 +25,30 @@ export default class ForgotPassword extends AbstractComponent {
 		let bigTitle = new BigTitle({content: "Cosmic<br>Pong", style: {margin: "-10vh 0 10vh 0"}});
 		let pannel = new Pannel({title: "Reset Password", dark: false});
 
-		let inputContainer;
-		if (window.location.search.includes("token")) {
-			inputContainer = this.resetPassPage(window.location.search);
-		} else {
-			inputContainer = this.sendLinkPage();
-		}
+		let inputContainer = this.resetPassPage();
 
 		pannel.shadowRoot.appendChild(inputContainer);
 		
 		const goBack = new CustomButton({content: "< Back", style: {padding: "0px 20px", position: "absolute", left: "50px", bottom: "30px"}});
-		goBack.onclick = () => window.history.back();
+		goBack.onclick = () => window.history.back(); // do adapt if needed
 
 		this.shadowRoot.appendChild(goBack);
 		this.shadowRoot.appendChild(bigTitle);
 		this.shadowRoot.appendChild(pannel);
 	}
 	
-	resetPassPage = (query) => {
+	resetPassPage = () => {
 		let container = document.createElement('div');
+
+		let oldPasswordBlock = new InputAugmented({
+			title: "Old Password",
+			content: "password",
+			indicators: {
+				emptyIndicator: ["Please enter your old password", () => oldPasswordBlock.input.getValue() != ""],
+			},
+			description: "Enter your old password here.",
+			type: "password"
+		});
 
 		let passwordBlock = new InputAugmented({
 			title: "New Password",
@@ -71,34 +76,36 @@ export default class ForgotPassword extends AbstractComponent {
 		});
 
 		let resetButton = new CustomButton({content: "Reset Password", action: true, style: {margin: "15px 0px 0px 0px"}});
+
 		resetButton.onclick = async (e) => {
-			if (!await passwordBlock.validate() || !await confirmPasswordBlock.validate()) {
+			if (!await oldPasswordBlock.validate() || !await passwordBlock.validate() || !await confirmPasswordBlock.validate()) {
 				return ;
 			}
-			this.resetPassword(query, passwordBlock, confirmPasswordBlock);
+			this.resetPassword(oldPasswordBlock, passwordBlock, confirmPasswordBlock);
 		};
-		confirmPasswordBlock.input.oninput = () => {confirmPasswordBlock.validate()};
+
+		oldPasswordBlock.input.oninput = () => {oldPasswordBlock.validate()};
 		passwordBlock.input.oninput = () => {passwordBlock.validate()};
+		confirmPasswordBlock.input.oninput = () => {confirmPasswordBlock.validate()};
 
 		let buttons = document.createElement('div');
 		buttons.appendChild(resetButton);
 		buttons.id = "buttons";
 
+		container.appendChild(oldPasswordBlock);
 		container.appendChild(passwordBlock);
 		container.appendChild(confirmPasswordBlock);
 		container.appendChild(buttons);
 		return container;
 	}
 
-	resetPassword = (query, passwordBlock, confirmPasswordBlock) => {
-		const urlParams = new URLSearchParams(window.location.search);
-		const token = urlParams.get("token");
-		const uidb = urlParams.get("uidb");
+	resetPassword = (oldPasswordBlock, passwordBlock, confirmPasswordBlock) => {
 		let formData = {
+			old_password: oldPasswordBlock.input.getValue(),
 			new_password1: passwordBlock.input.getValue(),
 			new_password2: confirmPasswordBlock.input.getValue(),
 		}
-		easyFetch(`/api/user_management/auth/password_reset/${uidb}/${token}/`, {
+		easyFetch('/api/user_management/auth/PasswordChangeForm', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/x-www-form-urlencoded',
@@ -122,76 +129,11 @@ export default class ForgotPassword extends AbstractComponent {
 		})
 		.catch(error => {
 			displayPopup(`Request Failed: ${error}. Please try sending again.` , 'error');
-			navigateTo("/forgot");
-		});
-	}
-
-	sendLinkPage = () => {
-		let container = document.createElement('div');
-
-		let usernameBlock = new InputAugmented({
-			title: "Username",
-			content: "Username",
-			indicators: {
-				emptyIndicator: ["Please enter a username", () => usernameBlock.input.getValue() != ""],
-			},
-			description: "Enter your username here to receive a password reset link.",
-			type: "text"
-		});
-		
-		let sendLinkButton = new CustomButton({content: "Send Reset Link", action: true, style: {margin: "15px 0px 0px 0px"}});
-		sendLinkButton.onclick = async (e) => {
-			if (!await usernameBlock.validate()) {
-				return ;
-			}
-			this.sendLink(usernameBlock);
-		};
-		usernameBlock.input.oninput = () => {usernameBlock.validate()};
-
-		let buttons = document.createElement('div');
-		buttons.appendChild(sendLinkButton);
-		buttons.id = "buttons";
-
-		container.appendChild(usernameBlock);
-		container.appendChild(buttons);
-		return container;
-	}
-
-	sendLink = (usernameBlock) => {
-		let formData = {
-			username: usernameBlock.input.getValue()
-		}
-		easyFetch('/api/user_management/auth/send_reset_link', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/x-www-form-urlencoded',
-			},
-			body: new URLSearchParams(formData)
-		})
-		.then(res => {
-			let response = res.response;
-			let body = res.body;
-
-			if (!response || !body) {
-				throw new Error('Empty response or body');
-			} else if (response.status === 400) {
-				displayPopup('Username not found', 'error');
-				usernameBlock.input.input.style.outline = "2px solid red";
-				return ;
-			} else if (!response.ok) {
-				throw new Error(body.error || JSON.stringify(body));
-			} else if (response.status === 200 && body.success === true) {
-				displayPopup('Reset link sent: Please follow instructions in the link sent to your email', 'success');
-				navigateTo("/login");
-			} else {
-				throw new Error(body.error || JSON.stringify(body));
-			}
-		})
-		.catch(error => {
-			displayPopup(`Request Failed: ${error}`, 'error');
-			usernameBlock.input.input.style.outline = "2px solid red";
+			oldPasswordBlock.input.input .style.outline = "2px solid red";
+			passwordBlock.input.input .style.outline = "2px solid red";
+			confirmPasswordBlock.input.input .style.outline = "2px solid red";
 		});
 	}
 }
 
-customElements.define('forgot-password', ForgotPassword);
+customElements.define('reset-password', ResetPassword);
