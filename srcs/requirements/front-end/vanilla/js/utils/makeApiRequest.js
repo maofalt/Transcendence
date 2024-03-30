@@ -7,12 +7,8 @@ export async function makeApiRequest(url, method = 'GET', body = null, headers =
 		if (headers['Content-Type'] != 'application/x-www-form-urlencoded')
 			headers['Content-Type'] = 'application/json';
 
-		if (jwt) {
-			headers['Authorization'] = `${jwt}`;
-		}
-
 		//add bearer token
-		//headers['Authorization'] = `Bearer ${jwt}`;
+		headers['Authorization'] =  sessionStorage.getItem('accessToken');
 		const defaultHeaders = {
 			'Accept': 'application/json',
 			...headers,
