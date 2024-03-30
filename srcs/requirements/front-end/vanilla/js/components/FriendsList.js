@@ -4,6 +4,7 @@ import FriendBlock from "./FriendBlock";
 import easyFetch from "@utils/easyFetch";
 import displayPopup from "@utils/displayPopup";
 import { router } from "@utils/Router";
+import deleteIcon from "@images/delete-icon.png";
 
 export default class FriendsList extends AbstractComponent {
 	constructor(options = {}) {
@@ -62,7 +63,7 @@ export default class FriendsList extends AbstractComponent {
 			container.style.setProperty("background-color", "rgba(0, 0, 0, 0)");
 			container.style.setProperty("transition", "background-color 0.1s ease-in-out");
 			friendBlock.onmouseover = () => {
-				image.src = '../js/assets/images/delete-icon.png';
+				image.src = deleteIcon;
 				container.style.setProperty("background-color", "rgba(0, 0, 0, 0.3)");
 			}
 			friendBlock.onmouseout = () => {
