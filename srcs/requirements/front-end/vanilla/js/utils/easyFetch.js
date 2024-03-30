@@ -9,8 +9,12 @@ export default async function easyFetch(url, options = { method: 'GET', body: nu
 		if (options.headers['Content-Type'] != 'application/x-www-form-urlencoded')
 			options.headers['Content-Type'] = 'application/json';
 
+		const accessToken = sessionStorage.getItem('accessToken');
+		const tokenType = sessionStorage.getItem('tokenType');
+
 		const defaultHeaders = {
 			'Accept': 'application/json',
+			'Authorization': `${tokenType} ${accessToken}`,
 			'X-CSRFToken': getCookie('csrftoken'),
 			...options.headers,
 		};

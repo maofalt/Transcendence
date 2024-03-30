@@ -26,18 +26,13 @@ export default class ForgotPassword extends AbstractComponent {
 		let pannel = new Pannel({title: "Reset Password", dark: false});
 
 		let inputContainer;
-		if (window.location.search.includes("reset")) {
-			const query = window.location.search.split("=")[1];
-			inputContainer = this.resetPassPage(query);
+		if (window.location.search.includes("token")) {
+			inputContainer = this.resetPassPage(window.location.search);
 		} else {
 			inputContainer = this.sendLinkPage();
 		}
 
 		pannel.shadowRoot.appendChild(inputContainer);
-
-		// usernameBlock.input.oninput = () => {
-		// 	usernameBlock.input.input.style.outline = "none";
-		// }
 		
 		const goBack = new CustomButton({content: "< Back", style: {padding: "0px 20px", position: "absolute", left: "50px", bottom: "30px"}});
 		goBack.onclick = () => Router.navigateTo("/"); // do adapt if needed
@@ -96,11 +91,14 @@ export default class ForgotPassword extends AbstractComponent {
 	}
 
 	resetPassword = (query, passwordBlock, confirmPasswordBlock) => {
+		const urlParams = new URLSearchParams(window.location.search);
+		const token = urlParams.get("token");
+		const uidb = urlParams.get("uidb");
 		let formData = {
 			new_password1: passwordBlock.input.getValue(),
 			new_password2: confirmPasswordBlock.input.getValue(),
 		}
-		easyFetch(`/api/user_management/auth/password_reset/MTY/${query}/`, {
+		easyFetch(`/api/user_management/auth/password_reset/${uidb}/${token}/`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/x-www-form-urlencoded',

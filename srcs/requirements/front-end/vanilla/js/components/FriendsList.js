@@ -27,7 +27,8 @@ export default class FriendsList extends AbstractComponent {
 	}
 
 	fillList = async (listContainer) => {
-		const friends = await easyFetch(`/api/user_management/auth/friends`).then(res => {
+		const friends = await easyFetch(`/api/user_management/auth/friends`)
+		.then(res => {
 			let response = res.response;
 			let body = res.body;
 
