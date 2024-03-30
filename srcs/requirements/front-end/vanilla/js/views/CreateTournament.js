@@ -13,6 +13,7 @@ export default class CreateTournament extends AbstractView {
       this.createGame = this.createGame.bind(this);
       this.getBasicGameSettings = this.getBasicGameSettings.bind(this);
       this.addPlayerDataToGameSettings = this.addPlayerDataToGameSettings.bind(this);
+      this.getGameSettingsFromForm = this.getGameSettingsFromForm.bind(this);
       this.game = new Game();
   }
   
@@ -32,7 +33,6 @@ export default class CreateTournament extends AbstractView {
           // Get the game settings from the form
           let gameSettings = await this.getGameSettingsFromForm();
           console.log('Updating game with new settings:', gameSettings);
-
           // Re-initialize the game with new settings
           await this.initializeGame(gameSettings);
         });
@@ -206,48 +206,13 @@ export default class CreateTournament extends AbstractView {
           "color": document.getElementById('ball_color').value
         },
         "playersData": [
-          {
-            "accountID": "motero",
-            "color": "0x0000ff"
-          },
-          {
-          "accountID": "yridgway",
-          "color": "0x00ff00"
-          },
-          {
-          "accountID": "tata3",
-          "color": "0x00ff00"
-          },
         ]
       }
-      const responseUser = await makeApiRequest(`/api/user_management/auth/getUser`,'GET');
-			console.log('User:', responseUser.body);
-			const userID = responseUser.body.user_id;
-      let userPlayer = {
-        "accountID": "motero2",
-        "color": "0x0000ff",
-      }
-      gameSettings.playersData.push(userPlayer);
-      
-      let nbr_of_players = gameSettings.gamemodeData.nbrOfPlayers;
-      console.log('Number of players:', nbr_of_players);
-      let dummyPlayeName = 'banana';
-      let dummyPlayerColor = '0x00ff00';
-      for (let i = 1; i < nbr_of_players; i++) {
-        let dummyPlayer = {
-          "accountID": dummyPlayeName + i,
-          "color": dummyPlayerColor
-        }
-        gameSettings.playersData.push(dummyPlayer);
-      }
-      console.log('Game settings automatically:', gameSettings);
+      await this.addPlayerDataToGameSettings(gameSettings, [], gameSettings.gamemodeData.nbrOfPlayers);
       return gameSettings;
 		} catch (error) {
 			console.error('Failed to join tournament:', error);
-		}
-
-
-    
+		} 
     
   }
 
@@ -260,7 +225,6 @@ export default class CreateTournament extends AbstractView {
 			
       const userName = responseUser.body.username;
       playerNames.push(userName);
-      console.log('Player names:', userName);
       let dummyPlayeName = 'tanana';
       let dummyPlayerColor = '0x00ff00';
   
@@ -306,21 +270,9 @@ export default class CreateTournament extends AbstractView {
           "color": "0xf00fff"
         },
         "playersData": [
-          {
-            "accountID": "motero",
-            "color": "0x0000ff"
-            },
-          {
-            "accountID": "yridgway",
-            "color": "0x00ff00"
-          },
-          {
-            "accountID": "tata3",
-            "color": "0x00ff00"
-          },
         ]
       };
-     // await this.addPlayerDataToGameSettings(gameSettings);
+      await this.addPlayerDataToGameSettings(gameSettings);
       console.log('Game settings automatically after call:', gameSettings)
       return gameSettings;
     } catch (error) {
