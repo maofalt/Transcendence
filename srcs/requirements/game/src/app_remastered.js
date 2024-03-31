@@ -17,6 +17,7 @@ const init = require('./gameLogic/init');
 const debugDisp = require('./gameLogic/debugDisplay');
 const render = require('./gameLogic/rendering');
 const axios = require('axios');
+const { match } = require('assert');
 // const objects = require('./gameLogic/gameObjects');
 // const game = require('./gameLogic/gameLogic');
 // const objectsClasses = require('./gameLogic/gameObjectsClasses');
@@ -75,7 +76,49 @@ server.listen(expressPort, () => {
 // global vars
 // let gameInterval = 0;
 
-function waitingLoop(matchID) {
+function gameLoop(matchID) {
+	let match = matches.get(matchID);
+	let gameState = render.updateData(match.gameState);
+	if (gameState == 1) {
+		io.to(matchID).emit('destroy', match.gameState);
+		io.to(matchID).emit('refresh', match.gameState);
+	} else if (gameState == -1) {
+		clearInterval(match.gameInterval); // stop the loop
+		// match.gameState.ball.dir = match.gameState.camera.pos.sub(match.gameState.ball.pos);
+		io.to(matchID).emit('end-game', match.gameState);
+		postMatchResult(match.gameState.jisus_matchID, match.gameState.winner.accountID); // send the result of the match back;
+		matches.delete(matchID); // then delete the match;
+		return ;
+	}
+	// else if (gameState == 0) {
+	io.to(matchID).emit('render', match.gameState);
+}
+
+function countDown(match, mins, secs) {
+	if (!match.gameState.timeLimit) {
+		match.gameState.timeLimit = Date.now() + ((mins * 60) + secs) * 1000;
+		console.log(`TIMER ENDS IN ${mins}:${secs}`);
+	}
+
+	// calculate the remaining time
+	match.gameState.waitingRemainingTime = match.gameState.timeLimit - Date.now();
+	let minutes = Math.floor(match.gameState.waitingRemainingTime / 60000);
+	let seconds = Math.floor((match.gameState.waitingRemainingTime % 60000) / 1000);
+	match.gameState.countDownDisplay = `${minutes < 10 ? "0" + minutes : minutes}:${seconds < 10 ? "0" + seconds : seconds}`;
+	// console.log(match.gameState.waitingRemainingTime);
+	// console.log(`MATCH ${matchID} STARTS IN ${minutes}:${seconds}`);
+
+	// if the countdown has finished, reset
+	if (match.gameState.waitingRemainingTime <= 0) {
+		// console.log("Countdown finished");
+		match.gameState.timeLimit = null;
+		match.gameState.waitingRemainingTime = null;
+		return 1;
+	}
+	return 0;
+}
+
+function waitingRoom(matchID) {
 	let match = matches.get(matchID);
 	if (!match) {
 		console.log("Match not found");
@@ -83,21 +126,40 @@ function waitingLoop(matchID) {
 		// client.disconnect();
 		return ;
 	}
-	let string = JSON.stringify(match.gameState);
-	let gameState = render.updateData(match.gameState);
-	if (gameState == 1) {
-		io.to(matchID).emit('destroy', match.gameState);
-		io.to(matchID).emit('refresh', match.gameState);
-	} else if (gameState == -1) {
-		clearInterval(match.gameInterval); // stop the loop
-		// render.endGame(match.gameState); // call end game animation
-		match.gameState.ball.dir = match.gameState.camera.pos.sub(match.gameState.ball.pos);
-		io.to(matchID).emit('end-game', match.gameState);
-		// something like a post of the gameState idk // send the result of the match back;
-		matches.delete(matchID); // then delete the match;
-		return ;
+
+	if (!match.gameState.imminent && !match.gameState.ongoing) {
+		// this is called during the waiting of other players
+		// if the game is still waiting for players we count down from a chosen amount
+		// game status = !ongoing && !imminent;
+		if (countDown(match, 0, 10) || match.gameState.connectedPlayers == match.gameState.gamemode.nbrOfPlayers) {
+			// in here = timer has run out or enough players have joined
+			// we set the ball at the center and keep it there
+			// and put the game status to imminent;
+			match.gameState.ball.pos.x = 0;
+			match.gameState.ball.pos.y = 0;
+			match.gameState.ball.dir.x = 0;
+			match.gameState.ball.dir.y = 0;
+			match.gameState.imminent = true;
+		}
 	}
-	// else if (gameState == 0) {
+	else if (match.gameState.imminent) {
+		// this is called when the game status is imminent;
+		// it is just going to count down 3 seconds for players to get ready.
+		// game status = imminent but !ongoing;
+		if (countDown(match, 0, 4)) {
+			// in here = game is starting
+			// we get rid of the timer, send the ball and put the
+			// game status to ongoing, !imminent;
+			// and we call the loop for the game physics and scoring;
+			clearInterval(match.gameInterval);
+			render.getBallDir(match.gameState);
+			match.gameState.ongoing = true;
+			match.gameState.imminent = false;
+			match.gameInterval = setInterval(gameLoop, 10, matchID);
+		}
+	}
+
+	let gameState = render.updateData(match.gameState);
 	io.to(matchID).emit('render', match.gameState);
 }
 
@@ -164,10 +226,10 @@ function handleConnectionV2(client) {
 	console.log('---DATA---\n', match.gameState, '\n---END---\n');
     client.emit('generate', match.gameState);
     
-    if (match.gameState.connectedPlayers == 1) {
-        match.gameInterval = setInterval(waitingLoop, 10, client.matchID);
-        match.gameState.ball.dir.y = -1;
-		match.gameState.ball.dir.x = 0.01;
+    if (match.gameState.connectedPlayers == 1 && match.gameState.ongoing == false) {
+		console.log("SETTING INTERVAL");
+        match.gameInterval = setInterval(waitingRoom, 10, client.matchID);
+        render.getBallDir(match.gameState);
     }
 
     console.log(`Player connected with ID: ${client.playerID}`);
@@ -272,8 +334,16 @@ io.on('connection', (client) => {
 			if (data.connectedPlayers < 1) {
 				console.log("CLEARING INTERVAL");
 				clearInterval(match.gameInterval);
-				// matches.delete(client.matchID);
-				// delete data;
+				if (data.ongoing) {
+					data.winner = player;
+					if (data.jisus_matchID) {
+						postMatchResult(match.gameState.jisus_matchID, match.gameState.winner.accountID);
+					}
+					matches.delete(client.matchID);
+				}
+				console.log("SENDING CLEAN MSG");
+				client.emit("clean-all");
+				delete data;
 			}
 			console.log(`Client disconnected with ID: ${client.id} (num clients: ${io.engine.clientsCount})`);
 		});
@@ -312,7 +382,6 @@ function verifyMatchSettings(settings) {
 
 	const checks = {
 		gamemodeData: {
-			gameType: value => (value === 0 || value === 1) ? null : "This Game Type is not recognized.",
 			nbrOfPlayers: value => (value >= 2 && value <= 8) ? null : "Nbr of players should be between 2 and 8",
 			nbrOfRounds: value => (value >= 1 && value <= 10) ? null : "Nbr of Rounds should be between 1 and 10",
 		},
@@ -386,14 +455,14 @@ app.post('/createMatch', (req, res) => {
 	
 	if (matches.has(matchID)) {
 		console.log("Match already exists");
-		res.json({ matchID });
+		res.status(400).json({ matchID });
 		return ;
 	}
 
-	const matchValidity = verifyMatchSettings(gameSettings);
-	if (matchValidity) {
-		console.log("Error: ",matchValidity);
-		res.json({ matchID });
+	let error = verifyMatchSettings(gameSettings);
+	if (error) {
+		console.log("Error:", error);
+		res.status(400).json({ error });
 		return ;
 	}
 	
@@ -422,17 +491,20 @@ app.post('/createMultipleMatches', (req, res) => {
 		
 		if (matches.has(matchID)) {
 			console.log("Match already exists");
+			res.status(400).json({ matchID });
 			return ;
 		}
 
-		const matchValidity = verifyMatchSettings(settings);
-		if (matchValidity) {
-			console.log("Error: ",matchValidity);
+		let error = verifyMatchSettings(gameSettings);
+		if (error) {
+			console.log("Error:", error);
+			res.status(400).json({ error });
 			return ;
 		}
 		
 		// Convert game settings to game state
 		const gameState = init.initLobby(settings);
+		gameState.jisus_matchID = match_id;
 		
 		console.log("\nMATCH CREATED\n");
 		matches.set(matchID, { gameState: gameState, gameInterval: 0 });

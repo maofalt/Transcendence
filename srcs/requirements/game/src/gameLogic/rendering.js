@@ -259,33 +259,45 @@ function eliminatePlayer(data, player) {
     // call init() again to setup the field correctly;
 }
 
+function getBallDir(data) {
+    let playersArray = Object.values(data.players);
+    let randomIndex = Math.floor(Math.random() * playersArray.length);
+    let randomPlayer = playersArray[randomIndex];
+
+    data.ball.dir = randomPlayer.paddle.dirToCenter.scale(-1);
+    return data.ball.dir;
+}
+
 function handleScoring(data, player) {
-    if (data.gamemode.gameType == 0) {
-        for (let otherPlayer of Object.values(data.players)) {
-            if (otherPlayer === player)
-                continue ;
-            otherPlayer.score++;
-            if (otherPlayer.score == data.gamemode.nbrOfRounds) {
-                // endGame(data, otherPlayer);
-                data.winner = otherPlayer;
-                return -1;
+    if (data.ongoing) {
+        if (data.gamemode.gameType == 0) {
+            for (let otherPlayer of Object.values(data.players)) {
+                if (otherPlayer === player)
+                    continue ;
+                otherPlayer.score++;
+                if (otherPlayer.score == data.gamemode.nbrOfRounds) {
+                    // endGame(data, otherPlayer);
+                    data.winner = otherPlayer;
+                    return -1;
+                }
             }
-        }
-    } else if (data.gamemode.gameType == 1) {
-        player.score--;
-        if (player.score == 0) {
-            eliminatePlayer(data, player);
-            data.ball.pos = new Vector(0, 0, 0);
-            if (data.gamemode.nbrOfPlayers == 1) {
-                // endGame(data, Object.values(data.players)[0]);
-                data.winner = Object.values(data.players)[0];
-                return -1;
+        } else if (data.gamemode.gameType == 1) {
+            player.score--;
+            if (player.score == 0) {
+                eliminatePlayer(data, player);
+                data.ball.pos = new Vector(0, 0, 0);
+                if (data.gamemode.nbrOfPlayers == 1) {
+                    // endGame(data, Object.values(data.players)[0]);
+                    data.winner = Object.values(data.players)[0];
+                    return -1;
+                }
+                init.initFieldShape(data);
+                return 1;
             }
-            init.initFieldShape(data);
-            return 1;
         }
     }
     data.ball.pos = new Vector(0, 0, 0);
+    getBallDir(data);
     return 0;
 }
 
@@ -330,4 +342,4 @@ function updateData(data) {
     return result;
 }
 
-module.exports = { updateData };
+module.exports = { updateData, getBallDir };
