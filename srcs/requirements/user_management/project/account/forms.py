@@ -5,42 +5,82 @@ from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth import password_validation
 from django.utils.translation import gettext as _
 
+
 class ProfileUpdateForm(forms.ModelForm):
-    TWO_FACTOR_OPTIONS = [
-        ('', '---------'),
-        ('sms', 'SMS'),
-        ('email', 'Email'),
-    ]
-    
-    # two_factor_enabled = forms.BooleanField(required=False, label='Enable 2FA')
-    two_factor_method = forms.ChoiceField(choices=[], required=False, label='2FA Method')
-    
+    two_factor_method = forms.ChoiceField(choices=User.TWO_FACTOR_OPTIONS, required=False)  # Include None value
+
     class Meta:
         model = User
-        fields = ['playername', 'avatar', 'two_factor_method', 'phone']
+        fields = ['playername', 'avatar', 'phone', 'two_factor_method']
 
-    def __init__(self, *args, **kwargs):
-        super(ProfileUpdateForm, self).__init__(*args, **kwargs)
-        
-        # Initialize choices for the 2FA method selection field
-        self.fields['two_factor_method'].choices = self.TWO_FACTOR_OPTIONS
-
-        # Hide 2FA settings if not enabled
-        # if not self.initial.get('two_factor_enabled'):
-        #     self.fields['two_factor_method'].widget = forms.HiddenInput()
-        #     self.fields['two_factor_enabled'].widget = forms.HiddenInput()
+    def clean_avatar(self):
+        avatar = self.cleaned_data['avatar']
+        if avatar:
+            if not avatar.name.endswith(('.jpg', '.jpeg', '.png', '.gif')):
+                raise forms.ValidationError('Only image files are allowed.')
+            # if avatar.size > 2 * 1024 * 1024:
+            #     raise forms.ValidationError('File size cannot exceed 2MB.')
+        return avatar
 
     def clean(self):
         cleaned_data = super().clean()
-        if cleaned_data.get('two_factor_method') == '':
-            del cleaned_data['two_factor_method']
-        if cleaned_data.get('playername') is None:
-            del cleaned_data['playername']
-        if cleaned_data.get('avatar') is None:
-            del cleaned_data['avatar']
-        if cleaned_data.get('phone') is None:
-            del cleaned_data['phone']
+        two_factor_method = cleaned_data.get('two_factor_method')
+        if two_factor_method == 'Off':
+            cleaned_data['two_factor_method'] = '' 
+        for field in ['playername', 'avatar', 'phone', 'two_factor_method']:
+            if not cleaned_data.get(field):
+                del cleaned_data[field]
         return cleaned_data
+
+# class ProfileUpdateForm(forms.ModelForm):
+#     TWO_FACTOR_OPTIONS = [
+#         ('', '---------'),
+#         ('sms', 'SMS'),
+#         ('email', 'Email'),
+#     ]
+#     two_factor_method = forms.ChoiceField(choices=TWO_FACTOR_OPTIONS, required=False, label='2FA Method')
+#     two_factor_enabled = forms.ChoiceField(choices=[(True, 'On'), (False, 'Off')], label='Enable 2FA', required=False)
+
+#     class Meta:
+#         model = User
+#         fields = ['playername', 'avatar', 'two_factor_enabled', 'two_factor_method', 'phone']
+
+#     def clean(self):
+#         cleaned_data = super().clean()
+#         if cleaned_data.get('two_factor_enabled') == True:
+#             del cleaned_data['two_factor_enabled']
+#         if cleaned_data.get('two_factor_enabled') == False:
+#             del cleaned_data['two_factor_method']
+#             del cleaned_data['two_factor_enabled']
+#         if cleaned_data.get('two_factor_method') == '':
+#             del cleaned_data['two_factor_method']
+#         if not cleaned_data.get('playername'):
+#             del cleaned_data['playername']
+#         if not cleaned_data.get('avatar'):
+#             del cleaned_data['avatar']
+#         if not cleaned_data.get('phone'):
+#             del cleaned_data['phone']
+#         return cleaned_data
+
+#     def save(self, commit=True):
+#         # Override the save method to not include 'two_factor_enabled' when saving
+#         instance = super().save(commit=False)
+#         instance.two_factor_enabled = None  # Ignore 'two_factor_enabled' field
+#         if commit:
+#             instance.save()
+#         return instance
+
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         self.fields['two_factor_method'].widget = forms.HiddenInput()
+
+#         if hasattr(self.instance, 'two_factor_enabled'):
+#             if self.instance.two_factor_enabled:
+#                 self.initial['two_factor_enabled'] = True
+#             else:
+#                 self.initial['two_factor_enabled'] = False
+#         # if self.instance.two_factor_enabled == True:
+#         #     self.fields['two_factor_method'].widget = forms.Select(choices=self.TWO_FACTOR_OPTIONS)
 
 class PasswordUpdateForm(PasswordChangeForm):
     class Meta:
