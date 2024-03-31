@@ -368,6 +368,9 @@ def api_signup_view(request):
         playername = request.POST["playername"]
         email = request.POST["signupEmail"]
 
+        if not (username and password and playername and email):
+            return JsonResponse({'success': False, 'error': escape('All fields are required')})
+
         try:
             validate_password(password, user=User(username=username))
         except ValidationError as e:
