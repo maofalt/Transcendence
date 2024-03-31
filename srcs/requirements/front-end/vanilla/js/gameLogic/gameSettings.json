@@ -1,23 +1,24 @@
 {
 	"gamemodeData": {
-	  "gameType": 1,
 	  "nbrOfPlayers": 2,
-	  "nbrOfRounds": 5,
+	  "nbrOfRounds": 1,
 	  "timeLimit": 0
 	},
 	"fieldData": {
-	  "wallsFactor": 2,
-	  "sizeOfGoals": 80
+	  "wallsFactor": 1.5,
+	  "sizeOfGoals": 30
 	},
 	"paddlesData": {
-	  "width": 2,
-	  "height": 12,
-	  "speed": 0.5
+	  "width": 1,
+	  "height": 7,
+	  "speed": 0.2
 	},
 	"ballData": {
-	  "speed": 0.7,
+	  "speed": 0.2,
 	  "radius": 1,
-	  "color": "0xffffff"
+	  "color": "0xffffff",
+	  "model": "",
+	  "texture": ""
 	},
 	"playersData": [
 	  {
@@ -26,7 +27,8 @@
 	  },
 	  {
 		"accountID": "player2",
-        "color": "0x00ff00"
+        "color": "0xff0000"
       }
 	]
 }
+

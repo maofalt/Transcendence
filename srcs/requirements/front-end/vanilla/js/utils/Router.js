@@ -5,7 +5,7 @@ import NotFound from '@views/NotFound.js';
 import CreateTournament from '@views/CreateTournament.js';
 import ProfilePage from '@views/ProfilePage.js';
 import SpaceBackground from '@components/SpaceBackground';
-import BasicGame from '@views/BasicGame.js';
+// import BasicGame from '@views/BasicGame.js';
 import TwoFactorAuth from '@views/2fa';
 import Signup from '@views/Signup.js';
 import EditProfile from '@components/EditProfile';
@@ -16,6 +16,7 @@ import displayPopup from "@utils/displayPopup";
 import isLoggedIn from '@utils/isLoggedIn';
 import ForgotPassword from '@views/ForgotPassword';
 import ResetPassword from '@views/ResetPassword';
+import BasicGameV2 from '@views/BasicGameV2';
 
 export const routes = {
 	'/': {
@@ -113,10 +114,10 @@ export const routes = {
 	},
 	'/basic': {
 		path: '/basic',
-		view: BasicGame,
+		view: BasicGameV2,
 		title: 'Basic Game',
 		buttonText: 'Basic',
-		component: 'basic-game'
+		component: 'basic-game-v2'
 	},
 	'/404': {
 		path: '/404',
