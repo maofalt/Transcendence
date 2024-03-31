@@ -118,6 +118,7 @@ export default class BasicGameV2 extends AbstractComponent {
 	};
 
 	disconnectedCallback() {
+        // clearInterval(this.match.gameInterval);
 		this.cleanAll();
 	}
 
@@ -267,6 +268,9 @@ export default class BasicGameV2 extends AbstractComponent {
 		window.removeEventListener('resize', this.onWindowResize.bind(this));
 		window.removeEventListener("keydown", this.handleKeyPress.bind(this));
 		window.removeEventListener("keyup", this.handleKeyRelease.bind(this));
+
+        if(this.match.gameInterval)
+            clearInterval(this.match.gameInterval);
 
 		if (this.socket)
 			this.socket.disconnect();
@@ -1013,7 +1017,7 @@ export default class BasicGameV2 extends AbstractComponent {
             // this is called when the game status is imminent;
             // it is just going to count down 3 seconds for players to get ready.
             // game status = imminent but !ongoing;
-            if (this.countDown(this.match, 0, 4)) {
+            if (this.countDown(this.match, 0, 3)) {
                 // in here = game is starting
                 // we get rid of the timer, send the ball and put the
                 // game status to ongoing, !imminent;
