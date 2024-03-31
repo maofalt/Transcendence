@@ -1,5 +1,4 @@
-
-class Vector {
+export class Vector {
 	constructor(x, y, z) {
 		this.x = x || 0;
 		this.y = y || 0;
@@ -92,7 +91,7 @@ class Vector {
 	}
 }
 
-function segmentsIntersect(p1, p2, p3, p4) {
+export function segmentsIntersect(p1, p2, p3, p4) {
 	let a, b, c;
 
 	// console.log(`${p1.x} ${p1.y},
@@ -127,4 +126,6 @@ function segmentsIntersect(p1, p2, p3, p4) {
 	return (-1);
 }
 
-export default { Vector, segmentsIntersect };
+// module.exports = { Vector, segmentsIntersect };
+// export default { Vector, 
+				// segmentsIntersect };
