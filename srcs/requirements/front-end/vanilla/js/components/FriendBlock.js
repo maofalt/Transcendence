@@ -24,7 +24,7 @@ export default class FriendBlock extends AbstractComponent {
 				padding: 0;
 			}
 			#container {
-				padding: 0px 10px 10px 10px;
+				padding: 10px 10px 10px 10px;
 				width: 250px;
 				display: flex;
 				flex-direction: row;

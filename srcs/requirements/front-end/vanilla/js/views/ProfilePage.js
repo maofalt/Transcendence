@@ -16,6 +16,9 @@ import getCookie from "@utils/getCookie";
 import displayPopup from "@utils/displayPopup";
 import FriendsList from "@components/FriendsList";
 import { router } from "@utils/Router";
+import fetchUserDetails from "@utils/fetchUserDetails";
+import { fadeIn, fadeOut, transition } from "@utils/animate";
+import updateUser from "@utils/updateUser";
 
 export default class ProfilePage extends AbstractComponent {
 	constructor(options = {}) {
@@ -28,26 +31,77 @@ export default class ProfilePage extends AbstractComponent {
 		// let user = options.user;
 		// let user = options;
 
-		this.user = this.getUserDetails();
+		let data = {
+			username: "",
+			playername: "",
+			avatar: "",
+			email: "",
+			phone: "",
+			two_factor_method: "",
+		}
 
-		const userInfo = new UserInfo({
-			profilePicPath: this.user.avatar,
-			username: this.user.username,
-			status: this.user.status,
-			wins: this.user.wins,
-			losses: this.user.losses,
-			button1: {content: "Edit", action: true},
-			button2: {content: "Log out", onclick: () => logOut()}});
+		this.user = JSON.parse(sessionStorage.getItem("userDetails"));
+		// console.log("USER:", this.user);
+		if (!this.user)
+			this.user = fetchUserDetails();
+
+		const userInfo = new UserInfo({});
+		userInfo.imgBox.onmouseover = (e) => {
+			userInfo.editOverlay.style.display = "block";
+			transition(userInfo.editOverlay, [["opacity", 0, 0.5]], 100);
+			userInfo.imgBox.onmouseleave = (e) => {
+				transition(userInfo.editOverlay, [["opacity", 0.5, 0]], 100).then(() => userInfo.editOverlay.style.setProperty("display", "none"));
+			}
+		};
+
+		const fileInput = document.createElement('input');
+		fileInput.type = 'file';
+		fileInput.style.display = 'none';
+
+		userInfo.shadowRoot.appendChild(fileInput);
+
+		userInfo.editOverlay.onclick = () => {
+			fileInput.onchange = () => {
+				if (fileInput.files.length > 0) {
+					const file = fileInput.files[0];
+					data.avatar = file;
+					updateUser(data);
+				}
+			};
+			fileInput.click(); // Trigger the click event
+		};
 
 		const profile = new Pannel({dark: false, title: "Profile"});
-		const friendsPannel = new Pannel({dark: false, title: "Friends"});
-		const personalInfo = new Pannel({dark: true, title: "Personal Info", style: {display: "block",  padding: "0px 0px 0px 20px"}});
-		const gameStats = new Pannel({dark: true, title: "Game Stats", style: {display: "block", padding: "0px 0px 0px 20px"}});
-		gameStats.shadowRoot.querySelector("#pannel-title").style.setProperty("margin", "10px 0px");
-		personalInfo.shadowRoot.querySelector("#pannel-title").style.setProperty("margin", "10px 0px");
-
 		profile.shadowRoot.querySelector("#pannel-title").style.setProperty("padding", "0px 0px 0px 30px");
 		profile.style.setProperty("display", "block");
+		
+		const friendsPannel = new Pannel({dark: false, title: "Friends"});
+		
+		const personalInfo = new Pannel({dark: true, title: "Personal Info", style: {display: "block",  padding: "0px 0px 0px 20px"}});
+		personalInfo.shadowRoot.querySelector("#pannel-title").style.setProperty("margin", "10px 0px");
+		
+		const gameStats = new Pannel({dark: true, title: "Game Stats", style: {display: "block", padding: "0px 0px 0px 20px"}});
+		gameStats.shadowRoot.querySelector("#pannel-title").style.setProperty("margin", "10px 0px");
+
+		const areYouSure = new Pannel({dark: true, title: "Are you sure you want to delete your account?\nThis can't be undone!", style: {display: "none", padding: "20px 20px 20px 20px"}});
+		areYouSure.style.position = "fixed";
+		areYouSure.style.top = "50%";
+		areYouSure.style.left = "50%";
+		areYouSure.style.transform = "translate(-50%, -50%)";
+		areYouSure.style.zIndex = "9999";
+
+		const confirmDeleteButton = new CustomButton({content: "Yes, delete my account", delete: true, style: {margin: "10px"}});
+		confirmDeleteButton.onclick = () => {
+			this.deleteAccount();
+		};
+		const cancelDeleteButton = new CustomButton({content: "No, keep my account", style: {margin: "10px"}});
+		cancelDeleteButton.onclick = () => {
+			areYouSure.style.display = "none";
+		};
+
+		areYouSure.shadowRoot.appendChild(confirmDeleteButton);
+		areYouSure.shadowRoot.appendChild(cancelDeleteButton);
+
 
 		let infos = document.createElement("div");
 		infos.innerHTML = `
@@ -144,8 +198,7 @@ export default class ProfilePage extends AbstractComponent {
 		addFriend.button.onclick = async () => await addFriend.validate();
 		addFriend.shadowRoot.querySelector("#input-button").style.setProperty("font-size", "28px");
 
-		// this.user.friends = 4;
-		const friendsListPannel = new Pannel({dark: true, title: `Friends List  ( ${this.user.friends} )`});
+		const friendsListPannel = new Pannel({dark: true, title: `Friends List  ( ${this.user.friends_count} )`});
 
 		const friendsList = new FriendsList();
 		friendsListPannel.shadowRoot.appendChild(friendsList);
@@ -157,17 +210,51 @@ export default class ProfilePage extends AbstractComponent {
 		gameStats.shadowRoot.appendChild(stats);
 
 		const deleteButton = new CustomButton({content: "Delete Account", delete: true, style: {margin: "10px"}});
+		deleteButton.onclick = () => {
+			areYouSure.style.display = "block";
+			// this.deleteAccount();
+		};
+		
 		const goBack = new CustomButton({content: "< Back", style: {padding: "0px 20px", position: "absolute", left: "50px", bottom: "30px"}});
-		goBack.onclick = () => navigateTo("/"); // do adapt if needed
+		goBack.onclick = () => window.history.back();
 
 		profile.shadowRoot.appendChild(userInfo);
 		profile.shadowRoot.appendChild(personalInfo);
 		profile.shadowRoot.appendChild(gameStats);
+		
 		profile.shadowRoot.appendChild(deleteButton);
-
+		
+		this.shadowRoot.appendChild(areYouSure);
+		
 		this.shadowRoot.appendChild(goBack);
 		this.shadowRoot.appendChild(profile);
 		this.shadowRoot.appendChild(friendsPannel);
+	}
+
+	deleteAccount = async () => {
+		await easyFetch(`/api/user_management/auth/delete_account`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded',
+			},
+		})
+		.then(res => {
+			let response = res.response;
+			let body = res.body;
+
+			if (!response || !body) {
+				throw new Error("Response is null");
+			} else if (response.status === 200) {
+				displayPopup("Account Deleted!", "info");
+				sessionStorage.clear();
+				navigateTo("/");
+			} else {
+				throw new Error(body.error || JSON.stringify(body));
+			}
+		})
+		.catch(error => {
+			displayPopup(error.message || error, "error");
+		});
 	}
 
 	postAddFriend = async (username) => {
@@ -204,35 +291,6 @@ export default class ProfilePage extends AbstractComponent {
 			valid = false;
 		});
 		return valid;
-	}
-
-
-	getUserDetails = () => {
-		let tokenType = sessionStorage.getItem("tokenType");
-		let accessToken = sessionStorage.getItem("accessToken");
-		let username = sessionStorage.getItem("username");
-		let playername = sessionStorage.getItem("playername");
-		let avatar = sessionStorage.getItem("avatar");
-		let friends = sessionStorage.getItem("friends");
-		let email = sessionStorage.getItem("email");
-
-		// {"username": "yridgway", "playername": "Yoel", "avatar": "/media/default_avatar.jpeg", "friends_count": 0, "two_factor_method": null}
-
-		let user = {
-			avatar,
-			username,
-			status: "online",
-			wins: 10,
-			losses: 5,
-			playername,
-			email,
-			total: 15,
-			winrate: "66%",
-			friends
-		};
-
-		console.log("Returning user:", this.user);
-		return user;
 	}
 }
 

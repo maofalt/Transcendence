@@ -5,6 +5,11 @@ import AbstractComponent from '@components/AbstractComponent';
 import Pannel from '@components/Pannel';
 import CustomButton from '@components/CustomButton';
 import { navigateTo } from "@utils/Router";
+import isLoggedIn from "@utils/isLoggedIn";
+import fetchUserDetails from "@utils/fetchUserDetails";
+import logOut from "@utils/logOut";
+import defaultAvatar from "@images/default-avatar.webp";
+import editIcon from "@images/square_edit_outline_icon.png";
 
 export default class UserInfo extends AbstractComponent {
 	constructor(options = {}) {
@@ -14,7 +19,11 @@ export default class UserInfo extends AbstractComponent {
 		styleEl.textContent = styles;
 		this.shadowRoot.appendChild(styleEl);
 
-        const pannel = new Pannel({title: "", dark: false, style: {width: "520px", height: "150px"}});
+		this.addLater(options);
+	}
+
+	async addLater(options) {
+		const pannel = new Pannel({title: "", dark: false, style: {width: "520px", height: "150px"}});
         pannel.id = "pannel";
         const ppContainer = new Pannel({title: "", dark: true, style: {width: "120px", height: "120px"}});
         ppContainer.id = "pp-container";
@@ -25,14 +34,31 @@ export default class UserInfo extends AbstractComponent {
         ppContainer.style.setProperty("display", "flex");
         ppContainer.style.setProperty("justify-content", "center");
 
-        const imgBox = document.createElement('div');
-        this.setUpImageBox(imgBox);
+        this.imgBox = document.createElement('div');
+        this.setUpImageBox(this.imgBox);
 
-        const userText = this.createUserText(options);
-        const profilePicture = this.createProfilePicture(options);
+		let details = JSON.parse(sessionStorage.getItem("userDetails"));
+		console.log("DETAILS:", details);
+		if (!details)
+			details = await fetchUserDetails();
+
+        const userText = this.createUserText(details);
+        const profilePicture = this.createProfilePicture(details.avatar);
+		this.editOverlay = this.createProfilePicture(editIcon);
+		this.editOverlay.style.display = "none";
+		this.editOverlay.style.setProperty("position", "absolute"); 
+		this.editOverlay.style.setProperty("width", "60%");
+		this.editOverlay.style.setProperty("height", "60%");
+		this.editOverlay.style.setProperty("border-radius", "20%");
+		this.editOverlay.style.setProperty("backdrop-filter", "blur(5px)");
+		this.editOverlay.style.setProperty("border", "10px solid transparent");
+		this.editOverlay.style.setProperty("background-clip", "padding-box");
+		this.editOverlay.style.setProperty("box-shadow", "0 0 0 10px rgba(0,0,0,0.5)");
+		this.editOverlay.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
         
-        imgBox.appendChild(profilePicture);
-        ppContainer.shadowRoot.appendChild(imgBox);
+		this.imgBox.appendChild(this.editOverlay);
+        this.imgBox.appendChild(profilePicture);
+        ppContainer.shadowRoot.appendChild(this.imgBox);
         pannel.shadowRoot.appendChild(ppContainer);
         pannel.shadowRoot.appendChild(userText);
 
@@ -54,10 +80,10 @@ export default class UserInfo extends AbstractComponent {
         this.shadowRoot.appendChild(pannel);
 	}
 
-    createProfilePicture(options) {
+    createProfilePicture(avatar) {
         const profilePicture = new Image();
-        profilePicture.id = "profile-picture";
-        profilePicture.src = options.profilePicPath ? options.profilePicPath : "../js/assets/images/default-avatar.webp";
+        profilePicture.classList.add("profile-picture");
+        profilePicture.src = avatar || defaultAvatar;
 		profilePicture.style.setProperty("width", "100%");
 		profilePicture.style.setProperty("height", "100%");
 		profilePicture.style.setProperty("object-fit", "cover");
@@ -123,32 +149,34 @@ export default class UserInfo extends AbstractComponent {
     }
 
     createButtons(options, pannel) {
-        let button1;
-        let button2;
-        if (options.button1) {
-            button1 = new CustomButton({content: options.button1.content, action: options.button1.action, style: {display: "block", margin: "15px 0px"}});
-			if (options.button1.onclick) {
-				button1.onclick = options.button1.onclick;
-			}
-        } else {
-            button1 = new CustomButton({content: "Log in", action: true, style: {display: "block", margin: "15px 0px"}});
-			button1.onclick = (e) => { 
+        let button1, button2;
+		let style = {display: "block", margin: "15px 0px"};
+
+		if (isLoggedIn()) {
+			button1 = new CustomButton({content: "Edit", action: true, style});
+			button1.onclick = (e) => {
+				e.stopPropagation();
+				navigateTo("/edit-profile");
+			};
+			button2 = new CustomButton({content: "Log out", style});
+			button2.onclick = (e) => {
+				e.stopPropagation();
+				logOut();
+			};
+		} else {
+			button1 = new CustomButton({content: "Log in", action: true, style});
+			button1.onclick = (e) => {
 				e.stopPropagation();
 				navigateTo("/login");
 			};
-        }
-        if (options.button2) {
-            button2 = new CustomButton({content: options.button2.content, action: options.button2.action, style: {display: "block", margin: "15px 0px"}});
-			if (options.button2.onclick) {
-				button2.onclick = options.button2.onclick;
-			}
-		} else {
-            button2 = new CustomButton({content: "Sign Up", style: {display: "block", margin: "15px 0px"}});
+	
+			button2 = new CustomButton({content: "Sign up", style});
 			button2.onclick = (e) => {
 				e.stopPropagation();
 				navigateTo("/signup");
 			};
-        }
+		}
+
         const container = document.createElement("div");
         container.id = "button-container";
         container.appendChild(button1);
@@ -162,6 +190,9 @@ export default class UserInfo extends AbstractComponent {
         imgBox.id = "img-box";
         imgBox.style.setProperty("width", "85%");
         imgBox.style.setProperty("height", "85%");
+		imgBox.style.setProperty("display", "flex");
+		imgBox.style.setProperty("justify-content", "center");
+		imgBox.style.setProperty("align-items", "center");
     }
 
     pannelHover = (e, pannel, arg) => {

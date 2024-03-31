@@ -23,6 +23,8 @@ from django.utils import timezone
 from django.db.models import Q
 from threading import Thread
 import requests
+from django.http import Http404
+
 
 
     # compare total player > match player

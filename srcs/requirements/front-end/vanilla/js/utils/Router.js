@@ -14,6 +14,8 @@ import LoginPage from '@views/LoginPage';
 import PlayMenu from '@views/PlayMenu';
 import displayPopup from "@utils/displayPopup";
 import isLoggedIn from '@utils/isLoggedIn';
+import ForgotPassword from '@views/ForgotPassword';
+import ResetPassword from '@views/ResetPassword';
 
 export const routes = {
 	'/': {
@@ -93,6 +95,21 @@ export const routes = {
 		component: 'two-factor-auth',
 		title: 'Two Factor Authentication',
 		buttonText: '2FA'
+	},
+	'/forgot': {
+		path: '/forgot',
+		view: ForgotPassword,
+		component: 'forgot-password',
+		title: 'Forgot Password',
+		buttonText: 'Forgot Password'
+	},
+	'/reset': {
+		path: '/reset',
+		view: ResetPassword,
+		component: 'reset-password',
+		title: 'Reset Password',
+		buttonText: 'Reset Password',
+		requireLogin: true
 	},
 	'/basic': {
 		path: '/basic',

@@ -11,6 +11,7 @@ import displayPopup from "@utils/displayPopup";
 import UserInfo from "@components/UserInfo";
 import isLoggedIn from "@utils/isLoggedIn";
 import logOut from "@utils/logOut";
+import fetchUserDetails from "@utils/fetchUserDetails";
 
 export default class HomePage extends AbstractComponent {
 	constructor(options = {}) {
@@ -40,67 +41,9 @@ export default class HomePage extends AbstractComponent {
 		menu.appendChild(profileButton);
 		// menu.appendChild(loginButton);
 
-		// const footerContainer = document.createElement('div');
-		// footerContainer.id = "footerContainer";
-		// // footerContainer.style.setProperty("border", "1px red solid");
-
-		// const userInfo = new Pannel({title: " ", dark: true, style: {width: "550px", height: "150px"}});
-		// userInfo.id = "userInfo";
-		// userInfo.shadowRoot.removeChild(userInfo.shadowRoot.querySelector("#pannel-title"));
-
-		// const profilePicture = new Pannel({title: " ", dark: false, style: {width: "120px", height: "120px"}});
-		// profilePicture.id = "profilePicture";
-		// profilePicture.shadowRoot.removeChild(profilePicture.shadowRoot.querySelector("#pannel-title"));
-
-		// const userText = document.createElement('div');
-		// userText.id = 'userText';
-		// // userText.style.setProperty("border", "1px blue solid");
-		// userText.style.setProperty("flex", "2");
-		// userText.style.setProperty("height", "100%");
-
-		// userInfo.shadowRoot.appendChild(profilePicture);
-		// userInfo.shadowRoot.appendChild(userText);
-
-		// footerContainer.appendChild(userInfo);
-
-		this.user = this.getUserDetails();
-
-		let button1 = {content: "Log in", action: true, onclick: (e) => {
-			e.stopPropagation();
-			navigateTo("/login")
-		}};
-		let button2 = {content: "Sign up", onclick: (e) => {
-			e.stopPropagation();
-			navigateTo("/signup")
-		}};
-
-		if (isLoggedIn()) {
-			button1 = {content: "Edit", action: true, onclick: (e) => {
-				e.stopPropagation();
-				navigateTo("/edit-profile")
-			}};
-			button2 = {content: "Log out", onclick: (e) => {
-				e.stopPropagation();
-				logOut();
-			}};
-		}
-
-		const userInfo = new UserInfo({
-			profilePicPath: this.user.avatar,
-			username: this.user.username,
-			status: this.user.status,
-			wins: this.user.wins,
-			losses: this.user.losses,
-			button1,
-			button2
-		});
-
-		userInfo.style.setProperty("position", "absolute");
-		userInfo.style.setProperty("bottom", "15px");
-		userInfo.style.setProperty("right", "35px");
+		this.addLater();
 
 		this.shadowRoot.appendChild(menu);
-		this.shadowRoot.appendChild(userInfo);
 
 		const errorButton = new CustomButton({
 				content: "error", 
@@ -135,7 +78,6 @@ export default class HomePage extends AbstractComponent {
 		playButton.onclick = () => navigateTo("/game");
 		// tournamentsButton.onclick = () => navigateTo("/tournament");
 		profileButton.onclick = () => navigateTo("/profile");
-		userInfo.onclick = () => navigateTo("/profile");
 
 		// to add : method inside the user Info class that calls the navigate function corresponding
 		// if user logged in : first button -> edit profile
@@ -145,32 +87,18 @@ export default class HomePage extends AbstractComponent {
 		//							second button -> sign up
 	}
 
-	getUserDetails = () => {
-		let tokenType = sessionStorage.getItem("tokenType");
-		let accessToken = sessionStorage.getItem("accessToken");
-		let username = sessionStorage.getItem("username");
-		let playername = sessionStorage.getItem("playername");
-		let avatar = sessionStorage.getItem("avatar");
-		let friends = sessionStorage.getItem("friends");
-		let email = sessionStorage.getItem("email");
+	addLater = () => {
 
-		// {"username": "yridgway", "playername": "Yoel", "avatar": "/media/default_avatar.jpeg", "friends_count": 0, "two_factor_method": null}
+		const userInfo = new UserInfo({});
 
-		let user = {
-			avatar,
-			username,
-			status: "online",
-			wins: 10,
-			losses: 5,
-			playername,
-			email,
-			total: 15,
-			winrate: "66%",
-			friends
-		};
+		userInfo.style.setProperty("position", "absolute");
+		userInfo.style.setProperty("bottom", "15px");
+		userInfo.style.setProperty("right", "35px");
 
-		console.log("Returning user:", this.user);
-		return user;
+		this.shadowRoot.appendChild(userInfo);
+
+		userInfo.onclick = () => navigateTo("/profile");
+
 	}
 }
 

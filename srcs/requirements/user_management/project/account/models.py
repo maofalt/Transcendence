@@ -17,7 +17,7 @@ class User(AbstractUser):
     ]
     
     TWO_FACTOR_OPTIONS = [
-        ('', '---------'),
+        (None, 'Off'),
         *TWO_FACTOR_METHODS
     ]
     

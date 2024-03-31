@@ -163,10 +163,7 @@ export default class Signup extends AbstractComponent {
 			});
 		});
 
-		passwordBlock.input.oninput = (e) => {
-			passwordBlock.validate();
-		};
-
+		passwordBlock.input.oninput = (e) => passwordBlock.validate();
 		confirmPasswordBlock.input.oninput = (e) => confirmPasswordBlock.validate();
 
 		nextButton.onclick = async (e) => {
@@ -195,7 +192,7 @@ export default class Signup extends AbstractComponent {
 				access_code: verifyCodeBlock.input.getValue()
 			});
 			if (isSignedUp) {
-				displayPopup("Sign Up Successful:\nYou now have an account and are connected.", "success");
+				displayPopup("Sign Up Successful: \nYou now have an account and are connected.", "success");
 				Router.navigateTo("/");
 			}
 		}
@@ -209,6 +206,14 @@ export default class Signup extends AbstractComponent {
 			return ;
 		console.log("before");
 
+		// validate input blocks (show warnings and dont advance if invalid)
+		for (const block of flow[this.flowIndex].blocks) {
+			let res = await block.validate();
+			if (res == false) {
+				return ;
+			}
+		}
+
 		// call functions that are defined for this step
 		for (const action of flow[this.flowIndex].actions) {
 			let res = await action();
@@ -220,14 +225,6 @@ export default class Signup extends AbstractComponent {
 			console.log("actionresult: ", res);
 		}
 		
-		// validate input blocks (show warnings and dont advance if invalid)
-		for (const block of flow[this.flowIndex].blocks) {
-			let res = await block.validate();
-			if (res == false) {
-				return ;
-			}
-		}
-
 		console.log("after");
 		this.flowIndex++;
 		this.updateFormView(flow, this.flowIndex);
@@ -281,26 +278,24 @@ export default class Signup extends AbstractComponent {
 			let body = res.body;
 
 			if (!response || !body) {
-				alert('Request Failed');
-				valid = false;
+				throw new Error('Empty Response');
 			} else if (response.status === 400) {
-				alert(body.error || JSON.stringify(body));
+				displayPopup(body.error || JSON.stringify(body), 'error');
 				valid = false;
 			} else if (!response.ok) {
-				alert('Response Error: ' + (body.error || JSON.stringify(body)));
+				displayPopup('Response Error: ' + (body.error || JSON.stringify(body)), 'error');
 				valid = false;
 			} else if (response.status === 200 && body.success === true) {
-				alert(body.message || JSON.stringify(body));
+				displayPopup(body.message || JSON.stringify(body), 'success');
 				valid = true;
 			} else {
-				alert(body.error || JSON.stringify(body));
+				displayPopup(body.error || JSON.stringify(body), 'error');
 			}
 		})
 		.catch(error => {
-			console.error('Request Failed:', error);
+			displayPopup(`Request Failed: ${error}`, 'error');
 			valid = false;
 		});
-		console.log("valido: ", valid);
 		return valid
 	}
 
@@ -325,16 +320,14 @@ export default class Signup extends AbstractComponent {
 			let body = res.body;
 
 			if (!response || !body) {
-				alert('Request Failed');
-				valid = false;
+				throw new Error('Empty Response');
 			} else if (response.status === 400) {
-				alert('Invalid signup data');
+				displayPopup('Invalid signup data', 'error');
 				valid = false;
 			} else if (!response.ok) {
-				alert('Response Error: ' + body.error || JSON.stringify(body));
+				displayPopup('Response Error: ' + body.error || JSON.stringify(body), 'error');
 				valid = false;
 			} else if (response.status === 200 && body.success === true) {
-				alert('Login successful: ' + body.message || JSON.stringify(body));
 
 				// Store the access token and details in memory
 				sessionStorage.setItem('expiryTimestamp', new Date().getTime() + body.expires_in * 1000);
@@ -342,16 +335,17 @@ export default class Signup extends AbstractComponent {
 				sessionStorage.setItem('tokenType', body.token_type);
 
 				// get user details for the profile page
-				await fetchUserDetails();
+				let details = await fetchUserDetails();
+				sessionStorage.setItem('userDetails', JSON.stringify(details));
 
 				Router.navigateTo("/");
 				valid = true;
 			} else {
-				alert(body.error || JSON.stringify(body));
+				displayPopup(body.error || JSON.stringify(body), 'error');
 			}
 		})
 		.catch(error => {
-			console.error('Request Failed:', error);
+			displayPopup(`Request Failed: ${error}`, 'error');
 			valid = false;
 		});
 		return valid
@@ -364,34 +358,32 @@ export default class Signup extends AbstractComponent {
 		await easyFetch('/api/user_management/auth/access_code', {
 			method: 'POST',
 			headers: {
-				'Content-Type': 'application/json',
+				'Content-Type': 'application/x-www-form-urlencoded',
 				'X-CSRFToken': getCookie('csrftoken')
 			},
-			body: JSON.stringify({ 'email': email })
+			body: new URLSearchParams({ email })
 		})
 		.then(res => {
 			let response = res.response;
 			let body = res.body;
 
 			if (!response || !body) {
-				console.error('Request Failed');
-				valid = false;
+				throw new Error('Empty Response');
 			} else if (response.status === 400) {
-				alert(body.error || 'Invalid email');
+				displayPopup(body.error || 'Invalid email', 'error');
 				valid = false;
 			} else if (!response.ok) {
-				console.error('Request Failed:', body.error || JSON.stringify(body));
+				displayPopup('Request Failed:', body.error || JSON.stringify(body), 'error');
 				valid = false;
 			} else if (response.status === 200 && body.success === true) {
-				alert('Email sent to \'' + email + '\'');
+				displayPopup('Email sent to \'' + email + '\'', 'success');
 				valid = true;
-				console.log("valid1: ", valid);
 			} else {
-				alert(body.error || JSON.stringify(body));
+				displayPopup(body.error || JSON.stringify(body), 'error');
 			}
 		})
 		.catch(error => {
-			console.error('Request Failed:', error);
+			displayPopup(`Request Failed: ${error}`, 'error');
 			valid = false;
 		});
 		console.log("valid2: ", valid);

@@ -4,6 +4,7 @@ import FriendBlock from "./FriendBlock";
 import easyFetch from "@utils/easyFetch";
 import displayPopup from "@utils/displayPopup";
 import { router } from "@utils/Router";
+import deleteIcon from "@images/delete-icon.png";
 
 export default class FriendsList extends AbstractComponent {
 	constructor(options = {}) {
@@ -27,7 +28,8 @@ export default class FriendsList extends AbstractComponent {
 	}
 
 	fillList = async (listContainer) => {
-		const friends = await easyFetch(`/api/user_management/auth/friends`).then(res => {
+		const friends = await easyFetch(`/api/user_management/auth/friends`)
+		.then(res => {
 			let response = res.response;
 			let body = res.body;
 
@@ -57,11 +59,16 @@ export default class FriendsList extends AbstractComponent {
 					status: friend.is_online ? "online" : "offline",
 				});
 			let image = friendBlock.shadowRoot.querySelector("#img-container img");
+			let container = friendBlock.shadowRoot.querySelector("#container");
+			container.style.setProperty("background-color", "rgba(0, 0, 0, 0)");
+			container.style.setProperty("transition", "background-color 0.1s ease-in-out");
 			friendBlock.onmouseover = () => {
-				image.src = '../js/assets/images/delete-icon.png';
+				image.src = deleteIcon;
+				container.style.setProperty("background-color", "rgba(0, 0, 0, 0.3)");
 			}
 			friendBlock.onmouseout = () => {
 				image.src = '/api/user_management' + friend.avatar;
+				container.style.setProperty("background-color", "rgba(0, 0, 0, 0)");
 			}
 			friendBlock.onclick = () => this.removeFriend(friend.username);
 			listContainer.appendChild(friendBlock);

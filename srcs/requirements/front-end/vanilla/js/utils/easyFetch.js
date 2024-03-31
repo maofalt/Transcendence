@@ -6,11 +6,15 @@ export default async function easyFetch(url, options = { method: 'GET', body: nu
 
 	try {
 		// Setting up headers dynamically based on Content-Type
-		if (options.headers['Content-Type'] != 'application/x-www-form-urlencoded')
-			options.headers['Content-Type'] = 'application/json';
+		// if (options.headers['Content-Type'] != 'application/x-www-form-urlencoded')
+		// 	options.headers['Content-Type'] = 'application/json';
+
+		const accessToken = sessionStorage.getItem('accessToken');
+		const tokenType = sessionStorage.getItem('tokenType');
 
 		const defaultHeaders = {
 			'Accept': 'application/json',
+			'Authorization': `${tokenType} ${accessToken}`,
 			'X-CSRFToken': getCookie('csrftoken'),
 			...options.headers,
 		};
@@ -25,8 +29,6 @@ export default async function easyFetch(url, options = { method: 'GET', body: nu
 			} else if (options.headers['Content-Type'] == 'application/json') {
 				// Assuming JSON content type
 				options.body = JSON.stringify(options.body);
-			} else {
-				throw new Error('Invalid Content-Type');
 			}
 		}
 
