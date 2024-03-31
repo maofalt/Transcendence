@@ -9,6 +9,8 @@ import { FontLoader } from 'three/addons/loaders/FontLoader.js';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+import CustomButton from '@components/CustomButton';
+import { navigateTo } from "@utils/Router";
 
 
 function createCallTracker() {
@@ -91,26 +93,18 @@ export default class Game extends AbstractView {
 			height: 0.2,
 			curveSegments: 12,
 		}
-		this.TKtext = {
-			size: 5,
-			height: 0.2,
-			curveSegments: 12,
-		}
+
 		this.prevScores = [];
 		this.dir = 0;
 
 		this.screenWidth = screenWidth || window.innerWidth;
 		this.screenHeight = screenHeight || window.innerHeight;
 		console.log("Screen size: ", this.screenWidth, this.screenHeight);
-
-		// Create an EffectComposer
-		this.composer = null;
-		this.renderPass = null;
-		this.darkenShader = null;
-		this.darkenPass = null;
-		this.sRGBToLinearShader = null;
-		this.sRGBToLinearPass = null;
 	};
+
+	disconnectedCallback() {
+		this.cleanAll();
+	}
 
 	async getHtml() {
 		return `
@@ -122,6 +116,46 @@ export default class Game extends AbstractView {
 		console.log("init Game View...");
 		// Set up the game container
 		this.container = document.getElementById('gameContainer');
+
+		// Create a new div
+		let countDown = document.createElement('div');
+		countDown.id = 'count-down';
+		countDown.style.position = 'absolute';
+		countDown.style.top = '0';
+		countDown.style.width = "100%";
+		countDown.style.textAlign = 'center';
+		countDown.style.fontSize = '30px';
+		countDown.style.color = 'white';
+		countDown.innerHTML = `
+			<style>			
+				#timer {
+					margin-bottom: 0;
+				}	
+				#timer-message {
+					font-size: 20px;
+					margin: 0;
+				}
+			</style>
+			<p id="timer"></p>
+			<p id="timer-message"></p>
+		`;
+
+		let leaveButton = new CustomButton({ content: "< Leave", style: {
+			padding: "0px 20px",
+			position: "absolute",
+			left: "50px",
+			bottom: "30px",
+			// width: "100px",
+		}});
+
+		leaveButton.onclick = () => {
+			this.cleanAll();
+
+			navigateTo("/");
+		}
+
+		this.container.appendChild(countDown);
+		this.container.appendChild(leaveButton);
 		
 		// Your game setup logic here (init socket, create scene, etc.)
 		// this.generateScene();
@@ -166,7 +200,7 @@ export default class Game extends AbstractView {
 		
 		let accessTok = sessionStorage.getItem('accessToken');
 		console.log("Access Token: ", accessTok);
-		accessTok = accessTok.replace("Bearer ", ""); // replace the "Bearer " at the beginning of the value;
+		// accessTok = accessTok.replace("Bearer ", ""); // replace the "Bearer " at the beginning of the value;
 
 		const io_url = hostname.includes("github.dev") ? `${protocol}://${hostname}` : `${protocol}://${hostname}:9443`;
 		console.log(`Connecting to ${io_url}`)
@@ -229,7 +263,7 @@ export default class Game extends AbstractView {
 			// this.launchEndGameAnimation();
 			this.controls.enabled = false;
 
-			this.launchEndGameAnimation();
+			this.launchEndGameAnimation(data.winner);
 
 			// this.scene.clear();
 			console.log("END OF GAME");
@@ -242,123 +276,116 @@ export default class Game extends AbstractView {
 			//console.log(str);
 		});
 
+		this.socket.on("clean-all", () => {
+			this.cleanAll();
+		});
 	};
 
-	launchEndGameAnimation() {
-		// Create an EffectComposer
-		this.composer = new EffectComposer(this.renderer);
-
-		// Add a RenderPass
-		this.renderPass = new RenderPass(this.scene, this.camera);
-		this.composer.addPass(this.renderPass);
-
-		// Create a ShaderPass
-		this.sRGBToLinearShader = new THREE.ShaderMaterial({
-			uniforms: {
-				tDiffuse: { value: null }
-			},
-			vertexShader: `
-				varying vec2 vUv;
-				void main() {
-					vUv = uv;
-					gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-				}
-			`,
-			fragmentShader: `
-				uniform sampler2D tDiffuse;
-				varying vec2 vUv;
-
-				void main() {
-					vec4 color = texture2D(tDiffuse, vUv);
-					color.rgb = pow(color.rgb, vec3(2.2)); // sRGB to Linear
-					gl_FragColor = color;
-				}
-			`
-		});
-
-		this.sRGBToLinearPass = new ShaderPass(this.sRGBToLinearShader);
-
-		// Create a ShaderPass
-		this.darkenShader = new THREE.ShaderMaterial({
-			uniforms: {
-				tDiffuse: { value: null },
-				amount: { value: 0 }
-			},
-			vertexShader: `
-				varying vec2 vUv;
-				void main() {
-					vUv = uv;
-					gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-				}
-			`,
-			fragmentShader: `
-				uniform sampler2D tDiffuse;
-				uniform float amount;
-				varying vec2 vUv;
-
-				void main() {
-					vec4 color = texture2D(tDiffuse, vUv);
-					gl_FragColor = mix(color, vec4(0.0, 0.0, 0.0, 1.0), amount);
-				}
-			`,
-			blending: THREE.AdditiveBlending
-		});
-		
-		this.darkenShader.toneMapped = false;
-		this.darkenPass = new ShaderPass(this.darkenShader);
-
-		this.composer.addPass(this.sRGBToLinearPass);
-		this.composer.addPass(this.darkenPass);
-
-		this.controls.enabled = false;
-
-		this.endGameAnimation();
-	}
-
-	// Define your animation function
-	endGameAnimation = (frame = 0) => {
-		let scaleFactor = 1.1;
-		let maxFrame = 300;
-		// let lightStep = this.ambientLight.intensity / maxFrame;
-		// let dirLightStep = this.directionalLight.intensity / maxFrame;
-		
-
-		if (!this.ballModel) {
-			this.ball.mesh.scale.multiplyScalar(scaleFactor);
-			// this.ballModel.position.add(direction);
-		}
-
-		// console.log(this.darkenShader.uniforms.amount.value);
-		// console.log(frame);
-		this.darkenShader.uniforms.amount.value += (1 / maxFrame); // Increase this value to darken faster
-		this.composer.render();
-
-		console.log("end of game");
-		if (frame == maxFrame)
-			return ;
-
-		// Request the next frame
-		requestAnimationFrame(() => this.endGameAnimation(frame + 1));
-	}
-
-	destroy() {
-		if (this.socket) {
-			this.socket.disconnect();
-		}
-		console.log("Destroying Game View...");
+	cleanAll() {
+		console.log("CLEANING CLIENT !!");
 		// Cleanup logic here (remove event listeners, etc.)
 		window.removeEventListener('resize', this.onWindowResize.bind(this));
 		window.removeEventListener("keydown", this.handleKeyPress.bind(this));
 		window.removeEventListener("keyup", this.handleKeyRelease.bind(this));
 
-		// Additional cleanup (disposing Three.js objects, etc.)
+		if (this.socket)
+			this.socket.disconnect();
+
 		if (this.scene)
 			this.scene.clear();
-		// delete cam;
-		// delete controls;
-		// delete renderer;
-	};
+		// Dispose of the renderer and remove its DOM element
+		if (this.renderer) {
+			this.renderer.dispose();
+			this.renderer.domElement.remove();
+			this.renderer = null;
+		}
+	
+		// Set the scene and camera to null
+		this.scene = null;
+		this.camera = null;
+	}
 
+	launchEndGameAnimation(winner) {
+		let winColor = winner.color.toString(16);
+		winColor = winColor.length < 6 ? "0".repeat(6 - winColor.length) + winColor : winColor;
+
+		let uiLayer = document.createElement('div');
+		uiLayer.id = 'uiLayer';
+		uiLayer.style.width = '100%';
+		uiLayer.style.height = '100%';
+		uiLayer.style.background = 'rgba(0, 0, 0, 0)';
+		uiLayer.style.position = 'absolute';
+		uiLayer.style.top = '0';
+		uiLayer.style.left = '0';
+		uiLayer.style.display = 'flex';
+		// uiLayer.style.textAlign = "center";
+		uiLayer.style.setProperty("flex-direction", "column");
+		uiLayer.style.justifyContent = 'center';
+		uiLayer.innerHTML = `
+			<style>
+				#end-game-block {
+					color: white;
+					text-align: center;
+					display: flex;
+					flex-direction: column;
+					// justify-content: center;
+					// align-items: center;
+				}
+				h3 {
+					margin: 0;
+					padding: 0;
+					font-family: 'tk-421', sans-serif;
+					font-size: 100px;
+				}
+				p {
+					display: inline;
+					font-size: 50px;
+				}
+				#winner-name {
+					color: #${winColor};
+				}
+			</style>
+			<div id="end-game-block">
+				<h3>Game Over</h3>
+				<div id="winner-info">
+					<p>Winner : </p><p id="winner-name">${winner.accountID}</p>
+				</div>
+			</div>
+		`;
+
+		let leaveButton = new CustomButton({ content: "< Leave", style: {padding: "0px 20px"}});
+		leaveButton.style.position = "absolute";
+		leaveButton.style.left = "50px";
+		leaveButton.style.bottom = "30px";
+		leaveButton.onclick = () => {
+			this.cleanAll();
+
+			navigateTo("/");
+		}
+		
+		uiLayer.appendChild(leaveButton);
+
+		this.container.appendChild(uiLayer);
+
+		this.endGameAnimation(uiLayer);
+	}
+
+	// Define your animation function
+	endGameAnimation = (uiLayer, frame = 0) => {
+		let maxFrame = 50;
+
+		uiLayer.style.background = `rgba(0, 0, 0, ${frame / (maxFrame * 1.8)})`;
+		uiLayer.style.opacity = frame / maxFrame;
+		uiLayer.style.backdropFilter = `blur(${frame / maxFrame * 16}px)`;
+		console.log(`blur(${frame / maxFrame * 16}px)`);
+		if (frame == maxFrame) {
+			console.log("End of Game !!");
+			return ;
+		}
+
+		// Request the next frame
+		requestAnimationFrame(() => this.endGameAnimation(uiLayer, frame + 1));
+	}
 
 	refreshScene(data) {
 		this.scene = new THREE.Scene();
@@ -410,8 +437,28 @@ export default class Game extends AbstractView {
 		this.refreshScene(data);
 	};
 
+	displayTimer(data) {
+		// in here : formatting the timer interface;
+		let timer = document.getElementById('timer');
+		let timerMessage = document.getElementById('timer-message');
+
+		timer.textContent = data.ongoing ? "" : data.countDownDisplay;
+		timerMessage.textContent = "";
+		
+		if (data.imminent) {
+			timer.style.color = "red";
+			timer.style.fontWeight = "bold";
+			timerMessage.textContent = "Game will start soon";
+		} else if (!data.ongoing) {
+			timer.style.color = "white";
+			timerMessage.textContent = "Waiting for players...";
+		}
+	}
+
 	// Other methods (generateScene, updateScene, etc.) here
 	updateScene(data, socket) {
+		this.displayTimer(data);
+
 		// console.log("Updating Scene...");
 		if (data.ball.model) {
 			this.ballModel.position.set(data.ball.pos.x, data.ball.pos.y, 0);
@@ -469,16 +516,6 @@ export default class Game extends AbstractView {
 
 		if (!loader)
 			return console.error("FontLoader not found");
-
-		loader.load( 'js/assets/fonts/Tk421-K7mv7.json', ( response ) => {
-
-		this.TKtext.font = response;
-
-		this.refreshScores(data);
-
-		console.log("Font TK loaded");
-
-		} );
 
 		loader.load( 'https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', ( response ) => {
 
@@ -559,11 +596,13 @@ export default class Game extends AbstractView {
 		this.scores[i] = scoreBox;
 		this.scores[i].add(profilePicMesh);
 		this.scores[i].add(loginMesh);
+		// if (data.ongoing || data.imminent)
 		this.scores[i].add(scoreMesh);
 
 		// positioning ui items
-		profilePicMesh.position.set(-ppRadius - spaceBetween / 2, totalHeight / 2 - ppRadius, 0);
-		scoreMesh.position.set(spaceBetween / 2, (totalHeight - textHeight) / 2 - ppRadius, 0);
+
+		profilePicMesh.position.set(-topWidth / 2 + ppRadius, spaceBetween, 0);
+		scoreMesh.position.set(topWidth / 2 - scoreWidth, (totalHeight - textHeight) / 2 - ppRadius, 0);
 		loginMesh.position.set(-loginWidth / 2, -totalHeight / 2, 0);
 	
 		// positionning ui box

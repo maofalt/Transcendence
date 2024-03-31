@@ -43,7 +43,7 @@ export default class Signup extends AbstractComponent {
 			indicators: {
 				emptyIndicator: ["Please enter your name", () => playernameBlock.input.getValue() != ""],
 			},
-			description: "Your Playername will be displayed in games and tournaments.",
+			description: "Can be changed anytime.",
 			type: "text"
 		});
 
@@ -60,14 +60,14 @@ export default class Signup extends AbstractComponent {
 
 		/* Username and Password */
 		let idBlock = new InputAugmented({
-			title: "Unique ID",
+			title: "Username",
 			content: "example: GigaBoomer69",
 			indicators: {
 				emptyIndicator: ["Please enter a username", () => idBlock.input.getValue() != ""],
 				// uniqueIndicator: ["The username you entered is already taken", () => idBlock.input.getValue() != ""],
 			},
 			type: "text",
-			description: "A unique ID that defines you in our Database."
+			description: "A unique Username. Will be displayed in Games and Tournaments. Cannot be changed."
 		});
 
 		let passwordBlock = new InputAugmented({
