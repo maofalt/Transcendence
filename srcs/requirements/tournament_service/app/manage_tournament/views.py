@@ -195,17 +195,17 @@ class MatchGenerator(generics.ListCreateAPIView):
             match = tournament.assign_player_to_match(player, 0)
             if match:
                 print(f"Player {player} added to match {match}")
-                participant, created = MatchParticipants.objects.get_or_create(
-                    match_id=match.id,
-                    player_id=player.id,
-                    round_number=0
-                )       
-                if created:
-                    print(f"Participant {participant} created with player ID: {player.id}")
-                else:
-                    print(f"Participant {participant} already exists for match {match.id}")            
-                match.participants.add(participant)
-                match.save()
+                # participant, created = MatchParticipants.objects.get_or_create(
+                #     match_id=match.id,
+                #     player_id=player.id,
+                #     round_number=0
+                # )       
+                # if created:
+                #     print(f"Participant {participant} created with player ID: {player.id}")
+                # else:
+                #     print(f"Participant {participant} already exists for match {match.id}")            
+                # match.participants.add(participant)
+                # match.save()
             else:
                 print(f"No available matches for player {player}")
 
@@ -226,35 +226,30 @@ class MatchResult(APIView):
         # user_info = request.user
         # if not isinstance(user_info, tuple) or len(user_info) != 2:
         #     raise exceptions.AuthenticationFailed('User information is not in the expected format')
-
         # uid, username = user_info
         if match.state == "ended":
             return Response(f"Match {match_id} has been ended before", status=status.HTTP_400_BAD_REQUEST)
         match.state = "ended"
         match.save()
         winner_found = False
-        for participant in match.participants.all():
-            print("participant id : ", participant.player_id)
-            try:
-                player = match.players.get(id=participant.player_id)
-            except Player.DoesNotExist:
-                return Response(f"Player with id {player_id} not found in the match", status=status.HTTP_404_NOT_FOUND)
-            
+
+        players = match.players.all()
+
+        if not players.filter(username=winner_username).exists():
+            return Response("Winner not found among participants", status=status.HTTP_404_NOT_FOUND)
+
+        for player in players:
             if player.username == winner_username:
-                if participant.is_winner == False:
-                    participant.is_winner = True
-                    participant.save()
-                    player.total_played += 1
-                    player.won_match.add(match)
-                    player.save()
-                winner_found = True
-            else:
+                player.total_played += 1
+                player.won_match.add(match)
+                player.save()
+                match.winner = player
+                match.save()
+            else
                 player.total_played += 1
                 player.save()
 
-        if winner_found:
-            return Response("Winner found and updated successfully")
-        return Response("Winner not found among participants", status=status.HTTP_404_NOT_FOUND)
+        return Response("Winner found and updated successfully")
 
 # class MatchResult(APIView):
 #     authentication_classes = [CustomJWTAuthentication]
@@ -354,6 +349,22 @@ class MatchUpdate(APIView):
         serializer = TournamentMatchSerializer(next_matches, many=True)
         escaped_data = escape(serializer.data)
         return JsonResponse(serializer.data, status=status.HTTP_201_CREATED, safe=False)
+
+def match_update(request, tournament_id, round):
+    try:
+        tournament = get_object_or_404(Tournament, id=tournament_id)
+    except Http404:
+        return JsonResponse({'error': 'Tournament not found'}, status=404)
+
+    finished_matches = tournament.matches.filter(round_number=round - 1).order_by('id')
+    matches_in_progress = finished_matches.filter(Q(state="waiting") | Q(state="playing"))
+    if matches_in_progress.exists():
+        return Response({"message": "Cannot update next round, the previous round is on going."}, status=400)
+
+    winner_users = [match.winner for match in finished_matches if match.winner is not None]
+
+
+
 
 class TournamentRoundState(APIView):
     authentication_classes = [CustomJWTAuthentication]
@@ -525,7 +536,8 @@ class TournamentStart(APIView):
             tournament = Tournament.objects.get(id=id)
             if tournament.state == 'ended':
                 break
-
+            if round_nbr != 0:
+                match_update(request, tournament_id, round_nbr)
             generate_round(request, tournament.id, round_nbr)
             
             for player in tournament_players:
@@ -750,9 +762,9 @@ class PlayerStatsView(APIView):
         # Calculate the average score
         # total_scores = 0
         # highest_score = 0
-        for match in played_matches:
-            if match.participants.filter(player_id=user_id).exists():
-                participant = match.participants.get(player_id=user_id)
+        # for match in played_matches:
+        #     if match.participants.filter(player_id=user_id).exists():
+        #         participant = match.participants.get(player_id=user_id)
                 # total_scores += participant.participant_score
                 # highest_score = max(highest_score, participant.participant_score)
         # average_score = total_scores / total_played if total_played > 0 else 0
@@ -872,3 +884,7 @@ def stream_notification(request, username, user_id, tournament_name, round_nbr):
     response = StreamingHttpResponse(event_stream(username, user_id), content_type='text/event-stream')
     response['Cache-Control'] = 'no-cache'
     return response
+
+
+# manage everything from REsult endpoint
+# send email
