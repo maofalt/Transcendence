@@ -1,6 +1,7 @@
 import easyFetch from "@utils/easyFetch";
 import displayPopup from "@utils/displayPopup";
 import { navigateTo } from "@utils/Router";
+import fetchUserDetails from "./fetchUserDetails";
 
 export default async function updateUser(data) {
 	const formData = new FormData();
@@ -16,7 +17,7 @@ export default async function updateUser(data) {
 		headers: {},
 		body: formData
 	})
-	.then(res => {
+	.then(async res => {
 		let response = res.response;
 		let body = res.body;
 
@@ -26,6 +27,8 @@ export default async function updateUser(data) {
 			throw new Error(body.error || JSON.stringify(body));
 		} else if (response.status === 200) {
 			displayPopup(body.success || JSON.stringify(body), 'success');
+			let details = await fetchUserDetails();
+			sessionStorage.setItem('userDetails', JSON.stringify(details));
 			navigateTo("/profile");
 		} else {
 			throw new Error(body.error || JSON.stringify(body));

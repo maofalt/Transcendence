@@ -37,7 +37,7 @@ export default class FriendBlock extends AbstractComponent {
 			img {
 				width: 100%;
 				height: 100%;
-				object-fit: contain;
+				object-fit: cover;
 				border-radius: 15px;
 				border: 1px solid rgba(255, 255, 255, 0.2);
 				box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
