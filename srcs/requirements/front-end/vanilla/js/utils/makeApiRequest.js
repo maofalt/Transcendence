@@ -7,14 +7,28 @@ export async function makeApiRequest(url, method = 'GET', body = null, headers =
 		if (headers['Content-Type'] != 'application/x-www-form-urlencoded')
 			headers['Content-Type'] = 'application/json';
 
-		if (jwt) {
-			headers['Authorization'] = `${jwt}`;
-		}
+
+			// const accessToken = sessionStorage.getItem('accessToken');
+			// const tokenType = sessionStorage.getItem('tokenType');
+	
+			// const defaultHeaders = {
+			// 	'Accept': 'application/json',
+			// 	'Authorization': `${tokenType} ${accessToken}`,
+			// 	'X-CSRFToken': getCookie('csrftoken'),
+			// 	...options.headers,
+			// };
+		
+		//add bearer token
+		const accessToken =  sessionStorage.getItem('accessToken');
+		const tokenType = sessionStorage.getItem('tokenType');
+		headers['Authorization'] =  `${tokenType} ${accessToken}`;
 
 		const defaultHeaders = {
 			'Accept': 'application/json',
 			...headers,
 		};
+
+		
 
 		// Configuring the fetch options
 		const options = {

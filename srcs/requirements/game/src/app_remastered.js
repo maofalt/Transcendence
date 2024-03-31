@@ -202,9 +202,12 @@ function handleConnectionV2(client) {
 	}
 
 	// - check if player is part of this match;
+	console.log("client.playerID: ", client.playerID);
 	let playerFound = false;
 	Object.values(match.gameState.players).forEach(player => {
+		console.log("player.accountID: ", player.accountID);
 		if (player.accountID == client.playerID) {
+			console.log("player.accountID validated: ", player.accountID);
 			player.connected = true;
 			player.socketID = client.id;
 			match.gameState.connectedPlayers++;
@@ -260,6 +263,8 @@ io.use((client, next) => {
 				client.decoded = decoded;
 				// get the playerID from the decoded token
 				client.playerID = decoded.username;
+				console.log("NIQUE TA MERDE DECODED!!!",decoded);
+				console.log("\nclient.playerID:\n", client.playerID);
 				// console.log("\ndecoded:\n", decoded);
 				next();
 			});
