@@ -47,7 +47,7 @@ class TournamentListCreate(generics.ListCreateAPIView):
         tournaments = self.get_queryset()
         serializer = self.get_serializer(tournaments, many=True)
         escaped_data = escape(serializer.data)
-        return Response(escaped_data)
+        return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
         print(">> received POST to creat a new tournament\n")
@@ -90,7 +90,7 @@ class TournamentListCreate(generics.ListCreateAPIView):
 
         serialized_tournament  = TournamentSerializer(tournament)
         escaped_data = escape(serialized_tournament.data)
-        return Response(escaped_data, status=status.HTTP_201_CREATED)
+        return Response(serialized_tournament.data, status=status.HTTP_201_CREATED)
 
 # ------------------------ Assigning Players on the Tournament Tree -----------------------------------
 
@@ -133,7 +133,7 @@ class JoinTournament(generics.ListCreateAPIView):
 
         serializer = TournamentSerializer(tournament)
         escaped_data = escape(serializer.data)
-        return JsonResponse(escaped_data, status=status.HTTP_200_OK)
+        return JsonResponse(serializer.data, status=status.HTTP_200_OK)
 
 
 class MatchGenerator(generics.ListCreateAPIView):
@@ -353,7 +353,7 @@ class MatchUpdate(APIView):
 
         serializer = TournamentMatchSerializer(next_matches, many=True)
         escaped_data = escape(serializer.data)
-        return JsonResponse(escaped_data, status=status.HTTP_201_CREATED, safe=False)
+        return JsonResponse(serializer.data, status=status.HTTP_201_CREATED, safe=False)
 
 class TournamentRoundState(APIView):
     authentication_classes = [CustomJWTAuthentication]
