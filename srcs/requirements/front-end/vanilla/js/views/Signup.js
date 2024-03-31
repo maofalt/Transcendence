@@ -80,7 +80,7 @@ export default class Signup extends AbstractComponent {
 				lengthIndicator: ["Minimum 8 characters", () => passwordBlock.input.getValue().length >= 8],
 				digitIndicator: ["At least 1 digit", () => /\d/.test(passwordBlock.input.getValue())],
 				letterIndicator: ["At least 1 letter", () => /[a-zA-Z]/.test(passwordBlock.input.getValue())],
-				backendIndicator: ["Invalid Password", () => this.verifySignupInput('validate_password', { password: passwordBlock.input.getValue() })],
+				// backendIndicator: ["Invalid Password", () => this.verifySignupInput('validate_password', { password: passwordBlock.input.getValue() })],
 				// differentIndicator: ["Different from your Playername and your Email" () => this.],
 			},
 			type: "password"

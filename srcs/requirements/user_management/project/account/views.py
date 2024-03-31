@@ -363,7 +363,7 @@ def api_logout_view(request):
 def validate_username(username):   
     if User.objects.filter(username=username).exists():
         return False, "Username already exists."
-    return True
+    return True, None
 
 def is_email_valid(email):
     try:
@@ -390,7 +390,7 @@ def validate_user_password(password, username=""):
 def validate_player_name(playername):
     # This regex allows alphanumeric characters, dashes, and underscores
     if re.match(r'^[\w-]+$', playername):
-        return True
+        return True, None
     return False, "Player name contains invalid characters."
 
 # --------------------------------- API functions views ---------------------------
