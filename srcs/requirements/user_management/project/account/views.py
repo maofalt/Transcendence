@@ -27,6 +27,7 @@ import secrets
 import requests
 import logging
 import base64
+import re
 from urllib.parse import urlencode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.forms.models import model_to_dict
@@ -357,36 +358,110 @@ def api_logout_view(request):
     else:
         return JsonResponse({'error': escape('Invalid request method')}, status=400)
 
+# ---------------------- API signup functions ------------------------------
+
+def validate_username(username):
+    if User.objects.filter(username=username).exists():
+        return False
+    return True
+
+def is_email_valid(email):
+    try:
+        validate_email(email)
+    except ValidationError:
+        return False, "Invalid email format."
+
+    if User.objects.filter(email=email).exists():
+        return False, "Email already in use."
+
+    return True, None  # No error message needed on success
+
+def validate_user_password(password, username=""):
+    try:
+        # Assuming the user instance might be useful for some validators
+        user = User(username=username) if username else None
+        validate_password(password, user=user)
+        return True, None  # No error message needed on success
+    except ValidationError as e:
+        # Join all error messages into a single string or handle them as you see fit
+        error_message = " ".join(e.messages)
+        return False, error_message
+
+def validate_player_name(playername):
+    # This regex allows alphanumeric characters, dashes, and underscores
+    if re.match(r'^[\w-]+$', playername):
+        return True
+    return False
+
+# --------------------------------- API functions views ---------------------------
+
+def validate_username_view(request):
+    if request.method == "POST":
+        username = request.POST.get("username", "")
+        if validate_username(username):
+            return JsonResponse({'valid': True})
+        else:
+            return JsonResponse({'valid': False, 'error': escape('Username is invalid or already taken')})
+    return JsonResponse({'error': escape('Invalid request method')}, status=400)
+
+def validate_email_view(request):
+    if request.method == "POST":
+        email = request.POST.get("email", "")
+        if is_email_valid(email):
+            return JsonResponse({'valid': True})
+        else:
+            return JsonResponse({'valid': False, 'error': escape('Email is invalid or already in use')})
+    return JsonResponse({'error': escape('Invalid request method')}, status=400)
+
+def validate_password_view(request):
+    if request.method == "POST":
+        password = request.POST.get("password", "")
+        if validate_user_password(password):
+            return JsonResponse({'valid': True})
+        else:
+            return JsonResponse({'valid': False, 'error': escape('Password does not meet the criteria')})
+    return JsonResponse({'error': escape('Invalid request method')}, status=400)
+
+def validate_player_name_view(request):
+    if request.method == "POST":
+        playername = request.POST.get("playername", "")
+        if validate_player_name(playername):
+            return JsonResponse({'valid': True})
+        else:
+            return JsonResponse({'valid': False, 'error': escape('Player name contains invalid characters')})
+    return JsonResponse({'error': escape('Invalid request method')}, status=400)
+
 @csrf_protect
 # @require_POST
+# create a function for each element, take the input as a argument and returns true of false and create a endpoint for each elements
 @authentication_classes([])
 @permission_classes([AllowAny])
 def api_signup_view(request):
     if request.method == "POST":
-        username = request.POST["username"]
+        username = request.POST["username"] #unique need to be verified
         password = request.POST["password"]
-        playername = request.POST["playername"]
+        playername = request.POST["playername"] 
         email = request.POST["signupEmail"]
+
+        # Validate each field using the utility functions
+        if not validate_username(username):
+            return JsonResponse({'success': False, 'error': escape('Username already exists')})
+
+        valid, error_message = is_email_valid(email)
+        if not valid:
+            return JsonResponse({'success': False, 'error': error_message})
+
+        valid, error_message = validate_user_password(password, username)
+        if not valid:
+            return JsonResponse({'success': False, 'error': error_message})
+
+        if not validate_player_name(playername):
+            return JsonResponse({'success': False, 'error': escape('Invalid player name')})
 
         if not (username and password and playername and email):
             return JsonResponse({'success': False, 'error': escape('All fields are required')})
 
-        try:
-            validate_password(password, user=User(username=username))
-        except ValidationError as e:
-            return JsonResponse({'success': False, 'error': e.messages[0]})
-
-        try:
-            validate_email(email)
-        except ValidationError:
-            return JsonResponse({'success': False, 'error': escape('Invalid email')})
-
-        if User.objects.filter(username=username).exists():
-            return JsonResponse({'success': False, 'error': escape('Username already exists')})
-
-        if User.objects.filter(playername=playername).exists():
-            return JsonResponse({'success': False, 'error': escape('Playername already exists')})
-
+        # Create the user
         user = User(
             username=username,
             email=email,
