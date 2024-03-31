@@ -24,6 +24,15 @@ export default class InputAugmented extends AbstractComponent {
 		title.style.setProperty("margin", "0px 0px 10px 0px");
 		this.shadowRoot.appendChild(title);
 		
+		if (options.description) {
+			this.description = document.createElement("p");
+			this.description.textContent = options.description;
+			// this.description.style.setProperty("font-family", "Anta, sans-serif");
+			this.description.style.setProperty("font-size", "14px");
+			this.description.style.setProperty("margin-top", "-3px");
+			this.shadowRoot.appendChild(this.description);
+		}
+		
 		this.input = new InputField({type: options.type, content: options.content});
 		this.input.id = "input-field";
 		this.input.style.setProperty("marin-bottom", "0px");
@@ -39,6 +48,7 @@ export default class InputAugmented extends AbstractComponent {
 		
 		this.indicators = {};
 
+
 		if (options.indicators) {
 			Object.entries(options.indicators).forEach(([type, [message, condition]]) => {
 				let indicator = new WarnIndicator({content: message});
@@ -52,15 +62,6 @@ export default class InputAugmented extends AbstractComponent {
 				indicatorsBox.appendChild(indicator);
 			});
 			this.shadowRoot.appendChild(indicatorsBox);
-		}
-
-		if (options.description) {
-			this.description = document.createElement("p");
-			this.description.textContent = options.description;
-			// this.description.style.setProperty("font-family", "Anta, sans-serif");
-			this.description.style.setProperty("font-size", "14px");
-			this.description.style.setProperty("margin-top", "-3px");
-			this.shadowRoot.appendChild(this.description);
 		}
 
 		if (options.button) {
