@@ -191,12 +191,12 @@ export default class BasicGameV2 extends AbstractComponent {
 	};
 
 	handleKeyPress(event) {
-		console.log(event.key);
+		// console.log(event.key);
 		if (event.key == "s")
 			this.localmoveUp(0);
 		if (event.key == "w")
 			this.localmoveDown(0);
-		console.log("KEYYYYYY: ", event.key);
+		// console.log("KEYYYYYY: ", event.key);
 		if (event.key == "ArrowUp")
 			this.localmoveUp(1);
 		if (event.key == "ArrowDown")
@@ -226,7 +226,7 @@ export default class BasicGameV2 extends AbstractComponent {
 	localgenerate = (data) => {
 		// Generate scene and update it
 		data.playersArray = Object.values(data.players);
-		console.log("data : ", data);
+		// console.log("data : ", data);
 		this.generateScene(data, this.socket);
 		this.updateScene(data, this.socket);
 		this.renderer.render(this.scene, this.camera);
@@ -249,7 +249,7 @@ export default class BasicGameV2 extends AbstractComponent {
 	}
 
 	localrefresh = (data) => {
-		console.log("REFRESH SCENE");
+		// console.log("REFRESH SCENE");
 		data.playersArray = Object.values(data.players);
 		this.refreshScene(data);
 	}
@@ -357,7 +357,7 @@ export default class BasicGameV2 extends AbstractComponent {
 		uiLayer.style.background = `rgba(0, 0, 0, ${frame / (maxFrame * 1.8)})`;
 		uiLayer.style.opacity = frame / maxFrame;
 		uiLayer.style.backdropFilter = `blur(${frame / maxFrame * 16}px)`;
-		console.log(`blur(${frame / maxFrame * 16}px)`);
+		// console.log(`blur(${frame / maxFrame * 16}px)`);
 		if (frame == maxFrame) {
 			console.log("End of Game !!");
 			return ;
@@ -605,7 +605,7 @@ export default class BasicGameV2 extends AbstractComponent {
 		data.playersArray.forEach((player, index) => {
 
 			if (this.prevScores[index] != player.score) {
-				console.log("Refreshing score: " + player.score + " for player " + index);
+				// console.log("Refreshing score: " + player.score + " for player " + index);
 				if (this.scores[index])
 					this.scene.remove(this.scores[index]);
 				this.createScore(data, player, index);
@@ -846,7 +846,7 @@ export default class BasicGameV2 extends AbstractComponent {
 
         console.log("\nCLIENT CONNECTED\n");
     
-        console.log('---DATA---\n', this.match.gameState, '\n---END---\n');
+        // console.log('---DATA---\n', this.match.gameState, '\n---END---\n');
         this.localgenerate(this.match.gameState);
         console.log("handleconnection",this.match);
         
@@ -860,9 +860,9 @@ export default class BasicGameV2 extends AbstractComponent {
     
     // Set up Socket.IO event handlers
     localconnection = () => {
-        console.log("Socket connected");
+        // console.log("Socket connected");
         this.initMatch();
-        console.log("localconnection",this.match);
+        // console.log("localconnection",this.match);
         //handle client connection and match init + players status
         // console.log("\nclient:\n", client.decoded);
         this.data = this.match.gameState;
@@ -871,17 +871,17 @@ export default class BasicGameV2 extends AbstractComponent {
     
     // player controls
     localmoveUp = (playerindex) => {
-        console.log(`client moving up`);
+        // console.log(`client moving up`);
         let player = this.data.playersArray[playerindex];
-        console.log("player: ", player);
-        console.log("data: ", this.data);
+        // console.log("player: ", player);
+        // console.log("data: ", this.data);
         if (player && player.paddle && !player.paddle.dashSp) {
             player.paddle.currSp = player.paddle.sp;
         }
     }
     
     localmoveDown = (playerindex) => {
-        console.log(`client moving down`);
+        // console.log(`client moving down`);
         let player = this.data.playersArray[playerindex];
         if (player && player.paddle && !player.paddle.dashSp) {
             player.paddle.currSp = -player.paddle.sp;
@@ -889,7 +889,7 @@ export default class BasicGameV2 extends AbstractComponent {
     }
     
     localdash = (playerindex) => {
-        console.log(`client dashing`);
+        // console.log(`client dashing`);
         let player = this.data.playersArray[playerindex];
         if (player && player.paddle && !player.paddle.dashSp) {
             if (player.paddle.currSp == 0) {
@@ -902,7 +902,7 @@ export default class BasicGameV2 extends AbstractComponent {
     }
     
     localstop = (playerindex) => {
-        console.log(`client stopping`);
+        // console.log(`client stopping`);
         let player = this.data.playersArray[playerindex];
         if (player && player.paddle && !player.paddle.dashing) {
             player.paddle.currSp = 0;
@@ -919,6 +919,7 @@ export default class BasicGameV2 extends AbstractComponent {
         if (this.data.connectedPlayers < 1) {
             console.log("CLEARING INTERVAL");
             clearInterval(this.match.gameInterval);
+            this.cleanAll();
             // matches.delete(client.matchID);
             // delete data;
         }
