@@ -15,8 +15,8 @@ services:
     volumes:
       - ./requirements/traefik/config:/etc/traefik
       - ./requirements/traefik/config/ssl/:/ssl-certs
-      #- "${XDG_RUNTIME_DIR:-/var/run}/docker.sock:/var/run/docker.sock"
-      - /var/run/docker.sock:/var/run/docker.sock
+      - "${XDG_RUNTIME_DIR:-/var/run}/docker.sock:/var/run/docker.sock"
+      #- /var/run/docker.sock:/var/run/docker.sock
 
     networks:
       - transcendence
@@ -60,8 +60,8 @@ services:
       - PORTAINER_ADMIN_PASSWORD=${PORTAINER_ADMIN_PASSWORD}
     restart: unless-stopped
     volumes:
-      #- "${XDG_RUNTIME_DIR:-/var/run}/docker.sock:/var/run/docker.sock"
-      - /var/run/docker.sock:/var/run/docker.sock
+      - "${XDG_RUNTIME_DIR:-/var/run}/docker.sock:/var/run/docker.sock"
+      #- /var/run/docker.sock:/var/run/docker.sock
       - portainer-data:/data
     networks:
       - transcendence
