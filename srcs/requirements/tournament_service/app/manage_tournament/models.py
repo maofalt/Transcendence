@@ -85,7 +85,8 @@ class MatchSetting(models.Model):
         MaxValueValidator(10, message="Max score cannot exceed 10.")
         ]
     )
-    walls_factor = models.IntegerField(default=0,
+    walls_factor = models.DecimalField(
+        max_digits=3, decimal_places=2, default=0.7,
         validators=[MinValueValidator(0, message="Walls factor must be at least 0."), 
         MaxValueValidator(2, message="Walls factor cannot exceed 2.")
         ]
@@ -101,8 +102,8 @@ class MatchSetting(models.Model):
         ]
     )
     paddle_speed = models.DecimalField(
-        max_digits=3, decimal_places=2, default=0.5, 
-        validators=[MinValueValidator(0.1, message="Paddle speed must be at least 0.1."),
+        max_digits=3, decimal_places=2, default=0.01, 
+        validators=[MinValueValidator(0.01, message="Paddle speed must be at least 0.1."),
         MaxValueValidator(2, message="Paddle speed cannot exceed 2.")
         ]
     )
