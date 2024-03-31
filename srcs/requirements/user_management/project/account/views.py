@@ -483,8 +483,10 @@ def friends_view(request):
             # search_results = User.objects.filter(username__icontains=search_query)
             search_results = list(User.objects.filter(username__icontains=search_query).values())
             print("search_resuls : ", search_results)
-    search_results_serialized = FriendUserSerializer(search_results, many=True).data
-    return JsonResponse({'friends': friend_data, 'search_query': escape(search_query), 'search_results': search_results_serialized})
+        search_results_serialized = FriendUserSerializer(search_results, many=True).data
+        return JsonResponse({'friends': friend_data, 'search_query': escape(search_query), 'search_results': search_results_serialized})
+    return JsonResponse({'friends': friend_data})
+
     # return render(request, 'friends.html', {'friends': friend_data, 'search_query': search_query, 'search_results': search_results})
 
 # @login_required
