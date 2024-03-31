@@ -288,8 +288,10 @@ export default class Game extends AbstractView {
 		window.removeEventListener("keydown", this.handleKeyPress.bind(this));
 		window.removeEventListener("keyup", this.handleKeyRelease.bind(this));
 
-		if (this.socket)
+		if (this.socket) {
+			this.socket.emit("delete-match", this.matchID);
 			this.socket.disconnect();
+		}
 
 		if (this.scene)
 			this.scene.clear();

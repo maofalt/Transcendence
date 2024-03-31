@@ -323,6 +323,14 @@ io.on('connection', (client) => {
 				player.paddle.currSp = 0;
 			}
 		});
+
+		client.on('delete-match', (matchID) => {
+			if (matches.has(matchID)) {
+				if (matches.get(matchID).gameState.gameInterval)
+					clearInterval(this.matches.get(matchID).gameState.gameInterval);
+				matches.delete(matchID);
+			}
+		});
 		
 		// disconnect event
 		client.on('disconnect', () => {

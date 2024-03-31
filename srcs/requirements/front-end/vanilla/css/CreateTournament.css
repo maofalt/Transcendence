@@ -1,4 +1,121 @@
-.create-tournament{
+#gameContainer {
+    border: 1px solid red;
+    border-radius: 16px;
+}
+
+h1 {
+    padding: 0;
+    margin: 0;
+
+    font-family: "tk-421";
+    text-align: center;
+    font-size: 60px;
+}
+
+.panel-title {
+    margin: 10px;
+    padding: 0;
+
+    text-align: center;
+    font-size: 30px;
+}
+
+.create-tournament {
+    /* border: 1px solid red; */
+    display: flex;
+    flex-direction: row;
+}
+
+#settings-container {
+    flex: 1.2;
+}
+
+#settings-title {
+    text-align: center;
+    font-size: 2em;
+    margin: 15px;
+}
+
+#game-showcase h2{
+    text-align: center;
+    font-size: 2em;
+    margin: 15px;
+}
+
+#settings-container, .game-showcase {
+    margin: 15px;
+    /* padding: 15px; */
+
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.1);
+	backdrop-filter: blur(16px);
+
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    /* border: 1px solid blue; */
+}
+
+.game-showcase {
+    flex: 1;
+}
+
+#settings-panels-container {
+    display: flex;
+    flex-direction: row;
+
+    /* border: 1px solid red; */
+}
+
+.settings-panel {
+    margin: 15px;
+    padding: 10px 30px;
+
+    display: flex;
+    flex-direction: column;
+
+    border-radius: 16px;
+    background: rgba(0, 0, 0, 0.6);
+
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    /* border: 1px solid blue; */
+}
+
+#tournament-settings {
+    flex: 1;
+}
+
+#game-settings {
+    flex: 2;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+.settings-card {
+    display: flex;
+    flex-direction: row;
+    /* border: 1px solid red; */
+}
+
+.setting-input {
+    flex: 1;
+    /* border: 1px solid blue; */
+}
+
+input {
+    width: 90%;
+}
+
+#ball-radius-input{
+    flex: 2;
+}
+
+#ball-color-input, #ball-speed-input {
+    flex: 1;
+}
+
+/* .create-tournament{
     width: 100%;
     height: 90vh;
     margin-top: 16px;
@@ -6,14 +123,14 @@
     gap: 16px;
     justify-content: space-around;
 
-}
+} */
 
-.tournament-settings,
+/* .tournament-settings,
 .game-settings,
 .game-showcase{
     flex: 1 1 calc(33.333% - (2 * 16px / 3));
-    /* Glass effect styles */
-    /* background: rgba(255, 255, 255, 0.15); */
+    background: rgba(255, 255, 255, 0.15);
+    padding: 16px;
     border-radius: 16px;
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
     backdrop-filter: blur(10.3px);
@@ -38,5 +155,4 @@
 
 .game-showcase{
     background-color: rgb(196, 255, 225, 0.15);
-}
-
+} */
