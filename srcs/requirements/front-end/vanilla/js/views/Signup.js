@@ -148,7 +148,10 @@ export default class Signup extends AbstractComponent {
 			}, 
 			{ 
 				blocks: [idBlock, passwordBlock, confirmPasswordBlock], 
-				actions: [async (e) => await this.sendCodeToEmail(e, emailBlock.input.getValue())],
+				actions: [
+					async (e) => await this.sendCodeToEmail(e, emailBlock.input.getValue()),
+					async () => await this.verifySignupInput('validate_password', { password: passwordBlock.input.getValue() })
+				],
 			}, 
 			{ 
 				blocks: [verifyCodeBlock], 
