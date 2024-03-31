@@ -68,4 +68,5 @@ Data :
 `);
 }
 
-export default { displayPlayer, displayWall, displayData };
+// module.exports = { displayData };
+export default displayData;
