@@ -102,10 +102,9 @@ export default class Game extends AbstractView {
 		console.log("Screen size: ", this.screenWidth, this.screenHeight);
 	};
 
-	// ??
-	// disconnectedCallBack() {
-	// 	this.cleanAll();
-	// }
+	disconnectedCallback() {
+		this.cleanAll();
+	}
 
 	async getHtml() {
 		return `
