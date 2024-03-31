@@ -6,6 +6,7 @@ from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmVie
 from django.db.utils import IntegrityError
 from django.core import signing
 from django.core.exceptions import ValidationError
+from django.core.validators import MinLengthValidator, MaxLengthValidator, RegexValidator
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib.auth.hashers import make_password, check_password
@@ -375,8 +376,8 @@ def validate_complexity(value):
 
 def validate_username(username):
     validators = [
-        MinLengthValidator(3),  # Minimum length
-        MaxLengthValidator(30),  # Maximum length
+        MinLengthValidator(3, message="Username must be at least 3 characters long."),  # Minimum length
+        MaxLengthValidator(20, message="Username must be less than 20 characters long."),  # Maximum length
         RegexValidator(r'^\w+$', message="Username must be alphanumeric."),  # Alphanumeric characters only
         validate_not_contains_forbidden_word,
         validate_complexity
