@@ -366,21 +366,12 @@ def validate_not_contains_forbidden_word(value):
     if any(forbidden_word in value.lower() for forbidden_word in forbidden_words):
         raise ValidationError("Username contains a forbidden word.")
 
-def validate_complexity(value):
-    if not re.search(r"[A-Z]", value):  # Check for uppercase
-        raise ValidationError("Username must contain at least one uppercase letter.")
-    if not re.search(r"[a-z]", value):  # Check for lowercase
-        raise ValidationError("Username must contain at least one lowercase letter.")
-    if not re.search(r"[0-9]", value):  # Check for digit
-        raise ValidationError("Username must contain at least one digit.")
-
 def validate_username(username):
     validators = [
         MinLengthValidator(3, message="Username must be at least 3 characters long."),  # Minimum length
         MaxLengthValidator(20, message="Username must be less than 20 characters long."),  # Maximum length
         RegexValidator(r'^\w+$', message="Username must be alphanumeric."),  # Alphanumeric characters only
         validate_not_contains_forbidden_word,
-        validate_complexity
     ]
 
     # Run each validator on the username
