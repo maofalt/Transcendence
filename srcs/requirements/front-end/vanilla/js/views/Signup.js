@@ -329,7 +329,7 @@ export default class Signup extends AbstractComponent {
 				displayPopup('Response Error: ' + (body.error || JSON.stringify(body)), 'error');
 				valid = false;
 			} else if (response.status === 200 && body.success === true) {
-				displayPopup(body.message || JSON.stringify(body), 'success');
+				// displayPopup(body.message || JSON.stringify(body), 'success');
 				valid = true;
 			} else {
 				displayPopup(body.error || JSON.stringify(body), 'error');
