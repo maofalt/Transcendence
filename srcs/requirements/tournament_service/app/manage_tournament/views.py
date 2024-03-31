@@ -24,7 +24,7 @@ from django.db.models import Q
 from threading import Thread
 import requests
 from django.http import Http404
-
+from django.utils.html import escape
 
 
     # compare total player > match player
@@ -46,8 +46,8 @@ class TournamentListCreate(generics.ListCreateAPIView):
         print(">> GET: loading page\n")
         tournaments = self.get_queryset()
         serializer = self.get_serializer(tournaments, many=True)
-        print("request.user: ", request.user)
-        return Response(serializer.data)
+        escaped_data = escape(serializer.data)
+        return Response(escaped_data)
 
     def post(self, request, *args, **kwargs):
         print(">> received POST to creat a new tournament\n")
@@ -89,7 +89,8 @@ class TournamentListCreate(generics.ListCreateAPIView):
         tournament.players.add(host)
 
         serialized_tournament  = TournamentSerializer(tournament)
-        return Response(serialized_tournament.data, status=status.HTTP_201_CREATED)
+        escaped_data = escape(serialized_tournament.data)
+        return Response(escaped_data, status=status.HTTP_201_CREATED)
 
 # ------------------------ Assigning Players on the Tournament Tree -----------------------------------
 
@@ -131,7 +132,8 @@ class JoinTournament(generics.ListCreateAPIView):
             print(player.username)
 
         serializer = TournamentSerializer(tournament)
-        return JsonResponse(serializer.data, status=status.HTTP_200_OK)
+        escaped_data = escape(serializer.data)
+        return JsonResponse(escaped_data, status=status.HTTP_200_OK)
 
 
 class MatchGenerator(generics.ListCreateAPIView):
@@ -350,7 +352,8 @@ class MatchUpdate(APIView):
                 print(f"No available matches for player {player}")
 
         serializer = TournamentMatchSerializer(next_matches, many=True)
-        return JsonResponse(serializer.data, status=status.HTTP_201_CREATED, safe=False)
+        escaped_data = escape(serializer.data)
+        return JsonResponse(escaped_data, status=status.HTTP_201_CREATED, safe=False)
 
 class TournamentRoundState(APIView):
     authentication_classes = [CustomJWTAuthentication]
