@@ -27,6 +27,7 @@ import secrets
 import requests
 import logging
 import base64
+import re
 from urllib.parse import urlencode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.forms.models import model_to_dict
@@ -218,7 +219,7 @@ def api_login_view(request):
             print(f"Date Joined: {user.date_joined}")
             serializer = UserSerializer(user)
             redirect_url = '/api/user_management/'
-            if (user.two_factor_method != None):
+            if (user.two_factor_method != 'off'):
                 if (user.two_factor_method == 'email'):
                     send_one_time_code(request, user.email)
                 elif(user.two_factor_method == 'sms'):
@@ -237,7 +238,7 @@ def generate_tokens_and_response(request, user):
     accessToken = AccessToken.for_user(user)
     accessToken['username'] = user.username
     print("---> ACCESS TOKEN: ", str(accessToken))
-    if user.two_factor_method == '' or user.two_factor_method is None:
+    if user.two_factor_method == 'off':
         twoFA = False
         login(request, user)
         user.is_online = True
@@ -357,36 +358,110 @@ def api_logout_view(request):
     else:
         return JsonResponse({'error': escape('Invalid request method')}, status=400)
 
+# ---------------------- API signup functions ------------------------------
+
+def validate_username(username):
+    if User.objects.filter(username=username).exists():
+        return False
+    return True
+
+def is_email_valid(email):
+    try:
+        validate_email(email)
+    except ValidationError:
+        return False, "Invalid email format."
+
+    if User.objects.filter(email=email).exists():
+        return False, "Email already in use."
+
+    return True, None  # No error message needed on success
+
+def validate_user_password(password, username=""):
+    try:
+        # Assuming the user instance might be useful for some validators
+        user = User(username=username) if username else None
+        validate_password(password, user=user)
+        return True, None  # No error message needed on success
+    except ValidationError as e:
+        # Join all error messages into a single string or handle them as you see fit
+        error_message = " ".join(e.messages)
+        return False, error_message
+
+def validate_player_name(playername):
+    # This regex allows alphanumeric characters, dashes, and underscores
+    if re.match(r'^[\w-]+$', playername):
+        return True
+    return False
+
+# --------------------------------- API functions views ---------------------------
+
+def validate_username_view(request):
+    if request.method == "POST":
+        username = request.POST.get("username", "")
+        if validate_username(username):
+            return JsonResponse({'valid': True})
+        else:
+            return JsonResponse({'valid': False, 'error': escape('Username is invalid or already taken')})
+    return JsonResponse({'error': escape('Invalid request method')}, status=400)
+
+def validate_email_view(request):
+    if request.method == "POST":
+        email = request.POST.get("email", "")
+        if is_email_valid(email):
+            return JsonResponse({'valid': True})
+        else:
+            return JsonResponse({'valid': False, 'error': escape('Email is invalid or already in use')})
+    return JsonResponse({'error': escape('Invalid request method')}, status=400)
+
+def validate_password_view(request):
+    if request.method == "POST":
+        password = request.POST.get("password", "")
+        if validate_user_password(password):
+            return JsonResponse({'valid': True})
+        else:
+            return JsonResponse({'valid': False, 'error': escape('Password does not meet the criteria')})
+    return JsonResponse({'error': escape('Invalid request method')}, status=400)
+
+def validate_player_name_view(request):
+    if request.method == "POST":
+        playername = request.POST.get("playername", "")
+        if validate_player_name(playername):
+            return JsonResponse({'valid': True})
+        else:
+            return JsonResponse({'valid': False, 'error': escape('Player name contains invalid characters')})
+    return JsonResponse({'error': escape('Invalid request method')}, status=400)
+
 @csrf_protect
 # @require_POST
+# create a function for each element, take the input as a argument and returns true of false and create a endpoint for each elements
 @authentication_classes([])
 @permission_classes([AllowAny])
 def api_signup_view(request):
     if request.method == "POST":
-        username = request.POST["username"]
+        username = request.POST["username"] #unique need to be verified
         password = request.POST["password"]
-        playername = request.POST["playername"]
+        playername = request.POST["playername"] 
         email = request.POST["signupEmail"]
+
+        # Validate each field using the utility functions
+        if not validate_username(username):
+            return JsonResponse({'success': False, 'error': escape('Username already exists')})
+
+        valid, error_message = is_email_valid(email)
+        if not valid:
+            return JsonResponse({'success': False, 'error': error_message})
+
+        valid, error_message = validate_user_password(password, username)
+        if not valid:
+            return JsonResponse({'success': False, 'error': error_message})
+
+        if not validate_player_name(playername):
+            return JsonResponse({'success': False, 'error': escape('Invalid player name')})
 
         if not (username and password and playername and email):
             return JsonResponse({'success': False, 'error': escape('All fields are required')})
 
-        try:
-            validate_password(password, user=User(username=username))
-        except ValidationError as e:
-            return JsonResponse({'success': False, 'error': e.messages[0]})
-
-        try:
-            validate_email(email)
-        except ValidationError:
-            return JsonResponse({'success': False, 'error': escape('Invalid email')})
-
-        if User.objects.filter(username=username).exists():
-            return JsonResponse({'success': False, 'error': escape('Username already exists')})
-
-        if User.objects.filter(playername=playername).exists():
-            return JsonResponse({'success': False, 'error': escape('Playername already exists')})
-
+        # Create the user
         user = User(
             username=username,
             email=email,
@@ -486,10 +561,10 @@ def friends_view(request):
             # search_results = User.objects.filter(username__icontains=search_query)
             search_results = list(User.objects.filter(username__icontains=search_query).values())
             print("search_resuls : ", search_results)
-    search_results_serialized = FriendUserSerializer(search_results, many=True).data
-    escaped_result_data = escape(search_results_serialized.data)
-    escaped_friend_data = escape(friend_data.data)
-    return JsonResponse({'friends': escaped_friend_data, 'search_query': escape(search_query), 'search_results': escaped_result_data})
+        search_results_serialized = FriendUserSerializer(search_results, many=True).data
+        return JsonResponse({'friends': friend_data, 'search_query': escape(search_query), 'search_results': search_results_serialized})
+    return JsonResponse({'friends': friend_data})
+
     # return render(request, 'friends.html', {'friends': friend_data, 'search_query': search_query, 'search_results': search_results})
 
 # @login_required
@@ -592,34 +667,23 @@ class ProfileUpdateView(APIView):
 
     def get(self, request):
         user_form = ProfileUpdateForm(instance=request.user)
+        print("user_form: \n", user_form)
         serialized_form = model_to_dict(user_form.instance, fields=['id', 'username', 'playername', 'avatar', 'email', 'phone', 'two_factor_method'])
         if 'avatar' in serialized_form:
             avatar_url = request.build_absolute_uri(user_form.instance.avatar.url)
             serialized_form['avatar'] = avatar_url
         serialized_form['username'] = user_form.instance.username
-        # return JsonResponse({'form': serialized_form})
+        print("serialized_form: \n", serialized_form)
         return Response(serialized_form)
 
     def post(self, request):
         user = request.user
-        print("request.FILES: ", request.POST)
         user_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user)
-        print("user_form: ", user_form)
-        if user_form.is_valid():
-            # user_form.save()
-            # if 'two_factor_method' in request.POST:
-            #     if request.POST['two_factor_method'] == '':
-            #         user.two_factor_method = None
-            #         user.save() 
-            #     else:
-            #         user.two_factor_method = request.POST['two_factor_method']
-            #         user.save() 
+        print("\n\n---------------\nuser_form: ", user_form)
+        if user_form.is_valid():        
             if 'playername' in request.POST and request.POST['playername'] != '':
                 if user.playername != request.POST['playername'] and User.objects.filter(playername=request.POST['playername']).exists():
-                # if User.objects.filter(playername=user.playername).exclude(username=request.user.username).exists():
                     return JsonResponse({'error': 'Playername already exists. Please choose a different one.'})
-                # user.playername = request.POST['playername']
-                # user.save()  
             user_form.save()
             return JsonResponse({'success': 'Your profile has been updated.'})
         else:

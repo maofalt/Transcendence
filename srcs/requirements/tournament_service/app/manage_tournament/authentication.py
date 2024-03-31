@@ -11,7 +11,7 @@ class CustomJWTAuthentication(authentication.BaseAuthentication):
     def authenticate(self, request):
         accessToken = request.headers.get('Authorization', None)
         # accessToken = request.COOKIES.get('refreshToken')
-        # print("refreshToken print: ", str(refreshToken))
+        #print("refreshToken print: ", str(accessToken))
         if not accessToken:
             raise exceptions.AuthenticationFailed('access token is missing')
             # return None, None

@@ -48,9 +48,9 @@ export default class ProfilePage extends AbstractComponent {
 		const userInfo = new UserInfo({});
 		userInfo.imgBox.onmouseover = (e) => {
 			userInfo.editOverlay.style.display = "block";
-			transition(userInfo.editOverlay, [["opacity", 0, 0.5]], 100);
+			transition(userInfo.editOverlay, [["opacity", 0, 0.8]], 100);
 			userInfo.imgBox.onmouseleave = (e) => {
-				transition(userInfo.editOverlay, [["opacity", 0.5, 0]], 100).then(() => userInfo.editOverlay.style.setProperty("display", "none"));
+				transition(userInfo.editOverlay, [["opacity", 0.8, 0]], 100).then(() => userInfo.editOverlay.style.setProperty("display", "none"));
 			}
 		};
 
@@ -209,7 +209,7 @@ export default class ProfilePage extends AbstractComponent {
 		personalInfo.shadowRoot.appendChild(infos);
 		gameStats.shadowRoot.appendChild(stats);
 
-		const deleteButton = new CustomButton({content: "Delete Account", delete: true, style: {margin: "10px"}});
+		const deleteButton = new CustomButton({content: "Delete Account", delete: true, style: {margin: "10px 10px"}});
 		deleteButton.onclick = () => {
 			areYouSure.style.display = "block";
 			// this.deleteAccount();

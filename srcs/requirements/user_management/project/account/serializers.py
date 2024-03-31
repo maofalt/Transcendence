@@ -19,6 +19,10 @@ class ProfileUSerSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'playername', 'avatar', 'email', 'phone', 'two_factor_method']
+        extra_kwargs = {
+            'two_factor_method': {'allow_null': True}
+        }
+
 
 class PasswordChangeSerializer(serializers.Serializer):
     old_password = serializers.CharField(max_length=128, required=True)

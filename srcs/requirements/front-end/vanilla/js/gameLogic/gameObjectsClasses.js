@@ -1,11 +1,12 @@
-import vecs from './vectors';
+// const settings = require('./lobbySettings');
+import { Vector } from './vectors';
 
 class Camera {
     constructor() {
-        this.pos = new vecs.Vector(0, 0, 50);   // this can change (even during the game) depending on the number
+        this.pos = new Vector(0, 0, 50);   // this can change (even during the game) depending on the number
                                                 // of players and size of field
 
-        this.target = new vecs.Vector(0, 0, 0); // this is fixed
+        this.target = new Vector(0, 0, 0); // this is fixed
         // The rotation of the camera will be determined by the client, according to the ID of the player.
         // It will also depend on user preferences : vertical view or horizontal view;
     }
@@ -30,6 +31,8 @@ class Field {
         this.goalsSize = fieldData.sizeOfGoals;
         this.wallsSize = fieldData.sizeOfGoals * fieldData.wallsFactor;
         this.walls = [];
+        this.wallDist = 0;
+        this.goalDist = 0;
         // this.goals = [];
     }
 }
@@ -37,14 +40,14 @@ class Field {
 // Wall class
 class Wall {
     constructor(lobbyData, wallSize) {
-        this.pos = new vecs.Vector(0, 0, 0);
-		this.dirToCenter = new vecs.Vector(0, 0, 0); // direction from the center of the object to the center of the field;
-        this.dirToTop = new vecs.Vector(0, 0, 0); // direction from the center of the object to the top side of the object
+        this.pos = new Vector(0, 0, 0);
+		this.dirToCenter = new Vector(0, 0, 0); // direction from the center of the object to the center of the field;
+        this.dirToTop = new Vector(0, 0, 0); // direction from the center of the object to the top side of the object
                                              // (perpendicular to dirToCenter, on the x,y plane); (*)
-        this.top = new vecs.Vector(0, 0, 0);
-        this.bottom = new vecs.Vector(0, 0, 0);
-        this.topBack = new vecs.Vector(0, 0, 0);
-        this.bottomBack = new vecs.Vector(0, 0, 0);
+        this.top = new Vector(0, 0, 0);
+        this.bottom = new Vector(0, 0, 0);
+        this.topBack = new Vector(0, 0, 0);
+        this.bottomBack = new Vector(0, 0, 0);
         this.angle = 0;
         this.w = lobbyData.paddlesData.width;
         this.h = wallSize;
@@ -71,22 +74,22 @@ class Player {
         this.paddle = new Paddle(lobbyData, i); // creating paddle object for this player
         this.color = parseInt(lobbyData.playersData[i].color, 16);
         this.score = 0;
-        this.scorePos = new vecs.Vector(0, 0, 0);
+        this.scorePos = new Vector(0, 0, 0);
     }
 }
 
 // Paddle class
 class Paddle {
     constructor(lobbyData, i) {
-		this.pos = new vecs.Vector(0, 0, 0);
-        this.startingPos = new vecs.Vector(0, 0, 0);
-        this.dir = new vecs.Vector(0, 0, 0);
-		this.dirToCenter = new vecs.Vector(0, 0, 0); // dirToCenter and dirToTop = same def as in Wall Class (*)
-        this.dirToTop = new vecs.Vector(1, 0, 0);
-        this.top = new vecs.Vector(0, 0, 0);
-        this.bottom = new vecs.Vector(0, 0, 0);
-        this.topBack = new vecs.Vector(0, 0, 0);
-        this.bottomBack = new vecs.Vector(0, 0, 0);
+		this.pos = new Vector(0, 0, 0);
+        this.startingPos = new Vector(0, 0, 0);
+        this.dir = new Vector(0, 0, 0);
+		this.dirToCenter = new Vector(0, 0, 0); // dirToCenter and dirToTop = same def as in Wall Class (*)
+        this.dirToTop = new Vector(1, 0, 0);
+        this.top = new Vector(0, 0, 0);
+        this.bottom = new Vector(0, 0, 0);
+        this.topBack = new Vector(0, 0, 0);
+        this.bottomBack = new Vector(0, 0, 0);
         this.angle = 0;
         this.w = lobbyData.paddlesData.width;
         this.h = lobbyData.paddlesData.height;
@@ -101,8 +104,8 @@ class Paddle {
 // Ball class
 class Ball {
     constructor(ballData) {
-        this.pos = new vecs.Vector(0, 0, 0);
-		this.dir = new vecs.Vector(0, 0, 0); // direction in which the ball is moving
+        this.pos = new Vector(0, 0, 0);
+		this.dir = new Vector(0, 0, 0); // direction in which the ball is moving
         // this.lastHit = -1; // ID of the last player who hit the ball
                            // Will be useful in gamemodes with more than 2 players where we want to give points to
                            // the right player.
@@ -126,11 +129,17 @@ class Ball {
 //      save calculations here. We will see.
 
 // Data class
-class Data {
+export default class Data {
     constructor(lobbyData) {
         this.connectedPlayers = 0;
         this.gameInterval = 0;
+        this.jisus_matchID = 0;
+
+        this.imminent = false;
         this.ongoing = false;
+        this.timeLimit = null;
+        this.gameCountDown = null;
+        this.countDownDisplay = null;
 
         // get the gamemode info from the lobby data;
         this.gamemode = new GameMode(lobbyData.gamemodeData);
@@ -139,9 +148,10 @@ class Data {
         this.camera = new Camera();
         this.field = new Field(lobbyData.fieldData);
         this.ball = new Ball(lobbyData.ballData);
-
+        
         // create and fill the array of players
         this.players = {};
+        this.winner = 0;
 
 		this.playersArray = [];
 
@@ -160,12 +170,5 @@ class Data {
 // Creating an instance of the Data class
 // const data = new Data(settings);
 
-export default { Camera, 
-				 GameMode, 
-				 Field, 
-				 Wall, 
-				 Player, 
-				 Paddle, 
-				 Ball, 
-				 Data
-				};
+// module.exports = { Data };
+// export default { Data };
