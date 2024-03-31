@@ -55,7 +55,7 @@ export default class CreateTournament extends AbstractView {
     if (!this.game) {
       this.game = new Game(matchID, 500, 830);
     } else {
-      this.game.destroy();
+      this.game.cleanAll();
       this.game = new Game(matchID, 500, 830);  
       document.getElementById('gameContainer').innerHTML = '';
     }
