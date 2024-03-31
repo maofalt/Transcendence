@@ -755,9 +755,6 @@ class PasswordResetView(generics.ListCreateAPIView):
             return JsonResponse({'success': False, 'error': escape('Invalid password reset link')}, status=400)
 
 
-        
-        
-
 def password_reset_done(request):
     html = render_to_string('password_reset_done.html')
     # return render(request, 'password_reset_done.html')
