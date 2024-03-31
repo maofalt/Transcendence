@@ -79,6 +79,13 @@ h1 {
     /* border: 1px solid blue; */
 }
 
+#three-js-container {
+}
+
+#game-preview {
+    text-align: center;
+}
+
 #tournament-settings {
     flex: 1;
 }

@@ -52,8 +52,8 @@ export default class CreateTournament extends AbstractView {
     let matchID = await this.createGame(gameSettings);
     let gamePreviewPanel = document.getElementById('game-preview');
     // console.log('GAME PREVIEW PANEL', gamePreviewPanel);
-    let width = gamePreviewPanel.offsetWidth;
-    let height = gamePreviewPanel.offsetHeight;
+    let width = gamePreviewPanel.offsetWidth - 30;
+    let height = gamePreviewPanel.offsetHeight - 100;
 
     console.log('Match ID:', matchID);
     // console.log("GAME CONTAINER SIZE",width, height);
@@ -209,7 +209,7 @@ export default class CreateTournament extends AbstractView {
         </div>  
       </div>
       <div class="game-showcase" id="game-preview">
-        <h2>Preview</h2>
+        <h2 id="settings-title">Preview</h2>
         <div id="three-js-container"></div>
       </div>
     </section>
@@ -218,7 +218,7 @@ export default class CreateTournament extends AbstractView {
       var tempDiv = document.createElement('div');
       tempDiv.innerHTML = htmlstuff;
       let htmlElement = tempDiv;
-      htmlElement.querySelector('.game-showcase').innerHTML = await this.game.getHtml();
+      htmlElement.querySelector('.game-showcase').innerHTML += await this.game.getHtml();
       return htmlElement.innerHTML;
   }
 
