@@ -37,6 +37,13 @@ export default class CreateTournament extends AbstractView {
           // Re-initialize the game with new settings
           await this.initializeGame(gameSettings);
         });
+        // listeners :
+        let create = document.getElementById('submitTournament');
+        let leave = document.getElementById('leaveButton');
+
+        create.onclick = () => this.handleSubmit.bind(this);
+        // create.onclick = () => { console.log('Create Tournament BUTTON CLICKED !!')};
+        leave.onclick = () => window.history.back();
       });
     } catch (error) {
       console.error('Failed to initialize CreateTournament:', error);
@@ -78,7 +85,7 @@ export default class CreateTournament extends AbstractView {
 	  }
 	}
     
-  async getHtml() {    
+  async getHtml() {
     let htmlstuff = `
     <h1>Tournament Creation</h1>
     <section class="create-tournament">
@@ -242,14 +249,15 @@ export default class CreateTournament extends AbstractView {
       var tempDiv = document.createElement('div');
       tempDiv.innerHTML = htmlstuff;
 
-      let createButton = new CustomButton({content: "Create Tournament", action: true,style: {position: 'absolute', bottom: '30px', right: '3.3%'}});
-      tempDiv.appendChild(createButton);
-      createButton.onclick = () => this.handleSubmit.bind(this);
+      let createButton = new CustomButton({content: "Create Tournament", action: true, style: {position: 'absolute', bottom: '30px', right: '3.3%'}});
       createButton.id = 'submitTournament';
+      // createButton.onclick = () => this.handleSubmit.bind(this);
+      tempDiv.appendChild(createButton);
 
       let leaveButton = new CustomButton({content: "< Back", style: {position: 'absolute', bottom: '30px', left: '3.3%'}});
+      leaveButton.id = 'leaveButton';
+      // leaveButton.onclick = () => window.history.back();
       tempDiv.appendChild(leaveButton);
-      leaveButton.onclick = () => window.history.back();
 
       let htmlElement = tempDiv;
       htmlElement.querySelector('.game-showcase').innerHTML += await this.game.getHtml();
@@ -361,6 +369,7 @@ export default class CreateTournament extends AbstractView {
 	}
 
   async handleSubmit(event) {
+    console.log("HANDLE SUBMIT");
     event.preventDefault();
 
     //Collect data fom the tournamet settings form
