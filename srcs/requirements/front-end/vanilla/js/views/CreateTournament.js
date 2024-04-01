@@ -1,6 +1,5 @@
-import createTournamentStyles from '@css/CreateTournament.css?raw'
+import '@css/CreateTournament.css'
 import AbstractView from "./AbstractView";
-import AbstractComponent from "@components/AbstractComponent";
 import { makeApiRequest } from '@utils/makeApiRequest.js';
 import { navigateTo } from '@utils/Router.js';
 import Game from '@views/Game.js';
@@ -8,7 +7,7 @@ import { htmlToElement } from '@utils/htmlToElement';
 import CustomButton from '@components/CustomButton.js';
 
 
-export default class CreateTournament extends AbstractComponent {
+export default class CreateTournament extends AbstractView {
 
   constructor() {
       super();
@@ -17,19 +16,26 @@ export default class CreateTournament extends AbstractComponent {
       this.addPlayerDataToGameSettings = this.addPlayerDataToGameSettings.bind(this);
       this.getGameSettingsFromForm = this.getGameSettingsFromForm.bind(this);
       this.game = new Game();
-
-      this.init();
   }
-
+  
   async init() {
     try {
+      let tempDiv = document.getElementById('create-tournament');
+      let createButton = new CustomButton({content: "Create Tournament", action: true, style: {position: 'absolute', bottom: '30px', right: '3.3%'}});
+      tempDiv.appendChild(createButton);
+      createButton.onclick = () => this.handleSubmit.bind(this);
+      createButton.id = 'submitTournament';
+
+      let leaveButton = new CustomButton({content: "< Back", style: {position: 'absolute', bottom: '30px', left: '3.3%'}});
+      tempDiv.appendChild(leaveButton);
+      leaveButton.onclick = () => window.history.back();
+
       // Initialize the game with basic settings
       let basicGameSettings = await this.getBasicGameSettings();
       console.log('Initializing game with basic settings:', basicGameSettings);
       await this.initializeGame(basicGameSettings);
-      this.shadowRoot.querySelector('.game-showcase').innerHTML += await this.game.getHtml();
 
-      let gameSettingsForm = this.shadowRoot.getElementById('game-settings-form');
+      let gameSettingsForm = document.getElementById('game-settings-form');
       gameSettingsForm.querySelectorAll('input').forEach(input => {
         input.addEventListener('change', async (event) => {
           event.preventDefault();
@@ -49,8 +55,9 @@ export default class CreateTournament extends AbstractComponent {
 
 // Helper method to initialize or update the game preview
   async initializeGame(gameSettings) {
+
     let matchID = await this.createGame(gameSettings);
-    let gamePreviewPanel = this.shadowRoot.getElementById('game-preview');
+    let gamePreviewPanel = document.getElementById('game-preview');
     // console.log('GAME PREVIEW PANEL', gamePreviewPanel);
     let width = gamePreviewPanel.offsetWidth - 30;
     let height = gamePreviewPanel.offsetHeight - 100;
@@ -63,7 +70,7 @@ export default class CreateTournament extends AbstractComponent {
     } else {
       this.game.cleanAll();
       this.game = new Game(matchID, width, height);
-      // this.shadowRoot.getElementById('gameContainer').innerHTML = '';
+      document.getElementById('gameContainer').innerHTML = '';
     }
     await this.game.init(); // Make sure this can be safely called multiple times or after updating settings
     console.log('Game initialized');
@@ -82,8 +89,9 @@ export default class CreateTournament extends AbstractComponent {
 	  }
 	}
     
-  async getHtml() {
+  async getHtml() {    
     let htmlstuff = `
+    <div id="create-tournament">
     <h1>Tournament Creation</h1>
     <section class="create-tournament">
 
@@ -201,7 +209,7 @@ export default class CreateTournament extends AbstractComponent {
                   <input type="number" id="ball_speed" name="ball_speed" step="0.1" value="0.3">
                 </div>
 
-                <div class="setting-input" id="ball-color-input">
+                <div class="setting-input" id="ball_color-input">
                   <label for="ball_color">Ball Color :</label>
                   <input type="color" id="ball_color" name="ball_color" value="#ff0000">
                 </div>
@@ -242,21 +250,14 @@ export default class CreateTournament extends AbstractComponent {
         <div id="three-js-container"></div>
       </div>
     </section>
+    </div>
     `;
       var tempDiv = document.createElement('div');
       tempDiv.innerHTML = htmlstuff;
 
-      let createButton = new CustomButton({content: "Create Tournament", action: true,style: {position: 'absolute', bottom: '30px', right: '3.3%'}});
-      tempDiv.appendChild(createButton);
-      createButton.onclick = () => this.handleSubmit.bind(this);
-      createButton.id = 'submitTournament';
-
-      let leaveButton = new CustomButton({content: "< Back", style: {position: 'absolute', bottom: '30px', left: '3.3%'}});
-      tempDiv.appendChild(leaveButton);
-      leaveButton.onclick = () => window.history.back();
-
       let htmlElement = tempDiv;
       htmlElement.querySelector('.game-showcase').innerHTML += await this.game.getHtml();
+      // htmlElement.id = 'create-tournament';
       return htmlElement.innerHTML;
   }
 
@@ -265,26 +266,26 @@ export default class CreateTournament extends AbstractComponent {
     try {
 			let gameSettings = {
         "gamemodeData": {
-          "nbrOfPlayers": parseInt(this.shadowRoot.getElementById('nbr_of_players_per_match').value, 10),
-          "nbrOfRounds": parseInt(this.shadowRoot.getElementById('nbr_of_rounds').value, 10),
+          "nbrOfPlayers": parseInt(document.getElementById('nbr_of_players_per_match').value, 10),
+          "nbrOfRounds": parseInt(document.getElementById('nbr_of_rounds').value, 10),
           "timeLimit": 5,
           "gameType": 0
         },
         "fieldData": {
-          "wallsFactor": parseFloat(this.shadowRoot.getElementById('walls_factor').value, 0.5),
-          "sizeOfGoals": parseInt(this.shadowRoot.getElementById('size_of_goals').value, 10)
+          "wallsFactor": parseFloat(document.getElementById('walls_factor').value, 0.5),
+          "sizeOfGoals": parseInt(document.getElementById('size_of_goals').value, 10)
         },
         "paddlesData": {
           "width": 1,
-          "height": parseInt(this.shadowRoot.getElementById('paddle_height').value, 10),
-          "speed": parseFloat(this.shadowRoot.getElementById('paddle_speed').value, 0.2)
+          "height": parseInt(document.getElementById('paddle_height').value, 10),
+          "speed": parseFloat(document.getElementById('paddle_speed').value, 0.2)
         },
         "ballData": {
-          "speed": parseFloat(this.shadowRoot.getElementById('ball_speed').value, 0.3),
-          "radius": parseFloat(this.shadowRoot.getElementById('ball_radius').value, 1),
-          "color": this.shadowRoot.getElementById('ball-color').value,
-          "model": this.shadowRoot.getElementById('ball-model').value,
-          "texture": this.shadowRoot.getElementById('ball-texture').value
+          "speed": parseFloat(document.getElementById('ball_speed').value, 0.3),
+          "radius": parseFloat(document.getElementById('ball_radius').value, 1),
+          "color": document.getElementById('ball_color').value,
+          "model": document.getElementById('ball-model').value,
+          "texture": document.getElementById('ball-texture').value
         },
         "playersData": [
         ]
@@ -369,11 +370,11 @@ export default class CreateTournament extends AbstractComponent {
     event.preventDefault();
 
     //Collect data fom the tournamet settings form
-    const tournamentData =  new FormData(this.shadowRoot.getElementById('tournament-form'));
+    const tournamentData =  new FormData(document.getElementById('tournament-form'));
     const tournamentSettings = Object.fromEntries(tournamentData.entries());
 
     //Collect data from the game settings form
-    const gameData = new FormData(this.shadowRoot.getElementById('game-settings-form'));
+    const gameData = new FormData(document.getElementById('game-settings-form'));
     const gameSettings = Object.fromEntries(gameData.entries());
 
     // Extract nbr_of_player_match from gameSettings
@@ -394,5 +395,3 @@ export default class CreateTournament extends AbstractComponent {
     }
   }
 }
-
-customElements.define('create-tournament', CreateTournament);
