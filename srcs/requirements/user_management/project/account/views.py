@@ -6,6 +6,7 @@ from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmVie
 from django.db.utils import IntegrityError
 from django.core import signing
 from django.core.exceptions import ValidationError
+from django.core.validators import MinLengthValidator, MaxLengthValidator, RegexValidator
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib.auth.hashers import make_password, check_password
@@ -358,12 +359,32 @@ def api_logout_view(request):
     else:
         return JsonResponse({'error': escape('Invalid request method')}, status=400)
 
+
 # ---------------------- API signup functions ------------------------------
+def validate_not_contains_forbidden_word(value):
+    forbidden_words = ["admin", "root", "superuser"]
+    if any(forbidden_word in value.lower() for forbidden_word in forbidden_words):
+        raise ValidationError("Username contains a forbidden word.")
 
 def validate_username(username):
+    validators = [
+        MinLengthValidator(3, message="Username must be at least 3 characters long."),  # Minimum length
+        MaxLengthValidator(20, message="Username must be less than 20 characters long."),  # Maximum length
+        RegexValidator(r'^\w+$', message="Username must be alphanumeric."),  # Alphanumeric characters only
+        validate_not_contains_forbidden_word,
+    ]
+
+    # Run each validator on the username
+    for validator in validators:
+        try:
+            validator(username)
+        except ValidationError as e:
+            return False, e.message
+
     if User.objects.filter(username=username).exists():
-        return False
-    return True
+        return False, "Username already exists."
+
+    return True, None
 
 def is_email_valid(email):
     try:
@@ -390,45 +411,49 @@ def validate_user_password(password, username=""):
 def validate_player_name(playername):
     # This regex allows alphanumeric characters, dashes, and underscores
     if re.match(r'^[\w-]+$', playername):
-        return True
-    return False
+        return True, None
+    return False, "Player name contains invalid characters."
 
 # --------------------------------- API functions views ---------------------------
 
 def validate_username_view(request):
     if request.method == "POST":
         username = request.POST.get("username", "")
-        if validate_username(username):
+        valid, error_message = validate_username(username)
+        if valid:
             return JsonResponse({'valid': True})
         else:
-            return JsonResponse({'valid': False, 'error': escape('Username is invalid or already taken')})
+            return JsonResponse({'valid': False, 'error': error_message})
     return JsonResponse({'error': escape('Invalid request method')}, status=400)
 
 def validate_email_view(request):
     if request.method == "POST":
         email = request.POST.get("email", "")
-        if is_email_valid(email):
+        valid, error_message = is_email_valid(email)
+        if valid:
             return JsonResponse({'valid': True})
         else:
-            return JsonResponse({'valid': False, 'error': escape('Email is invalid or already in use')})
+            return JsonResponse({'valid': False, 'error': error_message})
     return JsonResponse({'error': escape('Invalid request method')}, status=400)
 
 def validate_password_view(request):
     if request.method == "POST":
         password = request.POST.get("password", "")
-        if validate_user_password(password):
+        valid, error_message = validate_user_password(password)
+        if valid:
             return JsonResponse({'valid': True})
         else:
-            return JsonResponse({'valid': False, 'error': escape('Password does not meet the criteria')})
+            return JsonResponse({'valid': False, 'error': error_message})
     return JsonResponse({'error': escape('Invalid request method')}, status=400)
 
 def validate_player_name_view(request):
     if request.method == "POST":
         playername = request.POST.get("playername", "")
-        if validate_player_name(playername):
+        valid, error_message = validate_player_name(playername)
+        if valid:
             return JsonResponse({'valid': True})
         else:
-            return JsonResponse({'valid': False, 'error': escape('Player name contains invalid characters')})
+            return JsonResponse({'valid': False, 'error': error_message})
     return JsonResponse({'error': escape('Invalid request method')}, status=400)
 
 @csrf_protect
@@ -444,8 +469,9 @@ def api_signup_view(request):
         email = request.POST["signupEmail"]
 
         # Validate each field using the utility functions
-        if not validate_username(username):
-            return JsonResponse({'success': False, 'error': escape('Username already exists')})
+        valid, error_message = validate_username(username)
+        if not valid:
+            return JsonResponse({'success': False, 'error': error_message})
 
         valid, error_message = is_email_valid(email)
         if not valid:
@@ -455,8 +481,9 @@ def api_signup_view(request):
         if not valid:
             return JsonResponse({'success': False, 'error': error_message})
 
-        if not validate_player_name(playername):
-            return JsonResponse({'success': False, 'error': escape('Invalid player name')})
+        valid, error_message = validate_player_name(playername)
+        if not valid:
+            return JsonResponse({'success': False, 'error': error_message})
 
         if not (username and password and playername and email):
             return JsonResponse({'success': False, 'error': escape('All fields are required')})
