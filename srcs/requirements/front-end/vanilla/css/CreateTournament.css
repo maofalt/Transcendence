@@ -85,7 +85,7 @@ h1 {
 }
 
 .settings-panel {
-    margin: 15px;
+    margin: 0px 15px 15px 15px;
     padding: 10px 0px;
 
     display: flex;
