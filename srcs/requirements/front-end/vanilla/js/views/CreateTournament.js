@@ -21,12 +21,14 @@ export default class CreateTournament extends AbstractView {
   async init() {
     try {
       let tempDiv = document.getElementById('create-tournament');
-      let createButton = new CustomButton({content: "Create Tournament", action: true, style: {position: 'absolute', bottom: '30px', right: '3.3%'}});
+      let createButton = new CustomButton({content: "Create Tournament", action: true,
+        style: {position: 'absolute', bottom: '30px', right: '3.3%', padding: "0px 30px"}});
       tempDiv.appendChild(createButton);
       createButton.onclick = () => this.handleSubmit.bind(this);
       createButton.id = 'submitTournament';
 
-      let leaveButton = new CustomButton({content: "< Back", style: {position: 'absolute', bottom: '30px', left: '3.3%'}});
+      let leaveButton = new CustomButton({content: "< Leave",
+        style: {position: 'absolute', bottom: '30px', left: '3.3%', padding: "0px 30px"}});
       tempDiv.appendChild(leaveButton);
       leaveButton.onclick = () => window.history.back();
 
