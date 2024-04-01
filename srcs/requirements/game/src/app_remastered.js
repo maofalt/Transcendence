@@ -325,9 +325,20 @@ io.on('connection', (client) => {
 		});
 
 		client.on('delete-match', (matchID) => {
-			if (matches.has(matchID)) {
+			console.log("FROM BACKEND : DELETE MATCH",client.matchID);
+			// Print the keys in the matches map
+			console.log("Keys in matches map:", Array.from(matches.keys()))
+			if (matches.has(client.matchID)) {
+				console.log("INSIDE MATCH HAS MATCHID");
+				if (matches.get(client.matchID).gameState.gameInterval)
+					clearInterval(this.matches.get(client.matchID).gameState.gameInterval);
+				console.log("DELETING MATCH");
+				matches.delete(client.matchID);
+			} else if (matches.has(matchID)) {
+				console.log("INSIDE MATCH HAS MATCHID");
 				if (matches.get(matchID).gameState.gameInterval)
 					clearInterval(this.matches.get(matchID).gameState.gameInterval);
+				console.log("DELETING MATCH");
 				matches.delete(matchID);
 			}
 		});

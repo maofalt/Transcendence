@@ -20,13 +20,18 @@ export default class CreateTournament extends AbstractView {
   
   async init() {
     try {
+
+      // adding buttons to create the tournament and leave the page
       let tempDiv = document.getElementById('create-tournament');
+      
+      // create button
       let createButton = new CustomButton({content: "Create Tournament", action: true,
         style: {position: 'absolute', bottom: '30px', right: '3.3%', padding: "0px 30px"}});
       tempDiv.appendChild(createButton);
       createButton.onclick = () => this.handleSubmit.bind(this);
       createButton.id = 'submitTournament';
 
+      // leave button
       let leaveButton = new CustomButton({content: "< Leave",
         style: {position: 'absolute', bottom: '30px', left: '3.3%', padding: "0px 30px"}});
       tempDiv.appendChild(leaveButton);
@@ -61,19 +66,22 @@ export default class CreateTournament extends AbstractView {
     let matchID = await this.createGame(gameSettings);
     let gamePreviewPanel = document.getElementById('game-preview');
     // console.log('GAME PREVIEW PANEL', gamePreviewPanel);
-    let width = gamePreviewPanel.offsetWidth - 30;
+    let width = gamePreviewPanel.offsetWidth;
     let height = gamePreviewPanel.offsetHeight - 100;
 
     console.log('Match ID:', matchID);
     // console.log("GAME CONTAINER SIZE",width, height);
     // Assuming the Game constructor or an update method can handle new settings
-    if (!this.game) {
-      this.game = new Game(matchID, width, height);
-    } else {
-      this.game.cleanAll();
-      this.game = new Game(matchID, width, height);
-      document.getElementById('gameContainer').innerHTML = '';
+    // if (!this.game) {
+    //   this.game = new Game(matchID, width, height);
+    // } else {
+    if (this.game) {
+      this.game.cleanAll(matchID);
     }
+      this.game = null;
+      this.game = await new Game(matchID, width, height);
+      document.getElementById('gameContainer').innerHTML = '';
+    // }
     await this.game.init(); // Make sure this can be safely called multiple times or after updating settings
     console.log('Game initialized');
   }
@@ -87,7 +95,8 @@ export default class CreateTournament extends AbstractView {
             return response.body.matchID;
 	  } catch (error) {
 	  	console.error('Failed to create match:', error);
-            return '';
+      console.log("THIS IS THE ERROR ::::::::::",error);
+            return error;
 	  }
 	}
     
@@ -159,8 +168,8 @@ export default class CreateTournament extends AbstractView {
                     type="range" 
                     id="nbr_of_players_per_match"
                     name="nbr_of_players_per_match"
-                    min="2" 
-                    max="8" 
+                    min="2"
+                    max="8"
                     value="5"
                     step="1"
                     oninput="this.nextElementSibling.value = this.value">
@@ -189,7 +198,7 @@ export default class CreateTournament extends AbstractView {
               <div class="settings-card">
                 <div class="setting-input">
                   <label for="paddle_height">Paddle Height :</label>
-                  <input type="range" id="paddle_height" name="paddle_height" min="1" max="12" step="1" value="10">
+                  <input type="range" id="paddle_height" name="paddle_height" min="1" max="12" step="1" value="7">
                 </div>
 
                 <div class="setting-input">
@@ -208,7 +217,7 @@ export default class CreateTournament extends AbstractView {
 
                 <div class="setting-input" id="ball-speed-input">
                   <label for="ball_speed">Ball Speed :</label>
-                  <input type="number" id="ball_speed" name="ball_speed" step="0.1" value="0.3">
+                  <input type="number" id="ball_speed" name="ball_speed" min="0.1" max="1.1" step="0.1" value="0.3">
                 </div>
 
                 <div class="setting-input" id="ball_color-input">
@@ -234,11 +243,12 @@ export default class CreateTournament extends AbstractView {
                   <input list="textures" id ="ball-texture" name="ball-texture"></label>
                   <datalist id="textures">
                     <option value="none">
-                    <option value="yridgway">
-                    <option value="4kCeres">
-                    <option value="4kPlanet">
-                    <option value="1.8kVenus">
-                    <option value="redSpace">
+                    <option value="yridgway.jpg">
+                    <option value="mklimina.jpg">
+                    <option value="4kCeres.jpg">
+                    <option value="4kPlanet.jpg">
+                    <option value="1.8kVenus.jpg">
+                    <option value="redSpace.jpg">
                   </datalist>
                 </div>
               </div>
@@ -268,23 +278,23 @@ export default class CreateTournament extends AbstractView {
     try {
 			let gameSettings = {
         "gamemodeData": {
-          "nbrOfPlayers": parseInt(document.getElementById('nbr_of_players_per_match').value, 10),
-          "nbrOfRounds": parseInt(document.getElementById('nbr_of_rounds').value, 10),
+          "nbrOfPlayers": parseInt(document.getElementById('nbr_of_players_per_match').value),
+          "nbrOfRounds": parseInt(document.getElementById('nbr_of_rounds').value),
           "timeLimit": 5,
           "gameType": 0
         },
         "fieldData": {
-          "wallsFactor": parseFloat(document.getElementById('walls_factor').value, 0.5),
-          "sizeOfGoals": parseInt(document.getElementById('size_of_goals').value, 10)
+          "wallsFactor": parseFloat(document.getElementById('walls_factor').value),
+          "sizeOfGoals": parseInt(document.getElementById('size_of_goals').value)
         },
         "paddlesData": {
           "width": 1,
-          "height": parseInt(document.getElementById('paddle_height').value, 10),
-          "speed": parseFloat(document.getElementById('paddle_speed').value, 0.2)
+          "height": parseInt(document.getElementById('paddle_height').value),
+          "speed": parseFloat(document.getElementById('paddle_speed').value)
         },
         "ballData": {
-          "speed": parseFloat(document.getElementById('ball_speed').value, 0.3),
-          "radius": parseFloat(document.getElementById('ball_radius').value, 1),
+          "speed": parseFloat(document.getElementById('ball_speed').value),
+          "radius": parseFloat(document.getElementById('ball_radius').value),
           "color": document.getElementById('ball_color').value,
           "model": document.getElementById('ball-model').value,
           "texture": document.getElementById('ball-texture').value
@@ -352,8 +362,8 @@ export default class CreateTournament extends AbstractView {
           "speed": 0.2
         },
         "ballData": {
-          "speed": 0.2,
-          "radius": 2,
+          "speed": 0.3,
+          "radius": 1,
           "color": "0xffffff",
           "model": "",
           "texture": ""

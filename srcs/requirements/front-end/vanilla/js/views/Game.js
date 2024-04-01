@@ -281,7 +281,7 @@ export default class Game extends AbstractView {
 		});
 	};
 
-	cleanAll() {
+	cleanAll(matchID) {
 		console.log("CLEANING CLIENT !!");
 		// Cleanup logic here (remove event listeners, etc.)
 		window.removeEventListener('resize', this.onWindowResize.bind(this));
@@ -289,7 +289,8 @@ export default class Game extends AbstractView {
 		window.removeEventListener("keyup", this.handleKeyRelease.bind(this));
 
 		if (this.socket) {
-			this.socket.emit("delete-match", this.matchID);
+			console.log("FROM CLIENT : DELETE MATCH");
+			this.socket.emit("delete-match", matchID);
 			this.socket.disconnect();
 		}
 
