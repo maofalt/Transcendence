@@ -74,9 +74,7 @@ export default class ProfilePage extends AbstractComponent {
 		const profile = new Pannel({dark: false, title: "Profile"});
 		profile.shadowRoot.querySelector("#pannel-title").style.setProperty("padding", "0px 0px 0px 30px");
 		profile.style.setProperty("display", "block");
-		
-		const friendsPannel = new Pannel({dark: false, title: "Friends"});
-		
+				
 		const personalInfo = new Pannel({dark: true, title: "Personal Info", style: {display: "block",  padding: "0px 0px 0px 20px"}});
 		personalInfo.shadowRoot.querySelector("#pannel-title").style.setProperty("margin", "10px 0px");
 		
@@ -198,13 +196,48 @@ export default class ProfilePage extends AbstractComponent {
 		addFriend.button.onclick = async () => await addFriend.validate();
 		addFriend.shadowRoot.querySelector("#input-button").style.setProperty("font-size", "28px");
 
+		const friendHistoryPannel = new Pannel({dark: false, title: ""});
+		friendHistoryPannel.shadowRoot.querySelector("#pannel-title").style.display = "none";
+		
+		const friendsContainer = document.createElement("div");
+		friendsContainer.id = "friends-container";
+
+		const matchHistoryContainer = document.createElement("div");
+		matchHistoryContainer.id = "match-history-container";
+		
+		const tabContainer = document.createElement("div");
+		tabContainer.style.setProperty("display", "flex");
+		tabContainer.style.setProperty("justify-content", "center");
+		tabContainer.style.setProperty("align-items", "center");
+		
+		const friendTabButton = new CustomButton({content: "Friends", style: {margin: "10px 10px"}});
+		friendTabButton.style.setProperty("font-family", "Space Grotesk, sans-serif");
+		friendTabButton.style.setProperty("font-size", "20px");
+		friendTabButton.onclick = () => {
+			friendsContainer.style.display = "block";
+			matchHistoryContainer.style.display = "none";
+		};
+		tabContainer.appendChild(friendTabButton);
+
+		const matchHistoryTabButton = new CustomButton({content: "Match History", style: {margin: "10px 10px"}});
+		matchHistoryTabButton.style.setProperty("font-family", "Space Grotesk, sans-serif");
+		matchHistoryTabButton.style.setProperty("font-size", "20px");
+		matchHistoryTabButton.onclick = () => {
+			friendsContainer.style.display = "none";
+			matchHistoryContainer.style.display = "block";
+		};
+		tabContainer.appendChild(matchHistoryTabButton);
+
+		friendHistoryPannel.shadowRoot.appendChild(tabContainer);
+
 		const friendsListPannel = new Pannel({dark: true, title: `Friends List  ( ${this.user.friends_count} )`});
 
 		const friendsList = new FriendsList();
 		friendsListPannel.shadowRoot.appendChild(friendsList);
 
-		friendsPannel.shadowRoot.appendChild(addFriend);
-		friendsPannel.shadowRoot.appendChild(friendsListPannel);
+		friendsContainer.appendChild(addFriend);
+		friendsContainer.appendChild(friendsListPannel);
+		friendHistoryPannel.shadowRoot.appendChild(friendsContainer);
 
 		personalInfo.shadowRoot.appendChild(infos);
 		gameStats.shadowRoot.appendChild(stats);
@@ -228,7 +261,7 @@ export default class ProfilePage extends AbstractComponent {
 		
 		this.shadowRoot.appendChild(goBack);
 		this.shadowRoot.appendChild(profile);
-		this.shadowRoot.appendChild(friendsPannel);
+		this.shadowRoot.appendChild(friendHistoryPannel);
 	}
 
 	deleteAccount = async () => {
