@@ -195,17 +195,6 @@ class MatchGenerator(generics.ListCreateAPIView):
             match = tournament.assign_player_to_match(player, 0)
             if match:
                 print(f"Player {player} added to match {match}")
-                # participant, created = MatchParticipants.objects.get_or_create(
-                #     match_id=match.id,
-                #     player_id=player.id,
-                #     round_number=0
-                # )       
-                # if created:
-                #     print(f"Participant {participant} created with player ID: {player.id}")
-                # else:
-                #     print(f"Participant {participant} already exists for match {match.id}")            
-                # match.participants.add(participant)
-                # match.save()
             else:
                 print(f"No available matches for player {player}")
 
@@ -214,29 +203,98 @@ class MatchGenerator(generics.ListCreateAPIView):
 
         return JsonResponse(serializer.data, status=status.HTTP_201_CREATED, safe=False)
     
+
+@api_view(['POST'])
+def match_generator(request, id):
+    authentication_classes = [CustomJWTAuthentication]
+    serializer_class = MatchGeneratorSerializer
+    queryset = TournamentMatch.objects.all()
+
+    print("Tournament id: ", id)
+    try:
+        tournament = get_object_or_404(Tournament, id=id)
+    except Http404:
+        return JsonResponse({'error': 'Tournament not found'}, status=404)
+    user_info = request.user
+    if not isinstance(user_info, tuple) or len(user_info) != 2:
+        raise exceptions.AuthenticationFailed('User information is not in the expected format')
+
+    uid, username = user_info
+    if tournament.host.id != uid:
+        return Response({"message": "You are not authorized to generate Tournament."}, status=status.HTTP_403_FORBIDDEN)
+    match_setting = tournament.setting
+    tournament.calculate_nbr_of_match()
+    print("nbr_of_match of T: ", tournament.nbr_of_match)
+
+    # Create TournamentMatch instances
+    round = 0
+    players_total = tournament.players.count()
+    print("players_total: ", players_total)
+    players_match = tournament.nbr_of_player_match
+    print("players_match: ", players_match)
+    added_match = players_total // players_match
+    if players_total % players_match != 0:
+        added_match += 1
+    tmp = added_match
+    for _ in range(tournament.nbr_of_match):
+        print("round: ", round, "mathches: ", added_match)
+        added_match -= 1
+
+        tournament_match = TournamentMatch.objects.create(
+            tournament_id=tournament.id,
+            match_setting_id=match_setting.id,
+            round_number=round,
+        )
+        print("created Match: ", tournament_match)
+        tournament.matches.add(tournament_match)
+
+        if added_match == 0:
+            round += 1
+            winners = tmp
+            added_match = winners // players_match
+            if winners % players_match != 0:
+                added_match += 1
+            tmp = added_match
+
+    players = tournament.players.all().order_by('id')
+    print("all player: ", tournament.players.count())
+    for player in players:
+        match = tournament.assign_player_to_match(player, 0)
+        if match:
+            print(f"Player {player} added to match {match}")
+        else:
+            print(f"No available matches for player {player}")
+
+    tournament_matches = TournamentMatch.objects.filter(tournament_id=tournament.id).order_by('id')
+    serializer = TournamentMatchSerializer(tournament_matches, many=True)
+
+    return JsonResponse(serializer.data, status=status.HTTP_201_CREATED, safe=False)
+
+
 class MatchResult(APIView):
     # authentication_classes = [CustomJWTAuthentication]
 
     def post(self, request, match_id, winner_username):
+        # user_info = request.user
+        # if not isinstance(user_info, tuple) or len(user_info) != 2:
+        #     raise exceptions.AuthenticationFailed('User information is not in the expected format')
+        # uid, username = user_info
         print("match_id : ", match_id,  "winner_id: ", winner_username)
         try:
             match = get_object_or_404(TournamentMatch, id=match_id)
         except Http404:
             return JsonResponse({'error': 'Match not found'}, status=404)
-        # user_info = request.user
-        # if not isinstance(user_info, tuple) or len(user_info) != 2:
-        #     raise exceptions.AuthenticationFailed('User information is not in the expected format')
-        # uid, username = user_info
+        
+        players = match.players.all()
+        if not players.filter(username=winner_username).exists():
+            return Response("Winner not found among participants", status=status.HTTP_404_NOT_FOUND)
+
         if match.state == "ended":
             return Response(f"Match {match_id} has been ended before", status=status.HTTP_400_BAD_REQUEST)
+        
         match.state = "ended"
         match.save()
         winner_found = False
-
-        players = match.players.all()
-
-        if not players.filter(username=winner_username).exists():
-            return Response("Winner not found among participants", status=status.HTTP_404_NOT_FOUND)
 
         for player in players:
             if player.username == winner_username:
@@ -245,11 +303,32 @@ class MatchResult(APIView):
                 player.save()
                 match.winner = player
                 match.save()
-            else
+            else:
                 player.total_played += 1
                 player.save()
 
-        return Response("Winner found and updated successfully")
+        cur_round = match.round_number
+        if round_state(request, match.tournament_id, cur_round) == False:
+            return JsonResponse({'message': "Winner found and updated successfully", })
+        else:
+            response = generate_round(request, match.tournament_id, cur_round)
+
+
+    def round_state(request, id, cur_round):
+        try:
+            tournament = get_object_or_404(Tournament, id=id)
+        except Http404:
+            return JsonResponse({'error': 'Tournament not found'}, status=404)
+        
+        matches = tournament.matches.filter(round_number=cur_round)
+        print("matches: ", matches)
+        
+        if matches.filter(state='playing').exists() or matches.filter(state='waiting').exists():
+            return False
+        if matches.filter(state='ended').count() == matches.count():
+            return True
+        return False
+        
 
 # class MatchResult(APIView):
 #     authentication_classes = [CustomJWTAuthentication]
@@ -362,8 +441,6 @@ def match_update(request, tournament_id, round):
         return Response({"message": "Cannot update next round, the previous round is on going."}, status=400)
 
     winner_users = [match.winner for match in finished_matches if match.winner is not None]
-
-
 
 
 class TournamentRoundState(APIView):
@@ -526,44 +603,57 @@ class TournamentStart(APIView):
         if tournament.host.id != uid:
             return Response({"message": "Only the tournament host can start the tournament."}, status=403)
 
-        # Update tournament state to start
-        tournament.state = "started"
-        tournament.save()
-        tournament_players = tournament.players.all()
+        response = match_generator(request, tournament_id)
+            if response.status_code != 201:
+                return response
+        game_response = generate_round(request, id, 0)
+            if game_response.status_code != 200:
+                return game_response        
+        return response
 
-        round_nbr = 0
-        while True:
-            tournament = Tournament.objects.get(id=id)
-            if tournament.state == 'ended':
-                break
-            if round_nbr != 0:
-                match_update(request, tournament_id, round_nbr)
-            generate_round(request, tournament.id, round_nbr)
+
+
+# class TournamentStart(APIView):
+#     authentication_classes = [CustomJWTAuthentication]
+#     # permission_classes = [IsAuthenticated]
+
+#     def post(self, request, id):
+#         try:
+#             tournament = get_object_or_404(Tournament, id=id)
+#         except Http404:
+#             return JsonResponse({'error': 'Tournament not found'}, status=404)
+#         user_info = request.user
+#         if not isinstance(user_info, tuple) or len(user_info) != 2:
+#             raise exceptions.AuthenticationFailed('User information is not in the expected format')
+
+#         uid, username = user_info
+
+#         if tournament.host.id != uid:
+#             return Response({"message": "Only the tournament host can start the tournament."}, status=403)
+
+#         # Update tournament state to start
+#         tournament.state = "started"
+#         tournament.save()
+#         tournament_players = tournament.players.all()
+
+#         round_nbr = 0
+#         while True:
+#             tournament = Tournament.objects.get(id=id)
+#             if tournament.state == 'ended':
+#                 break
+#             if round_nbr != 0:
+#                 match_update(request, tournament_id, round_nbr)
+#             generate_round(request, tournament.id, round_nbr)
             
-            for player in tournament_players:
-                response = stream_notification(request, player.username, player.id, tournament.name, round_nbr)
-                if response.status_code != 200:
-                    return response
-            while round_state(request, tournament.id, round_nbr):
-                time.sleep(1)
-            round_nbr += 1
-        return Response({"status": "Tournament finished"})
+#             for player in tournament_players:
+#                 response = stream_notification(request, player.username, player.id, tournament.name, round_nbr)
+#                 if response.status_code != 200:
+#                     return response
+#             while round_state(request, tournament.id, round_nbr):
+#                 time.sleep(1)
+#             round_nbr += 1
+#         return Response({"status": "Tournament finished"})
     
-
-    def round_state(request, tournament_id, round):
-        try:
-            tournament = get_object_or_404(Tournament, id=tournament_id)
-        except Http404:
-            return JsonResponse({'error': 'Tournament not found'}, status=404)
-        
-        matches = tournament.matches.filter(round_nbr=round)
-        print("matches: ", matches)
-        
-        if matches.filter(state='playing').exists() or matches.filter(state='waiting').exists():
-            return False
-        if matches.filter(state='ended').count() == matches.count():
-            return True
-        return False
 
 
 
@@ -667,18 +757,6 @@ class MatchStart(APIView):
         # Mettre à jour l'état du match pour le démarrer
         return Response({"status": "Match started"})
 
-# @api_view(['POST'])
-# def match_start(request, match_id):
-#     try:
-#         match = get_object_or_404(TournamentMatch, id=match_id)
-#     except Http404:
-#         return JsonResponse({'error': 'Match not found'}, status=404)
-    
-#     match.state = "playing"
-#     match.save()
-    
-#     return Response({"status": "Match started"})
-
 class MatchEnd(APIView):
     authentication_classes = [CustomJWTAuthentication]
     # permission_classes = [IsAuthenticated] 
@@ -692,35 +770,6 @@ class MatchEnd(APIView):
         match.save()
         # Enregistrer les résultats du match et mettre à jour son état
         return Response({"status": "Match ended"})
-
-
-# class MatchSettingList(generics.ListCreateAPIView):
-#     queryset = MatchSetting.objects.all()
-#     serializer_class = MatchSettingSerializer
-
-#     def perform_create(self, serializer):
-#         serializer.save()
-
-# class GameTypeList(ListAPIView):
-#     authentication_classes = [CustomJWTAuthentication]
-#     # permission_classes = [IsAuthenticated] 
-
-#     queryset = GameType.objects.all()
-#     serializer_class = GameTypeSerializer
-
-# class TournamentTypeList(ListAPIView):
-#     #authentication_classes = [CustomJWTAuthentication]
-#     # permission_classes = [IsAuthenticated] 
-#     def list(self, request, *args, **kwargs):
-#         tournament_types = Tournament.TOURNAMENT_TYPE
-#         return JsonResponse({'tournament_types': tournament_types})
-
-# class RegistrationTypeList(ListAPIView):
-#     # authentication_classes = [CustomJWTAuthentication]
-#     # permission_classes = [IsAuthenticated] 
-#     def list(self, request, *args, **kwargs):
-#         registration_types = Tournament.REGISTRATION_TYPE
-#         return JsonResponse({'registration_types': registration_types})
 
 class TournamentPlayerList(ListAPIView):
     authentication_classes = [CustomJWTAuthentication]
@@ -759,16 +808,6 @@ class PlayerStatsView(APIView):
         nbr_of_won_matches = player.won_match.count()
         nbr_of_won_tournaments = player.won_tournament.count()
 
-        # Calculate the average score
-        # total_scores = 0
-        # highest_score = 0
-        # for match in played_matches:
-        #     if match.participants.filter(player_id=user_id).exists():
-        #         participant = match.participants.get(player_id=user_id)
-                # total_scores += participant.participant_score
-                # highest_score = max(highest_score, participant.participant_score)
-        # average_score = total_scores / total_played if total_played > 0 else 0
-
         serialized_tournaments = SimpleTournamentSerializer(played_tournaments, many=True)
 
         player_stats_data = {
@@ -778,8 +817,6 @@ class PlayerStatsView(APIView):
             'nbr_of_lost_matches': total_played - nbr_of_won_matches,
             'nbr_of_won_matches': nbr_of_won_matches,
             'nbr_of_won_tournaments': nbr_of_won_tournaments,
-            # 'average_score': average_score,
-            # 'highest_score': highest_score
         }
 
         serializer = PlayerGameStatsSerializer(player_stats_data)
@@ -827,9 +864,9 @@ class PlayerStatsView(APIView):
 #             print("Failed to send webhook request to the game backend. Status code:", response.status_code)
 
 
-def generate_round(request, tournament_id, round):
+def generate_round(request, id, round):
     try:
-        tournament = get_object_or_404(Tournament, id=tournament_id)
+        tournament = get_object_or_404(Tournament, id=id)
     except Http404:
         return JsonResponse({'error': 'Tournament not found'}, status=404)
     try:
@@ -854,19 +891,26 @@ def generate_round(request, tournament_id, round):
 
     webhook_thread = Thread(target=send_webhook_request, args=(serialized_matches,))
     webhook_thread.start()
-    return None
-    # return Response(serialized_matches, status=status.HTTP_200_OK)
 
-def send_webhook_request(serialized_matches):
-    game_backend_endpoint = 'http://game:3000/createMultipleMatches'
+    # Update tournament, matches state
+    tournament.state = "started"
+        tournament.save(request, id)
+    for match in matches:
+        match.state = "playing"
+        match.save()
+    # return None
+    return Response(serialized_matches, status=status.HTTP_200_OK)
 
-    payload = {'matches': serialized_matches}
-    response = requests.post(game_backend_endpoint, json=payload)
+    def send_webhook_request(serialized_matches):
+        game_backend_endpoint = 'http://game:3000/createMultipleMatches'
 
-    if response.status_code == 200:
-        print("Webhook request successfully sent to the game backend.")
-    else:
-        print("Failed to send webhook request to the game backend. Status code:", response.status_code)
+        payload = {'matches': serialized_matches}
+        response = requests.post(game_backend_endpoint, json=payload)
+
+        if response.status_code == 200:
+            print("Webhook request successfully sent to the game backend.")
+        else:
+            print("Failed to send webhook request to the game backend. Status code:", response.status_code)
 
 
 # @authentication_classes([CustomJWTAuthentication])
