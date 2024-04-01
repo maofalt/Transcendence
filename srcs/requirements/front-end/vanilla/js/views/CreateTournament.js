@@ -37,13 +37,6 @@ export default class CreateTournament extends AbstractView {
           // Re-initialize the game with new settings
           await this.initializeGame(gameSettings);
         });
-        // listeners :
-        let create = document.getElementById('submitTournament');
-        let leave = document.getElementById('leaveButton');
-
-        create.onclick = () => this.handleSubmit.bind(this);
-        // create.onclick = () => { console.log('Create Tournament BUTTON CLICKED !!')};
-        leave.onclick = () => window.history.back();
       });
     } catch (error) {
       console.error('Failed to initialize CreateTournament:', error);
@@ -85,7 +78,7 @@ export default class CreateTournament extends AbstractView {
 	  }
 	}
     
-  async getHtml() {
+  async getHtml() {    
     let htmlstuff = `
     <h1>Tournament Creation</h1>
     <section class="create-tournament">
@@ -214,7 +207,7 @@ export default class CreateTournament extends AbstractView {
 
                 <div class="setting-input" id="ball-model-input">
                   <label>Ball model :
-                  <input list="models" name="ball-model"></label>
+                  <input list="models" id ="ball-model" name="ball-model"></label>
                   <datalist id="models">
                     <option value="none">
                     <option value="banana">
@@ -224,7 +217,7 @@ export default class CreateTournament extends AbstractView {
 
                 <div class="setting-input" id="ball-texture-input">
                   <label>Ball texture :
-                  <input list="textures" name="ball-texture"></label>
+                  <input list="textures" id ="ball-texture" name="ball-texture"></label>
                   <datalist id="textures">
                     <option value="none">
                     <option value="yridgway">
@@ -249,15 +242,14 @@ export default class CreateTournament extends AbstractView {
       var tempDiv = document.createElement('div');
       tempDiv.innerHTML = htmlstuff;
 
-      let createButton = new CustomButton({content: "Create Tournament", action: true, style: {position: 'absolute', bottom: '30px', right: '3.3%'}});
-      createButton.id = 'submitTournament';
-      // createButton.onclick = () => this.handleSubmit.bind(this);
+      let createButton = new CustomButton({content: "Create Tournament", action: true,style: {position: 'absolute', bottom: '30px', right: '3.3%'}});
       tempDiv.appendChild(createButton);
+      createButton.onclick = () => this.handleSubmit.bind(this);
+      createButton.id = 'submitTournament';
 
       let leaveButton = new CustomButton({content: "< Back", style: {position: 'absolute', bottom: '30px', left: '3.3%'}});
-      leaveButton.id = 'leaveButton';
-      // leaveButton.onclick = () => window.history.back();
       tempDiv.appendChild(leaveButton);
+      leaveButton.onclick = () => window.history.back();
 
       let htmlElement = tempDiv;
       htmlElement.querySelector('.game-showcase').innerHTML += await this.game.getHtml();
@@ -286,7 +278,7 @@ export default class CreateTournament extends AbstractView {
         "ballData": {
           "speed": parseFloat(document.getElementById('ball_speed').value, 0.3),
           "radius": parseFloat(document.getElementById('ball_radius').value, 1),
-          "color": document.getElementById('ball-color').value,
+          "color": document.getElementById('ball_color').value,
           "model": document.getElementById('ball-model').value,
           "texture": document.getElementById('ball-texture').value
         },
@@ -294,8 +286,10 @@ export default class CreateTournament extends AbstractView {
         ]
       }
       await this.addPlayerDataToGameSettings(gameSettings, [], gameSettings.gamemodeData.nbrOfPlayers);
+      console.log('Game settings from form:', gameSettings);
       return gameSettings;
 		} catch (error) {
+      console.log('ball color from form:', document.getElementById('ball_color').value);
 			console.error('Failed to join tournament:', error);
 		} 
     
@@ -311,7 +305,7 @@ export default class CreateTournament extends AbstractView {
 			
       const userName = responseUser.body.username;
       playerNames.push(userName);
-      let dummyPlayeName = 'player';
+      let dummyPlayeName = 'playerdesd';
       let dummyPlayerColor = '0x00ff00';
   
       while (playerNames.length < nbrOfPlayers){
@@ -361,7 +355,6 @@ export default class CreateTournament extends AbstractView {
         ]
       };
       await this.addPlayerDataToGameSettings(gameSettings);
-      console.log('Game settings automatically after call:', gameSettings)
       return gameSettings;
     } catch (error) {
       console.error('Failed to get user:', error);
@@ -369,7 +362,6 @@ export default class CreateTournament extends AbstractView {
 	}
 
   async handleSubmit(event) {
-    console.log("HANDLE SUBMIT");
     event.preventDefault();
 
     //Collect data fom the tournamet settings form
