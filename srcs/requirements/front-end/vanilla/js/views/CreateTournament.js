@@ -12,184 +12,6 @@ export default class CreateTournament extends AbstractComponent {
 
   constructor() {
       super();
-      // const styleEl = this.shadowRoot.createElement('style');
-		  // styleEl.textContent = createTournamentStyles;
-      // this.shadowRoot.appendChild(styleEl);
-
-      this.shadowRoot.innerHTML = `
-      <style>${createTournamentStyles}</style>
-      <h1>Tournament Creation</h1>
-      <section class="create-tournament">
-  
-        <div id="settings-container">
-          <h2 id="settings-title">Tournament Settings</h2>
-  
-          <div id="settings-panels-container">
-  
-            <div class="settings-panel" id="tournament-settings">
-              <h3 class="panel-title">Tournament</h3>
-              <form id="tournament-form">
-  
-                <label for="tournament_name">Tournament Name:</label>
-                <input type="text" 
-                    id="tournament_name" 
-                    name="tournament_name" 
-                    required
-                    placeholder="Enter tournament name">
-  
-                <label for="nbr_of_player_total">Number of Players:</label>
-                <input 
-                    type="range"
-                    id="nbr_of_player_total" 
-                    name="nbr_of_player_total" 
-                    min="2" 
-                    max="64"
-                    step="1"
-                    value="2"
-                    required
-                    oninput="this.nextElementSibling.value = this.value">
-  
-                <label for="registration_period_min">Registration Period (in minutes):</label>
-                <input 
-                  type="number"
-                  id="registration_period_min"
-                  name="registration_period_min"
-                  min="1"
-                  max="30"
-                  step="1"
-                  value="30"
-                  required>
-  
-                <label for="host_id">Host ID:</label>
-                <input
-                  type="number" 
-                  id="host_id" 
-                  name="host_id"
-                  value="1"
-                  required>
-  
-              </form>
-            </div>
-                
-            <div class="settings-panel" id="game-settings">
-              <h3 class="panel-title" id="game-settings-title">Games</h3>
-              <form id="game-settings-form">
-  
-                <h3>Score & Players</h3>
-                <div class="settings-card">
-                  <div class="setting-input">
-                    <label for="nbr_of_players_per_match">Number of Players (2-8) :</label>
-                    <input 
-                      type="range" 
-                      id="nbr_of_players_per_match"
-                      name="nbr_of_players_per_match"
-                      min="2" 
-                      max="8" 
-                      value="5"
-                      step="1"
-                      oninput="this.nextElementSibling.value = this.value">
-                  </div>
-  
-                  <div class="setting-input">
-                    <label for="nbr_of_rounds">Number of Rounds (1-10) :</label>
-                    <input type="range" id="nbr_of_rounds" name="nbr_of_rounds" min="1" max="10" step="1" value="10">
-                  </div>
-                </div>
-  
-                <h3>Field</h3>
-                <div class="settings-card">
-                  <div class="setting-input">
-                    <label for="walls_factor">Walls Size :</label>
-                    <input type="range" id="walls_factor" name="walls_factor" min="0" max="2" step="0.1" value="0.7">
-                  </div>
-  
-                  <div class="setting-input">
-                    <label for="size_of_goals">Size of Goals :</label>
-                    <input type="range" id="size_of_goals" name="size_of_goals" min="15" max="30" step="1" value="20">
-                  </div>
-                </div>
-  
-                <h3>Paddles</h3>
-                <div class="settings-card">
-                  <div class="setting-input">
-                    <label for="paddle_height">Paddle Height :</label>
-                    <input type="range" id="paddle_height" name="paddle_height" min="1" max="12" step="1" value="10">
-                  </div>
-  
-                  <div class="setting-input">
-                    <label for="paddle_speed">Paddle Speed :</label>
-                    <input type="range" id="paddle_speed" name="paddle_speed" min="0.1" max="1" step="0.1" value="0.2">
-                  </div>
-                </div>
-  
-                <h3>Ball</h3>
-                <div class="settings-card">
-  
-                  <div class="setting-input" id="ball-radius-input">
-                    <label for="ball_radius">Ball Radius :</label>
-                    <input type="range" id="ball_radius" name="ball_radius" min="0.5" max="7" step="0.1" value="1">
-                  </div>
-  
-                  <div class="setting-input" id="ball-speed-input">
-                    <label for="ball_speed">Ball Speed :</label>
-                    <input type="number" id="ball_speed" name="ball_speed" step="0.1" value="0.3">
-                  </div>
-  
-                  <div class="setting-input" id="ball-color-input">
-                    <label for="ball_color">Ball Color :</label>
-                    <input type="color" id="ball_color" name="ball_color" value="#ff0000">
-                  </div>
-                </div>
-  
-                <div class="settings-card">
-  
-                  <div class="setting-input" id="ball-model-input">
-                    <label>Ball model :
-                    <input list="models" name="ball-model"></label>
-                    <datalist id="models">
-                      <option value="none">
-                      <option value="banana">
-                      <option value="donut sucré au sucre">
-                    </datalist>
-                  </div>
-  
-                  <div class="setting-input" id="ball-texture-input">
-                    <label>Ball texture :
-                    <input list="textures" name="ball-texture"></label>
-                    <datalist id="textures">
-                      <option value="none">
-                      <option value="yridgway">
-                      <option value="4kCeres">
-                      <option value="4kPlanet">
-                      <option value="1.8kVenus">
-                      <option value="redSpace">
-                    </datalist>
-                  </div>
-                </div>
-  
-              </form>
-            </div>
-          </div>  
-        </div>
-        <div class="game-showcase" id="game-preview">
-          <h2 id="settings-title">Preview</h2>
-          <div id="three-js-container"></div>
-        </div>
-      </section>
-      `;
-
-      this.createButton = new CustomButton({content:'Create Tournament', action: true,
-        style:{position: 'absolute', bottom: '30px', right: '3.3%', padding: '0px 30px'}});
-      this.leaveButton = new CustomButton({content:'< Leave', action: false,
-        style:{position: 'absolute', bottom: '30px', left: '3.3%', padding: '0px 30px'}});
-
-      this.createButton.onclick = () => this.handleSubmit.bind(this);
-      // create.onclick = () => { console.log('Create Tournament BUTTON CLICKED !!')};
-      this.leaveButton.onclick = () => window.history.back();
-
-      this.shadowRoot.appendChild(this.createButton);
-      this.shadowRoot.appendChild(this.leaveButton);
-
       this.createGame = this.createGame.bind(this);
       this.getBasicGameSettings = this.getBasicGameSettings.bind(this);
       this.addPlayerDataToGameSettings = this.addPlayerDataToGameSettings.bind(this);
@@ -389,7 +211,7 @@ export default class CreateTournament extends AbstractComponent {
 
                 <div class="setting-input" id="ball-model-input">
                   <label>Ball model :
-                  <input list="models" name="ball-model"></label>
+                  <input list="models" id ="ball-model" name="ball-model"></label>
                   <datalist id="models">
                     <option value="none">
                     <option value="banana">
@@ -399,7 +221,7 @@ export default class CreateTournament extends AbstractComponent {
 
                 <div class="setting-input" id="ball-texture-input">
                   <label>Ball texture :
-                  <input list="textures" name="ball-texture"></label>
+                  <input list="textures" id ="ball-texture" name="ball-texture"></label>
                   <datalist id="textures">
                     <option value="none">
                     <option value="yridgway">
@@ -421,8 +243,17 @@ export default class CreateTournament extends AbstractComponent {
       </div>
     </section>
     `;
-      var tempDiv = this.shadowRoot.createElement('div');
+      var tempDiv = document.createElement('div');
       tempDiv.innerHTML = htmlstuff;
+
+      let createButton = new CustomButton({content: "Create Tournament", action: true,style: {position: 'absolute', bottom: '30px', right: '3.3%'}});
+      tempDiv.appendChild(createButton);
+      createButton.onclick = () => this.handleSubmit.bind(this);
+      createButton.id = 'submitTournament';
+
+      let leaveButton = new CustomButton({content: "< Back", style: {position: 'absolute', bottom: '30px', left: '3.3%'}});
+      tempDiv.appendChild(leaveButton);
+      leaveButton.onclick = () => window.history.back();
 
       let htmlElement = tempDiv;
       htmlElement.querySelector('.game-showcase').innerHTML += await this.game.getHtml();
@@ -459,8 +290,10 @@ export default class CreateTournament extends AbstractComponent {
         ]
       }
       await this.addPlayerDataToGameSettings(gameSettings, [], gameSettings.gamemodeData.nbrOfPlayers);
+      console.log('Game settings from form:', gameSettings);
       return gameSettings;
 		} catch (error) {
+      console.log('ball color from form:', document.getElementById('ball_color').value);
 			console.error('Failed to join tournament:', error);
 		} 
     
@@ -476,7 +309,7 @@ export default class CreateTournament extends AbstractComponent {
 			
       const userName = responseUser.body.username;
       playerNames.push(userName);
-      let dummyPlayeName = 'player';
+      let dummyPlayeName = 'playerdesd';
       let dummyPlayerColor = '0x00ff00';
   
       while (playerNames.length < nbrOfPlayers){
@@ -526,7 +359,6 @@ export default class CreateTournament extends AbstractComponent {
         ]
       };
       await this.addPlayerDataToGameSettings(gameSettings);
-      console.log('Game settings automatically after call:', gameSettings)
       return gameSettings;
     } catch (error) {
       console.error('Failed to get user:', error);
@@ -534,7 +366,6 @@ export default class CreateTournament extends AbstractComponent {
 	}
 
   async handleSubmit(event) {
-    console.log("HANDLE SUBMIT");
     event.preventDefault();
 
     //Collect data fom the tournamet settings form
