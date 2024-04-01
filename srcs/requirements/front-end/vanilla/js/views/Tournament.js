@@ -73,30 +73,41 @@ export default class Tournament extends AbstractView {
 				console.log('Tournament:', tournament);
 				const Styles = tournamentTable.columnStyles;
 				const tournamentNameElement = tournamentTable.createStyledHTMLObject('div', tournament.tournament_name, Styles.tournamentName);
-				const hostElement = tournamentTable.createStyledHTMLObject('div', `Host ${tournament.host_id}`, Styles.host);
+				//trying tor ecover the name id and the picture
+				const hostId = tournament.host_id;
+				const response = await makeApiRequest('/game-logic/createMatch','POST',gameSettings);
+
+				
+				const hostElement = tournamentTable.createStyledHTMLObject('div', `${tournament.host_id}`, Styles.host);
 				const numberOfPlayersElement = tournamentTable.createStyledHTMLObject('div', `${tournament.joined}/${tournament.nbr_of_player_total}`, {}); 
 				const numberOfPlayerPerMatch = tournamentTable.createStyledHTMLObject('div', `${tournament.nbr_of_player_match}`, {});
 				const tournamentStatus = tournamentTable.createStyledHTMLObject('div', `${tournament.state}`, {});
 				const actionContainer = document.createElement('div');
 				//container for all button actions 
 				actionContainer.style.display = 'flex';
-				actionContainer.style.justifyContent = 'space-around';
+				actionContainer.style.justifyContent = 'centered';
 				//Join button on te action column to join corresponding tournament
 				const joinButtonElement = document.createElement('button');
 				joinButtonElement.textContent = 'Join';
 				Object.assign(joinButtonElement.style, Styles.action);
 				joinButtonElement.addEventListener('click', () => this.joinTournament(tournament.id));
 				// Details button to see the tournament state (either brackets and or results)
+				
+
+				actionContainer.appendChild(joinButtonElement);
+				
+				const tournamentDetails = document.createElement('div');
+				tournamentDetails.style.display = 'flex';
+				tournamentDetails.style.justifyContent = 'centered';
+				
 				const viewButtonElement = document.createElement('button');
 				viewButtonElement.innerHTML = '👁️';
 				Object.assign(viewButtonElement.style, Styles.action);
 				viewButtonElement.addEventListener('click', () => 
-					console.log(`SOME IS WATCHING 👁️ 👁️ `)
-					);
-
-				actionContainer.appendChild(joinButtonElement);
-				actionContainer.appendChild(viewButtonElement);
-				const tournamentDetails = document.createElement('div');
+				console.log(`SOME IS WATCHING 👁️ 👁️ `)
+				);
+				
+				tournamentDetails.appendChild(viewButtonElement);
 				// Add the constructed row to the table
 				tournamentTable.addRow([
 					tournamentNameElement, 
@@ -104,7 +115,8 @@ export default class Tournament extends AbstractView {
 					numberOfPlayersElement,
 					numberOfPlayerPerMatch,
 					tournamentStatus,
-					actionContainer
+					actionContainer,
+					tournamentDetails
 				]);
 			});
 
