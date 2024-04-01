@@ -604,11 +604,11 @@ class TournamentStart(APIView):
             return Response({"message": "Only the tournament host can start the tournament."}, status=403)
 
         response = match_generator(request, tournament_id)
-            if response.status_code != 201:
-                return response
+        if response.status_code != 201:
+            return response
         game_response = generate_round(request, id, 0)
-            if game_response.status_code != 200:
-                return game_response        
+        if game_response.status_code != 200:
+            return game_response        
         return response
 
 
@@ -894,7 +894,7 @@ def generate_round(request, id, round):
 
     # Update tournament, matches state
     tournament.state = "started"
-        tournament.save(request, id)
+    tournament.save(request, id)
     for match in matches:
         match.state = "playing"
         match.save()
