@@ -71,7 +71,7 @@ export const routes = {
 	},
 	'/create-tournament': {
 		path: '/create-tournament',
-		view: CreateTournament,
+		component: 'create-tournament',
 		title: 'Tournament Creation',
 		buttonText: 'Create Tournament',
 		requiresLogin: true,

@@ -1,5 +1,6 @@
-import '@css/CreateTournament.css'
+import createTournamentStyles from '@css/CreateTournament.css?raw'
 import AbstractView from "./AbstractView";
+import AbstractComponent from "@components/AbstractComponent";
 import { makeApiRequest } from '@utils/makeApiRequest.js';
 import { navigateTo } from '@utils/Router.js';
 import Game from '@views/Game.js';
@@ -7,25 +8,206 @@ import { htmlToElement } from '@utils/htmlToElement';
 import CustomButton from '@components/CustomButton.js';
 
 
-export default class CreateTournament extends AbstractView {
+export default class CreateTournament extends AbstractComponent {
 
   constructor() {
       super();
+      // const styleEl = this.shadowRoot.createElement('style');
+		  // styleEl.textContent = createTournamentStyles;
+      // this.shadowRoot.appendChild(styleEl);
+
+      this.shadowRoot.innerHTML = `
+      <style>${createTournamentStyles}</style>
+      <h1>Tournament Creation</h1>
+      <section class="create-tournament">
+  
+        <div id="settings-container">
+          <h2 id="settings-title">Tournament Settings</h2>
+  
+          <div id="settings-panels-container">
+  
+            <div class="settings-panel" id="tournament-settings">
+              <h3 class="panel-title">Tournament</h3>
+              <form id="tournament-form">
+  
+                <label for="tournament_name">Tournament Name:</label>
+                <input type="text" 
+                    id="tournament_name" 
+                    name="tournament_name" 
+                    required
+                    placeholder="Enter tournament name">
+  
+                <label for="nbr_of_player_total">Number of Players:</label>
+                <input 
+                    type="range"
+                    id="nbr_of_player_total" 
+                    name="nbr_of_player_total" 
+                    min="2" 
+                    max="64"
+                    step="1"
+                    value="2"
+                    required
+                    oninput="this.nextElementSibling.value = this.value">
+  
+                <label for="registration_period_min">Registration Period (in minutes):</label>
+                <input 
+                  type="number"
+                  id="registration_period_min"
+                  name="registration_period_min"
+                  min="1"
+                  max="30"
+                  step="1"
+                  value="30"
+                  required>
+  
+                <label for="host_id">Host ID:</label>
+                <input
+                  type="number" 
+                  id="host_id" 
+                  name="host_id"
+                  value="1"
+                  required>
+  
+              </form>
+            </div>
+                
+            <div class="settings-panel" id="game-settings">
+              <h3 class="panel-title" id="game-settings-title">Games</h3>
+              <form id="game-settings-form">
+  
+                <h3>Score & Players</h3>
+                <div class="settings-card">
+                  <div class="setting-input">
+                    <label for="nbr_of_players_per_match">Number of Players (2-8) :</label>
+                    <input 
+                      type="range" 
+                      id="nbr_of_players_per_match"
+                      name="nbr_of_players_per_match"
+                      min="2" 
+                      max="8" 
+                      value="5"
+                      step="1"
+                      oninput="this.nextElementSibling.value = this.value">
+                  </div>
+  
+                  <div class="setting-input">
+                    <label for="nbr_of_rounds">Number of Rounds (1-10) :</label>
+                    <input type="range" id="nbr_of_rounds" name="nbr_of_rounds" min="1" max="10" step="1" value="10">
+                  </div>
+                </div>
+  
+                <h3>Field</h3>
+                <div class="settings-card">
+                  <div class="setting-input">
+                    <label for="walls_factor">Walls Size :</label>
+                    <input type="range" id="walls_factor" name="walls_factor" min="0" max="2" step="0.1" value="0.7">
+                  </div>
+  
+                  <div class="setting-input">
+                    <label for="size_of_goals">Size of Goals :</label>
+                    <input type="range" id="size_of_goals" name="size_of_goals" min="15" max="30" step="1" value="20">
+                  </div>
+                </div>
+  
+                <h3>Paddles</h3>
+                <div class="settings-card">
+                  <div class="setting-input">
+                    <label for="paddle_height">Paddle Height :</label>
+                    <input type="range" id="paddle_height" name="paddle_height" min="1" max="12" step="1" value="10">
+                  </div>
+  
+                  <div class="setting-input">
+                    <label for="paddle_speed">Paddle Speed :</label>
+                    <input type="range" id="paddle_speed" name="paddle_speed" min="0.1" max="1" step="0.1" value="0.2">
+                  </div>
+                </div>
+  
+                <h3>Ball</h3>
+                <div class="settings-card">
+  
+                  <div class="setting-input" id="ball-radius-input">
+                    <label for="ball_radius">Ball Radius :</label>
+                    <input type="range" id="ball_radius" name="ball_radius" min="0.5" max="7" step="0.1" value="1">
+                  </div>
+  
+                  <div class="setting-input" id="ball-speed-input">
+                    <label for="ball_speed">Ball Speed :</label>
+                    <input type="number" id="ball_speed" name="ball_speed" step="0.1" value="0.3">
+                  </div>
+  
+                  <div class="setting-input" id="ball-color-input">
+                    <label for="ball_color">Ball Color :</label>
+                    <input type="color" id="ball_color" name="ball_color" value="#ff0000">
+                  </div>
+                </div>
+  
+                <div class="settings-card">
+  
+                  <div class="setting-input" id="ball-model-input">
+                    <label>Ball model :
+                    <input list="models" name="ball-model"></label>
+                    <datalist id="models">
+                      <option value="none">
+                      <option value="banana">
+                      <option value="donut sucré au sucre">
+                    </datalist>
+                  </div>
+  
+                  <div class="setting-input" id="ball-texture-input">
+                    <label>Ball texture :
+                    <input list="textures" name="ball-texture"></label>
+                    <datalist id="textures">
+                      <option value="none">
+                      <option value="yridgway">
+                      <option value="4kCeres">
+                      <option value="4kPlanet">
+                      <option value="1.8kVenus">
+                      <option value="redSpace">
+                    </datalist>
+                  </div>
+                </div>
+  
+              </form>
+            </div>
+          </div>  
+        </div>
+        <div class="game-showcase" id="game-preview">
+          <h2 id="settings-title">Preview</h2>
+          <div id="three-js-container"></div>
+        </div>
+      </section>
+      `;
+
+      this.createButton = new CustomButton({content:'Create Tournament', action: true,
+        style:{position: 'absolute', bottom: '30px', right: '3.3%', padding: '0px 30px'}});
+      this.leaveButton = new CustomButton({content:'< Leave', action: false,
+        style:{position: 'absolute', bottom: '30px', left: '3.3%', padding: '0px 30px'}});
+
+      this.createButton.onclick = () => this.handleSubmit.bind(this);
+      // create.onclick = () => { console.log('Create Tournament BUTTON CLICKED !!')};
+      this.leaveButton.onclick = () => window.history.back();
+
+      this.shadowRoot.appendChild(this.createButton);
+      this.shadowRoot.appendChild(this.leaveButton);
+
       this.createGame = this.createGame.bind(this);
       this.getBasicGameSettings = this.getBasicGameSettings.bind(this);
       this.addPlayerDataToGameSettings = this.addPlayerDataToGameSettings.bind(this);
       this.getGameSettingsFromForm = this.getGameSettingsFromForm.bind(this);
       this.game = new Game();
+
+      this.init();
   }
-  
+
   async init() {
     try {
       // Initialize the game with basic settings
       let basicGameSettings = await this.getBasicGameSettings();
       console.log('Initializing game with basic settings:', basicGameSettings);
       await this.initializeGame(basicGameSettings);
+      this.shadowRoot.querySelector('.game-showcase').innerHTML += await this.game.getHtml();
 
-      let gameSettingsForm = document.getElementById('game-settings-form');
+      let gameSettingsForm = this.shadowRoot.getElementById('game-settings-form');
       gameSettingsForm.querySelectorAll('input').forEach(input => {
         input.addEventListener('change', async (event) => {
           event.preventDefault();
@@ -37,13 +219,6 @@ export default class CreateTournament extends AbstractView {
           // Re-initialize the game with new settings
           await this.initializeGame(gameSettings);
         });
-        // listeners :
-        let create = document.getElementById('submitTournament');
-        let leave = document.getElementById('leaveButton');
-
-        create.onclick = () => this.handleSubmit.bind(this);
-        // create.onclick = () => { console.log('Create Tournament BUTTON CLICKED !!')};
-        leave.onclick = () => window.history.back();
       });
     } catch (error) {
       console.error('Failed to initialize CreateTournament:', error);
@@ -53,7 +228,7 @@ export default class CreateTournament extends AbstractView {
 // Helper method to initialize or update the game preview
   async initializeGame(gameSettings) {
     let matchID = await this.createGame(gameSettings);
-    let gamePreviewPanel = document.getElementById('game-preview');
+    let gamePreviewPanel = this.shadowRoot.getElementById('game-preview');
     // console.log('GAME PREVIEW PANEL', gamePreviewPanel);
     let width = gamePreviewPanel.offsetWidth - 30;
     let height = gamePreviewPanel.offsetHeight - 100;
@@ -66,7 +241,7 @@ export default class CreateTournament extends AbstractView {
     } else {
       this.game.cleanAll();
       this.game = new Game(matchID, width, height);
-      document.getElementById('gameContainer').innerHTML = '';
+      // this.shadowRoot.getElementById('gameContainer').innerHTML = '';
     }
     await this.game.init(); // Make sure this can be safely called multiple times or after updating settings
     console.log('Game initialized');
@@ -246,18 +421,8 @@ export default class CreateTournament extends AbstractView {
       </div>
     </section>
     `;
-      var tempDiv = document.createElement('div');
+      var tempDiv = this.shadowRoot.createElement('div');
       tempDiv.innerHTML = htmlstuff;
-
-      let createButton = new CustomButton({content: "Create Tournament", action: true, style: {position: 'absolute', bottom: '30px', right: '3.3%'}});
-      createButton.id = 'submitTournament';
-      // createButton.onclick = () => this.handleSubmit.bind(this);
-      tempDiv.appendChild(createButton);
-
-      let leaveButton = new CustomButton({content: "< Back", style: {position: 'absolute', bottom: '30px', left: '3.3%'}});
-      leaveButton.id = 'leaveButton';
-      // leaveButton.onclick = () => window.history.back();
-      tempDiv.appendChild(leaveButton);
 
       let htmlElement = tempDiv;
       htmlElement.querySelector('.game-showcase').innerHTML += await this.game.getHtml();
@@ -269,26 +434,26 @@ export default class CreateTournament extends AbstractView {
     try {
 			let gameSettings = {
         "gamemodeData": {
-          "nbrOfPlayers": parseInt(document.getElementById('nbr_of_players_per_match').value, 10),
-          "nbrOfRounds": parseInt(document.getElementById('nbr_of_rounds').value, 10),
+          "nbrOfPlayers": parseInt(this.shadowRoot.getElementById('nbr_of_players_per_match').value, 10),
+          "nbrOfRounds": parseInt(this.shadowRoot.getElementById('nbr_of_rounds').value, 10),
           "timeLimit": 5,
           "gameType": 0
         },
         "fieldData": {
-          "wallsFactor": parseFloat(document.getElementById('walls_factor').value, 0.5),
-          "sizeOfGoals": parseInt(document.getElementById('size_of_goals').value, 10)
+          "wallsFactor": parseFloat(this.shadowRoot.getElementById('walls_factor').value, 0.5),
+          "sizeOfGoals": parseInt(this.shadowRoot.getElementById('size_of_goals').value, 10)
         },
         "paddlesData": {
           "width": 1,
-          "height": parseInt(document.getElementById('paddle_height').value, 10),
-          "speed": parseFloat(document.getElementById('paddle_speed').value, 0.2)
+          "height": parseInt(this.shadowRoot.getElementById('paddle_height').value, 10),
+          "speed": parseFloat(this.shadowRoot.getElementById('paddle_speed').value, 0.2)
         },
         "ballData": {
-          "speed": parseFloat(document.getElementById('ball_speed').value, 0.3),
-          "radius": parseFloat(document.getElementById('ball_radius').value, 1),
-          "color": document.getElementById('ball-color').value,
-          "model": document.getElementById('ball-model').value,
-          "texture": document.getElementById('ball-texture').value
+          "speed": parseFloat(this.shadowRoot.getElementById('ball_speed').value, 0.3),
+          "radius": parseFloat(this.shadowRoot.getElementById('ball_radius').value, 1),
+          "color": this.shadowRoot.getElementById('ball-color').value,
+          "model": this.shadowRoot.getElementById('ball-model').value,
+          "texture": this.shadowRoot.getElementById('ball-texture').value
         },
         "playersData": [
         ]
@@ -373,11 +538,11 @@ export default class CreateTournament extends AbstractView {
     event.preventDefault();
 
     //Collect data fom the tournamet settings form
-    const tournamentData =  new FormData(document.getElementById('tournament-form'));
+    const tournamentData =  new FormData(this.shadowRoot.getElementById('tournament-form'));
     const tournamentSettings = Object.fromEntries(tournamentData.entries());
 
     //Collect data from the game settings form
-    const gameData = new FormData(document.getElementById('game-settings-form'));
+    const gameData = new FormData(this.shadowRoot.getElementById('game-settings-form'));
     const gameSettings = Object.fromEntries(gameData.entries());
 
     // Extract nbr_of_player_match from gameSettings
@@ -397,5 +562,6 @@ export default class CreateTournament extends AbstractView {
       console.error('Failed to create tournament:', error);
     }
   }
-  
 }
+
+customElements.define('create-tournament', CreateTournament);
