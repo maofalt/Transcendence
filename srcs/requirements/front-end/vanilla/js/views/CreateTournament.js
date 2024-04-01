@@ -4,6 +4,7 @@ import { makeApiRequest } from '@utils/makeApiRequest.js';
 import { navigateTo } from '@utils/Router.js';
 import Game from '@views/Game.js';
 import { htmlToElement } from '@utils/htmlToElement';
+import CustomButton from '@components/CustomButton.js';
 
 
 export default class CreateTournament extends AbstractView {
@@ -37,11 +38,6 @@ export default class CreateTournament extends AbstractView {
           await this.initializeGame(gameSettings);
         });
       });
-      //Attach even lsitener to the submit button
-      const submitbutton = document.getElementById('submitTournament');
-      if (submitbutton) {
-        submitbutton.addEventListener('click', this.handleSubmit.bind(this));
-      }
     } catch (error) {
       console.error('Failed to initialize CreateTournament:', error);
     }
@@ -109,7 +105,8 @@ export default class CreateTournament extends AbstractView {
                   id="nbr_of_player_total" 
                   name="nbr_of_player_total" 
                   min="2" 
-                  max="100"
+                  max="64"
+                  step="1"
                   value="2"
                   required
                   oninput="this.nextElementSibling.value = this.value">
@@ -120,6 +117,8 @@ export default class CreateTournament extends AbstractView {
                 id="registration_period_min"
                 name="registration_period_min"
                 min="1"
+                max="30"
+                step="1"
                 value="30"
                 required>
 
@@ -135,7 +134,7 @@ export default class CreateTournament extends AbstractView {
           </div>
               
           <div class="settings-panel" id="game-settings">
-            <h3 class="panel-title">Games</h3>
+            <h3 class="panel-title" id="game-settings-title">Games</h3>
             <form id="game-settings-form">
 
               <h3>Score & Players</h3>
@@ -149,12 +148,13 @@ export default class CreateTournament extends AbstractView {
                     min="2" 
                     max="8" 
                     value="5"
+                    step="1"
                     oninput="this.nextElementSibling.value = this.value">
                 </div>
 
                 <div class="setting-input">
                   <label for="nbr_of_rounds">Number of Rounds (1-10) :</label>
-                  <input type="range" id="nbr_of_rounds" name="nbr_of_rounds" min="1" max="10" value="10">
+                  <input type="range" id="nbr_of_rounds" name="nbr_of_rounds" min="1" max="10" step="1" value="10">
                 </div>
               </div>
 
@@ -167,7 +167,7 @@ export default class CreateTournament extends AbstractView {
 
                 <div class="setting-input">
                   <label for="size_of_goals">Size of Goals :</label>
-                  <input type="range" id="size_of_goals" name="size_of_goals" min="15" max="30" value="20">
+                  <input type="range" id="size_of_goals" name="size_of_goals" min="15" max="30" step="1" value="20">
                 </div>
               </div>
 
@@ -175,12 +175,12 @@ export default class CreateTournament extends AbstractView {
               <div class="settings-card">
                 <div class="setting-input">
                   <label for="paddle_height">Paddle Height :</label>
-                  <input type="range" id="paddle_height" name="paddle_height" min="1" max="12" value="10">
+                  <input type="range" id="paddle_height" name="paddle_height" min="1" max="12" step="1" value="10">
                 </div>
 
                 <div class="setting-input">
                   <label for="paddle_speed">Paddle Speed :</label>
-                  <input type="range" id="paddle_speed" name="paddle_speed" min="0.1" max="1" value="0.2">
+                  <input type="range" id="paddle_speed" name="paddle_speed" min="0.1" max="1" step="0.1" value="0.2">
                 </div>
               </div>
 
@@ -202,7 +202,32 @@ export default class CreateTournament extends AbstractView {
                   <input type="color" id="ball_color" name="ball_color" value="#ff0000">
                 </div>
               </div>
-              [ add texture and model !!! ]
+
+              <div class="settings-card">
+
+                <div class="setting-input" id="ball-model-input">
+                  <label>Ball model :
+                  <input list="models" name="ball-model"></label>
+                  <datalist id="models">
+                    <option value="none">
+                    <option value="banana">
+                    <option value="donut sucré au sucre">
+                  </datalist>
+                </div>
+
+                <div class="setting-input" id="ball-texture-input">
+                  <label>Ball texture :
+                  <input list="textures" name="ball-texture"></label>
+                  <datalist id="textures">
+                    <option value="none">
+                    <option value="yridgway">
+                    <option value="4kCeres">
+                    <option value="4kPlanet">
+                    <option value="1.8kVenus">
+                    <option value="redSpace">
+                  </datalist>
+                </div>
+              </div>
 
             </form>
           </div>
@@ -213,10 +238,19 @@ export default class CreateTournament extends AbstractView {
         <div id="three-js-container"></div>
       </div>
     </section>
-    <button type="submit" id="submitTournament">Create Tournament</button> CHANGE BUTTON !!
-      `;
+    `;
       var tempDiv = document.createElement('div');
       tempDiv.innerHTML = htmlstuff;
+
+      let createButton = new CustomButton({content: "Create Tournament", action: true,style: {position: 'absolute', bottom: '30px', right: '3.3%'}});
+      tempDiv.appendChild(createButton);
+      createButton.onclick = () => this.handleSubmit.bind(this);
+      createButton.id = 'submitTournament';
+
+      let leaveButton = new CustomButton({content: "< Back", style: {position: 'absolute', bottom: '30px', left: '3.3%'}});
+      tempDiv.appendChild(leaveButton);
+      leaveButton.onclick = () => window.history.back();
+
       let htmlElement = tempDiv;
       htmlElement.querySelector('.game-showcase').innerHTML += await this.game.getHtml();
       return htmlElement.innerHTML;
@@ -244,9 +278,9 @@ export default class CreateTournament extends AbstractView {
         "ballData": {
           "speed": parseFloat(document.getElementById('ball_speed').value, 0.3),
           "radius": parseFloat(document.getElementById('ball_radius').value, 1),
-          "color": document.getElementById('ball_color').value,
-          "model": "banana",
-          "texture": ""
+          "color": document.getElementById('ball-color').value,
+          "model": document.getElementById('ball-model').value,
+          "texture": document.getElementById('ball-texture').value
         },
         "playersData": [
         ]
@@ -312,7 +346,7 @@ export default class CreateTournament extends AbstractView {
           "speed": 0.2,
           "radius": 2,
           "color": "0xffffff",
-          "model": "banana",
+          "model": "",
           "texture": ""
         },
         "playersData": [

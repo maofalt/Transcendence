@@ -151,7 +151,7 @@ export default class Game extends AbstractView {
 		leaveButton.onclick = () => {
 			this.cleanAll();
 
-			navigateTo("/");
+			window.history.back();
 		}
 
 		this.container.appendChild(countDown);
@@ -362,7 +362,7 @@ export default class Game extends AbstractView {
 		leaveButton.onclick = () => {
 			this.cleanAll();
 
-			navigateTo("/");
+			window.history.back();
 		}
 		
 		uiLayer.appendChild(leaveButton);
