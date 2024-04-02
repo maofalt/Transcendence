@@ -81,7 +81,7 @@ urlpatterns = [
     path('<int:tournament_id>/tournament-players/', views.TournamentPlayerList.as_view(), name='tournament-player-list'),
     path('<int:tournament_id>/tournament-players/player/', views.PlayerList.as_view(), name='player-list'),
     path('<int:tournament_id>/matches/participants/', views.MatchParticipantsList.as_view(), name='matches-participants-list'),
-    path('stats/<int:user_id>', views.PlayerStatsView.as_view(), name='player-stat'),
+    path('stats/<str:username>/', views.PlayerStatsView.as_view(), name='player-stat'),
 
 # Send POST match data to Game
     path('<int:tournament_id>/<int:round>/generate-round/', views.generate_round, name='generate-round'),
