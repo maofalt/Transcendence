@@ -22,6 +22,7 @@ class Tournament(models.Model):
         MaxValueValidator(60, message="Registration period cannot exceed 60 minutes.")
         ]
     )
+    
     host = models.ForeignKey('Player', on_delete=models.CASCADE, related_name='hosted_tournaments')
     tournament_result = models.ForeignKey('Player', on_delete=models.SET_NULL, null=True, related_name='won_tournaments')
     players = models.ManyToManyField('Player', related_name='tournaments')  # Direct many-to-many relationship with Player
