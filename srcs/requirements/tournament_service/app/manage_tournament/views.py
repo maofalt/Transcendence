@@ -598,14 +598,17 @@ class TournamentStart(APIView):
 
         if tournament.host.id != uid:
             return Response({"message": "Only the tournament host can start the tournament."}, status=403)
-
-        response = self.match_generator(request, id)
-        if response.status_code != 201:
-            return response
-        game_response = generate_round(request, id, 0)
-        if game_response.status_code != 200:
-            return game_response        
-        return response
+        if tournament.matches is None:
+            response = self.match_generator(request, id)
+            if response.status_code != 201:
+                return response
+            game_response = generate_round(request, id, 0)
+            if game_response.status_code != 200:
+                return game_response   
+        tournament_matches = TournamentMatch.objects.filter(tournament_id=tournament.id).order_by('id')
+        serializer = TournamentMatchSerializer(tournament_matches, many=True)     
+        # return response
+        return JsonResponse(serializer.data, status=status.HTTP_201_CREATED, safe=False)
 
     def match_generator(self, request, id):
 
