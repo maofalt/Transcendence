@@ -53,7 +53,7 @@ def create_tournament(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('manage_tournament', '0005_alter_matchsetting_paddle_speed_and_more'),
+        ('manage_tournament', '0005_remove_tournamentmatch_participants_and_more'),
     ]
 
     operations = [

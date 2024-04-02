@@ -33,7 +33,7 @@ urlpatterns = [
     # GET /{id}/matches - Retrieve a list of matches for a tournament.
     # POST /{id}/matches - Create a new match within a tournament.
     # path('<int:id>/matches/', views.TournamentMatchList.as_view(), name='tournament-matches'),
-    path('<int:tournament_id>/match-generator/', views.MatchGenerator.as_view(), name='match-generator'),
+    path('<int:id>/match-generator/', views.MatchGenerator.as_view(), name='match-generator'),
     path('<int:id>/matches/', views.TournamentMatchList.as_view(), name='tournament-matches'),
     # DELETE /tournament/{id}/matches/{matchId} - Cancel a scheduled match.
     path('<int:id>/matches/<int:match_id>/', views.TournamentMatchDetail.as_view(), name='tournament-match-detail'),
