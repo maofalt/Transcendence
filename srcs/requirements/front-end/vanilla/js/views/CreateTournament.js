@@ -208,7 +208,7 @@ export default class CreateTournament extends AbstractView {
                 <div class="setting-input">
                   <div style="display: flex; flex-direction: row; align-items : top;">
                     <label for="size_of_goals" style="flex: 1;">Size of Goals :&nbsp;</label>
-                    <p id="size_goals_value" style="color:deepskyblue; margin: 0; padding: 0;">0.7</p>
+                    <p id="size_goals_value" style="color:deepskyblue; margin: 0; padding: 0;">20</p>
                   </div>
                   <input type="range" id="size_of_goals" name="size_of_goals" min="15" max="30" step="1" value="20"
                   oninput="document.querySelector('#size_goals_value').textContent = this.value">
