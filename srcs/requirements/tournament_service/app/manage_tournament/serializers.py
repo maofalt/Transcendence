@@ -11,10 +11,14 @@ class TournamentSerializer(serializers.ModelSerializer):
     setting = MatchSettingSerializer()
     is_full = serializers.SerializerMethodField()
     joined = serializers.SerializerMethodField()
+    host_name =  serializers.SerializerMethodField()
 
     class Meta:
         model = Tournament
-        fields = ['id', 'tournament_name', 'nbr_of_player_total', 'nbr_of_player_match', 'setting', 'registration_period_min', 'host_id', 'joined', 'is_full' ]
+        fields = ['id', 'tournament_name', 'nbr_of_player_total', 'nbr_of_player_match', 'setting', 'registration_period_min', 'host_id', 'joined', 'is_full', 'state', 'host_name']
+
+    def get_host_name(self, obj):
+        return obj.host.username
 
     def create(self, validated_data):
         setting_data = validated_data.pop('setting')  # Extract data from MatchSetting
@@ -32,7 +36,7 @@ class TournamentSerializer(serializers.ModelSerializer):
         instance.nbr_of_player_total = validated_data.get('nbr_of_player_total', instance.nbr_of_player_total)
         instance.nbr_of_player_match = validated_data.get('nbr_of_player_match', instance.nbr_of_player_match)
         instance.registration_period_min = validated_data.get('registration_period_min', instance.registration_period_min)
-        instance.host_id = validated_data.get('host_id', instance.host_id)
+        # instance.host_id = validated_data.get('host_id', instance.host_id)
         instance.save()
 
         # `MatchSetting` is a one-to-one relationship with `Tournament`
@@ -47,6 +51,9 @@ class TournamentSerializer(serializers.ModelSerializer):
 
     def get_is_full(self, obj):
         return obj.is_full()
+    
+    def get_host(self, obj):
+        return obj.host.username
 
 class TournamentRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -105,6 +112,8 @@ class TournamentMatchSerializer(serializers.ModelSerializer):
 
 class TournamentMatchListSerializer(serializers.Serializer):
     tournament_name = serializers.CharField()
+    date = serializers.CharField(source='created_at')
+    round = serializers.IntegerField()
     winner = serializers.CharField()
     matches = TournamentMatchSerializer(many=True)
 
@@ -183,17 +192,6 @@ class TournamentMatchRoundSerializer(serializers.ModelSerializer):
         model = TournamentMatch
         fields = ['tournament_id', 'match_id', 'gamemodeData', 'fieldData', 'paddlesData', 'ballData', 'players']
 
-
-# class TournamentTypeSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = TournamentType
-#         fields = ['id', 'type_name']
-
-# class RegistrationTypeSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = RegistrationType
-#         fields = ['id', 'type_name']
-
 class TournamentPlayerSerializer(serializers.ModelSerializer):
     # username = serializers.CharField()
     players = PlayerSerializer(many=True)
@@ -233,5 +231,3 @@ class PlayerGameStatsSerializer(serializers.Serializer):
     nbr_of_lost_matches = serializers.IntegerField()
     nbr_of_won_matches = serializers.IntegerField()
     nbr_of_won_tournaments = serializers.IntegerField()
-    # average_score = serializers.DecimalField(max_digits=5, decimal_places=2)
-    # highest_score = serializers.IntegerField()
