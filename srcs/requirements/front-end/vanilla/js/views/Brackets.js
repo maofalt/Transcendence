@@ -1,6 +1,7 @@
 import AbstractComponent from "@components/AbstractComponent";
 import styles from '@css/Brackets.css?raw';
 import easyFetch from "@utils/easyFetch";
+import displayPopup from "@utils/displayPopup";
 
 export default class Brackets extends AbstractComponent {
 	constructor(options = {}) {
@@ -10,50 +11,86 @@ export default class Brackets extends AbstractComponent {
 		styleEl.textContent = styles;
 		this.shadowRoot.appendChild(styleEl);
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const tournamentId = urlParams.get("tournament"); 
+		const urlParams = new URLSearchParams(window.location.search);
+		const tournamentId = urlParams.get("tournament"); 
 
-        // let test = document.createElement("div");
-        // test.textContent = "HELLO WORLD!: " + tournamentId;
+		// let test = document.createElement("div");
+		// test.textContent = "HELLO WORLD!: " + tournamentId;
 
-		this.shadowRoot.appendChild(test);
+		// this.shadowRoot.appendChild(test);
 
-        this.getTournamentDetails(tournamentId);
+		const createMatchesButton = document.createElement("button");
+		createMatchesButton.textContent = "Create Matches";
+		createMatchesButton.onclick = () => {
+			this.createMatches(tournamentId);
+		}
+
+		const getDetailsButton = document.createElement("button");
+		getDetailsButton.textContent = "Get Details";
+		getDetailsButton.onclick = () => {
+			this.getTournamentDetails(tournamentId);
+		}
+
+		this.shadowRoot.appendChild(createMatchesButton);
+		this.shadowRoot.appendChild(getDetailsButton);
+
+		// this.getTournamentDetails(tournamentId);
+		// this.createMatches(tournamentId);
 	}
 
-    getTournamentDetails = async (tournamentId) => {
-        console.log("details found!", tournamentId);
-        let tournamentDetails = await easyFetch(`/api/user_management/auth/${endpoint}`, {
+	createMatches = async (tournamentId) => {
+		console.log("details found!", tournamentId);
+		
+		await easyFetch(`/api/tournament/${tournamentId}/match-generator/`, {
 			method: 'POST',
 			headers: {
-				'Content-Type': 'application/x-www-form-urlencoded',
+				'Content-Type': 'application/json',
 			},
-			body: new URLSearchParams(formData)
+			body: JSON.stringify({
+				"tournament_id": tournamentId,
+			}),
 		})
 		.then(res => {
 			let response = res.response;
 			let body = res.body;
 
-		// 	if (!response || !body) {
-		// 		throw new Error('Empty Response');
-		// 	} else if (!response.ok) {
-		// 		throw new Error(body.error || JSON.stringify(body));
-		// 	} else if (response.status === 200) {
-		// 			// displayPopup(body.message || JSON.stringify(body), 'success');
-		// 		} else {
-		// 			displayPopup(body.error || JSON.stringify(body), 'error');
-		// 		}
-		// 	} else {
-		// 		displayPopup(body.error || JSON.stringify(body), 'error');
-		// 	}
+			if (!response || !body) {
+				throw new Error('Empty Response');
+			} else if (!response.ok) {
+				throw new Error(body.error || JSON.stringify(body));
+			} else if (response.ok) {
+				displayPopup("Matches were created", 'success');
+			}
 		})
 		.catch(error => {
 			displayPopup(`Request Failed: ${error}`, 'error');
 		});
-        this.shadowRoot.appendChild(banana);
+	}
+	
+	getTournamentDetails = async (tournamentId) => {
+		console.log("details found!", tournamentId);
+		
+		await easyFetch(`/api/tournament/${tournamentId}/matches/`)
+		.then(res => {
+			let response = res.response;
+			let body = res.body;
+
+			if (!response || !body) {
+				throw new Error('Empty Response');
+			} else if (!response.ok) {
+				throw new Error(body.error || JSON.stringify(body));
+			} else if (response.status === 200) {
+				displayPopup("Tournament Details Fetched", 'success');
+			}
+			let banana = document.createElement("div");
+			banana.textContent = "Tournament Details!: " + JSON.stringify(body);
+			this.shadowRoot.appendChild(banana);
+		})
+		.catch(error => {
+			displayPopup(`Request Failed: ${error}`, 'error');
+		});
 	}
 
 }
-
 
 customElements.define('tournament-brackets', Brackets);

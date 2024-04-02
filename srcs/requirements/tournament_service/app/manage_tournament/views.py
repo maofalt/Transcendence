@@ -561,7 +561,9 @@ class TournamentMatchList(APIView):
         except Http404:
             return JsonResponse({'error': 'Tournament not found'}, status=404)
         self.check_object_permissions(request, tournament)
-        matches = TournamentMatch.objects.filter(tournament_id=tournament)
+        matches = TournamentMatch.objects.filter(tournament_id=tournament.id)
+        
+        print("matches: ", matches)
         serializer = TournamentMatchSerializer(matches, many=True)
         return Response(serializer.data)
 
@@ -596,14 +598,14 @@ class TournamentMatchDetail(APIView):
         match.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-class TournamentMatchList(ListAPIView):
-    authentication_classes = [CustomJWTAuthentication]
-    # permission_classes = [IsAuthenticated] 
-    serializer_class = TournamentMatchSerializer
+# class TournamentMatchList(ListAPIView):
+#     authentication_classes = [CustomJWTAuthentication]
+#     # permission_classes = [IsAuthenticated] 
+#     serializer_class = TournamentMatchSerializer
 
-    def get_queryset(self):
-        tournament_id = self.kwargs['id']
-        return TournamentMatch.objects.filter(tournament_id=tournament_id).order_by('id')
+#     def get_queryset(self):
+#         tournament_id = self.kwargs['id']
+#         return TournamentMatch.objects.filter(tournament_id=tournament_id).order_by('id')
 
 
 # ---------------------------- Match Operations -------------------------------
