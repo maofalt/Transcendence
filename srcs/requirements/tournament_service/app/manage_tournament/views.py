@@ -362,12 +362,14 @@ class MatchResult(APIView):
 
         cur_round = match.round_number
         if MatchResult.round_state(request, match.tournament_id, cur_round) == False:
-            return JsonResponse({'message': "Winner found and updated successfully", })
+            # if MatchResult.round_state(request, match.tournament_id, cur_round) == False:
+            return Response(status=204)
+            # return JsonResponse({'message': "Winner found and updated successfully", })
 
         update = MatchResult.match_update(request, match.tournament_id, cur_round + 1)
         print('update: ', update)
         if update.status_code == 200:
-            return update   # tournament finished
+            return JsonResponse(update.data, status=update.status_code)   # tournament finished
         elif update.status_code != 201:
             return JsonResponse(update.data, status=update.status_code)
         response = generate_round(request, match.tournament_id, cur_round + 1)
