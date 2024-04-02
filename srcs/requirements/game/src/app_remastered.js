@@ -422,15 +422,7 @@ function generateMatchID(gameSettings) {
 	const string = JSON.stringify(gameSettings);
 
 	// console.log("MATCH SETTINGS STRING :", gameSettings);
-	const players = gameSettings.playersData.map(player => player.accountID);
-	console.log("PLAYERS :", players);
-	players.forEach(player => {
-		let client = clients.get(player)
-		if (client) {
-			// console.log("EMITTED TO: ", client.playerID);
-			client.emit('new-match', gameSettings);
-		}
-	});
+
 	// fkdj
 	// Use SHA-256 to hash the string
 	return crypto.createHash('sha256').update(string).digest('hex');
@@ -504,73 +496,70 @@ function postMatchResult(matchId, winnerId) {
 		});
 }
 
-// app.use(express.static('./public/remote/'));
+
+
 app.post('/createMatch', (req, res) => {
 	const gameSettings = req.body;
-
-	// console.log("\nWAAAAA\n", gameSettings);
-	// check post comes from verified source;
-
-	const matchID = generateMatchID(gameSettings);
 	
+	let matchID = setupMatch(gameSettings, gameSettings.tournament_id, gameSettings.match_id, res);
+	if (!matchID)
+		return ;
+
+	res.json({ matchID });
+});
+
+app.post('/createMultipleMatches', (req, res) => {
+	const allGameSettings = req.body;
+	const matchIDs = [];
+
+	console.log("\nCREATE MULTIPLE MATCHES\n");
+
+	allGameSettings.matches.forEach(settings => {
+		const { tournament_id, match_id, ...gameSettings } = settings;
+
+		let matchID = setupMatch(gameSettings, tournament_id, match_id, res);
+		if (!matchID)
+			return ;
+
+		matchIDs.push(matchID);
+	});
+
+	res.json({ matchIDs });
+});
+
+function setupMatch(gameSettings, tournament_id, match_id, res) {
+	const matchID = generateMatchID(gameSettings);
+				
 	if (matches.has(matchID)) {
 		console.log("Match already exists");
 		res.json({ matchID });
-		return ;
+		return null;
 	}
 
 	let error = verifyMatchSettings(gameSettings);
 	if (error) {
 		console.log("Error:", error);
 		res.status(400).json({ error });
-		return ;
+		return null;
 	}
-	
 	// Convert game settings to game state
 	const gameState = init.initLobby(gameSettings);
+	gameState.jisus_matchID = match_id;
 	
 	console.log("\nMATCH CREATED\n");
 	matches.set(matchID, { gameState: gameState, gameInterval: 0 });
 
-	res.json({ matchID });
-});
-
-app.post('/createMultipleMatches', (req, res) => {
-	const gameSettings = req.body;
-
-	const matchIDs = [];
-	console.log("\nCREATE MULTIPLE MATCHES\n");
-	// console.log("gameSettings", gameSettings);
-	// check post comes from verified source;
-	gameSettings.matches.forEach(settings => {
-		const { tournament_id, match_id, ...rest } = settings;
-
-		const matchID = generateMatchID(rest);
-		
-		matchIDs.push(matchID);
-		
-		if (matches.has(matchID)) {
-			console.log("Match already exists");
-			res.json({ matchID });
-			return ;
+	const players = gameSettings.playersData.map(player => player.accountID);
+	console.log("PLAYERS :", players);
+	players.forEach(player => {
+		let client = clients.get(player)
+		if (client) {
+			// console.log("EMITTED TO: ", client.playerID);
+			client.emit('new-match', gameSettings);
 		}
-
-		let error = verifyMatchSettings(gameSettings);
-		if (error) {
-			console.log("Error:", error);
-			res.status(400).json({ error });
-			return ;
-		}
-		
-		// Convert game settings to game state
-		const gameState = init.initLobby(settings);
-		gameState.jisus_matchID = match_id;
-		
-		console.log("\nMATCH CREATED\n");
-		matches.set(matchID, { gameState: gameState, gameInterval: 0 });
 	});
 
-	res.json({ matchIDs });
-});
+	return matchID;
+}
 
 // module.exports = { io };
