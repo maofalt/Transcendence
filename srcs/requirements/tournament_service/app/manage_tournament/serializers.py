@@ -88,12 +88,12 @@ class MatchGeneratorSerializer(serializers.Serializer):
 #         fields = ['id', 'type_name']
 
 class TournamentMatchSerializer(serializers.ModelSerializer):
+    winner_username = serializers.CharField(source='winner.username', read_only=True)
     players = PlayerSerializer(many=True)
-    # participants = MatchParticipantsSerializer(many=True)
 
     class Meta:
         model = TournamentMatch
-        fields = ['id', 'state', 'tournament_id', 'round_number', 'match_time', 'players']
+        fields = ['id', 'state', 'tournament_id', 'winner_username', 'round_number', 'players']
 
 class GamemodeDataSerializer(serializers.ModelSerializer):
     nbrOfRounds = serializers.IntegerField(source='round_number') #assume it is for current round number

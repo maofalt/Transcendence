@@ -38,10 +38,11 @@ export default class Signup extends AbstractComponent {
 
 		/* Player Name and Email */
 		let playernameBlock = new InputAugmented({
-			title: "Playername",
-			content: "Playername",
+			title: "Player Name",
+			content: "Player Name",
 			indicators: {
 				emptyIndicator: ["Please enter your name", () => playernameBlock.input.getValue() != ""],
+				backendIndicator: ["Invalid Player Name", () => this.verifySignupInput('validate_playername', { playername: playernameBlock.input.getValue() })],
 			},
 			description: "Can be changed anytime.",
 			type: "text"
@@ -52,7 +53,8 @@ export default class Signup extends AbstractComponent {
 			content: "example@example.com",
 			indicators: {
 				emptyIndicator: ["Please enter your email", () => emailBlock.input.getValue() != ""],
-				invalidEmailIndicator: ["Invalid Email", () => this.emailIsValid(emailBlock)],
+				backendIndicator: ["Invalid Email", () => this.verifySignupInput('validate_email', { email: emailBlock.input.getValue() })],
+				// invalidEmailIndicator: ["Invalid Email", () => this.emailIsValid(emailBlock)],
 			},
 			type: "email",
 			// button: {content: "Send Code", action: false}
@@ -64,7 +66,7 @@ export default class Signup extends AbstractComponent {
 			content: "example: GigaBoomer69",
 			indicators: {
 				emptyIndicator: ["Please enter a username", () => idBlock.input.getValue() != ""],
-				// uniqueIndicator: ["The username you entered is already taken", () => idBlock.input.getValue() != ""],
+				backendIndicator: ["Invalid Username", () => this.verifySignupInput('validate_username', { username: idBlock.input.getValue() })],
 			},
 			type: "text",
 			description: "A unique Username. Will be displayed in Games and Tournaments. Cannot be changed."
@@ -78,6 +80,7 @@ export default class Signup extends AbstractComponent {
 				lengthIndicator: ["Minimum 8 characters", () => passwordBlock.input.getValue().length >= 8],
 				digitIndicator: ["At least 1 digit", () => /\d/.test(passwordBlock.input.getValue())],
 				letterIndicator: ["At least 1 letter", () => /[a-zA-Z]/.test(passwordBlock.input.getValue())],
+				// backendIndicator: ["Invalid Password", () => this.verifySignupInput('validate_password', { password: passwordBlock.input.getValue() })],
 				// differentIndicator: ["Different from your Playername and your Email" () => this.],
 			},
 			type: "password"
@@ -145,7 +148,10 @@ export default class Signup extends AbstractComponent {
 			}, 
 			{ 
 				blocks: [idBlock, passwordBlock, confirmPasswordBlock], 
-				actions: [async (e) => await this.sendCodeToEmail(e, emailBlock.input.getValue())],
+				actions: [
+					async (e) => await this.sendCodeToEmail(e, emailBlock.input.getValue()),
+					async () => await this.verifySignupInput('validate_password', { password: passwordBlock.input.getValue() })
+				],
 			}, 
 			{ 
 				blocks: [verifyCodeBlock], 
@@ -259,6 +265,43 @@ export default class Signup extends AbstractComponent {
 	}
 
 	/* API VALIDATION + SUBMIT FUNCTIONS */
+	verifySignupInput = async (endpoint, formData) => {
+		let valid = false;
+
+		await easyFetch(`/api/user_management/auth/${endpoint}`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded',
+			},
+			body: new URLSearchParams(formData)
+		})
+		.then(res => {
+			let response = res.response;
+			let body = res.body;
+
+			if (!response || !body) {
+				throw new Error('Empty Response');
+			} else if (!response.ok) {
+				throw new Error(body.error || JSON.stringify(body));
+			} else if (response.status === 200) {
+				if (body.valid === true) {
+					// displayPopup(body.message || JSON.stringify(body), 'success');
+					valid = true;
+				} else {
+					displayPopup(body.error || JSON.stringify(body), 'error');
+					valid = false;
+				}
+			} else {
+				displayPopup(body.error || JSON.stringify(body), 'error');
+			}
+		})
+		.catch(error => {
+			displayPopup(`Request Failed: ${error}`, 'error');
+			valid = false;
+		});
+		return valid
+	}
+
 	verifyCode = async (emailBlock, verifyCodeBlock) => {
 		var email = emailBlock.input.getValue();
 		var verificationCode = verifyCodeBlock.input.getValue();
@@ -286,7 +329,7 @@ export default class Signup extends AbstractComponent {
 				displayPopup('Response Error: ' + (body.error || JSON.stringify(body)), 'error');
 				valid = false;
 			} else if (response.status === 200 && body.success === true) {
-				displayPopup(body.message || JSON.stringify(body), 'success');
+				// displayPopup(body.message || JSON.stringify(body), 'success');
 				valid = true;
 			} else {
 				displayPopup(body.error || JSON.stringify(body), 'error');
