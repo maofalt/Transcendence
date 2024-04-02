@@ -12,7 +12,6 @@ export default class Tournament extends AbstractView {
 	constructor() {
 		super();
 
-		this.createMatch = this.createMatch.bind(this);
 		this.createTournament = this.createTournament.bind(this);	
 		this.joinTournament = this.joinTournament.bind(this);	
 		this.data = [];
@@ -25,7 +24,7 @@ export default class Tournament extends AbstractView {
 				<div class="action-button">
 					<action-button 
 						data-text="CREATE"
-						id="createMatchButton"
+						id="createTournamentButton"
 						>
 					</action-button >
 				</div>
@@ -38,8 +37,6 @@ export default class Tournament extends AbstractView {
 		await this.getTournamentList();
 		
 		const tournamentTable =  document.querySelector('tournament-table');
-		const createMatchButton = document.getElementById('createMatchButton');
-		createMatchButton.addEventListener('click', this.createMatch);
 
 		const createTournamentButton = document.getElementById('createTournamentButton');
 		createTournamentButton.addEventListener('click', this.createTournament);
@@ -129,17 +126,6 @@ export default class Tournament extends AbstractView {
 		}
 	}
 
-	async createMatch() {
-		console.log('Create Match');
-		const gameSettings = this.getGameSettings();
-		try {
-			const response = await makeApiRequest('/game-logic/createMatch','POST',gameSettings);
-			console.log('Match created:', response);
-			navigateTo('/play?matchID=' + response.body.matchID);
-		} catch (error) {
-			console.error('Failed to create match:', error);
-		}
-	}
 
 	async createTournament() {
 		navigateTo('/create-tournament');
@@ -158,59 +144,5 @@ export default class Tournament extends AbstractView {
 		}
 	}
 
-	getGameSettings() {
-		return {
-			"gamemodeData": {
-			  "nbrOfPlayers": 7,
-			  "nbrOfRounds": 1,
-			  "timeLimit": 0
-			},
-			"fieldData": {
-			  "wallsFactor": 1,
-			  "sizeOfGoals": 20
-			},
-			"paddlesData": {
-			  "width": 2,
-			  "height": 12,
-			  "speed": 0.5
-			},
-			"ballData": {
-			  "speed": 0.7,
-			  "radius": 1,
-			  "color": "0xffffff",
-			  "texture": "yridgway",
-			  "model": "banana",
-			},
-			"playersData": [
-			  {
-				"accountID": "motero",
-				"color": "0x0000ff"
-			  },
-			  {
-				"accountID": "yridgway",
-				"color": "0x00ff00"
-			  },
-			  {
-				"accountID": "tata3",
-				"color": "0x00ff00"
-			  },
-			  {
-				"accountID": "tata4",
-				"color": "0x0000ff"
-			  },
-			  {
-				"accountID": "tata5",
-				"color": "0x00ff00"
-			  },
-			  {
-				"accountID": "tata6",
-				"color": "0x00ff00"
-			  },
-			  {
-				"accountID": "tata7",
-				"color": "0x00ff00"
-			  },
-			]
-		};
-	}
+
 }
