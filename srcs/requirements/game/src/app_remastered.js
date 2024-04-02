@@ -474,7 +474,7 @@ app.post('/createMatch', (req, res) => {
 	
 	if (matches.has(matchID)) {
 		console.log("Match already exists");
-		res.status(400).json({ matchID });
+		res.json({ matchID });
 		return ;
 	}
 
@@ -510,7 +510,7 @@ app.post('/createMultipleMatches', (req, res) => {
 		
 		if (matches.has(matchID)) {
 			console.log("Match already exists");
-			res.status(400).json({ matchID });
+			res.json({ matchID });
 			return ;
 		}
 
