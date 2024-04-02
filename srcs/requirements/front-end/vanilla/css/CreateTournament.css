@@ -175,10 +175,14 @@ input {
 }
 
 #ball-radius-input{
-    flex: 2.4;
+    flex: 1;
 }
 
-#ball-color-input, #ball-speed-input {
+#ball-speed-input {
+    flex: 1;
+}
+
+#ball-color-input {
     flex: 1;
 }
 
