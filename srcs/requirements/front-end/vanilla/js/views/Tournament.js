@@ -21,24 +21,13 @@ export default class Tournament extends AbstractView {
 	async getHtml() {
 		return `
 			<div class="tournament">
-				<div class="action-button">    
+				</div>
+				<div class="action-button">
 					<action-button 
-            		    data-text=" ⚡ Play Now"
+						data-text="CREATE"
 						id="createMatchButton"
 						>
-            		</action-button>
-				</div>
-				<div class="help">
-					<start-btn
-						data-text="CREATE"
-						id="createTournamentButton"
-						>
-					</start-btn>
-					<start-btn
-						data-text="MANAGE"
-						id="manageTournamentButton"
-						>
-					</start-btn>
+					</action-button >
 				</div>
 	                <tournament-table id="tournamentTable"></tournament-table>
 			</div>
