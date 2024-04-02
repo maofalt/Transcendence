@@ -280,12 +280,12 @@ export default class Game extends AbstractView {
 			console.log("END OF GAME");
 		});
 
-		this.socket.on('ping', ([timestamp, latency]) => {
-			this.socket.emit('pong', timestamp);
-			let str = `Ping: ${latency}ms - FPS: ${fps.toFixed(1)}`;
-			document.title = str;
-			//console.log(str);
-		});
+		// this.socket.on('ping', ([timestamp, latency]) => {
+		// 	this.socket.emit('pong', timestamp);
+		// 	let str = `Ping: ${latency}ms - FPS: ${fps.toFixed(1)}`;
+		// 	document.title = str;
+		// 	//console.log(str);
+		// });
 
 		this.socket.on("clean-all", () => {
 			this.cleanAll();

@@ -1,6 +1,7 @@
 import io from 'socket.io-client';
 import isLoggedIn from '@utils/isLoggedIn';
 import displayPopup from '@utils/displayPopup';
+import { navigateTo } from '@utils/Router';
 
 const hostname = window.location.hostname;
 const protocol = 'wss';
@@ -26,10 +27,12 @@ function initSocketConnection() {
 			transports: ['websocket'],
 			auth: { accessToken }
 		});
-		
-		socket.on('new-match', (data) => {
-			displayPopup('New Match!', 'info');
-			console.log('new-match:', data);
+
+		socket.on('new-match', (matchID) => {
+			let sticky = true;
+			let onClick = () => navigateTo(`/play?matchID=${matchID}`);
+			displayPopup('New Match! Click to join', 'info', sticky, onClick);
+			console.log('new-match:', matchID);
 		});
 	}
 	return socket;

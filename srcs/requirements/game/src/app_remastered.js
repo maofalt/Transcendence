@@ -84,7 +84,7 @@ server.listen(expressPort, () => {
 
 function gameLoop(matchID) {
 	let match = matches.get(matchID);
-	let gameState = render.updateData(match.gameState);
+	let gameState = render.updateData(match.gameState); 
 	if (gameState == 1) {
 		io.to(matchID).emit('destroy', match.gameState);
 		io.to(matchID).emit('refresh', match.gameState);
@@ -236,7 +236,7 @@ function handleConnectionV2(client, query) {
     client.join(client.matchID);
     // console.log('match: ', util.inspect(match, {depth: null}));
     // client.emit('generate', JSON.stringify(match));
-	console.log('---DATA---\n', match.gameState, '\n---END---\n');
+	// console.log('---DATA---\n', match.gameState, '\n---END---\n');
     client.emit('generate', match.gameState);
     
     if (match.gameState.connectedPlayers == 1 && match.gameState.ongoing == false) {
@@ -299,7 +299,7 @@ io.on('connection', (client) => {
 		//handle client connection and match init + players status
 		client.on('connect-game', (query) => {
 
-			console.log("\nclient:\n", client.decoded);
+			// console.log("\nclient:\n", client.decoded);
 			let match;
 			let data;
 			try {
@@ -352,7 +352,7 @@ io.on('connection', (client) => {
 			client.on('delete-match', (matchID) => {
 				console.log("FROM BACKEND : DELETE MATCH",client.matchID);
 				// Print the keys in the matches map
-				console.log("Keys in matches map:", Array.from(matches.keys()))
+				// console.log("Keys in matches map:", Array.from(matches.keys()))
 				if (matches.has(client.matchID)) {
 					console.log("INSIDE MATCH HAS MATCHID");
 					if (matches.get(client.matchID).gameState.gameInterval)
@@ -395,19 +395,19 @@ io.on('connection', (client) => {
 				console.log(`Client disconnected with ID: ${client.id}`);
 			});
 
-			setInterval(() => {
-				const big = Buffer.alloc(1024 * 1024);
-				client.emit('ping', [Date.now(), latency]);
-			}, 1000);
+			// setInterval(() => {
+			// 	const big = Buffer.alloc(1024 * 1024);
+			// 	client.emit('ping', [Date.now(), latency]);
+			// }, 1000);
 
-			client.on('pong', timestamp => {
-				latency = Date.now() - timestamp;
+			// client.on('pong', timestamp => {
+			// 	latency = Date.now() - timestamp;
 
 				// process.stdout.clearLine(0);  // Clear current text
 				// process.stdout.cursorTo(0);   // Move cursor to beginning of line
 				// process.stdout.write(`${client.id} latency: ${latency}ms`); // Write new text
 				// console.log(`${client.id} latency: ${latency}ms`);
-			});
+			// });
 		});
 
 	} catch (error) {
@@ -546,20 +546,21 @@ function setupMatch(gameSettings, tournament_id, match_id, res) {
 	const gameState = init.initLobby(gameSettings);
 	gameState.jisus_matchID = match_id;
 	
-	console.log("\nMATCH CREATED\n");
+	// console.log("\nMATCH CREATED\n");
 	matches.set(matchID, { gameState: gameState, gameInterval: 0 });
 
 	const players = gameSettings.playersData.map(player => player.accountID);
-	console.log("PLAYERS :", players);
+	console.log("\n\nPLAYERS :\n\n", players);
 	players.forEach(player => {
-		let client = clients.get(player)
+		let client = clients.get(player);
 		if (client) {
+			console.log("EMITTING TO: ", player); 
 			// console.log("EMITTED TO: ", client.playerID);
-			client.emit('new-match', gameSettings);
+			client.emit('new-match', matchID);
 		}
 	});
 
-	return matchID;
+	return matchID; 
 }
 
 // module.exports = { io };
