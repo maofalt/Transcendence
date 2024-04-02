@@ -1,4 +1,4 @@
-// import '@css/tournament.css'
+import '@css/tournament.css'
 import AbstractView from "./AbstractView";
 import DynamicTable from "@components/DynamicTable";
 import TournamentTable from "@components/TournamentTable";

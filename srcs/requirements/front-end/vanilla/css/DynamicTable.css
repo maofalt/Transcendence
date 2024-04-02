@@ -6,8 +6,12 @@
     margin-bottom: 1rem;
 }
 
+tournament-table {
+    display: block;
+}
+
 .table {
-    width: 100%;
+    display: table;
     margin-bottom: 1rem;
     color: hsl(240 3.8% 46.1);
     border-radius: 9px;
