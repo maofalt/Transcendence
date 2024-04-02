@@ -372,6 +372,7 @@ io.on('connection', (client) => {
 					player.connected = false;
 				if (data.connectedPlayers < 1) {
 					console.log("CLEARING INTERVAL");
+					// jfdkfjh
 					clearInterval(match.gameInterval);
 					if (data.ongoing) {
 						data.winner = player;
@@ -381,7 +382,7 @@ io.on('connection', (client) => {
 						matches.delete(client.matchID);
 					}
 					console.log("SENDING CLEAN MSG");
-					client.emit("clean-all");
+					// client.emit("clean-all");
 					delete data;
 				}
 				console.log(`Client disconnected with ID: ${client.id}`);

@@ -29,4 +29,10 @@ function initSocketConnection() {
 	return socket;
 }
 
-export { socket, initSocketConnection };
+function refreshSocketConnection() {
+	if (isLoggedIn() && (socket == null || socket.connected == false)) {
+		initSocketConnection();
+	}
+}
+
+export { socket, initSocketConnection, refreshSocketConnection };
