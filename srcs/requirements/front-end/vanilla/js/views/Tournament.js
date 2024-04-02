@@ -63,55 +63,65 @@ export default class Tournament extends AbstractView {
 			const tournaments = response.body;
 			if (!tournaments) 
 				throw new Error('Failed to get tournament list');
-			console.log('Tournament list:', response.body);
 			// Transform the data
 			if (tournaments.length === 0) {
 				this.data = [];
 				return;
 			}
 
+			await tournamentTable.applyColumnStyles();
+			let Styles = tournamentTable.columnStyles;
 			 // Map API data to table rows and add them to the table
 			tournaments.forEach(async (tournament) => {
 				console.log('Tournament:', tournament);
 			// TOURNAMENT STYLES APPLIED
-				const Styles = tournamentTable.columnStyles;
 			// tOURNAMENT NAMES COLUMN	
 				const tournamentNameElement = tournamentTable.createStyledHTMLObject('div', tournament.tournament_name, Styles.tournamentName);
+				console.log('Tournament name style: ', tournamentNameElement.style)
 			//TOURNAMENST HOST 
 				//trying tor ecover the name id and the picture
-				const hostId = tournament.host_id;
-				const hostElement = tournamentTable.createStyledHTMLObject('div', `${tournament.host_id}`, Styles.host);
+				const hostName = tournament.host_name;
+				const hostElement = tournamentTable.createStyledHTMLObject('div', `${hostName}`, Styles.host);
 			//TOURNAMENT PLAYERS OER TOURNAMENT AND PLACE AVAILABLE	
-				const numberOfPlayersElement = tournamentTable.createStyledHTMLObject('div', `${tournament.joined}/${tournament.nbr_of_player_total}`, {});
+				const numberOfPlayersElement = tournamentTable.createStyledHTMLObject('div', `${tournament.joined}/${tournament.nbr_of_player_total}`, Styles.nbrOfPlayersTournament);
 			// TOURNAMENT PLAYER  PER MATCH!!	
-				const numberOfPlayerPerMatch = tournamentTable.createStyledHTMLObject('div', `${tournament.nbr_of_player_match}`, {});
+				const numberOfPlayerPerMatch = tournamentTable.createStyledHTMLObject('div', `${tournament.nbr_of_player_match}`, Styles.nbrOfPlayersMatch);
 			//TOURNAMENT STATUS	
-				const tournamentStatus = tournamentTable.createStyledHTMLObject('div', `${tournament.state}`, {});
+				const tournamentStatus = tournamentTable.createStyledHTMLObject('div', `${tournament.state}`, Styles.state);
 			//TOURNAMENT ACTION BUTTONS	
-				const actionContainer = document.createElement('div');
-				//container for all button actions 
-				actionContainer.style.display = 'flex';
-				actionContainer.style.justifyContent = 'centered';
+				const actionContainer = tournamentTable.createStyledHTMLObject('div',  ``, Styles.action);
+				console.log('Action container style: ', actionContainer.style)
 				//Join button on te action column to join corresponding tournament
-				
-				const joinButtonElement = document.createElement('button');
-				joinButtonElement.textContent = 'Join';
-				Object.assign(joinButtonElement.style, Styles.action);
-				joinButtonElement.addEventListener('click', async () => await this.joinTournament(tournament.id));				
-				actionContainer.appendChild(joinButtonElement);
-				
+				const responseUser = await makeApiRequest(`/api/user_management/auth/getUser`,'GET');
+				const userName = responseUser.body.username;
+				let actionButtonElement = document.createElement('button');
+				if (hostName === userName && tournament.state === 'waiting') {
+					actionButtonElement.textContent = 'Start';
+					Object.assign(actionButtonElement.style, Styles.action);
+					actionButtonElement.addEventListener('click', async () => {
+						const apiEndpoint = `/api/tournament/${tournament.id}/start/`;
+						const response = await makeApiRequest(apiEndpoint,'POST');
+					});
+				} else if (hostName === userName && tournament.state === 'started') {
+					actionButtonElement.textContent = 'Joined';
+					Object.assign(actionButtonElement.style, Styles.action);
+				} else {
+					actionButtonElement.textContent = 'Join';
+					Object.assign(actionButtonElement.style, Styles.action);
+					actionButtonElement.addEventListener('click', async () => await this.joinTournament(tournament.id));				
+				}
+				actionContainer.appendChild(actionButtonElement);
+
 			//TOURNAMENT Details button to see the tournament state (either brackets and or results) opening th emodal
-				const tournamentDetails = document.createElement('div');
-				tournamentDetails.style.display = 'flex';
-				tournamentDetails.style.justifyContent = 'centered';
+				const tournamentDetails = tournamentTable.createStyledHTMLObject('div',  ``, Styles.details);
+				console.log('Tournament details style: ', tournamentDetails.style);
 
 				const viewButtonElement = document.createElement('button');
 				viewButtonElement.innerHTML = '👁️';
-				Object.assign(viewButtonElement.style, Styles.action);
+				Object.assign(viewButtonElement.style, Styles.details);
 				viewButtonElement.addEventListener('click', () =>
 					console.log(`SOME IS WATCHING 👁️ 👁️ `)
 				);
-
 				tournamentDetails.appendChild(viewButtonElement);
 			//Add the constructed row to the table
 				tournamentTable.addRow([
@@ -150,7 +160,6 @@ export default class Tournament extends AbstractView {
 	
 		try {
 			const responseUser = await makeApiRequest(`/api/user_management/auth/getUser`,'GET');
-			console.log('User:', responseUser.body);
 			const userID = responseUser.body.user_id;
 			const apiEndpoint = `/api/tournament/add-player/${tournamentID}/${userID}/`;
 			const response = await makeApiRequest(apiEndpoint,'POST');
