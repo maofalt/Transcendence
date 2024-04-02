@@ -57,25 +57,30 @@ export default class Tournament extends AbstractView {
 
 			await tournamentTable.applyColumnStyles();
 			let Styles = tournamentTable.columnStyles;
-			 // Map API data to table rows and add them to the table
+			
+			// Map API data to table rows and add them to the table
 			tournaments.forEach(async (tournament) => {
 				console.log('Tournament:', tournament);
+			
 			// TOURNAMENT STYLES APPLIED
 				const tournamentNameElement = tournamentTable.createStyledHTMLObject('div', tournament.tournament_name, Styles.tournamentName);
 				console.log('Tournament name style: ', tournamentNameElement.style)
+			
 			//TOURNAMENST HOST 
 				//trying tor ecover the name id and the picture
 				const hostName = tournament.host_name;
 				const hostElement = tournamentTable.createStyledHTMLObject('div', `${hostName}`, Styles.host);
+			
 			//TOURNAMENT PLAYERS OER TOURNAMENT AND PLACE AVAILABLE	
 				const numberOfPlayersElement = tournamentTable.createStyledHTMLObject('div', `${tournament.joined}/${tournament.nbr_of_player_total}`, Styles.nbrOfPlayersTournament);
+			
 			// TOURNAMENT PLAYER  PER MATCH!!	
 				const numberOfPlayerPerMatch = tournamentTable.createStyledHTMLObject('div', `${tournament.nbr_of_player_match}`, Styles.nbrOfPlayersMatch);
+			
 			//TOURNAMENT STATUS	
 				const tournamentStatus = tournamentTable.createStyledHTMLObject('div', `${tournament.state}`, Styles.state);
+			
 			//TOURNAMENT ACTION BUTTONS	
-				const actionContainer = tournamentTable.createStyledHTMLObject('div',  ``, Styles.action);
-				console.log('Action container style: ', actionContainer.style)
 				//Join button on te action column to join corresponding tournament
 				const responseUser = await makeApiRequest('/api/user_management/auth/getUser', 'GET');
 				const userName = responseUser.body.username;
@@ -95,11 +100,7 @@ export default class Tournament extends AbstractView {
 					buttonText = 'Join';
 					buttonEvent = async () => await this.joinTournament(tournament.id);
 				}
-				
-				// Use the createStyledHTMLObject method to create the button element with the right text and style
-				const actionButtonElement = tournamentTable.createStyledHTMLObject('button', buttonText, Styles.action);
-				
-				// Assign the click event to the button if it exists
+				const actionButtonElement = tournamentTable.createStyledHTMLObject('button', buttonText, Styles.action);				
 				if (buttonEvent) {
 					actionButtonElement.addEventListener('click', buttonEvent);
 				}
