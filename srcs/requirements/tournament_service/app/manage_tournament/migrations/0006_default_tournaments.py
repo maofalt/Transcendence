@@ -27,7 +27,7 @@ def create_tournament(apps, schema_editor):
     MatchSetting = apps.get_model('manage_tournament', 'MatchSetting')
     Tournament = apps.get_model('manage_tournament', 'Tournament')
 
-    players = ['motero', 'abravo', 'jisu', 'znogueira', 'yoel']
+    players = ['motero', 'amanda', 'jisu', 'znogueira', 'yoel', 'motero2', 'amanda2', 'jisu2', 'znogueira2', 'yoel2']
     for i, player_username in enumerate(players):
         #create player or get it if it already exists
         host_player, _ = Player.objects.get_or_create(id=i, username=player_username, defaults={'total_played': 0})
@@ -53,7 +53,7 @@ def create_tournament(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('manage_tournament', '0005_alter_matchsetting_paddle_speed_and_more'),
+        ('manage_tournament', '0005_remove_tournamentmatch_participants_and_more'),
     ]
 
     operations = [
