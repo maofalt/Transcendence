@@ -4,6 +4,7 @@ import DynamicTable from "@components/DynamicTable";
 import TournamentTable from "@components/TournamentTable";
 import ActionButton from "@components/ActionButton";
 import NormalButton from '@components/NormalButton';
+import HostAvatar from '@components/HostAvatar';
 import { makeApiRequest } from '@utils/makeApiRequest.js';
 import { navigateTo } from '@utils/Router.js';
 
@@ -69,7 +70,12 @@ export default class Tournament extends AbstractView {
 			//TOURNAMENST HOST 
 				//trying tor ecover the name id and the picture
 				const hostName = tournament.host_name;
-				const hostElement = tournamentTable.createStyledHTMLObject('div', `${hostName}`, Styles.host);
+				const hostAvatarElement = document.createElement('host-avatar');
+				hostAvatarElement.setAttribute('name', hostName);
+				hostAvatarElement.setAttribute('avatar', '');
+
+				const hostElement = tournamentTable.createStyledHTMLObject('div', hostAvatarElement, Styles.host);
+				//const hostElement = tournamentTable.createStyledHTMLObject('div', `${hostName}`, Styles.host);
 			
 			//TOURNAMENT PLAYERS OER TOURNAMENT AND PLACE AVAILABLE	
 				const numberOfPlayersElement = tournamentTable.createStyledHTMLObject('div', `${tournament.joined}/${tournament.nbr_of_player_total}`, Styles.nbrOfPlayersTournament);
