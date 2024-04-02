@@ -40,10 +40,12 @@ export default class ProfilePage extends AbstractComponent {
 			two_factor_method: "",
 		}
 
-		this.user = JSON.parse(sessionStorage.getItem("userDetails"));
-		// console.log("USER:", this.user);
-		if (!this.user)
-			this.user = fetchUserDetails();
+		let elemsToBeFilled = {};
+
+		// this.user = JSON.parse(sessionStorage.getItem("userDetails"));
+		// // console.log("USER:", this.user);
+		// if (!this.user)
+		// 	this.user = fetchUserDetails();
 
 		const userInfo = new UserInfo({});
 		userInfo.imgBox.onmouseover = (e) => {
@@ -134,11 +136,13 @@ export default class ProfilePage extends AbstractComponent {
 				<h3>E-Mail :</h3>
 			</div>
 			<div class="values-container">
-				<p id="user-playername">${this.user.playername}</p>
-				<p id="user-email">${this.user.email}</p>
+				<p id="user-playername">loading...</p>
+				<p id="user-email">loading...</p>
 			</div>
 		</div>
 		`;
+		elemsToBeFilled.userPlayername = infos.querySelector("#user-playername");
+		elemsToBeFilled.userEmail = infos.querySelector("#user-email");
 
 		infos.style.setProperty("display", "block");
 		infos.style.setProperty("align-items", "left");
@@ -177,13 +181,17 @@ export default class ProfilePage extends AbstractComponent {
 				<h3>Win rate :</h3>
 			</div>
 			<div class="values-container">
-				<p id="match-total">${this.user.total}</p>
-				<p id="match-wins">${this.user.wins}</p>
-				<p id="match-losses">${this.user.losses}</p>
-				<p id="match-winrate">${this.user.winrate}</p>
+				<p id="match-total">loading...</p>
+				<p id="match-wins">loading...</p>
+				<p id="match-losses">loading...</p>
+				<p id="match-winrate">loading...</p>
 			</div>
 		</div>
 		`;
+		elemsToBeFilled.matchTotal = stats.querySelector("#match-total");
+		elemsToBeFilled.matchWins = stats.querySelector("#match-wins");
+		elemsToBeFilled.matchLosses = stats.querySelector("#match-losses");
+		elemsToBeFilled.matchWinrate = stats.querySelector("#match-winrate");
 
 		let history = document.createElement("div");
 		history.innerHTML = `
@@ -201,12 +209,11 @@ export default class ProfilePage extends AbstractComponent {
 			.values-container {
 				display: inline-block;
 				margin: 0px 0px 0px 15px;
-				max-height: 350px;
+				height: 35px;
 				width: 100%;
 				padding-top: 10px;
 				overflow-y: scroll;
 				border-top: 2px solid rgba(255, 255, 255, 0.1);
-				// border-radius: 0px 0px 20px 20px;
 				scrollbar-color: rgba(255, 255, 255, 0.1) rgba(255, 255, 255, 0.1);
 				scrollbar-width: thin;
 			}
@@ -273,15 +280,18 @@ export default class ProfilePage extends AbstractComponent {
 				<span class="date">Date</span>
 				<span class="winner">Winner</span>
 			</div>
-			<div class="match-row">
-				<span class="match-id">001</span>
-				<span class="tournament-name">Great Big Tournament</span>
-				<span class="date">01-03-2021</span>
-				<span class="winner">yridgway</span>
+			<div id="match-rows">
+				<div class="match-row">
+					<span class="match-id">001</span>
+					<span class="tournament-name">Great Big Tournament</span>
+					<span class="date">01-03-2021</span>
+					<span class="winner">yridgway</span>
+				</div>
 			</div>
 			<!-- Add more match-rows here -->
 		</div>
 		`;
+		elemsToBeFilled.matchRows = history.querySelector("#match-rows");
 
 		const addFriend = new InputAugmented({
 			title: "Add Friend",
@@ -297,39 +307,8 @@ export default class ProfilePage extends AbstractComponent {
 		addFriend.shadowRoot.querySelector("#input-button").style.setProperty("font-size", "28px");
 
 		const friendPannel = new Pannel({dark: false, title: "Friends"});
-		
-		// const friendsContainer = document.createElement("div");
-		// friendsContainer.id = "friends-container";
 
-		// const matchHistoryContainer = document.createElement("div");
-		// matchHistoryContainer.id = "match-history-container";
-		
-		// const tabContainer = document.createElement("div");
-		// tabContainer.style.setProperty("display", "flex");
-		// tabContainer.style.setProperty("justify-content", "center");
-		// tabContainer.style.setProperty("align-items", "center");
-		
-		// const friendTabButton = new CustomButton({content: "Friends", style: {margin: "10px 10px"}});
-		// friendTabButton.style.setProperty("font-family", "Space Grotesk, sans-serif");
-		// friendTabButton.style.setProperty("font-size", "20px");
-		// friendTabButton.onclick = () => {
-		// 	friendsContainer.style.display = "block";
-		// 	matchHistoryContainer.style.display = "none";
-		// };
-		// tabContainer.appendChild(friendTabButton);
-
-		// const matchHistoryTabButton = new CustomButton({content: "Match History", style: {margin: "10px 10px"}});
-		// matchHistoryTabButton.style.setProperty("font-family", "Space Grotesk, sans-serif");
-		// matchHistoryTabButton.style.setProperty("font-size", "20px");
-		// matchHistoryTabButton.onclick = () => {
-		// 	friendsContainer.style.display = "none";
-		// 	matchHistoryContainer.style.display = "block";
-		// };
-		// tabContainer.appendChild(matchHistoryTabButton);
-
-		// friendPannel.shadowRoot.appendChild(tabContainer);
-
-		const friendsListPannel = new Pannel({dark: true, title: `Friends List  ( ${this.user.friends_count} )`});
+		const friendsListPannel = new Pannel({dark: true, title: `Friends List  ( this.user.friends_count} )`});
 
 		const friendsList = new FriendsList();
 		friendsListPannel.shadowRoot.appendChild(friendsList);
@@ -362,6 +341,121 @@ export default class ProfilePage extends AbstractComponent {
 		this.shadowRoot.appendChild(goBack);
 		this.shadowRoot.appendChild(profile);
 		this.shadowRoot.appendChild(friendPannel);
+
+		this.fillValues(elemsToBeFilled);
+		this.fillMatchHistory(elemsToBeFilled.matchRows);
+	}
+
+	fillValues = async (elemsToBeFilled) => {
+		let user = JSON.parse(sessionStorage.getItem("userDetails"));
+		if (!user)
+			user = await fetchUserDetails();
+		elemsToBeFilled.userPlayername.textContent = user.playername;
+		elemsToBeFilled.userEmail.textContent = user.email;
+		elemsToBeFilled.matchTotal.textContent = user.total;
+		elemsToBeFilled.matchWins.textContent = user.wins;
+		elemsToBeFilled.matchLosses.textContent = user.losses;
+		elemsToBeFilled.matchWinrate.textContent = user.winrate;
+	}
+
+	fillMatchHistory = async (matchRows) => {
+		// let matchHistory = await fetchMatchHistory();
+		let matchHistory = [
+			{
+				id: "001",
+				tournament: "Great Big Tournament",
+				date: "01-03-2021",
+				winner: "yridgway"
+			},
+			{
+				id: "002",
+				tournament: "Great Big Tournament",
+				date: "01-03-2021",
+				winner: "yridgway"
+			},
+			{
+				id: "003",
+				tournament: "Great Big Tournament",
+				date: "01-03-2021",
+				winner: "yridgway"
+			},
+			{
+				id: "004",
+				tournament: "Great Big Tournament",
+				date: "01-03-2021",
+				winner: "yridgway"
+			},
+			{
+				id: "005",
+				tournament: "Great Big Tournament",
+				date: "01-03-2021",
+				winner: "yridgway"
+			},
+			{
+				id: "006",
+				tournament: "Great Big Tournament",
+				date: "01-03-2021",
+				winner: "yridgway"
+			},
+			{
+				id: "007",
+				tournament: "Great Big Tournament",
+				date: "01-03-2021",
+				winner: "yridgway"
+			},
+			{
+				id: "008",
+				tournament: "Great Big Tournament",
+				date: "01-03-2021",
+				winner: "yridgway"
+			},
+			{
+				id: "009",
+				tournament: "Great Big Tournament",
+				date: "01-03-2021",
+				winner: "yridgway"
+			},
+			{
+				id: "010",
+				tournament: "Great Big Tournament",
+				date: "01-03-2021",
+				winner: "yridgway"
+			}
+		];
+		matchRows.innerHTML = "";
+		matchHistory.forEach(match => {
+			console.log("Match:", match);
+			let matchRow = document.createElement("div");
+			matchRow.classList.add("match-row");
+			matchRow.innerHTML = `
+			<span class="match-id">${match.id}</span>
+			<span class="tournament-name">${match.tournament}</span>
+			<span class="date">${match.date}</span>
+			<span class="winner">${match.winner}</span>
+			`;
+			matchRows.appendChild(matchRow);
+		});
+	}
+
+	fetchMatchHistory = async (userId) => {
+		let matchHistory = [];
+		await easyFetch(`/api/user_management/auth/stats/${userId}`)
+		.then(res => {
+			let response = res.response;
+			let body = res.body;
+
+			if (!response || !body) {
+				throw new Error("Response is null");
+			} else if (response.status === 200) {
+				matchHistory = body;
+			} else {
+				throw new Error(body.error || JSON.stringify(body));
+			}
+		})
+		.catch(error => {
+			displayPopup(error.message || error, "error");
+		});
+		return matchHistory;
 	}
 
 	deleteAccount = async () => {
