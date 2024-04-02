@@ -13,7 +13,7 @@ export default class Pannel extends AbstractComponent {
 
 		const p = document.createElement('p');
 		p.id = "pannel-title";
-		p.textContent = options.title ? options.title : "";
+		p.textContent = options.title ? options.title : "Title";
 
 		if (options.style) {
 			for (const key in options.style) {

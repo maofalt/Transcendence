@@ -81,6 +81,9 @@ export default class ProfilePage extends AbstractComponent {
 		const gameStats = new Pannel({dark: true, title: "Game Stats", style: {display: "block", padding: "0px 0px 0px 20px"}});
 		gameStats.shadowRoot.querySelector("#pannel-title").style.setProperty("margin", "10px 0px");
 
+		const matchHistory = new Pannel({dark: true, title: "Match History", style: {display: "block", padding: "20px 20px 20px 20px"}});
+		matchHistory.shadowRoot.querySelector("#pannel-title").style.setProperty("margin", "10px 0px");
+
 		const areYouSure = new Pannel({dark: true, title: "Are you sure you want to delete your account?\nThis can't be undone!", style: {display: "none", padding: "20px 20px 20px 20px"}});
 		areYouSure.style.position = "fixed";
 		areYouSure.style.top = "50%";
@@ -92,14 +95,13 @@ export default class ProfilePage extends AbstractComponent {
 		confirmDeleteButton.onclick = () => {
 			this.deleteAccount();
 		};
-		const cancelDeleteButton = new CustomButton({content: "No, keep my account", style: {margin: "10px"}});
+		const cancelDeleteButton = new CustomButton({content: "No, keep my account", action: true, style: {margin: "10px"}});
 		cancelDeleteButton.onclick = () => {
 			areYouSure.style.display = "none";
 		};
 
 		areYouSure.shadowRoot.appendChild(confirmDeleteButton);
 		areYouSure.shadowRoot.appendChild(cancelDeleteButton);
-
 
 		let infos = document.createElement("div");
 		infos.innerHTML = `
@@ -132,8 +134,8 @@ export default class ProfilePage extends AbstractComponent {
 				<h3>E-Mail :</h3>
 			</div>
 			<div class="values-container">
-				<p>${this.user.playername}</p>
-				<p>${this.user.email}</p>
+				<p id="user-playername">${this.user.playername}</p>
+				<p id="user-email">${this.user.email}</p>
 			</div>
 		</div>
 		`;
@@ -175,11 +177,109 @@ export default class ProfilePage extends AbstractComponent {
 				<h3>Win rate :</h3>
 			</div>
 			<div class="values-container">
-				<p>${this.user.total}</p>
-				<p>${this.user.wins}</p>
-				<p>${this.user.losses}</p>
-				<p>${this.user.winrate}</p>
+				<p id="match-total">${this.user.total}</p>
+				<p id="match-wins">${this.user.wins}</p>
+				<p id="match-losses">${this.user.losses}</p>
+				<p id="match-winrate">${this.user.winrate}</p>
 			</div>
+		</div>
+		`;
+
+		let history = document.createElement("div");
+		history.innerHTML = `
+		<style>
+			* {
+				margin: 0;
+				padding: 0;
+			}
+			.history-container {
+				font-family: "Space Grotesk", sans-serif;
+			}
+			.titles-container {
+				display: inline-block;
+			}
+			.values-container {
+				display: inline-block;
+				margin: 0px 0px 0px 15px;
+				max-height: 350px;
+				width: 100%;
+				padding-top: 10px;
+				overflow-y: scroll;
+				border-top: 2px solid rgba(255, 255, 255, 0.1);
+				// border-radius: 0px 0px 20px 20px;
+				scrollbar-color: rgba(255, 255, 255, 0.1) rgba(255, 255, 255, 0.1);
+				scrollbar-width: thin;
+			}
+			.titles-container h3 {
+				margin: 0px 0px 14px 0px;
+			}
+			.values-container p {
+				margin: 0px 0px 18px 0px;
+			}
+			.history-container {
+				width: 100%; /* Adjust based on your layout */
+				padding: 10px;
+				box-sizing: border-box;
+			}
+			
+			.match-row {
+				display: flex;
+				justify-content: space-between;
+				margin-bottom: 10px; /* Spacing between rows */
+				overflow: auto; /* Adds a scrollbar if the row's content is too wide */
+			}
+			
+			.match-id, .tournament-name, .date, .winner {
+				min-width: 0; /* Allows the item to shrink below its content size, if necessary */
+				text-align: center;
+				white-space: nowrap; /* Ensures the content of each item stays on one line */
+				overflow: hidden; /* Hide overflow content */
+				text-overflow: ellipsis; /* Add ellipsis if the content is too long */
+			}
+			
+			/* Adjusting padding to ensure spacing around text */
+			.match-id, .tournament-name, .date, .winner {
+				# padding: 0 10px; /* Increase padding for better spacing */
+			}
+			
+			/* Align the first and last items with the container's edges */
+			.match-id {
+				flex: 1;
+				text-align: left;
+			}
+
+			.tournament-name {
+				flex: 3;
+				text-align: center;
+			}
+			
+			.date {
+				flex: 2;
+				text-align: center;
+			}
+			
+			.winner {
+				flex: 2;
+				text-align: right;
+			}
+			#table-head {
+				text-decoration: underline;
+			}
+		</style>
+		<div class="history-container">
+			<div id="table-head" class="match-row">
+				<span class="match-id">Id</span>
+				<span class="tournament-name">Tournament</span>
+				<span class="date">Date</span>
+				<span class="winner">Winner</span>
+			</div>
+			<div class="match-row">
+				<span class="match-id">001</span>
+				<span class="tournament-name">Great Big Tournament</span>
+				<span class="date">01-03-2021</span>
+				<span class="winner">yridgway</span>
+			</div>
+			<!-- Add more match-rows here -->
 		</div>
 		`;
 
@@ -196,56 +296,55 @@ export default class ProfilePage extends AbstractComponent {
 		addFriend.button.onclick = async () => await addFriend.validate();
 		addFriend.shadowRoot.querySelector("#input-button").style.setProperty("font-size", "28px");
 
-		const friendHistoryPannel = new Pannel({dark: false, title: ""});
-		friendHistoryPannel.shadowRoot.querySelector("#pannel-title").style.display = "none";
+		const friendPannel = new Pannel({dark: false, title: "Friends"});
 		
-		const friendsContainer = document.createElement("div");
-		friendsContainer.id = "friends-container";
+		// const friendsContainer = document.createElement("div");
+		// friendsContainer.id = "friends-container";
 
-		const matchHistoryContainer = document.createElement("div");
-		matchHistoryContainer.id = "match-history-container";
+		// const matchHistoryContainer = document.createElement("div");
+		// matchHistoryContainer.id = "match-history-container";
 		
-		const tabContainer = document.createElement("div");
-		tabContainer.style.setProperty("display", "flex");
-		tabContainer.style.setProperty("justify-content", "center");
-		tabContainer.style.setProperty("align-items", "center");
+		// const tabContainer = document.createElement("div");
+		// tabContainer.style.setProperty("display", "flex");
+		// tabContainer.style.setProperty("justify-content", "center");
+		// tabContainer.style.setProperty("align-items", "center");
 		
-		const friendTabButton = new CustomButton({content: "Friends", style: {margin: "10px 10px"}});
-		friendTabButton.style.setProperty("font-family", "Space Grotesk, sans-serif");
-		friendTabButton.style.setProperty("font-size", "20px");
-		friendTabButton.onclick = () => {
-			friendsContainer.style.display = "block";
-			matchHistoryContainer.style.display = "none";
-		};
-		tabContainer.appendChild(friendTabButton);
+		// const friendTabButton = new CustomButton({content: "Friends", style: {margin: "10px 10px"}});
+		// friendTabButton.style.setProperty("font-family", "Space Grotesk, sans-serif");
+		// friendTabButton.style.setProperty("font-size", "20px");
+		// friendTabButton.onclick = () => {
+		// 	friendsContainer.style.display = "block";
+		// 	matchHistoryContainer.style.display = "none";
+		// };
+		// tabContainer.appendChild(friendTabButton);
 
-		const matchHistoryTabButton = new CustomButton({content: "Match History", style: {margin: "10px 10px"}});
-		matchHistoryTabButton.style.setProperty("font-family", "Space Grotesk, sans-serif");
-		matchHistoryTabButton.style.setProperty("font-size", "20px");
-		matchHistoryTabButton.onclick = () => {
-			friendsContainer.style.display = "none";
-			matchHistoryContainer.style.display = "block";
-		};
-		tabContainer.appendChild(matchHistoryTabButton);
+		// const matchHistoryTabButton = new CustomButton({content: "Match History", style: {margin: "10px 10px"}});
+		// matchHistoryTabButton.style.setProperty("font-family", "Space Grotesk, sans-serif");
+		// matchHistoryTabButton.style.setProperty("font-size", "20px");
+		// matchHistoryTabButton.onclick = () => {
+		// 	friendsContainer.style.display = "none";
+		// 	matchHistoryContainer.style.display = "block";
+		// };
+		// tabContainer.appendChild(matchHistoryTabButton);
 
-		friendHistoryPannel.shadowRoot.appendChild(tabContainer);
+		// friendPannel.shadowRoot.appendChild(tabContainer);
 
 		const friendsListPannel = new Pannel({dark: true, title: `Friends List  ( ${this.user.friends_count} )`});
 
 		const friendsList = new FriendsList();
 		friendsListPannel.shadowRoot.appendChild(friendsList);
 
-		friendsContainer.appendChild(addFriend);
-		friendsContainer.appendChild(friendsListPannel);
-		friendHistoryPannel.shadowRoot.appendChild(friendsContainer);
+		friendPannel.shadowRoot.appendChild(addFriend);
+		friendPannel.shadowRoot.appendChild(friendsListPannel);
+		// friendPannel.shadowRoot.appendChild(friendsContainer);
 
 		personalInfo.shadowRoot.appendChild(infos);
 		gameStats.shadowRoot.appendChild(stats);
+		matchHistory.shadowRoot.appendChild(history);
 
 		const deleteButton = new CustomButton({content: "Delete Account", delete: true, style: {margin: "10px 10px"}});
 		deleteButton.onclick = () => {
 			areYouSure.style.display = "block";
-			// this.deleteAccount();
 		};
 		
 		const goBack = new CustomButton({content: "< Back", style: {padding: "0px 20px", position: "absolute", left: "50px", bottom: "30px"}});
@@ -254,6 +353,7 @@ export default class ProfilePage extends AbstractComponent {
 		profile.shadowRoot.appendChild(userInfo);
 		profile.shadowRoot.appendChild(personalInfo);
 		profile.shadowRoot.appendChild(gameStats);
+		profile.shadowRoot.appendChild(matchHistory);
 		
 		profile.shadowRoot.appendChild(deleteButton);
 		
@@ -261,7 +361,7 @@ export default class ProfilePage extends AbstractComponent {
 		
 		this.shadowRoot.appendChild(goBack);
 		this.shadowRoot.appendChild(profile);
-		this.shadowRoot.appendChild(friendHistoryPannel);
+		this.shadowRoot.appendChild(friendPannel);
 	}
 
 	deleteAccount = async () => {
