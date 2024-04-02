@@ -32,7 +32,7 @@ urlpatterns = [
 # Tournament Progression:
     # GET /{id}/matches - Retrieve a list of matches for a tournament.
     # POST /{id}/matches - Create a new match within a tournament.
-    path('<int:tournament_id>/match-generator/', views.MatchGenerator.as_view(), name='mathch-generator'),
+    path('<int:tournament_id>/match-generator/', views.MatchGenerator.as_view(), name='match-generator'),
     path('<int:id>/matches/', views.TournamentMatchList.as_view(), name='tournament-matches'),
     # DELETE /tournament/{id}/matches/{matchId} - Cancel a scheduled match.
     path('<int:id>/matches/<int:match_id>/', views.TournamentMatchDetail.as_view(), name='tournament-match-detail'),
@@ -80,10 +80,10 @@ urlpatterns = [
     path('<int:tournament_id>/tournament-players/', views.TournamentPlayerList.as_view(), name='tournament-player-list'),
     path('<int:tournament_id>/tournament-players/player/', views.PlayerList.as_view(), name='player-list'),
     path('<int:tournament_id>/matches/participants/', views.MatchParticipantsList.as_view(), name='matches-participants-list'),
-    path('stats/<int:user_id>', views.PlayerStatsView.as_view(), name='player-stat'),
+    path('stats/<str:username>/', views.PlayerStatsView.as_view(), name='player-stat'),
 
 # Send POST match data to Game
-    path('<int:tournament_id>/<int:round>/generate-round/', views.GenerateRound.as_view(), name='generate-round'),
+    path('<int:tournament_id>/<int:round>/generate-round/', views.generate_round, name='generate-round'),
 ]
 
 # 1. Create Tourenament with Host player.

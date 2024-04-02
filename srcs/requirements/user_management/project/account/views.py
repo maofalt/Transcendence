@@ -198,7 +198,6 @@ def privacy_policy_view(request):
     return render(request, 'privacy_policy.html')
 
 @api_view(['POST'])
-# @require_POST
 @ensure_csrf_cookie
 @csrf_protect
 @authentication_classes([])

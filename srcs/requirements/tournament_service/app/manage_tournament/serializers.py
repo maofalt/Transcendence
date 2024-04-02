@@ -88,12 +88,26 @@ class MatchGeneratorSerializer(serializers.Serializer):
 #         fields = ['id', 'type_name']
 
 class TournamentMatchSerializer(serializers.ModelSerializer):
+    winner_username = serializers.CharField(source='winner.username', read_only=True)
     players = PlayerSerializer(many=True)
-    participants = MatchParticipantsSerializer(many=True)
+    tournament_name = serializers.SerializerMethodField()
+
+    def get_tournament_name(self, obj):
+        try:
+            tournament = Tournament.objects.get(id=obj.tournament_id)
+            return tournament.tournament_name
+        except Tournament.DoesNotExist:
+            return None
 
     class Meta:
         model = TournamentMatch
-        fields = ['id', 'state', 'tournament_id', 'round_number', 'match_time', 'players', 'participants']
+        fields = ['id', 'state', 'tournament_name', 'winner_username', 'round_number', 'players']
+
+class TournamentMatchListSerializer(serializers.Serializer):
+    tournament_name = serializers.CharField()
+    winner = serializers.CharField()
+    matches = TournamentMatchSerializer(many=True)
+
 
 class GamemodeDataSerializer(serializers.ModelSerializer):
     nbrOfRounds = serializers.IntegerField(source='round_number') #assume it is for current round number
@@ -193,16 +207,21 @@ class SimpleTournamentSerializer(serializers.ModelSerializer):
         fields = ['id', 'tournament_name']
 
 class SimpleMatchSerializer(serializers.ModelSerializer):
-    winner_id = serializers.SerializerMethodField()
-
+    winner = serializers.SerializerMethodField()
+    players = serializers.SerializerMethodField()
+    
     class Meta:
         model = TournamentMatch
-        fields = ['id', 'tournament_id', 'round_number', 'players', 'winner_id']
+        fields = ['id', 'tournament_id', 'round_number', 'players', 'winner']
 
-    def get_winner_id(self, obj):
-        winner = obj.participants.filter(is_winner=True).first()
+    def get_players(self, obj):
+        players = obj.players.all()
+        return [player.username for player in players]
+
+    def get_winner(self, obj):
+        winner = obj.winner
         if winner:
-            return winner.player_id
+            return winner.username
         return None
 
 

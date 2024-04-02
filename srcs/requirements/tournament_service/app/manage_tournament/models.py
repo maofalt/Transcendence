@@ -67,12 +67,13 @@ class TournamentMatch(models.Model):
     round_number = models.IntegerField(default=1, validators=[MinValueValidator(1)])
     match_time = models.DateTimeField(null=True) 
     players = models.ManyToManyField('Player', related_name='matches')
-    participants = models.ManyToManyField('MatchParticipants', related_name='matches')
+    winner = models.ForeignKey('Player', on_delete=models.CASCADE, related_name='match_wins', null=True)
     state = models.CharField(max_length=15, default="waiting")
 
     def __str__(self):
         player_count = self.players.count()
-        return f"ID: {self.id}, Tournament: {self.tournament_id}, State: {self.state}, Match Setting: {self.match_setting_id}, Round Number: {self.round_number}, Count Players: {player_count}"
+        winner_username = self.winner.username if self.winner else "None"
+        return f"ID: {self.id}, Tournament: {self.tournament_id}, State: {self.state}, Winner: {winner_username}, Match Setting: {self.match_setting_id}, Round Number: {self.round_number}, Count Players: {player_count}"
 
 class MatchSetting(models.Model):
     duration_sec = models.IntegerField(default=210, 

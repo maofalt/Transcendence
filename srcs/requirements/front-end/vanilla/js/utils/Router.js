@@ -17,6 +17,7 @@ import isLoggedIn from '@utils/isLoggedIn';
 import ForgotPassword from '@views/ForgotPassword';
 import ResetPassword from '@views/ResetPassword';
 import BasicGameV2 from '@views/BasicGameV2';
+import Brackets from '@views/Brackets';
 
 export const routes = {
 	'/': {
@@ -74,6 +75,14 @@ export const routes = {
 		view: CreateTournament,
 		title: 'Tournament Creation',
 		buttonText: 'Create Tournament',
+		requiresLogin: true,
+	},
+	'/brackets': {
+		path: '/brackets',
+		view: Brackets,
+		component: 'tournament-brackets',
+		title: 'Tournament Brackets',
+		buttonText: 'See Tournament',
 		requiresLogin: true,
 	},
 	'/login': {
