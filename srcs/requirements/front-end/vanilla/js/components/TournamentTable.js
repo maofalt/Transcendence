@@ -38,13 +38,12 @@ class TournamentTable extends BaseTable {
                 'text-align': 'center',
             },
             action: {
-                'display': 'block',
+                'align-items': 'center',
                 'vertical-align': 'middle',
                 'text-align': 'center',
                 'cursor': 'pointer',
             },
             details: {
-                'display': 'block',
                 'align-items': 'center',
                 'vertical-align': 'middle',
                 'text-align': 'center',

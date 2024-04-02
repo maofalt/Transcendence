@@ -28,6 +28,12 @@
     padding-right: 1rem;
 }
 
+.table td {
+    justify-content: center;
+    text-align: center;
+    vertical-align: middle;
+}
+
 .table tbody tr {
     background-color: #131212;
 }
