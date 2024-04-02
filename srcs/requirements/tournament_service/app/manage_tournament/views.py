@@ -346,8 +346,8 @@ class MatchResult(APIView):
         if not players.filter(username=winner_username).exists():
             return Response("Winner not found among participants", status=status.HTTP_404_NOT_FOUND)
 
-        # if match.state == "ended":
-        #     return Response(f"Match {match_id} has been ended before", status=status.HTTP_400_BAD_REQUEST)
+        if match.state == "ended":
+            return Response(f"Match {match_id} has been ended before", status=status.HTTP_400_BAD_REQUEST)
         
         match.state = "ended"
         match.save()
