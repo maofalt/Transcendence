@@ -113,6 +113,7 @@ class TournamentMatchSerializer(serializers.ModelSerializer):
 class TournamentMatchListSerializer(serializers.Serializer):
     tournament_name = serializers.CharField()
     date = serializers.CharField(source='created_at')
+    round = serializers.IntegerField()
     winner = serializers.CharField()
     matches = TournamentMatchSerializer(many=True)
 

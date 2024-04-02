@@ -797,14 +797,28 @@ class TournamentMatchList(APIView):
         self.check_object_permissions(request, tournament)
         matches = tournament.matches.all()
 
-        serialized_matches = TournamentMatchSerializer(matches, many=True)
-        tournament_name = tournament.tournament_name
-        final_winner = matches.last().winner.username
-        serializer = TournamentMatchListSerializer(data=\
-            {'tournament_name': tournament_name, 'date': tournament.created_at, 'winner': final_winner, 'matches': serialized_matches.data})
-        serializer.is_valid()
-        # serializer = TournamentMatchSerializer(matches, many=True)
-        return Response(serializer.data)
+        if matches:
+            serialized_matches = TournamentMatchSerializer(matches, many=True)
+            tournament_name = tournament.tournament_name
+            final_winner = matches.last().winner.username if matches.last().winner else None
+            serializer = TournamentMatchListSerializer(data={
+                'tournament_name': tournament_name,
+                'date': tournament.created_at,
+                'round': matches.last().round_number,
+                'winner': final_winner,
+                'matches': serialized_matches.data
+            })
+            serializer.is_valid()
+            return Response(serializer.data)
+        else:
+            serializer = TournamentMatchListSerializer(data={
+                'tournament_name': tournament.tournament_name,
+                'date': tournament.created_at,
+                'winner': None,
+                'matches': []
+            })
+            serializer.is_valid()
+            return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
 
     def post(self, request, id):
