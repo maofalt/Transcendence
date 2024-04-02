@@ -70,7 +70,7 @@ export default class Tournament extends AbstractView {
 				const hostName = tournament.host_name;
 				const hostAvatarElement = document.createElement('host-avatar');
 				hostAvatarElement.setAttribute('name', hostName);
-				hostAvatarElement.setAttribute('avatar', 'https://img.freepik.com/vecteurs-premium/avatar-icon002_750950-52.jpg');
+	//			hostAvatarElement.setAttribute('avatar', '../assets/images/yridgway.jpg');
 
 				const hostElement = tournamentTable.createStyledHTMLObject('div', hostAvatarElement, Styles.host);
 				//const hostElement = tournamentTable.createStyledHTMLObject('div', `${hostName}`, Styles.host);
