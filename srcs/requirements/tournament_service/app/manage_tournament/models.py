@@ -29,6 +29,9 @@ class Tournament(models.Model):
     nbr_of_match = models.IntegerField(default=0)
     state = models.CharField(max_length=15, default="waiting")
 
+    def clean(self):
+        if self.nbr_of_player_total < self.nbr_of_player_match:
+            raise ValidationError(_('The number of players for Tournament must be equal to or greater than the number of players per match.'))
 
     def calculate_nbr_of_match(self):
         # Calculate the number of matches based on total players and max players per match
