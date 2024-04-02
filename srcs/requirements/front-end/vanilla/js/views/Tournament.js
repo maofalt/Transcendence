@@ -61,6 +61,8 @@ export default class Tournament extends AbstractView {
 		try {
 			const response = await makeApiRequest('/api/tournament/create-and-list/','GET');
 			const tournaments = response.body;
+			if (!tournaments) 
+				throw new Error('Failed to get tournament list');
 			console.log('Tournament list:', response.body);
 			// Transform the data
 			if (tournaments.length === 0) {
@@ -91,6 +93,7 @@ export default class Tournament extends AbstractView {
 				actionContainer.style.display = 'flex';
 				actionContainer.style.justifyContent = 'centered';
 				//Join button on te action column to join corresponding tournament
+				
 				const joinButtonElement = document.createElement('button');
 				joinButtonElement.textContent = 'Join';
 				Object.assign(joinButtonElement.style, Styles.action);

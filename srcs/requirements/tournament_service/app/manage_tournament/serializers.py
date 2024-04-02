@@ -11,10 +11,14 @@ class TournamentSerializer(serializers.ModelSerializer):
     setting = MatchSettingSerializer()
     is_full = serializers.SerializerMethodField()
     joined = serializers.SerializerMethodField()
+    host_name =  serializers.SerializerMethodField()
 
     class Meta:
         model = Tournament
-        fields = ['id', 'tournament_name', 'nbr_of_player_total', 'nbr_of_player_match', 'setting', 'registration_period_min', 'host_id', 'joined', 'is_full', 'state']
+        fields = ['id', 'tournament_name', 'nbr_of_player_total', 'nbr_of_player_match', 'setting', 'registration_period_min', 'host_id', 'joined', 'is_full', 'state', 'host_name']
+
+    def get_host_name(self, obj):
+        return obj.host.username
 
     def create(self, validated_data):
         setting_data = validated_data.pop('setting')  # Extract data from MatchSetting
