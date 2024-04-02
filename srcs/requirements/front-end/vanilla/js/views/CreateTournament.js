@@ -125,7 +125,10 @@ export default class CreateTournament extends AbstractView {
                   required
                   placeholder="Enter tournament name">
 
-              <label id="total_players_nbr" for="nbr_of_player_total">Number of Players :</label>
+              <div style="display: flex; flex-direction: row; align-items : top;">
+                <label for="nbr_of_player_total" style="flex: 1;">Number of Players :&nbsp;</label>
+                <p id="total_players_value" style="color:deepskyblue; margin: 0; padding: 0;">2</p>
+              </div>
               <input 
                   type="range"
                   id="nbr_of_player_total" 
@@ -135,7 +138,7 @@ export default class CreateTournament extends AbstractView {
                   step="1"
                   value="2"
                   required
-                  oninput="this.nextElementSibling.value = this.value">
+                  oninput="document.querySelector('#total_players_value').textContent = this.value">
 
               <label for="registration_period_min">Registration Period (in minutes):</label>
               <input 
@@ -168,7 +171,7 @@ export default class CreateTournament extends AbstractView {
                 <div class="setting-input">
                   <div style="display: flex; flex-direction: row; align-items : top;">
                     <label for="nbr_of_players_per_match" style="flex: 1;">Number of Players (2-8) :&nbsp;</label>
-                    <p id="nbr_players_value" style="color:blue; margin: 0; padding: 0;">5</p>
+                    <p id="nbr_players_value" style="color:deepskyblue; margin: 0; padding: 0;">5</p>
                   </div>
                   <input 
                     type="range" 
@@ -184,7 +187,7 @@ export default class CreateTournament extends AbstractView {
                 <div class="setting-input">
                   <div style="display: flex; flex-direction: row; align-items : top;">
                     <label for="nbr_of_rounds" style="flex: 1;">Number of Rounds (1-10) :&nbsp;</label>
-                    <p id="nbr_rounds_value" style="color:blue; margin: 0; padding: 0;">10</p>
+                    <p id="nbr_rounds_value" style="color:deepskyblue; margin: 0; padding: 0;">10</p>
                   </div>
                   <input type="range" id="nbr_of_rounds" name="nbr_of_rounds" min="1" max="10" step="1" value="10"
                   oninput="document.querySelector('#nbr_rounds_value').textContent = this.value">
@@ -196,7 +199,7 @@ export default class CreateTournament extends AbstractView {
                 <div class="setting-input">
                   <div style="display: flex; flex-direction: row; align-items : top;">
                     <label for="walls_factor" style="flex: 1;">Walls Size :&nbsp;</label>
-                    <p id="walls_factor_value" style="color:blue; margin: 0; padding: 0;">0.7</p>
+                    <p id="walls_factor_value" style="color:deepskyblue; margin: 0; padding: 0;">0.7</p>
                   </div>
                   <input type="range" id="walls_factor" name="walls_factor" min="0" max="2" step="0.1" value="0.7"
                   oninput="document.querySelector('#walls_factor_value').textContent = this.value">
@@ -205,7 +208,7 @@ export default class CreateTournament extends AbstractView {
                 <div class="setting-input">
                   <div style="display: flex; flex-direction: row; align-items : top;">
                     <label for="size_of_goals" style="flex: 1;">Size of Goals :&nbsp;</label>
-                    <p id="size_goals_value" style="color:blue; margin: 0; padding: 0;">0.7</p>
+                    <p id="size_goals_value" style="color:deepskyblue; margin: 0; padding: 0;">0.7</p>
                   </div>
                   <input type="range" id="size_of_goals" name="size_of_goals" min="15" max="30" step="1" value="20"
                   oninput="document.querySelector('#size_goals_value').textContent = this.value">
@@ -217,7 +220,7 @@ export default class CreateTournament extends AbstractView {
                 <div class="setting-input">
                   <div style="display: flex; flex-direction: row; align-items : top;">
                     <label for="paddle_height" style="flex: 1;">Paddle Height :</label>
-                    <p id="paddle_height_value" style="color:blue; margin: 0; padding: 0;">7</p>
+                    <p id="paddle_height_value" style="color:deepskyblue; margin: 0; padding: 0;">7</p>
                   </div>
                   <input type="range" id="paddle_height" name="paddle_height" min="1" max="12" step="1" value="7"
                   oninput="document.querySelector('#paddle_height_value').textContent = this.value">
@@ -226,7 +229,7 @@ export default class CreateTournament extends AbstractView {
                 <div class="setting-input">
                   <div style="display: flex; flex-direction: row; align-items : top;">
                     <label for="paddle_speed" style="flex: 1;">Paddle Speed :</label>
-                    <p id="paddle_speed_value" style="color:blue; margin: 0; padding: 0;">0.2</p>
+                    <p id="paddle_speed_value" style="color:deepskyblue; margin: 0; padding: 0;">0.2</p>
                   </div>
                   <input type="range" id="paddle_speed" name="paddle_speed" min="0.1" max="1" step="0.1" value="0.2"
                   oninput="document.querySelector('#paddle_speed_value').textContent = this.value">
@@ -239,7 +242,7 @@ export default class CreateTournament extends AbstractView {
                 <div class="setting-input" id="ball-radius-input">
                   <div style="display: flex; flex-direction: row; align-items : top;">
                     <label for="ball_radius" style="flex: 1;">Ball Radius :</label>
-                    <p id="ball_radius_value" style="color:blue; margin: 0; padding: 0;">1</p>
+                    <p id="ball_radius_value" style="color:deepskyblue; margin: 0; padding: 0;">1</p>
                   </div>
                   <input type="range" id="ball_radius" name="ball_radius" min="0.5" max="7" step="0.1" value="1"
                   oninput="document.querySelector('#ball_radius_value').textContent = this.value">
@@ -248,7 +251,7 @@ export default class CreateTournament extends AbstractView {
                 <div class="setting-input" id="ball-speed-input">
                   <div style="display: flex; flex-direction: row; align-items : top;">
                     <label for="ball_speed" style="flex: 1;">Ball Speed :</label>
-                    <p id="ball_speed_value" style="color:blue; margin: 0; padding: 0;">0.3</p>
+                    <p id="ball_speed_value" style="color:deepskyblue; margin: 0; padding: 0;">0.3</p>
                   </div>
                   <input type="range" id="ball_speed" name="ball_speed" min="0.1" max="2" step="0.1" value="0.3"
                   oninput="document.querySelector('#ball_speed_value').textContent = this.value">
