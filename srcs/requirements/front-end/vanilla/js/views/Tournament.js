@@ -62,7 +62,6 @@ export default class Tournament extends AbstractView {
 			const response = await makeApiRequest('/api/tournament/create-and-list/','GET');
 			const tournaments = response.body;
 			console.log('Tournament list:', response.body);
-			
 			// Transform the data
 			if (tournaments.length === 0) {
 				this.data = [];
