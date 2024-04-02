@@ -268,7 +268,7 @@ class MatchGenerator(generics.ListCreateAPIView):
 
 
 class MatchResult(APIView):
-    # authentication_classes = [CustomJWTAuthentication]
+    authentication_classes = [CustomJWTAuthentication]
 
     @staticmethod
     def round_state(request, id, cur_round):
