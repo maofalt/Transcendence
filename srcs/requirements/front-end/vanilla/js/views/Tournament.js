@@ -61,11 +61,9 @@ export default class Tournament extends AbstractView {
 			
 			// Map API data to table rows and add them to the table
 			tournaments.forEach(async (tournament) => {
-				console.log('Tournament:', tournament);
 			
 			// TOURNAMENT STYLES APPLIED
 				const tournamentNameElement = tournamentTable.createStyledHTMLObject('div', tournament.tournament_name, Styles.tournamentName);
-				console.log('Tournament name style: ', tournamentNameElement.style)
 			
 			//TOURNAMENST HOST 
 				//trying tor ecover the name id and the picture
