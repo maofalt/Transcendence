@@ -12,6 +12,7 @@ import easyFetch from "@utils/easyFetch";
 import fetchUserDetails from "@utils/fetchUserDetails";
 import InputAugmented from "@components/InputAugmented";
 import displayPopup from "@utils/displayPopup";
+import { initSocketConnection } from "@utils/websocket";
 
 export default class LoginPage extends AbstractComponent {
 	constructor(options = {}) {
@@ -136,6 +137,9 @@ export default class LoginPage extends AbstractComponent {
 				sessionStorage.setItem('accessToken', body.access_token);
 				sessionStorage.setItem('tokenType', body.token_type);
 				
+				// connect to the socket
+				initSocketConnection();
+
 				let details = await fetchUserDetails();
 				sessionStorage.setItem('userDetails', JSON.stringify(details));
 

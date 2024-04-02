@@ -58,6 +58,10 @@ const io = socketIo(server, {
     }
 });
 
+// const io = io.of('/game');
+
+// const notificationConnection = io.of('/notification'); 
+
 // express cors properties
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*'); // You can replace '*' with your specific domain.
@@ -192,9 +196,15 @@ function waitingRoom(matchID) {
 //     debugDisp.displayData(data);
 // }
 
-function handleConnectionV2(client) {
+function handleConnectionV2(client, query) {
 
     console.log("\nCLIENT CONNECTED\n");
+	client.matchID = query.replace("matchID=", "");
+
+	if (!client.matchID) {
+		console.error('Authentication error: Missing matchID');
+		throw new Error('Authentication error: Missing matchID.');
+	}
 
     let match = matches.get(client.matchID);
 	if (!match) {
@@ -243,11 +253,11 @@ function handleConnectionV2(client) {
 io.use((client, next) => {
 	try {
 		//console.log("\nclient.handshake.query:\n", client.handshake);
-		client.matchID = client.handshake.query.matchID;
-		if (!client.matchID) {
-			console.error('Authentication error: Missing matchID');
-			next(new Error('Authentication error: Missing matchID.'));
-		}
+		// client.matchID = client.handshake.query.matchID;
+		// if (!client.matchID) {
+		// 	console.error('Authentication error: Missing matchID');
+		// 	next(new Error('Authentication error: Missing matchID.'));
+		// }
 		if (client.handshake.headers && client.handshake.auth) {
 			// Parse the auth from the handshake
 			const token = client.handshake.auth.accessToken;
@@ -282,109 +292,120 @@ io.use((client, next) => {
 io.on('connection', (client) => {
 	try {
 		//handle client connection and match init + players status
-		console.log("\nclient:\n", client.decoded);
-		let match = handleConnectionV2(client);
-		let data = match.gameState;
-		
-		// player controls
-		client.on('moveUp', () => {
-			console.log(`client ${client.id} moving up`);
-			let player = data.players[client.playerID];
-			if (player && player.paddle && !player.paddle.dashSp) {
-				player.paddle.currSp = player.paddle.sp;
-			}
-		});
-		
-		client.on('moveDown', () => {
-			console.log(`client ${client.id} moving down`);
-			let player = data.players[client.playerID];
-			if (player && player.paddle && !player.paddle.dashSp) {
-				player.paddle.currSp = -player.paddle.sp;
-			}
-		});
-		
-		client.on('dash', () => {
-			console.log(`client ${client.id} dashing`);
-			let player = data.players[client.playerID];
-			if (player && player.paddle && !player.paddle.dashSp) {
-				if (player.paddle.currSp == 0) {
-					// do something for this err case
-					return ;
-				}
-				player.paddle.dashSp = player.paddle.currSp > 0 ? player.paddle.w * 1.5 : player.paddle.w * -1.5;
-				// player.paddle.dashSp = player.paddle.w * 1.5 * (player.paddle.currSp > 0);
-			}
-		});
-		
-		client.on('stop', () => {
-			console.log(`client ${client.id} stopping`);
-			let player = data.players[client.playerID];
-			if (player && player.paddle && !player.paddle.dashing) {
-				player.paddle.currSp = 0;
-			}
-		});
+		client.on('connect-game', (query) => {
 
-		client.on('delete-match', (matchID) => {
-			console.log("FROM BACKEND : DELETE MATCH",client.matchID);
-			// Print the keys in the matches map
-			console.log("Keys in matches map:", Array.from(matches.keys()))
-			if (matches.has(client.matchID)) {
-				console.log("INSIDE MATCH HAS MATCHID");
-				if (matches.get(client.matchID).gameState.gameInterval)
-					clearInterval(this.matches.get(client.matchID).gameState.gameInterval);
-				console.log("DELETING MATCH");
-				matches.delete(client.matchID);
-			} else if (matches.has(matchID)) {
-				console.log("INSIDE MATCH HAS MATCHID");
-				if (matches.get(matchID).gameState.gameInterval)
-					clearInterval(this.matches.get(matchID).gameState.gameInterval);
-				console.log("DELETING MATCH");
-				matches.delete(matchID);
+			console.log("\nclient:\n", client.decoded);
+			let match;
+			let data;
+			try {
+				console.log("QUERY : ", query);
+				match = handleConnectionV2(client, query);
+				data = match.gameState;
+			} catch (error) {
+				console.error('Error connecting websocket: ', error);
+				client.emit('error', error.message);
 			}
-		});
-		
-		// disconnect event
-		client.on('disconnect', () => {
-			client.leave("gameRoom");
-			data.connectedPlayers--;
-			let player = data.players[client.playerID];
-			if (player)
-				player.connected = false;
-			if (data.connectedPlayers < 1) {
-				console.log("CLEARING INTERVAL");
-				clearInterval(match.gameInterval);
-				if (data.ongoing) {
-					data.winner = player;
-					if (data.jisus_matchID) {
-						postMatchResult(match.gameState.jisus_matchID, match.gameState.winner.accountID);
+
+			// player controls
+			client.on('moveUp', () => {
+				console.log(`client ${client.id} moving up`);
+				let player = data.players[client.playerID];
+				if (player && player.paddle && !player.paddle.dashSp) {
+					player.paddle.currSp = player.paddle.sp;
+				}
+			});
+
+			client.on('moveDown', () => {
+				console.log(`client ${client.id} moving down`);
+				let player = data.players[client.playerID];
+				if (player && player.paddle && !player.paddle.dashSp) {
+					player.paddle.currSp = -player.paddle.sp;
+				}
+			});
+			
+			client.on('dash', () => {
+				console.log(`client ${client.id} dashing`);
+				let player = data.players[client.playerID];
+				if (player && player.paddle && !player.paddle.dashSp) {
+					if (player.paddle.currSp == 0) {
+						// do something for this err case
+						return ;
 					}
-					matches.delete(client.matchID);
+					player.paddle.dashSp = player.paddle.currSp > 0 ? player.paddle.w * 1.5 : player.paddle.w * -1.5;
+					// player.paddle.dashSp = player.paddle.w * 1.5 * (player.paddle.currSp > 0);
 				}
-				console.log("SENDING CLEAN MSG");
-				client.emit("clean-all");
-				delete data;
-			}
-			console.log(`Client disconnected with ID: ${client.id} (num clients: ${io.engine.clientsCount})`);
-		});
+			});
+			
+			client.on('stop', () => {
+				console.log(`client ${client.id} stopping`);
+				let player = data.players[client.playerID];
+				if (player && player.paddle && !player.paddle.dashing) {
+					player.paddle.currSp = 0;
+				}
+			});
 
-		setInterval(() => {
-			const big = Buffer.alloc(1024 * 1024);
-			client.emit('ping', [Date.now(), latency]);
-		}, 1000);
+			client.on('delete-match', (matchID) => {
+				console.log("FROM BACKEND : DELETE MATCH",client.matchID);
+				// Print the keys in the matches map
+				console.log("Keys in matches map:", Array.from(matches.keys()))
+				if (matches.has(client.matchID)) {
+					console.log("INSIDE MATCH HAS MATCHID");
+					if (matches.get(client.matchID).gameState.gameInterval)
+						clearInterval(this.matches.get(client.matchID).gameState.gameInterval);
+					console.log("DELETING MATCH");
+					matches.delete(client.matchID);
+				} else if (matches.has(matchID)) {
+					console.log("INSIDE MATCH HAS MATCHID");
+					if (matches.get(matchID).gameState.gameInterval)
+						clearInterval(this.matches.get(matchID).gameState.gameInterval);
+					console.log("DELETING MATCH");
+					matches.delete(matchID);
+				}
+			});
+			
+			// disconnect event
+			client.on('disconnect-game', () => {
+				client.leave("gameRoom");
+				data.connectedPlayers--;
+				let player = data.players[client.playerID];
+				if (player)
+					player.connected = false;
+				if (data.connectedPlayers < 1) {
+					console.log("CLEARING INTERVAL");
+					clearInterval(match.gameInterval);
+					if (data.ongoing) {
+						data.winner = player;
+						if (data.jisus_matchID) {
+							postMatchResult(match.gameState.jisus_matchID, match.gameState.winner.accountID);
+						}
+						matches.delete(client.matchID);
+					}
+					console.log("SENDING CLEAN MSG");
+					client.emit("clean-all");
+					delete data;
+				}
+				console.log(`Client disconnected with ID: ${client.id}`);
+			});
 
-		client.on('pong', timestamp => {
-			latency = Date.now() - timestamp;
+			setInterval(() => {
+				const big = Buffer.alloc(1024 * 1024);
+				client.emit('ping', [Date.now(), latency]);
+			}, 1000);
 
-			// process.stdout.clearLine(0);  // Clear current text
-			// process.stdout.cursorTo(0);   // Move cursor to beginning of line
-			// process.stdout.write(`${client.id} latency: ${latency}ms`); // Write new text
-			// console.log(`${client.id} latency: ${latency}ms`);
+			client.on('pong', timestamp => {
+				latency = Date.now() - timestamp;
+
+				// process.stdout.clearLine(0);  // Clear current text
+				// process.stdout.cursorTo(0);   // Move cursor to beginning of line
+				// process.stdout.write(`${client.id} latency: ${latency}ms`); // Write new text
+				// console.log(`${client.id} latency: ${latency}ms`);
+			});
 		});
 
 	} catch (error) {
 		console.error('Error: ', error);
-		client.emit('error', error.message);
-		client.disconnect();
+		client.emit('error', JSON.parse(error));
+		// client.disconnect();
 	}
 });
 

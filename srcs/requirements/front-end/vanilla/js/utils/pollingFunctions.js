@@ -1,5 +1,6 @@
 import easyFetch from "@utils/easyFetch";
 import fetchUserDetails from "@utils/fetchUserDetails";
+import { initSocketConnection } from "@utils/websocket";
 
 export async function renewToken() {
 	const accessToken = sessionStorage.getItem("accessToken");
@@ -38,6 +39,9 @@ export async function renewToken() {
 		sessionStorage.setItem('expiryTimestamp', new Date().getTime() + body.expires_in * 1000);
 		sessionStorage.setItem('accessToken', body.access_token);
 		sessionStorage.setItem('tokenType', body.token_type);
+
+		// Reconnect the socket with the new token
+		initSocketConnection();
 
 		let details = await fetchUserDetails();
 		sessionStorage.setItem('userDetails', JSON.stringify(details));

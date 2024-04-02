@@ -11,7 +11,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import CustomButton from '@components/CustomButton';
 import { navigateTo } from "@utils/Router";
-
+import { socket, initSocketConnection } from "@utils/websocket";
 
 function createCallTracker() {
 	let lastCallTime = 0; // Timestamp of the last call
@@ -58,7 +58,16 @@ export default class Game extends AbstractView {
 		this.loader = new GLTFLoader();
 		this.query = 'matchID=' + query;
 		console.log("Game View created with matchID: ", query);
-		
+	
+		// connection
+		if (socket == null) {
+			this.socket = initSocketConnection();
+		} else {
+			this.socket = socket;
+		}
+
+		console.log("Socket: ", this.socket);
+
         // controls
         this.controls = null;
         
@@ -192,27 +201,29 @@ export default class Game extends AbstractView {
 
 	initSocket() {
 		// socket initialization and event handling logic
-		const hostname = window.location.hostname;
-		const protocol = 'wss';
-//		const query = window.location.search.replace('?', '');
-		const query = window.location.search.replace('?', '') || this.query;
+// 		const hostname = window.location.hostname;
+// 		const protocol = 'wss';
+// //		const query = window.location.search.replace('?', '');
 
 		
-		let accessTok = sessionStorage.getItem('accessToken');
-		console.log("Access Token: ", accessTok);
+		// let accessTok = sessionStorage.getItem('accessToken');
+		// console.log("Access Token: ", accessTok);
 		// accessTok = accessTok.replace("Bearer ", ""); // replace the "Bearer " at the beginning of the value;
 
-		const io_url = hostname.includes("github.dev") ? `${protocol}://${hostname}` : `${protocol}://${hostname}:9443`;
-		console.log(`Connecting to ${io_url}`)
-		this.socket = io(`${io_url}`, {
-			path: '/game-logic/socket.io',
-			query: query,
-			accessToken: accessTok,
-			secure: hostname !== 'localhost',
-			rejectUnauthorized: false,
-			transports: ['websocket'],
-			auth: {accessToken: accessTok}
-		});
+		// const io_url = hostname.includes("github.dev") ? `${protocol}://${hostname}` : `${protocol}://${hostname}:9443`;
+		// console.log(`Connecting to ${io_url}`)
+		// this.socket = io(`${io_url}/game`, {
+		// 	path: '/game-logic/socket.io',
+		// 	query: query,
+		// 	accessToken: accessTok,
+		// 	secure: hostname !== 'localhost',
+		// 	rejectUnauthorized: false,
+		// 	transports: ['websocket'],
+		// 	auth: {accessToken: accessTok}
+		// });
+		const query = window.location.search.replace('?', '') || this.query;
+
+		this.socket.emit('connect-game', query);
 
 		this.socket.on('error', (error) => {
 			console.error("Socket error: ", error);
@@ -291,7 +302,8 @@ export default class Game extends AbstractView {
 		if (this.socket) {
 			console.log("FROM CLIENT : DELETE MATCH");
 			this.socket.emit("delete-match", matchID);
-			this.socket.disconnect();
+			this.socket.emit("disconnect-game");
+			// this.socket.disconnect();
 		}
 
 		if (this.scene)
