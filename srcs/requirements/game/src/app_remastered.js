@@ -26,6 +26,8 @@ const { match } = require('assert');
 // let data = 0;
 let matches = new Map();
 
+let clients = new Map();
+
 let latency = 0;
 
 const app = express();
@@ -163,6 +165,7 @@ function waitingRoom(matchID) {
 		}
 	}
 
+	// console.log("gameState: ", match.gameState);
 	let gameState = render.updateData(match.gameState);
 	io.to(matchID).emit('render', match.gameState);
 }
@@ -290,6 +293,8 @@ io.use((client, next) => {
 
 // Set up Socket.IO event handlers
 io.on('connection', (client) => {
+	console.log("CLIENT CONNECTED");
+	clients.set(client.playerID, client);
 	try {
 		//handle client connection and match init + players status
 		client.on('connect-game', (query) => {
@@ -366,24 +371,26 @@ io.on('connection', (client) => {
 			// disconnect event
 			client.on('disconnect-game', () => {
 				client.leave("gameRoom");
-				data.connectedPlayers--;
-				let player = data.players[client.playerID];
-				if (player)
-					player.connected = false;
-				if (data.connectedPlayers < 1) {
-					console.log("CLEARING INTERVAL");
-					// jfdkfjh
-					clearInterval(match.gameInterval);
-					if (data.ongoing) {
-						data.winner = player;
-						if (data.jisus_matchID) {
-							postMatchResult(match.gameState.jisus_matchID, match.gameState.winner.accountID);
+				if (data) {
+					data.connectedPlayers--;
+					let player = data.players[client.playerID];
+					if (player)
+						player.connected = false;
+					if (data.connectedPlayers < 1) {
+						console.log("CLEARING INTERVAL");
+						// jfdkfjh
+						clearInterval(match.gameInterval);
+						if (data.ongoing) {
+							data.winner = player;
+							if (data.jisus_matchID) {
+								postMatchResult(match.gameState.jisus_matchID, match.gameState.winner.accountID);
+							}
+							matches.delete(client.matchID);
 						}
-						matches.delete(client.matchID);
+						console.log("SENDING CLEAN MSG");
+						// client.emit("clean-all");
+						delete data;
 					}
-					console.log("SENDING CLEAN MSG");
-					// client.emit("clean-all");
-					delete data;
 				}
 				console.log(`Client disconnected with ID: ${client.id}`);
 			});
@@ -413,13 +420,25 @@ io.on('connection', (client) => {
 function generateMatchID(gameSettings) {
 	// Convert request content to a string representation
 	const string = JSON.stringify(gameSettings);
+
+	// console.log("MATCH SETTINGS STRING :", gameSettings);
+	const players = gameSettings.playersData.map(player => player.accountID);
+	console.log("PLAYERS :", players);
+	players.forEach(player => {
+		let client = clients.get(player)
+		if (client) {
+			// console.log("EMITTED TO: ", client.playerID);
+			client.emit('new-match', gameSettings);
+		}
+	});
+	// fkdj
 	// Use SHA-256 to hash the string
 	return crypto.createHash('sha256').update(string).digest('hex');
 }
 
 function verifyMatchSettings(settings) {
-	console.log("MATCH SETTINGS VERIFICATION :");
-	console.log(settings);
+	// console.log("MATCH SETTINGS VERIFICATION ");
+	// console.log(settings);
 
 	const checks = {
 		gamemodeData: {
@@ -489,7 +508,7 @@ function postMatchResult(matchId, winnerId) {
 app.post('/createMatch', (req, res) => {
 	const gameSettings = req.body;
 
-	console.log("\nWAAAAA\n", gameSettings);
+	// console.log("\nWAAAAA\n", gameSettings);
 	// check post comes from verified source;
 
 	const matchID = generateMatchID(gameSettings);
@@ -521,7 +540,7 @@ app.post('/createMultipleMatches', (req, res) => {
 
 	const matchIDs = [];
 	console.log("\nCREATE MULTIPLE MATCHES\n");
-	console.log("gameSettings", gameSettings);
+	// console.log("gameSettings", gameSettings);
 	// check post comes from verified source;
 	gameSettings.matches.forEach(settings => {
 		const { tournament_id, match_id, ...rest } = settings;

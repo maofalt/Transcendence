@@ -1,5 +1,6 @@
 import io from 'socket.io-client';
-import isLoggedIn from './isLoggedIn';
+import isLoggedIn from '@utils/isLoggedIn';
+import displayPopup from '@utils/displayPopup';
 
 const hostname = window.location.hostname;
 const protocol = 'wss';
@@ -24,6 +25,11 @@ function initSocketConnection() {
 			rejectUnauthorized: false,
 			transports: ['websocket'],
 			auth: { accessToken }
+		});
+		
+		socket.on('new-match', (data) => {
+			displayPopup('New Match!', 'info');
+			console.log('new-match:', data);
 		});
 	}
 	return socket;
