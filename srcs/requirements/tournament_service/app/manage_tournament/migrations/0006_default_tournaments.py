@@ -27,7 +27,7 @@ def create_tournament(apps, schema_editor):
     MatchSetting = apps.get_model('manage_tournament', 'MatchSetting')
     Tournament = apps.get_model('manage_tournament', 'Tournament')
 
-    usernames = ['motero', 'motero2', 'jisu', 'jisu2', 'znogueira', 'znogueira2', 'amanda', 'amanda2', 'yoel', 'yoel2']
+    players = ['motero', 'motero2', 'jisu', 'jisu2', 'znogueira', 'znogueira2', 'amanda', 'amanda2', 'yoel', 'yoel2']
     for i, player_username in enumerate(players):
         #create player or get it if it already exists
         host_player, _ = Player.objects.get_or_create(id=i+1, username=player_username, defaults={'total_played': 0})

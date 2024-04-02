@@ -69,19 +69,23 @@ export default class Tournament extends AbstractView {
 			}
 
 			 // Map API data to table rows and add them to the table
-			 tournaments.forEach(tournament => {
+			tournaments.forEach(async (tournament) => {
 				console.log('Tournament:', tournament);
+			// TOURNAMENT STYLES APPLIED
 				const Styles = tournamentTable.columnStyles;
+			// tOURNAMENT NAMES COLUMN	
 				const tournamentNameElement = tournamentTable.createStyledHTMLObject('div', tournament.tournament_name, Styles.tournamentName);
+			//TOURNAMENST HOST 
 				//trying tor ecover the name id and the picture
 				const hostId = tournament.host_id;
-				const response = await makeApiRequest('/game-logic/createMatch','POST',gameSettings);
-
-				
 				const hostElement = tournamentTable.createStyledHTMLObject('div', `${tournament.host_id}`, Styles.host);
-				const numberOfPlayersElement = tournamentTable.createStyledHTMLObject('div', `${tournament.joined}/${tournament.nbr_of_player_total}`, {}); 
+			//TOURNAMENT PLAYERS OER TOURNAMENT AND PLACE AVAILABLE	
+				const numberOfPlayersElement = tournamentTable.createStyledHTMLObject('div', `${tournament.joined}/${tournament.nbr_of_player_total}`, {});
+			// TOURNAMENT PLAYER  PER MATCH!!	
 				const numberOfPlayerPerMatch = tournamentTable.createStyledHTMLObject('div', `${tournament.nbr_of_player_match}`, {});
+			//TOURNAMENT STATUS	
 				const tournamentStatus = tournamentTable.createStyledHTMLObject('div', `${tournament.state}`, {});
+			//TOURNAMENT ACTION BUTTONS	
 				const actionContainer = document.createElement('div');
 				//container for all button actions 
 				actionContainer.style.display = 'flex';
@@ -90,28 +94,26 @@ export default class Tournament extends AbstractView {
 				const joinButtonElement = document.createElement('button');
 				joinButtonElement.textContent = 'Join';
 				Object.assign(joinButtonElement.style, Styles.action);
-				joinButtonElement.addEventListener('click', () => this.joinTournament(tournament.id));
-				// Details button to see the tournament state (either brackets and or results)
-				
-
+				joinButtonElement.addEventListener('click', async () => await this.joinTournament(tournament.id));				
 				actionContainer.appendChild(joinButtonElement);
 				
+			//TOURNAMENT Details button to see the tournament state (either brackets and or results) opening th emodal
 				const tournamentDetails = document.createElement('div');
 				tournamentDetails.style.display = 'flex';
 				tournamentDetails.style.justifyContent = 'centered';
-				
+
 				const viewButtonElement = document.createElement('button');
 				viewButtonElement.innerHTML = '👁️';
 				Object.assign(viewButtonElement.style, Styles.action);
-				viewButtonElement.addEventListener('click', () => 
-				console.log(`SOME IS WATCHING 👁️ 👁️ `)
+				viewButtonElement.addEventListener('click', () =>
+					console.log(`SOME IS WATCHING 👁️ 👁️ `)
 				);
-				
+
 				tournamentDetails.appendChild(viewButtonElement);
-				// Add the constructed row to the table
+			//Add the constructed row to the table
 				tournamentTable.addRow([
-					tournamentNameElement, 
-					hostElement, 
+					tournamentNameElement,
+					hostElement,
 					numberOfPlayersElement,
 					numberOfPlayerPerMatch,
 					tournamentStatus,
