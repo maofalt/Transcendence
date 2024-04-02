@@ -16,6 +16,7 @@ export default class CreateTournament extends AbstractView {
       this.addPlayerDataToGameSettings = this.addPlayerDataToGameSettings.bind(this);
       this.getGameSettingsFromForm = this.getGameSettingsFromForm.bind(this);
       this.game = new Game();
+      // document.getElementById('gameContainer').removeChild(this.game.shadowRoot.querySelector("#leave-button"));
   }
   
   async init() {
@@ -81,8 +82,10 @@ export default class CreateTournament extends AbstractView {
       this.game = null;
       this.game = await new Game(matchID, width, height);
       document.getElementById('gameContainer').innerHTML = '';
-    // }
-    await this.game.init(); // Make sure this can be safely called multiple times or after updating settings
+      // }
+      await this.game.init(); // Make sure this can be safely called multiple times or after updating settings
+      document.getElementById('gameContainer').removeChild(document.getElementById('leave-button'));
+      document.getElementById('count-down').style.display = "none";
     console.log('Game initialized');
   }
 

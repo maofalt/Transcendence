@@ -154,6 +154,8 @@ export default class Game extends AbstractView {
 			window.history.back();
 		}
 
+		leaveButton.id = "leave-button";
+
 		this.container.appendChild(countDown);
 		this.container.appendChild(leaveButton);
 		
@@ -365,6 +367,7 @@ export default class Game extends AbstractView {
 
 			window.history.back();
 		}
+		leaveButton.id = "leave-button";
 		
 		uiLayer.appendChild(leaveButton);
 
