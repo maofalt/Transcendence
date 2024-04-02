@@ -6,6 +6,7 @@ from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmVie
 from django.db.utils import IntegrityError
 from django.core import signing
 from django.core.exceptions import ValidationError
+from django.core.validators import MinLengthValidator, MaxLengthValidator, RegexValidator
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib.auth.hashers import make_password, check_password
@@ -358,11 +359,31 @@ def api_logout_view(request):
     else:
         return JsonResponse({'error': escape('Invalid request method')}, status=400)
 
-# ---------------------- API signup functions ------------------------------
 
-def validate_username(username):   
+# ---------------------- API signup functions ------------------------------
+def validate_not_contains_forbidden_word(value):
+    forbidden_words = ["admin", "root", "superuser"]
+    if any(forbidden_word in value.lower() for forbidden_word in forbidden_words):
+        raise ValidationError("Username contains a forbidden word.")
+
+def validate_username(username):
+    validators = [
+        MinLengthValidator(3, message="Username must be at least 3 characters long."),  # Minimum length
+        MaxLengthValidator(20, message="Username must be less than 20 characters long."),  # Maximum length
+        RegexValidator(r'^\w+$', message="Username must be alphanumeric."),  # Alphanumeric characters only
+        validate_not_contains_forbidden_word,
+    ]
+
+    # Run each validator on the username
+    for validator in validators:
+        try:
+            validator(username)
+        except ValidationError as e:
+            return False, e.message
+
     if User.objects.filter(username=username).exists():
         return False, "Username already exists."
+
     return True, None
 
 def is_email_valid(email):
