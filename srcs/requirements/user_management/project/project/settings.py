@@ -75,10 +75,10 @@ CORS_ALLOWED_ORIGINS = [
     "https://localhost:9443",
 ]
 
-REST_FRAMWORK = {
+REST_FRAMEWORK = {
 	'DEFAULT_AUTHENTICATION_CLASSES': (
 		'rest_framework_simplejwt.authentication.JWTAuthentication',
-        'project.account.authentication.CustomJWTAuthentication'
+        # 'account.authentication.CustomJWTAuthentication'
 	)
 }
 
