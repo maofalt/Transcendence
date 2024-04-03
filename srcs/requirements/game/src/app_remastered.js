@@ -244,8 +244,6 @@ function handleConnectionV2(client) {
 function getMatch(client) {
 	client.matchID = client.handshake.query.matchID;
 	if (!client.matchID) {
-		console.log('matchID: ', client.matchID);
-		console.log('query: ', client.handshake.query);
 		console.error('Authentication error: Missing matchID');
 		throw new Error('Authentication error: Missing matchID.');
 	}
@@ -283,11 +281,11 @@ notify.use((client, next) => {
 			next();
 		}).catch(error => {
 			console.error('Error authenticating websocket: ', error);
-			next(new Error(error));
+			next(error);
 		});
 	} catch (error) {
 		console.error('Error connecting websocket: ', error);
-		next(new Error(error));
+		next(error);
 	}
 });
 
@@ -299,18 +297,18 @@ notify.on('connection', (client) => {
 // authenticate user before establishing websocket connection
 game.use((client, next) => {
 	try {
-		getMatch(client); // get the matchID and match from the query string
-		
+		getMatch(client); // get the matchID and match from the client handshake
+
 		// verify the token and set the playerID
 		verifyAuthentication(client).then(() => {
 			next(); // proceed to game connection if authentication is successful
 		}).catch(error => {
 			console.error('Error authenticating websocket: ', error);
-			next(new Error(error)); // disconnect the client if there's an error
+			next(error); // disconnect the client if there's an error
 		});
 	} catch (error) {
 		console.error('Error connecting websocket: ', error);
-		next(new Error(error)); // disconnect the client if there's an error
+		next(error); // disconnect the client if there's an error
 	}
 });
 
@@ -488,7 +486,7 @@ function verifyMatchSettings(settings) {
 }
 
 function postMatchResult(matchId, winnerId) {
-	const url = `http://tournament/matches/${matchId}/${winnerId}/`;
+	const url = `http://tournament:8001/matches/${matchId}/${winnerId}/`;
 	
 	axios.post(url)
 		.then(response => {
@@ -540,7 +538,7 @@ function setupMatch(gameSettings, tournament_id, match_id, res) {
 	
 	let error = verifyMatchSettings(gameSettings);
 	if (error) {
-		console.log("Error:", error);
+		console.log(error);
 		res.status(400).json({ error });
 		return null;
 	}
@@ -565,7 +563,7 @@ function setupMatch(gameSettings, tournament_id, match_id, res) {
 	players.forEach(player => {
 		let client = clients.get(player);
 		if (client) {
-			console.log("EMITTING TO: ", player); 
+			console.log("EMITTING TO: ", player);
 			// console.log("EMITTED TO: ", client.playerID);
 			client.emit('new-match', matchID);
 		}

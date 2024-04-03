@@ -198,13 +198,10 @@ export default class Game extends AbstractView {
 		const protocol = 'wss';
 //		const query = window.location.search.replace('?', '');
 		const query = window.location.search.replace('?', '') || this.query;
-		console.log("Query: ", query);
-		console.log("windo", window.location.search.replace('?', ''), window.location.search);
-		console.log("Query this: ", this.query);
-
+		// console.log("Query: ", query);
 		
-		let accessTok = sessionStorage.getItem('accessToken');
-		console.log("Access Token: ", accessTok);
+		let accessToken = sessionStorage.getItem('accessToken');
+		// console.log("Access Token: ", accessToken);
 		// accessTok = accessTok.replace("Bearer ", ""); // replace the "Bearer " at the beginning of the value;
 
 		const io_url = hostname.includes("github.dev") ? `${protocol}://${hostname}` : `${protocol}://${hostname}:9443`;
@@ -212,11 +209,8 @@ export default class Game extends AbstractView {
 		this.socket = io(`${io_url}/game`, {
 			path: '/game-logic/socket.io',
 			query: query,
-			accessToken: accessTok,
 			secure: hostname !== 'localhost',
-			rejectUnauthorized: false,
-			transports: ['websocket'],
-			auth: {accessToken: accessTok}
+			auth: { accessToken }
 		});
 
 		this.socket.on('error', (error) => {

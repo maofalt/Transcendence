@@ -22,9 +22,10 @@ export default class InfoPopup extends AbstractComponent {
 		this.closeButton.textContent = "X";
 		this.closeButton.id = "closePopupButton";
 	
-		this.closeButton.addEventListener('click', () => {
+		this.closeButton.onclick = (e) => {
+			e.stopPropagation();
 			anim.slideOut(this, 500, true);
-		});
+		}
 		
 		this.div = document.createElement('div');
 		this.div.id = "popupBody";
