@@ -19,7 +19,7 @@ function initSocketConnection() {
 		if (socket) {
 			socket.disconnect();
 		}
-		socket = io(`${io_url}`, {
+		socket = io(`${io_url}/notify`, {
 			path: '/game-logic/socket.io',
 			accessToken,
 			secure: hostname !== 'localhost',
