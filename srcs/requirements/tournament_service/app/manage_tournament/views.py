@@ -1077,8 +1077,38 @@ class DeletePlayer(APIView):
             for match in matches:
                 match.players.remove(player)
                 match.players.add(player)
+                match.save()
 
             if tournament.host == player:
                 tournament.host = player
                 tournament.save()
         return JsonResponse({'message': f'Username for user {username} has been deleted in related tournaments.'})
+
+class UnjoinTournament(APIView):
+    authentication_classes = [CustomJWTAuthentication]
+
+    def post(self, request, tournament_id, username):
+        user_info = request.user
+        if not isinstance(user_info, tuple) or len(user_info) != 2:
+            raise exceptions.AuthenticationFailed('User information is not in the expected format')
+
+        uid, playername = user_info
+        if playername != username:
+            return JsonResponse({'message': "You are not authorized to unjoin the Tournament"}, status=status.HTTP_403_FORBIDDEN)
+        try:
+            player = get_object_or_404(Player, username=username)
+        except Http404:
+            return JsonResponse({'message': f'Player {username} not found.'}, status=status.HTTP_404_NOT_FOUND)
+        try:
+            tournament = get_object_or_404(Tournament, id=tournament_id)
+        except Http404:
+            return JsonResponse({'message': f'Tournament not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if tournament.state != 'waiting':
+            return JsonResponse({'message': 'Cannot unjoin this Tournament. The Tournament has been started or finished'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        if not tournament.players.filter(username=username).exists():
+            return JsonResponse({'message': f'Player {username} is not a participant of <{tournament.tournament_name}> Tournament'}, status=status.HTTP_404_NOT_FOUND)
+        tournament.players.remove(player)
+        tournament.save()
+        return JsonResponse({'message': f'Player {username} is not participating in the <{tournament.tournament_name}> Tournament anymore'})
