@@ -21,14 +21,14 @@ function createTournamentBracket(data) {
     }, {});
 
     // Sort rounds
-    const sortedRounds = Object.keys(rounds).sort((a, b) => a - b);
+    const sortedRounds = Object.keys(rounds).sort((a, b) => parseInt(a) - parseInt(b));
 
     // Container for rounds (columns)
     const roundsContainer = document.createElement('div');
     roundsContainer.classList.add('rounds-container');
 
     // Generate rounds and matches
-    sortedRounds.forEach(round => {
+    sortedRounds.forEach((round, index) => {
         const roundElement = document.createElement('div');
         roundElement.classList.add('round');
 
@@ -36,7 +36,21 @@ function createTournamentBracket(data) {
         roundHeader.textContent = `Round ${round}`;
         roundElement.appendChild(roundHeader);
 
-        rounds[round].forEach(match => {
+        // Create a container for matches to apply the grid layout
+        const matchesGridContainer = document.createElement('div');
+        matchesGridContainer.classList.add('matches-grid-container');
+
+        rounds[round].forEach((match, matchIndex) => {
+            const matchContainer = document.createElement('div');
+            matchContainer.classList.add('match-container');
+
+            // Connect matches with a line in between them, except for the last one
+            if (matchIndex < rounds[round].length - 1) {
+                const connector = document.createElement('div');
+                connector.classList.add('match-connector');
+                matchContainer.appendChild(connector);
+            }
+
             const matchElement = document.createElement('div');
             matchElement.classList.add('match-grid');
 
@@ -47,15 +61,66 @@ function createTournamentBracket(data) {
                 matchElement.appendChild(playerElement);
             });
 
-            roundElement.appendChild(matchElement);
+            // Add a class to indicate winning match and apply styles accordingly
+            if (match.winner_username && index < sortedRounds.length - 1) {
+				const connector = document.createElement('div');
+				connector.classList.add('match-connector');
+				matchContainer.appendChild(connector);
+			}
+
+            matchContainer.appendChild(matchElement);
+            matchesGridContainer.appendChild(matchContainer);
         });
 
+        // For each round, except for the last one, add right connectors to winners
+        if (index < sortedRounds.length - 1) {
+            const rightConnectorsContainer = document.createElement('div');
+            rightConnectorsContainer.classList.add('right-connectors-container');
+            matchesGridContainer.appendChild(rightConnectorsContainer);
+        }
+
+        roundElement.appendChild(matchesGridContainer);
         roundsContainer.appendChild(roundElement);
     });
 
     bracketContainer.appendChild(roundsContainer);
     return bracketContainer;
 }
+function initializeTournamentBracket(data) {
+    // Call the function to create the tournament bracket
+    const bracket = createTournamentBracket(data);
+
+    // Append the bracket to the DOM, assuming there's an element with an ID of 'bracketContainer'
+    document.getElementById('bracketContainer').appendChild(bracket);
+
+    // Adjust the height of the ::before pseudo-element after the bracket is rendered
+    adjustPseudoElementHeight();
+}
+
+// Function to adjust the height of the ::before pseudo-element
+function adjustPseudoElementHeight() {
+    // Select the matches-grid-container
+    const matchesGridContainers = document.querySelectorAll('.matches-grid-container');
+    
+    matchesGridContainers.forEach(container => {
+        const matchGrids = container.querySelectorAll('.match-grid');
+        let totalHeight = 0;
+        matchGrids.forEach((grid, index) => {
+            totalHeight += grid.offsetHeight / 2;
+            // Add the gap for each match-grid except the last one
+            if (index < matchGrids.length - 1) {
+                // Assuming the gap is 30px as specified in your CSS
+                totalHeight += 30; // Adjust this value if your gap size is different
+            }
+        });
+        container.style.setProperty('--pseudo-before-height', `${totalHeight}px`);
+    });
+}
+
+// Assuming your data is ready and stored in a variable named 'tournamentData'
+document.addEventListener("DOMContentLoaded", function() {
+    initializeTournamentBracket(tournamentData);
+});
 
 
 // Brackets class extending AbstractComponent
