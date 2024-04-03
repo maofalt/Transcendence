@@ -37,6 +37,7 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.permissions import AllowAny
 from rest_framework import serializers, generics, permissions, status, authentication, exceptions, viewsets
 from rest_framework.generics import ListAPIView
+# from rest_framework.exceptions import AuthenticationFailed
 from django.http import Http404
 
 # from django.utils.encoding import force_bytes, force_str
@@ -579,32 +580,26 @@ def friends_view(request):
 @csrf_protect
 @api_view(['GET'])
 @authentication_classes([CustomJWTAuthentication])
-# @permission_classes([IsAuthenticated])
-# @authentication_classes([])
 @permission_classes([AllowAny])
-def detail_view(request, username):
+def detail_view(request, username=None):
     try:
-        user = get_object_or_404(User, username=username)
+        if username:
+            user = get_object_or_404(User, username=username)
+        else:
+            user = request.user
         print("user: ", user)
+        data = {
+            'username': user.username,
+            'playername': user.playername,
+            # 'email': user.email,
+            'avatar': user.avatar.url if user.avatar else None,
+            'friends_count': user.friends.count(),
+            'two_factor_method': user.two_factor_method,
+        }
+        return JsonResponse(data)
     except Http404:
         return JsonResponse({'error': 'User not found'}, status=404)
-    # Serialize user data
-    data = {
-        'username': user.username,
-        'playername': user.playername,
-        # 'email': user.email,
-        'avatar': user.avatar.url if user.avatar else None,
-        'friends_count': user.friends.count(),
-        'two_factor_method': user.two_factor_method,
-    }
-    # return render(request, 'detail.html', {'data': data})
-    return JsonResponse(data)
-    
-    # else:
-    #     return JsonResponse({'error': 'User ID not found in token'}, status=401)
-    # else:
-    #     return JsonResponse({'error': 'Access token is missing'}, status=401)
-    # return render(request, 'detail.html', {'data': data})
+
 
 # @login_required
 @ensure_csrf_cookie
