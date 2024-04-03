@@ -24,6 +24,7 @@ urlpatterns = [
     path("add_friend/<str:username>", views.add_friend, name="add_friend"),
     path("remove_friend/<str:username>", views.remove_friend, name="remove_friend"),
     path("detail/<str:username>", views.detail_view, name="detail"),
+    path("detail/", views.detail_view, name="detail"),
     path("profile_update", views.ProfileUpdateView.as_view(), name="profile_update"),
     path("PasswordChangeForm", views.PasswordUpdateView.as_view(), name="password_update"),
     # path('password_reset_confirm/<uidb64>/<token>/', CustomPasswordResetConfirmView.as_view(), name='password_reset_confirm'),
