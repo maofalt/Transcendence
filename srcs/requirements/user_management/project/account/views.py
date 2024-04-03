@@ -85,10 +85,12 @@ def home(request):
 @ensure_csrf_cookie
 @csrf_protect
 @authentication_classes([CustomJWTAuthentication])
-@permission_classes([IsAuthenticated])
+@api_view(['GET'])
+# @permission_classes([IsAuthenticated])
 def get_user(request):
 
     user = request.user
+    print("User: ", user.username)
     avatar_data = None
     try:
         if user.avatar:
@@ -96,7 +98,7 @@ def get_user(request):
                 avatar_data = base64.b64encode(image_file.read()).decode('utf-8')
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-        
+
     user_data = {
         'user_id': user.id,
         'username': user.username,
@@ -338,6 +340,7 @@ def get_serializer(user):
 @csrf_protect
 # @login_required
 # @require_POST
+@api_view(['POST'])
 @authentication_classes([CustomJWTAuthentication])
 @permission_classes([IsAuthenticated])
 def api_logout_view(request):
@@ -599,6 +602,7 @@ def detail_view(request, username=None):
 @ensure_csrf_cookie
 @csrf_protect
 # @require_POST
+@api_view(['POST'])
 @authentication_classes([CustomJWTAuthentication])
 @permission_classes([IsAuthenticated])
 def add_friend(request, username):
@@ -613,6 +617,7 @@ def add_friend(request, username):
 @ensure_csrf_cookie
 @csrf_protect
 # @require_POST
+@api_view(['POST'])
 @authentication_classes([CustomJWTAuthentication])
 @permission_classes([IsAuthenticated])
 def remove_friend(request, username):
@@ -859,6 +864,7 @@ def is_valid_phone_number(phone_number):
 @ensure_csrf_cookie
 @csrf_protect
 # @require_POST
+@api_view(['POST'])
 @authentication_classes([])
 @permission_classes([AllowAny])
 def send_sms_code(request, phone_number=None):
@@ -919,6 +925,7 @@ def subscribe_user_to_sns_topic(phone_number):
 @ensure_csrf_cookie
 @csrf_protect
 # @require_POST
+@api_view(['POST'])
 @authentication_classes([CustomJWTAuthentication])
 @permission_classes([IsAuthenticated])
 def update_sandbox(request, phone_number=None):
@@ -991,6 +998,7 @@ def is_phone_number_verified(phone_number):
 @ensure_csrf_cookie
 @csrf_protect
 # @require_POST
+@api_view(['POST'])
 @authentication_classes([CustomJWTAuthentication])
 @permission_classes([IsAuthenticated])
 def update_phone(request, phone_number=None):
