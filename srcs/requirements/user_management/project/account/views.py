@@ -512,21 +512,6 @@ def api_signup_view(request):
     return JsonResponse({'success': False, 'error': escape('Invalid request method')}, status=400)
 
 
-
-def send_notification_to_microservices(user):
-    endpoint_url = f"https://localhost:9443/api/tournament/{user.id}/delete_user"
-    # payload = {'username': username}
-
-    try:
-        # send POST request
-        response = requests.post(endpoint_url)
-        if response.status_code == 200:
-            logger.info("successfully sent request to delete user from tournament")
-        else:
-            logger.error("failed to send request to delete user from tournament")
-    except Exception as e:
-        logger.error(f"Error sending POST request to tournament: {str(e)}")
-
 # @require_POST
 # @login_required
 @api_view(['POST'])
@@ -535,11 +520,7 @@ def send_notification_to_microservices(user):
 def delete_account(request):
     user = request.user
     try:
-        send_notification_to_microservices(user)
-        user.is_online = False
-        # user.save()
         request.user.delete()
-
         logger.info(f"User {user.username} deleted successfully.")
         
         return JsonResponse({'success': True, 'message': escape('Account deleted successfully')})

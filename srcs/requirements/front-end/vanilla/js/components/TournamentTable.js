@@ -3,7 +3,7 @@ import BaseTable from "@components/BaseTable";
 class TournamentTable extends BaseTable {
     constructor() {
         super();
-        this.setHeaders(['Tournament Name', 'Host', 'Number of Players', 'Time Remaining', 'Tournament Type', 'Registration Mode', 'Action']);
+        this.setHeaders(['Tournament Name', 'Host', 'Number of Players', 'Players Per Match', 'Status', 'Action', 'Details']);
     }
 
     //Method apply styles to the hable columns

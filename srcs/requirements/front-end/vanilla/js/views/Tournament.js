@@ -61,6 +61,8 @@ export default class Tournament extends AbstractView {
 		try {
 			const response = await makeApiRequest('/api/tournament/create-and-list/','GET');
 			const tournaments = response.body;
+			if (!tournaments) 
+				throw new Error('Failed to get tournament list');
 			console.log('Tournament list:', response.body);
 			// Transform the data
 			if (tournaments.length === 0) {
@@ -69,43 +71,57 @@ export default class Tournament extends AbstractView {
 			}
 
 			 // Map API data to table rows and add them to the table
-			 tournaments.forEach(tournament => {
+			tournaments.forEach(async (tournament) => {
 				console.log('Tournament:', tournament);
+			// TOURNAMENT STYLES APPLIED
 				const Styles = tournamentTable.columnStyles;
+			// tOURNAMENT NAMES COLUMN	
 				const tournamentNameElement = tournamentTable.createStyledHTMLObject('div', tournament.tournament_name, Styles.tournamentName);
-				const hostElement = tournamentTable.createStyledHTMLObject('div', `Host ${tournament.host_id}`, Styles.host);
-				const numberOfPlayersElement = tournamentTable.createStyledHTMLObject('div', `${tournament.joined}/${tournament.nbr_of_player_total}`, {}); 
-				const timeRemainingElement = tournamentTable.createStyledHTMLObject('div', `${tournament.registration_period_min}`, {});
-				const tournamentTypeElement = tournamentTable.createStyledHTMLObject('div', `${tournament.tournament_type}`);
-				const registrationModeElement = tournamentTable.createStyledHTMLObject('div', tournament.registration, {});
+			//TOURNAMENST HOST 
+				//trying tor ecover the name id and the picture
+				const hostId = tournament.host_id;
+				const hostElement = tournamentTable.createStyledHTMLObject('div', `${tournament.host_id}`, Styles.host);
+			//TOURNAMENT PLAYERS OER TOURNAMENT AND PLACE AVAILABLE	
+				const numberOfPlayersElement = tournamentTable.createStyledHTMLObject('div', `${tournament.joined}/${tournament.nbr_of_player_total}`, {});
+			// TOURNAMENT PLAYER  PER MATCH!!	
+				const numberOfPlayerPerMatch = tournamentTable.createStyledHTMLObject('div', `${tournament.nbr_of_player_match}`, {});
+			//TOURNAMENT STATUS	
+				const tournamentStatus = tournamentTable.createStyledHTMLObject('div', `${tournament.state}`, {});
+			//TOURNAMENT ACTION BUTTONS	
 				const actionContainer = document.createElement('div');
 				//container for all button actions 
 				actionContainer.style.display = 'flex';
-				actionContainer.style.justifyContent = 'space-around';
+				actionContainer.style.justifyContent = 'centered';
 				//Join button on te action column to join corresponding tournament
+				
 				const joinButtonElement = document.createElement('button');
 				joinButtonElement.textContent = 'Join';
 				Object.assign(joinButtonElement.style, Styles.action);
-				joinButtonElement.addEventListener('click', () => this.joinTournament(tournament.id));
-				// Details button to see the tournament state (either brackets and or results)
+				joinButtonElement.addEventListener('click', async () => await this.joinTournament(tournament.id));				
+				actionContainer.appendChild(joinButtonElement);
+				
+			//TOURNAMENT Details button to see the tournament state (either brackets and or results) opening th emodal
+				const tournamentDetails = document.createElement('div');
+				tournamentDetails.style.display = 'flex';
+				tournamentDetails.style.justifyContent = 'centered';
+
 				const viewButtonElement = document.createElement('button');
 				viewButtonElement.innerHTML = '👁️';
 				Object.assign(viewButtonElement.style, Styles.action);
-				viewButtonElement.addEventListener('click', () => 
+				viewButtonElement.addEventListener('click', () =>
 					console.log(`SOME IS WATCHING 👁️ 👁️ `)
-					);
+				);
 
-				actionContainer.appendChild(joinButtonElement);
-				actionContainer.appendChild(viewButtonElement);
-				// Add the constructed row to the table
+				tournamentDetails.appendChild(viewButtonElement);
+			//Add the constructed row to the table
 				tournamentTable.addRow([
-					tournamentNameElement, 
-					hostElement, 
-					numberOfPlayersElement, 
-					timeRemainingElement, 
-					tournamentTypeElement, 
-					registrationModeElement, 
-					actionContainer
+					tournamentNameElement,
+					hostElement,
+					numberOfPlayersElement,
+					numberOfPlayerPerMatch,
+					tournamentStatus,
+					actionContainer,
+					tournamentDetails
 				]);
 			});
 
