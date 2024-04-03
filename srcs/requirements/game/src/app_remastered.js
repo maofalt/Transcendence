@@ -127,7 +127,7 @@ function waitingRoom(matchID) {
 	let match = matches.get(matchID);
 	if (!match) {
 		console.log("Match not found");
-		// client.emit('error', 'Match not found');
+		// client.emit('error', 'Match not found'); 
 		// client.disconnect();
 		return ;
 	}
@@ -428,7 +428,7 @@ function verifyMatchSettings(settings) {
 	const checks = {
 		gamemodeData: {
 			nbrOfPlayers: value => (value >= 2 && value <= 8) ? null : "Nbr of players should be between 2 and 8",
-			nbrOfRounds: value => (value >= 1 && value <= 10) ? null : "Nbr of Rounds should be between 1 and 10",
+			// nbrOfRounds: value => (value >= 1 && value <= 10) ? null : "Nbr of Rounds should be between 1 and 10",
 		},
 		fieldData: {
 			sizeOfGoals: value => (value >= 15 && value <= 30) ? null : "Size of goals should be between 15 and 30",
@@ -519,20 +519,31 @@ app.post('/createMultipleMatches', (req, res) => {
 });
 
 function setupMatch(gameSettings, tournament_id, match_id, res) {
+
 	const matchID = generateMatchID(gameSettings);
-				
+	
 	if (matches.has(matchID)) {
 		console.log("Match already exists");
 		res.json({ matchID });
 		return null;
 	}
-
+	
 	let error = verifyMatchSettings(gameSettings);
 	if (error) {
 		console.log("Error:", error);
 		res.status(400).json({ error });
 		return null;
 	}
+
+	// extract the players IDs from the players data
+	const players = gameSettings.playersData.map(player => player.accountID);
+
+	if (len(players) == 1) {
+		postMatchResult(match_id, players[0]);
+		res.json({ matchID });
+		return null;
+	}
+
 	// Convert game settings to game state
 	const gameState = init.initLobby(gameSettings);
 	gameState.jisus_matchID = match_id;
@@ -540,7 +551,6 @@ function setupMatch(gameSettings, tournament_id, match_id, res) {
 	matches.set(matchID, { gameState: gameState, gameInterval: 0 });
 
 	// Emit the new match notification to all players
-	const players = gameSettings.playersData.map(player => player.accountID);
 	console.log("\n\nPLAYERS :\n\n", players);
 	players.forEach(player => {
 		let client = clients.get(player);
