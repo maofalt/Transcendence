@@ -22,6 +22,7 @@ class Tournament(models.Model):
         MaxValueValidator(60, message="Registration period cannot exceed 60 minutes.")
         ]
     )
+    
     host = models.ForeignKey('Player', on_delete=models.CASCADE, related_name='hosted_tournaments')
     tournament_result = models.ForeignKey('Player', on_delete=models.SET_NULL, null=True, related_name='won_tournaments')
     players = models.ManyToManyField('Player', related_name='tournaments')  # Direct many-to-many relationship with Player
@@ -29,6 +30,9 @@ class Tournament(models.Model):
     nbr_of_match = models.IntegerField(default=0)
     state = models.CharField(max_length=15, default="waiting")
 
+    def clean(self):
+        if self.nbr_of_player_total < self.nbr_of_player_match:
+            raise ValidationError(_('The number of players for Tournament must be equal to or greater than the number of players per match.'))
 
     def calculate_nbr_of_match(self):
         # Calculate the number of matches based on total players and max players per match

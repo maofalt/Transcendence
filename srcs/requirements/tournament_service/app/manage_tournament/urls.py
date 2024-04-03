@@ -32,7 +32,6 @@ urlpatterns = [
 # Tournament Progression:
     # GET /{id}/matches - Retrieve a list of matches for a tournament.
     # POST /{id}/matches - Create a new match within a tournament.
-    # path('<int:id>/matches/', views.TournamentMatchList.as_view(), name='tournament-matches'),
     path('<int:id>/match-generator/', views.MatchGenerator.as_view(), name='match-generator'),
     path('<int:id>/matches/', views.TournamentMatchList.as_view(), name='tournament-matches'),
     # DELETE /tournament/{id}/matches/{matchId} - Cancel a scheduled match.
@@ -85,18 +84,7 @@ urlpatterns = [
 
 # Send POST match data to Game
     path('<int:tournament_id>/<int:round>/generate-round/', views.generate_round, name='generate-round'),
+
+# Delete player data from Tournament DB
+    path('delete/<str:username>/', views.DeletePlayer.as_view(), name='delete-player'),
 ]
-
-# 1. Create Tourenament with Host player.
-# 2. Join the tournament with non-player user.
-# 3. Generate matches for tournament id with Host.
-# 4. Set Tournament State as started.
-# 5. Set Matches State as started(playing).
-# 6. When each match finished, set the Match State as ended.
-# 7. Send match result to back-end for each player with score.
-# 8. Update matches to the next round. (extract winner from previous round and set on next round)
-# 9. when tournament finished, set Tournament State as ended.
-#    > GET /tournament/{tournament_id}/round/ - Return Tournament Status, if all round finished, it returns 'is_tournamentFinish': True
-#      when a round finised, it returns 'round': last_match.round_number
-#      when still a round is playing, returns 'round': None
-

@@ -37,6 +37,7 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.permissions import AllowAny
 from rest_framework import serializers, generics, permissions, status, authentication, exceptions, viewsets
 from rest_framework.generics import ListAPIView
+# from rest_framework.exceptions import AuthenticationFailed
 from django.http import Http404
 
 # from django.utils.encoding import force_bytes, force_str
@@ -512,21 +513,6 @@ def api_signup_view(request):
     return JsonResponse({'success': False, 'error': escape('Invalid request method')}, status=400)
 
 
-
-def send_notification_to_microservices(user):
-    endpoint_url = f"https://localhost:9443/api/tournament/{user.id}/delete_user"
-    # payload = {'username': username}
-
-    try:
-        # send POST request
-        response = requests.post(endpoint_url)
-        if response.status_code == 200:
-            logger.info("successfully sent request to delete user from tournament")
-        else:
-            logger.error("failed to send request to delete user from tournament")
-    except Exception as e:
-        logger.error(f"Error sending POST request to tournament: {str(e)}")
-
 # @require_POST
 # @login_required
 @api_view(['POST'])
@@ -535,11 +521,7 @@ def send_notification_to_microservices(user):
 def delete_account(request):
     user = request.user
     try:
-        send_notification_to_microservices(user)
-        user.is_online = False
-        # user.save()
         request.user.delete()
-
         logger.info(f"User {user.username} deleted successfully.")
         
         return JsonResponse({'success': True, 'message': escape('Account deleted successfully')})
@@ -598,32 +580,26 @@ def friends_view(request):
 @csrf_protect
 @api_view(['GET'])
 @authentication_classes([CustomJWTAuthentication])
-@permission_classes([IsAuthenticated])
-# @authentication_classes([])
-# @permission_classes([AllowAny])
-def detail_view(request):
-    user = request.user
-    print("user: ", user)
-    if user:
-        # Serialize user data
+@permission_classes([AllowAny])
+def detail_view(request, username=None):
+    try:
+        if username:
+            user = get_object_or_404(User, username=username)
+        else:
+            user = request.user
+        print("user: ", user)
         data = {
             'username': user.username,
             'playername': user.playername,
-            'email': user.email,
+            # 'email': user.email,
             'avatar': user.avatar.url if user.avatar else None,
             'friends_count': user.friends.count(),
             'two_factor_method': user.two_factor_method,
-
         }
-        # return render(request, 'detail.html', {'data': data})
         return JsonResponse(data)
-    else:
+    except Http404:
         return JsonResponse({'error': 'User not found'}, status=404)
-    # else:
-    #     return JsonResponse({'error': 'User ID not found in token'}, status=401)
-    # else:
-    #     return JsonResponse({'error': 'Access token is missing'}, status=401)
-    # return render(request, 'detail.html', {'data': data})
+
 
 # @login_required
 @ensure_csrf_cookie

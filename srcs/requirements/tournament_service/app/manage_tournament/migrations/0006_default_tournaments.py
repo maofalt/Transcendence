@@ -27,10 +27,10 @@ def create_tournament(apps, schema_editor):
     MatchSetting = apps.get_model('manage_tournament', 'MatchSetting')
     Tournament = apps.get_model('manage_tournament', 'Tournament')
 
-    players = ['motero', 'abravo', 'jisu', 'znogueira', 'yoel']
+    players = ['motero', 'motero2', 'jisu', 'jisu2', 'znogueira', 'znogueira2', 'amanda', 'amanda2', 'yoel', 'yoel2']
     for i, player_username in enumerate(players):
         #create player or get it if it already exists
-        host_player, _ = Player.objects.get_or_create(id=i, username=player_username, defaults={'total_played': 0})
+        host_player, _ = Player.objects.get_or_create(id=i+1, username=player_username, defaults={'total_played': 0})
 
         #generate random game setting
         game_setting = create_random_game_setting(host_player.id)
@@ -39,7 +39,7 @@ def create_tournament(apps, schema_editor):
         #create tournament
         tournament = Tournament.objects.create(
             tournament_name=f'TEST_{i+1}',
-            nbr_of_player_total=game_setting['nbr_of_player'],
+            nbr_of_player_total=random.randint(game_setting['nbr_of_player'], 100),
             nbr_of_player_match=game_setting['nbr_of_player'],
             setting=match_setting,
             registration_period_min=random.randint(5, 60),

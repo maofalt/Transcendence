@@ -1,96 +1,124 @@
+// Import statements (Make sure the paths match your project structure)
 import AbstractComponent from "@components/AbstractComponent";
 import styles from '@css/Brackets.css?raw';
 import easyFetch from "@utils/easyFetch";
 import displayPopup from "@utils/displayPopup";
 
-export default class Brackets extends AbstractComponent {
-	constructor(options = {}) {
-		super();
+function createTournamentBracket(data) {
+    const bracketContainer = document.createElement('div');
+    bracketContainer.classList.add('tournament-bracket');
 
-		const styleEl = document.createElement('style');
-		styleEl.textContent = styles;
-		this.shadowRoot.appendChild(styleEl);
+    // Tournament header
+    const tournamentHeader = document.createElement('h2');
+    tournamentHeader.textContent = `Tournament: ${data.tournament_name} - Overall Winner: ${data.winner || "TBD"}`;
+    bracketContainer.appendChild(tournamentHeader);
 
-		const urlParams = new URLSearchParams(window.location.search);
-		const tournamentId = urlParams.get("tournament"); 
+    // Group matches by round_number
+    const rounds = data.matches.reduce((acc, match) => {
+        acc[match.round_number] = acc[match.round_number] || [];
+        acc[match.round_number].push(match);
+        return acc;
+    }, {});
 
-		// let test = document.createElement("div");
-		// test.textContent = "HELLO WORLD!: " + tournamentId;
+    // Sort rounds
+    const sortedRounds = Object.keys(rounds).sort((a, b) => a - b);
 
-		// this.shadowRoot.appendChild(test);
+    // Container for rounds (columns)
+    const roundsContainer = document.createElement('div');
+    roundsContainer.classList.add('rounds-container');
 
-		const createMatchesButton = document.createElement("button");
-		createMatchesButton.textContent = "Create Matches";
-		createMatchesButton.onclick = () => {
-			this.createMatches(tournamentId);
-		}
+    // Generate rounds and matches
+    sortedRounds.forEach(round => {
+        const roundElement = document.createElement('div');
+        roundElement.classList.add('round');
 
-		const getDetailsButton = document.createElement("button");
-		getDetailsButton.textContent = "Get Details";
-		getDetailsButton.onclick = () => {
-			this.getTournamentDetails(tournamentId);
-		}
+        const roundHeader = document.createElement('h3');
+        roundHeader.textContent = `Round ${round}`;
+        roundElement.appendChild(roundHeader);
 
-		this.shadowRoot.appendChild(createMatchesButton);
-		this.shadowRoot.appendChild(getDetailsButton);
+        rounds[round].forEach(match => {
+            const matchElement = document.createElement('div');
+            matchElement.classList.add('match-grid');
 
-		// this.getTournamentDetails(tournamentId);
-		// this.createMatches(tournamentId);
-	}
+            match.players.forEach(player => {
+                const playerElement = document.createElement('div');
+                playerElement.classList.add('player-flex');
+                playerElement.innerHTML = player.username === match.winner_username ? `<strong>${player.username}</strong>` : player.username;
+                matchElement.appendChild(playerElement);
+            });
 
-	createMatches = async (tournamentId) => {
-		console.log("details found!", tournamentId);
-		
-		await easyFetch(`/api/tournament/${tournamentId}/match-generator/`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({
-				"tournament_id": tournamentId,
-			}),
-		})
-		.then(res => {
-			let response = res.response;
-			let body = res.body;
+            roundElement.appendChild(matchElement);
+        });
 
-			if (!response || !body) {
-				throw new Error('Empty Response');
-			} else if (!response.ok) {
-				throw new Error(body.error || JSON.stringify(body));
-			} else if (response.ok) {
-				displayPopup("Matches were created", 'success');
-			}
-		})
-		.catch(error => {
-			displayPopup(`Request Failed: ${error}`, 'error');
-		});
-	}
-	
-	getTournamentDetails = async (tournamentId) => {
-		console.log("details found!", tournamentId);
-		
-		await easyFetch(`/api/tournament/${tournamentId}/matches/`)
-		.then(res => {
-			let response = res.response;
-			let body = res.body;
+        roundsContainer.appendChild(roundElement);
+    });
 
-			if (!response || !body) {
-				throw new Error('Empty Response');
-			} else if (!response.ok) {
-				throw new Error(body.error || JSON.stringify(body));
-			} else if (response.status === 200) {
-				displayPopup("Tournament Details Fetched", 'success');
-			}
-			let banana = document.createElement("div");
-			banana.textContent = "Tournament Details!: " + JSON.stringify(body);
-			this.shadowRoot.appendChild(banana);
-		})
-		.catch(error => {
-			displayPopup(`Request Failed: ${error}`, 'error');
-		});
-	}
-
+    bracketContainer.appendChild(roundsContainer);
+    return bracketContainer;
 }
 
+
+// Brackets class extending AbstractComponent
+export default class Brackets extends AbstractComponent {
+    constructor(options = {}) {
+        super();
+
+        // Attach styles
+        const styleEl = document.createElement('style');
+        styleEl.textContent = styles;
+        this.shadowRoot.appendChild(styleEl);
+
+        // Buttons and their functionality
+        const urlParams = new URLSearchParams(window.location.search);
+        const tournamentId = urlParams.get("tournament");
+
+        const createMatchesButton = document.createElement("button");
+        createMatchesButton.textContent = "Create Matches";
+        createMatchesButton.onclick = () => this.createMatches(tournamentId);
+
+        const getDetailsButton = document.createElement("button");
+        getDetailsButton.textContent = "Get Details";
+        getDetailsButton.onclick = () => this.getTournamentDetails(tournamentId);
+
+        this.shadowRoot.append(createMatchesButton, getDetailsButton);
+    }
+
+    createMatches = async (tournamentId) => {
+        try {
+            const res = await easyFetch(`/api/tournament/${tournamentId}/match-generator/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ "tournament_id": tournamentId }),
+            });
+            if (res.response.ok) {
+                displayPopup("Matches were created", 'success');
+            } else {
+                throw new Error(res.body.error || JSON.stringify(res.body));
+            }
+        } catch (error) {
+            displayPopup(`Request Failed: ${error}`, 'error');
+        }
+    };
+
+    getTournamentDetails = async (tournamentId) => {
+        try {
+            const res = await easyFetch(`/api/tournament/${tournamentId}/matches/`);
+            if (res.response.ok) {
+                displayPopup("Tournament Details Fetched", 'success');
+                this.renderTournamentBracket(res.body);
+            } else {
+                throw new Error(res.body.error || JSON.stringify(res.body));
+            }
+        } catch (error) {
+            displayPopup(`Request Failed: ${error}`, 'error');
+        }
+    };
+
+    renderTournamentBracket = (tournamentData) => {
+        const tournamentBracket = createTournamentBracket(tournamentData);
+        this.shadowRoot.appendChild(tournamentBracket);
+    };
+}
+
+// Define the custom element
 customElements.define('tournament-brackets', Brackets);

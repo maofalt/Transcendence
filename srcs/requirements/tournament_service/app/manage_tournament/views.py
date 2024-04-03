@@ -5,6 +5,7 @@ from rest_framework import generics, permissions, status, authentication, except
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import AuthenticationFailed
 from .models import Tournament, TournamentMatch, MatchSetting, TournamentPlayer, Player, MatchParticipants
 from .serializers import TournamentSerializer, TournamentMatchSerializer, MatchSettingSerializer, SimplePlayerSerializer
 from .serializers import TournamentPlayerSerializer, GamemodeDataSerializer, FieldDataSerializer, PaddlesDataSerializer, BallDataSerializer, TournamentMatchRoundSerializer, TournamentMatchListSerializer
@@ -28,16 +29,14 @@ from django.core import exceptions
 from django.utils.html import escape
 from django.views.decorators.csrf import csrf_exempt, csrf_protect, ensure_csrf_cookie
 
-
-
-    # compare total player > match player
-    # check is user generate tournament is host user,
-    # is user who start tournament is host user,
-    # registration time put or is_full tornament, send alert and start.
-    # deletion
-    # jwt token
-
-
+# to test
+    # - bigger value for nbr_of_player_match than nbr_of_player_total
+    # - webhooking
+    # - account deletion view is replacing all the player name data on Tournament and Match
+    # - check return 'date' data from TournamentMatchList
+    # - crash between HttpResponse and framework.Response
+# to do
+    # - delete unused field from model (tournament_result, nbr_of_match ...) or use them
 
 # ------------------------ Tournament -----------------------------------
 class TournamentListCreate(generics.ListCreateAPIView):
@@ -126,6 +125,9 @@ class JoinTournament(generics.ListCreateAPIView):
             return JsonResponse({'message': 'Tournament is full'}, status=status.HTTP_400_BAD_REQUEST)
 
         player, created = Player.objects.get_or_create(id=uid, username=username) # created wiil return False if the player already exists
+        if tournament.players.filter(id=player.id).exists():
+            print("You already joined this Tournament")
+            return JsonResponse({'error': 'Player is already in the tournament'}, status=400)
         tournament.players.add(player)
         if created:
             print("New Player joined\n")
@@ -373,7 +375,7 @@ class MatchResult(APIView):
         elif update.status_code != 201:
             return JsonResponse(update.data, status=update.status_code)
         response = generate_round(request, match.tournament_id, cur_round + 1)
-        return JsonResponse(response, status=status.HTTP_201_CREATED, safe=False)
+        return JsonResponse(response.data, status=status.HTTP_201_CREATED, safe=False)
 
 
         
@@ -803,14 +805,28 @@ class TournamentMatchList(APIView):
        
         matches = tournament.matches.all()
 
-        serialized_matches = TournamentMatchSerializer(matches, many=True)
-        tournament_name = tournament.tournament_name
-        final_winner = matches.last().winner.username
-        serializer = TournamentMatchListSerializer(data=\
-            {'tournament_name': tournament_name, 'winner': final_winner, 'matches': serialized_matches.data})
-        serializer.is_valid()
-        # serializer = TournamentMatchSerializer(matches, many=True)
-        return Response(serializer.data)
+        if matches:
+            serialized_matches = TournamentMatchSerializer(matches, many=True)
+            tournament_name = tournament.tournament_name
+            final_winner = matches.last().winner.username if matches.last().winner else None
+            serializer = TournamentMatchListSerializer(data={
+                'tournament_name': tournament_name,
+                'date': tournament.created_at,
+                'round': matches.last().round_number + 1,
+                'winner': final_winner,
+                'matches': serialized_matches.data
+            })
+            serializer.is_valid()
+            return Response(serializer.data)
+        else:
+            serializer = TournamentMatchListSerializer(data={
+                'tournament_name': tournament.tournament_name,
+                'date': tournament.created_at,
+                'winner': None,
+                'matches': []
+            })
+            serializer.is_valid()
+            return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
 
     def post(self, request, id):
@@ -1041,6 +1057,26 @@ def stream_notification(request, username, user_id, tournament_name, round_nbr):
     response['Cache-Control'] = 'no-cache'
     return response
 
+#after this APIView session need to delete token data from sessionStorage
+class DeletePlayer(APIView):
+    authentication_classes = [CustomJWTAuthentication]
 
-# manage everything from REsult endpoint
-# send email
+    def post(self, request, username):
+        try:
+            player = Player.get_object_or_404(username=username)
+        except Http404:
+            return JsonResponse({'message': f'User {username} hasn\'t started any tournamet. Nothing to clear from Tournament Database'}, status=204)
+        player.username = 'Unkown'
+        player.save()
+    
+        tournaments = Tournament.object.filter(playes=player)
+        for tournament in tournaments:
+            matches = tournament.matches.filter(players=player)
+            for match in matches:
+                match.players.remove(player)
+                match.players.add(player)
+
+            if tournament.host == player:
+                tournament.host = player
+                tournament.save()
+        return JsonResponse({'message': f'Username for user {username} has been deleted in related tournaments.'})
