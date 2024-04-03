@@ -579,27 +579,27 @@ def friends_view(request):
 @csrf_protect
 @api_view(['GET'])
 @authentication_classes([CustomJWTAuthentication])
-@permission_classes([IsAuthenticated])
+# @permission_classes([IsAuthenticated])
 # @authentication_classes([])
-# @permission_classes([AllowAny])
-def detail_view(request):
-    user = request.user
-    print("user: ", user)
-    if user:
-        # Serialize user data
-        data = {
-            'username': user.username,
-            'playername': user.playername,
-            'email': user.email,
-            'avatar': user.avatar.url if user.avatar else None,
-            'friends_count': user.friends.count(),
-            'two_factor_method': user.two_factor_method,
-
-        }
-        # return render(request, 'detail.html', {'data': data})
-        return JsonResponse(data)
-    else:
+@permission_classes([AllowAny])
+def detail_view(request, username):
+    try:
+        user = get_object_or_404(User, username=username)
+        print("user: ", user)
+    except Http404:
         return JsonResponse({'error': 'User not found'}, status=404)
+    # Serialize user data
+    data = {
+        'username': user.username,
+        'playername': user.playername,
+        # 'email': user.email,
+        'avatar': user.avatar.url if user.avatar else None,
+        'friends_count': user.friends.count(),
+        'two_factor_method': user.two_factor_method,
+    }
+    # return render(request, 'detail.html', {'data': data})
+    return JsonResponse(data)
+    
     # else:
     #     return JsonResponse({'error': 'User ID not found in token'}, status=401)
     # else:
