@@ -138,7 +138,7 @@ class FieldDataSerializer(serializers.ModelSerializer):
         fields = ['wallsFactor', 'sizeOfGoals']
 
 class PaddlesDataSerializer(serializers.ModelSerializer):
-    width = serializers.IntegerField(default=2)
+    width = serializers.IntegerField(default=1)
     height = serializers.IntegerField(source='paddle_height')
     speed = serializers.DecimalField(max_digits=3, decimal_places=2, source='paddle_speed')
 
@@ -156,6 +156,7 @@ class BallDataSerializer(serializers.ModelSerializer):
         fields = ['speed', 'radius', 'color']
 
 class SimplePlayerSerializer(serializers.ModelSerializer):
+    accountID = serializers.CharField(source='username')
     assigned_colors = [
         '#FF0000',  # Red
         '#0000FF',  # Blue
@@ -169,7 +170,7 @@ class SimplePlayerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Player
-        fields = ['id', 'username']
+        fields = ['id', 'accountID']
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)

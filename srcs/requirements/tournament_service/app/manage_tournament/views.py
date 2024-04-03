@@ -1009,7 +1009,7 @@ def generate_round(request, id, round):
             'fieldData': FieldDataSerializer(tournament.setting).data,
             'paddlesData': PaddlesDataSerializer(tournament.setting).data,
             'ballData': BallDataSerializer(tournament.setting).data,
-            'players': SimplePlayerSerializer(match.players.all(), many=True).data,
+            'playersData': SimplePlayerSerializer(match.players.all(), many=True).data,
         }
         serialized_matches.append(match_data)
 
@@ -1022,8 +1022,13 @@ def generate_round(request, id, round):
     for match in matches:
         match.state = "playing"
         match.save()
-    # return None
-    return Response(serialized_matches, status=status.HTTP_200_OK)
+
+    success, message = send_webhook_request(serialized_matches)
+    if success:
+        return Response(message, status=status.HTTP_200_OK)
+    else:
+        return Response({'error': message}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 def send_webhook_request(serialized_matches):
     game_backend_endpoint = 'http://game:3000/createMultipleMatches'
@@ -1033,9 +1038,10 @@ def send_webhook_request(serialized_matches):
 
     if response.status_code == 200:
         print("Webhook request successfully sent to the game backend.")
+        return True, "Webhook request successfully sent to the game backend."
     else:
         print("Failed to send webhook request to the game backend. Status code:", response.status_code)
-
+        return False, "Failed to send webhook request to the game backend. Status code: " + str(response.status_code)
 
 # @authentication_classes([CustomJWTAuthentication])
 def stream_notification(request, username, user_id, tournament_name, round_nbr):

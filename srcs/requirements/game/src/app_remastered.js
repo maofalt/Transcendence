@@ -436,7 +436,7 @@ function verifyMatchSettings(settings) {
 		},
 		paddlesData: {
 			width: value => (value === 1) ? null : "Paddles width should be 1",
-			height: value => (value >= 1 && value <= 10) ? null : "Paddles height should be between 1 and 10",
+			height: value => (value >= 1 && value <= 12) ? null : "Paddles height should be between 1 and 10",
 		},
 		ballData: {
 			radius: value => (value >= 0.5 && value <= 7) ? null : "Ball radius should be between 0.5 and 7",
@@ -462,7 +462,7 @@ function verifyMatchSettings(settings) {
 	// check if all players have different names, that they dont have an empty name
     let playerNames = settings.playersData.map(player => player.accountID);
     let uniquePlayerNames = [...new Set(playerNames)];
-
+	console.log("playerNames: ", playerNames, "uniquePlayerNames: ", uniquePlayerNames)
     if (playerNames.length !== uniquePlayerNames.length) {
         return "Multiple identical player IDs";
     }
@@ -538,7 +538,7 @@ function setupMatch(gameSettings, tournament_id, match_id, res) {
 	// extract the players IDs from the players data
 	const players = gameSettings.playersData.map(player => player.accountID);
 
-	if (len(players) == 1) {
+	if (players.length == 1) {
 		postMatchResult(match_id, players[0]);
 		res.json({ matchID });
 		return null;
