@@ -427,7 +427,7 @@ function verifyMatchSettings(settings) {
 
 	const checks = {
 		gamemodeData: {
-			nbrOfPlayers: value => (value >= 2 && value <= 8) ? null : "Nbr of players should be between 2 and 8",
+			nbrOfPlayers: value => (value >= 1 && value <= 8) ? null : "Nbr of players should be between 2 and 8",
 			// nbrOfRounds: value => (value >= 1 && value <= 10) ? null : "Nbr of Rounds should be between 1 and 10",
 		},
 		fieldData: {
