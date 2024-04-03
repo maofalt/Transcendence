@@ -198,6 +198,9 @@ export default class Game extends AbstractView {
 		const protocol = 'wss';
 //		const query = window.location.search.replace('?', '');
 		const query = window.location.search.replace('?', '') || this.query;
+		console.log("Query: ", query);
+		console.log("windo", window.location.search.replace('?', ''), window.location.search);
+		console.log("Query this: ", this.query);
 
 		
 		let accessTok = sessionStorage.getItem('accessToken');

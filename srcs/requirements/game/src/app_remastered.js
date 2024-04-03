@@ -244,6 +244,8 @@ function handleConnectionV2(client) {
 function getMatch(client) {
 	client.matchID = client.handshake.query.matchID;
 	if (!client.matchID) {
+		console.log('matchID: ', client.matchID);
+		console.log('query: ', client.handshake.query);
 		console.error('Authentication error: Missing matchID');
 		throw new Error('Authentication error: Missing matchID.');
 	}
@@ -254,54 +256,62 @@ function getMatch(client) {
 }
 
 function verifyAuthentication(client) {
-	if (client.handshake.headers && client.handshake.auth) {
-		// Parse the auth from the handshake
-		const token = client.handshake.auth.accessToken;
-		console.log("\ntoken:\n", token);
-
-		// Verify the token
-		jwt.verify(token, SECRET_KEY, function(err, decoded) {
-		// jwt.verify(token, SECRET_KEY, function(err, decoded) {
-			if (err) {
-				console.error('Authentication error: Could not verify token.', err);
-				throw new Error('Authentication error: Could not verify token.');
-			}
-			client.decoded = decoded;
-			// get the playerID from the decoded token
-			client.playerID = decoded.username;
-		});
-	} else {
-		console.error('Authentication error: No token provided.');
-		throw new Error('Authentication error: No token provided.');
-	}
+	return new Promise((resolve, reject) => {
+		if (client.handshake.headers && client.handshake.auth) {
+			const token = client.handshake.auth.accessToken;
+			jwt.verify(token, SECRET_KEY, function(err, decoded) {
+				if (err) {
+					console.error('Authentication error: Could not verify token.', err);
+					reject(new Error('Authentication error: Could not verify token.'));
+				} else {
+					client.decoded = decoded;
+					client.playerID = decoded.username;
+					resolve(); // Successfully verified
+				}
+			});
+		} else {
+			console.error('Authentication error: No token provided.');
+			reject(new Error('Authentication error: No token provided.'));
+		}
+	});
 }
+
 
 notify.use((client, next) => {
 	try {
-		verifyAuthentication(client);
+		verifyAuthentication(client).then(() => {
+			next();
+		}).catch(error => {
+			console.error('Error authenticating websocket: ', error);
+			next(new Error(error));
+		});
 	} catch (error) {
 		console.error('Error connecting websocket: ', error);
 		next(new Error(error));
 	}
-	next();
 });
 
 notify.on('connection', (client) => {
 	clients.set(client.playerID, client);
-	console.log("CLIENTS MAP:\n", clients);
+	// console.log("CLIENTS MAP:\n", clients);
 });
 
 // authenticate user before establishing websocket connection
 game.use((client, next) => {
 	try {
-		//console.log("\nclient.handshake.query:\n", client.handshake);
-		getMatch(client);
-		verifyAuthentication(client);
+		getMatch(client); // get the matchID and match from the query string
+		
+		// verify the token and set the playerID
+		verifyAuthentication(client).then(() => {
+			next(); // proceed to game connection if authentication is successful
+		}).catch(error => {
+			console.error('Error authenticating websocket: ', error);
+			next(new Error(error)); // disconnect the client if there's an error
+		});
 	} catch (error) {
 		console.error('Error connecting websocket: ', error);
-		next(new Error(error));
+		next(new Error(error)); // disconnect the client if there's an error
 	}
-	next();
 });
 
 // Set up Socket.IO event handlers
@@ -505,7 +515,7 @@ app.post('/createMultipleMatches', (req, res) => {
 
 	console.log("\nCREATE MULTIPLE MATCHES\n");
 
-	allGameSettings.matches.forEach(settings => {
+	for (settings of allGameSettings.matches) {
 		const { tournament_id, match_id, ...gameSettings } = settings;
 
 		let matchID = setupMatch(gameSettings, tournament_id, match_id, res);
@@ -513,7 +523,7 @@ app.post('/createMultipleMatches', (req, res) => {
 			return ;
 
 		matchIDs.push(matchID);
-	});
+	}
 
 	res.json({ matchIDs });
 });
