@@ -34,7 +34,7 @@ export default class ProfilePage extends AbstractComponent {
 		// let user = options.user;
 		// let user = options;
 
-		let data = {
+		this.data = {
 			username: "",
 			playername: "",
 			avatar: "",
@@ -409,8 +409,8 @@ export default class ProfilePage extends AbstractComponent {
 			fileInput.onchange = () => {
 				if (fileInput.files.length > 0) {
 					const file = fileInput.files[0];
-					data.avatar = file;
-					updateUser(data);
+					this.data.avatar = file;
+					updateUser(this.data);
 				}
 			};
 			fileInput.click(); // Trigger the click event
