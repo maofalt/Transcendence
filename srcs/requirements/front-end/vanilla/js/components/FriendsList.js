@@ -10,6 +10,8 @@ export default class FriendsList extends AbstractComponent {
 	constructor(options = {}) {
 		super();
 
+		this.friendBlocks = [];
+
 		// const styleEl = document.createElement('style');
 		// styleEl.textContent = profilePageStyles;
 		// this.shadowRoot.appendChild(styleEl);
@@ -61,17 +63,14 @@ export default class FriendsList extends AbstractComponent {
 			let image = friendBlock.shadowRoot.querySelector("#img-container img");
 			let container = friendBlock.shadowRoot.querySelector("#container");
 			container.style.setProperty("background-color", "rgba(0, 0, 0, 0)");
-			container.style.setProperty("transition", "background-color 0.1s ease-in-out");
-			friendBlock.onmouseover = () => {
-				image.src = deleteIcon;
-				container.style.setProperty("background-color", "rgba(0, 0, 0, 0.3)");
-			}
-			friendBlock.onmouseout = () => {
-				image.src = '/api/user_management' + friend.avatar;
-				container.style.setProperty("background-color", "rgba(0, 0, 0, 0)");
-			}
-			friendBlock.onclick = () => this.removeFriend(friend.username);
+			// container.style.setProperty("transition", "background-color 0.1s ease-in-out");
+			friendBlock.onmouseover = () => container.style.setProperty("background-color", "rgba(0, 0, 0, 0.3)");
+			friendBlock.onmouseout = () => container.style.setProperty("background-color", "rgba(0, 0, 0, 0)");
+			image.onmouseover = () => image.src = deleteIcon;
+			image.onmouseout = () => image.src = '/api/user_management' + friend.avatar;
+			image.onclick = () => this.removeFriend(friend.username);
 			listContainer.appendChild(friendBlock);
+			this.friendBlocks.push(friendBlock);
 		}
 		this.shadowRoot.appendChild(listContainer);
 	}

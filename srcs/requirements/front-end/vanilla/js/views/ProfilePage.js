@@ -19,6 +19,9 @@ import { router } from "@utils/Router";
 import fetchUserDetails from "@utils/fetchUserDetails";
 import { fadeIn, fadeOut, transition } from "@utils/animate";
 import updateUser from "@utils/updateUser";
+import profileInfoHtml from "@html/profileInfo.html?raw";
+import profileStatsHtml from "@html/profileStats.html?raw";
+import profileHistoryHtml from "@html/profileHistory.html?raw";
 
 export default class ProfilePage extends AbstractComponent {
 	constructor(options = {}) {
@@ -47,45 +50,66 @@ export default class ProfilePage extends AbstractComponent {
 		// if (!this.user)
 		// 	this.user = fetchUserDetails();
 
-		const userInfo = new UserInfo({});
-		userInfo.imgBox.onmouseover = (e) => {
-			userInfo.editOverlay.style.display = "block";
-			transition(userInfo.editOverlay, [["opacity", 0, 0.8]], 100);
-			userInfo.imgBox.onmouseleave = (e) => {
-				transition(userInfo.editOverlay, [["opacity", 0.8, 0]], 100).then(() => userInfo.editOverlay.style.setProperty("display", "none"));
-			}
-		};
-
-		const fileInput = document.createElement('input');
-		fileInput.type = 'file';
-		fileInput.style.display = 'none';
-
-		userInfo.shadowRoot.appendChild(fileInput);
-
-		userInfo.editOverlay.onclick = () => {
-			fileInput.onchange = () => {
-				if (fileInput.files.length > 0) {
-					const file = fileInput.files[0];
-					data.avatar = file;
-					updateUser(data);
-				}
-			};
-			fileInput.click(); // Trigger the click event
-		};
-
+		/* PROFILE PANNEL */
 		const profile = new Pannel({dark: false, title: "Profile"});
 		profile.shadowRoot.querySelector("#pannel-title").style.setProperty("padding", "0px 0px 0px 30px");
 		profile.style.setProperty("display", "block");
-				
-		const personalInfo = new Pannel({dark: true, title: "Personal Info", style: {display: "block",  padding: "0px 0px 0px 20px"}});
-		personalInfo.shadowRoot.querySelector("#pannel-title").style.setProperty("margin", "10px 0px");
 		
-		const gameStats = new Pannel({dark: true, title: "Game Stats", style: {display: "block", padding: "0px 0px 0px 20px"}});
-		gameStats.shadowRoot.querySelector("#pannel-title").style.setProperty("margin", "10px 0px");
+		// create the user info section with editable avatar
+		const userInfo = this.makeEditableUserInfo();
+		
+		// create the three pannels with user info and stats
+		const personalInfo = this.createPersonalInfoPannel(elemsToBeFilled);
+		const gameStats = this.createGameStatsPannel(elemsToBeFilled);
+		const matchHistory = this.createMatchHistoryPannel(elemsToBeFilled);
 
-		const matchHistory = new Pannel({dark: true, title: "Match History", style: {display: "block", padding: "20px 20px 20px 20px"}});
-		matchHistory.shadowRoot.querySelector("#pannel-title").style.setProperty("margin", "10px 0px");
+		// create the delete account button
+		const deleteButton = new CustomButton({content: "Delete Account", delete: true, style: {margin: "10px 10px"}});
+		deleteButton.onclick = () => {
+			areYouSure.style.display = "block";
+		};
 
+		profile.shadowRoot.appendChild(userInfo);
+		profile.shadowRoot.appendChild(personalInfo);
+		profile.shadowRoot.appendChild(gameStats);
+		profile.shadowRoot.appendChild(matchHistory);
+		profile.shadowRoot.appendChild(deleteButton);
+
+
+		/* FRIENDS SECTION */
+		const friendPannel = new Pannel({dark: false, title: "Friends"});
+
+		// friend input form
+		const addFriend = new InputAugmented({
+			title: "Add Friend",
+			content: "Username",
+			indicators: {
+				emptyIndicator: ["Please enter a username", () => addFriend.input.getValue() != ""],
+				invalidIndicator: ["Username not found", () => this.postAddFriend(addFriend.input.getValue())]
+			},
+			type: "text",
+			button: {content: "+ Add Friend", action: false}
+		});
+		addFriend.button.onclick = async () => await addFriend.validate();
+		addFriend.shadowRoot.querySelector("#input-button").style.setProperty("font-size", "28px");
+
+		// friends list pannel
+		const friendsListPannel = new Pannel({dark: true, title: `Friends List  ( ... )} )`});
+		elemsToBeFilled.pannelTitle = friendsListPannel.shadowRoot.querySelector("#pannel-title"); // add to elemsToBeFilled to fill in fetch function
+
+		// create the friends list
+		const friendsList = new FriendsList();
+		friendsList.friendBlocks.forEach(friend => {
+			friend.style.cursor = "pointer";
+			friend.onclick = () => this.showFriendProfile(friendElemsToBeFilled);
+		});
+
+		friendsListPannel.shadowRoot.appendChild(friendsList);
+		friendPannel.shadowRoot.appendChild(addFriend);
+		friendPannel.shadowRoot.appendChild(friendsListPannel);
+
+
+		/* DELETION CONFIRMATION PANNEL */
 		const areYouSure = new Pannel({dark: true, title: "Are you sure you want to delete your account?\nThis can't be undone!", style: {display: "none", padding: "20px 20px 20px 20px"}});
 		areYouSure.style.position = "fixed";
 		areYouSure.style.top = "50%";
@@ -105,248 +129,47 @@ export default class ProfilePage extends AbstractComponent {
 		areYouSure.shadowRoot.appendChild(confirmDeleteButton);
 		areYouSure.shadowRoot.appendChild(cancelDeleteButton);
 
-		let infos = document.createElement("div");
-		infos.innerHTML = `
-		<style>
-			* {
-				margin: 0;
-				padding: 0;
-			}
-			.infos-container {
-				margin-top: 0;
-				padding-top: 0;
-			}
-			.titles-container {
-				display: inline-block;
-			}
-			.values-container {
-				display: inline-block;
-				margin: 0px 0px 0px 15px;
-			}
-			.titles-container h3 {
-				margin: 0px 0px 14px 0px;
-			}
-			.values-container p {
-				margin: 0px 0px 18px 0px;
-			}
-		</style>
-		<div class="infos-container">
-			<div class="titles-container">
-				<h3>Playername :</h3>
-				<h3>E-Mail :</h3>
-			</div>
-			<div class="values-container">
-				<p id="user-playername">loading...</p>
-				<p id="user-email">loading...</p>
-			</div>
-		</div>
-		`;
-		elemsToBeFilled.userPlayername = infos.querySelector("#user-playername");
-		elemsToBeFilled.userEmail = infos.querySelector("#user-email");
 
-		infos.style.setProperty("display", "block");
-		infos.style.setProperty("align-items", "left");
-		infos.style.setProperty("justify-content", "left");
-		infos.style.setProperty("align-text", "left");
-
-		let stats = document.createElement("div");
-		stats.innerHTML = `
-		<style>
-			* {
-				margin: 0;
-				padding: 0;
-			}
-			.infos-container {
-				font-family: "Space Grotesk", sans-serif;
-			}
-			.titles-container {
-				display: inline-block;
-			}
-			.values-container {
-				display: inline-block;
-				margin: 0px 0px 0px 15px;
-			}
-			.titles-container h3 {
-				margin: 0px 0px 14px 0px;
-			}
-			.values-container p {
-				margin: 0px 0px 18px 0px;
-			}
-		</style>
-		<div class="infos-container">
-			<div class="titles-container">
-				<h3>Total games played :</h3>
-				<h3>Wins :</h3>
-				<h3>Losses :</h3>
-				<h3>Win rate :</h3>
-			</div>
-			<div class="values-container">
-				<p id="match-total">loading...</p>
-				<p id="match-wins">loading...</p>
-				<p id="match-losses">loading...</p>
-				<p id="match-winrate">loading...</p>
-			</div>
-		</div>
-		`;
-		elemsToBeFilled.matchTotal = stats.querySelector("#match-total");
-		elemsToBeFilled.matchWins = stats.querySelector("#match-wins");
-		elemsToBeFilled.matchLosses = stats.querySelector("#match-losses");
-		elemsToBeFilled.matchWinrate = stats.querySelector("#match-winrate");
-
-		let history = document.createElement("div");
-		history.innerHTML = `
-		<style>
-			* {
-				margin: 0;
-				padding: 0;
-			}
-			.history-container {
-				font-family: "Space Grotesk", sans-serif;
-			}
-			.titles-container {
-				display: inline-block;
-			}
-			.values-container {
-				display: inline-block;
-				margin: 0px 0px 0px 15px;
-				height: 35px;
-				width: 100%;
-				padding-top: 10px;
-				overflow-y: scroll;
-				border-top: 2px solid rgba(255, 255, 255, 0.1);
-				scrollbar-color: rgba(255, 255, 255, 0.1) rgba(255, 255, 255, 0.1);
-				scrollbar-width: thin;
-			}
-			.titles-container h3 {
-				margin: 0px 0px 14px 0px;
-			}
-			.values-container p {
-				margin: 0px 0px 18px 0px;
-			}
-			.history-container {
-				width: 100%; /* Adjust based on your layout */
-				padding: 10px;
-				box-sizing: border-box;
-			}
-			
-			.match-row {
-				display: flex;
-				justify-content: space-between;
-				margin-bottom: 10px; /* Spacing between rows */
-				overflow: auto; /* Adds a scrollbar if the row's content is too wide */
-			}
-			
-			.match-id, .tournament-name, .date, .winner {
-				min-width: 0; /* Allows the item to shrink below its content size, if necessary */
-				text-align: center;
-				white-space: nowrap; /* Ensures the content of each item stays on one line */
-				overflow: hidden; /* Hide overflow content */
-				text-overflow: ellipsis; /* Add ellipsis if the content is too long */
-			}
-			
-			/* Adjusting padding to ensure spacing around text */
-			.match-id, .tournament-name, .date, .winner {
-				# padding: 0 10px; /* Increase padding for better spacing */
-			}
-			
-			/* Align the first and last items with the container's edges */
-			.match-id {
-				flex: 1;
-				text-align: left;
-			}
-
-			.tournament-name {
-				flex: 3;
-				text-align: center;
-			}
-			
-			.date {
-				flex: 2;
-				text-align: center;
-			}
-			
-			.winner {
-				flex: 2;
-				text-align: right;
-			}
-			#table-head {
-				text-decoration: underline;
-			}
-		</style>
-		<div class="history-container">
-			<div id="table-head" class="match-row">
-				<span class="match-id">Id</span>
-				<span class="tournament-name">Tournament</span>
-				<span class="date">Date</span>
-				<span class="winner">Winner</span>
-			</div>
-			<div id="match-rows">
-				<div class="match-row">
-					<span class="match-id">001</span>
-					<span class="tournament-name">Great Big Tournament</span>
-					<span class="date">01-03-2021</span>
-					<span class="winner">yridgway</span>
-				</div>
-			</div>
-			<!-- Add more match-rows here -->
-		</div>
-		`;
-		elemsToBeFilled.matchRows = history.querySelector("#match-rows");
-
-		const addFriend = new InputAugmented({
-			title: "Add Friend",
-			content: "Username",
-			indicators: {
-				emptyIndicator: ["Please enter a username", () => addFriend.input.getValue() != ""],
-				invalidIndicator: ["Username not found", () => this.postAddFriend(addFriend.input.getValue())]
-			},
-			type: "text",
-			button: {content: "+ Add Friend", action: false}
-		});
-		addFriend.button.onclick = async () => await addFriend.validate();
-		addFriend.shadowRoot.querySelector("#input-button").style.setProperty("font-size", "28px");
-
-		const friendPannel = new Pannel({dark: false, title: "Friends"});
-
-		const friendsListPannel = new Pannel({dark: true, title: `Friends List  ( this.user.friends_count} )`});
-
-		const friendsList = new FriendsList();
-		friendsListPannel.shadowRoot.appendChild(friendsList);
-
-		friendPannel.shadowRoot.appendChild(addFriend);
-		friendPannel.shadowRoot.appendChild(friendsListPannel);
-		// friendPannel.shadowRoot.appendChild(friendsContainer);
-
-		personalInfo.shadowRoot.appendChild(infos);
-		gameStats.shadowRoot.appendChild(stats);
-		matchHistory.shadowRoot.appendChild(history);
-
-		const deleteButton = new CustomButton({content: "Delete Account", delete: true, style: {margin: "10px 10px"}});
-		deleteButton.onclick = () => {
-			areYouSure.style.display = "block";
-		};
+		/* FRIEND PROFILE PANNEL */
+		const friendElemsToBeFilled = {};
+		const friendProfile = new Pannel({dark: false, title: "Profile"});
+		friendProfile.shadowRoot.querySelector("#pannel-title").style.setProperty("padding", "0px 0px 0px 30px");
+		friendProfile.style.setProperty("display", "block");
 		
+		// create the user info section with the avatar
+		const friendUserInfo = new UserInfo({});
+		
+		// create the two pannels with history and stats
+		const friendGameStats = this.createGameStatsPannel(friendElemsToBeFilled);
+		const friendMatchHistory = this.createMatchHistoryPannel(friendElemsToBeFilled);
+
+		friendProfile.shadowRoot.appendChild(friendUserInfo);
+		friendProfile.shadowRoot.appendChild(friendGameStats);
+		friendProfile.shadowRoot.appendChild(friendMatchHistory);
+
+
+		/* OTHER CONSTRUCTION */
+		// create go back button
 		const goBack = new CustomButton({content: "< Back", style: {padding: "0px 20px", position: "absolute", left: "50px", bottom: "30px"}});
 		goBack.onclick = () => window.history.back();
 
-		profile.shadowRoot.appendChild(userInfo);
-		profile.shadowRoot.appendChild(personalInfo);
-		profile.shadowRoot.appendChild(gameStats);
-		profile.shadowRoot.appendChild(matchHistory);
-		
-		profile.shadowRoot.appendChild(deleteButton);
-		
-		this.shadowRoot.appendChild(areYouSure);
-		
-		this.shadowRoot.appendChild(goBack);
-		this.shadowRoot.appendChild(profile);
-		this.shadowRoot.appendChild(friendPannel);
+		// append all elements to the shadowRoot
+		this.shadowRoot.appendChild(areYouSure); // delete account confirmation pannel
+		this.shadowRoot.appendChild(goBack); // go back button
+		this.shadowRoot.appendChild(profile); // profile section with stats and info
+		this.shadowRoot.appendChild(friendPannel); // friends section with add friend input and friends list
+		this.shadowRoot.appendChild(friendProfile); // friend profile popup with stats and info about a friend
 
-		this.fillValues(elemsToBeFilled);
+		// fill in the values that need to be fetched
+		this.fillUserValues(elemsToBeFilled);
 		this.fillMatchHistory(elemsToBeFilled.matchRows);
 	}
 
-	fillValues = async (elemsToBeFilled) => {
+	showFriendProfile = async (friendElemsToBeFilled) => {
+		
+	}
+
+	fillUserValues = async (elemsToBeFilled) => {
 		let user = JSON.parse(sessionStorage.getItem("userDetails"));
 		if (!user)
 			user = await fetchUserDetails();
@@ -356,6 +179,7 @@ export default class ProfilePage extends AbstractComponent {
 		elemsToBeFilled.matchWins.textContent = user.wins;
 		elemsToBeFilled.matchLosses.textContent = user.losses;
 		elemsToBeFilled.matchWinrate.textContent = user.winrate;
+		elemsToBeFilled.pannelTitle.textContent = `Friends List  ( ${user.friends_count} )`;
 	}
 
 	fillMatchHistory = async (matchRows) => {
@@ -518,6 +342,71 @@ export default class ProfilePage extends AbstractComponent {
 			valid = false;
 		});
 		return valid;
+	}
+
+	createPersonalInfoPannel = (elemsToBeFilled) => {
+		const personalInfo = new Pannel({dark: true, title: "Personal Info", style: {display: "block",  padding: "0px 0px 0px 20px"}});
+		personalInfo.shadowRoot.querySelector("#pannel-title").style.setProperty("margin", "10px 0px");
+		let infos = document.createElement("div");
+		infos.innerHTML = profileInfoHtml;
+		elemsToBeFilled.userPlayername = infos.querySelector("#user-playername");
+		elemsToBeFilled.userEmail = infos.querySelector("#user-email");
+		personalInfo.shadowRoot.appendChild(infos);
+		return personalInfo;
+	}
+
+	createGameStatsPannel = (elemsToBeFilled) => {
+		const gameStats = new Pannel({dark: true, title: "Game Stats", style: {display: "block", padding: "0px 0px 0px 20px"}});
+		gameStats.shadowRoot.querySelector("#pannel-title").style.setProperty("margin", "10px 0px");
+		let stats = document.createElement("div");
+		stats.innerHTML = profileStatsHtml;
+		elemsToBeFilled.matchTotal = stats.querySelector("#match-total");
+		elemsToBeFilled.matchWins = stats.querySelector("#match-wins");
+		elemsToBeFilled.matchLosses = stats.querySelector("#match-losses");
+		elemsToBeFilled.matchWinrate = stats.querySelector("#match-winrate");
+		gameStats.shadowRoot.appendChild(stats);
+		return gameStats;
+	}
+
+	createMatchHistoryPannel = (elemsToBeFilled) => {
+		const matchHistory = new Pannel({dark: true, title: "Match History", style: {display: "block", padding: "20px 20px 20px 20px"}});
+		matchHistory.shadowRoot.querySelector("#pannel-title").style.setProperty("margin", "10px 0px");
+		let history = document.createElement("div");
+		history.innerHTML = profileHistoryHtml;
+		elemsToBeFilled.matchRows = history.querySelector("#match-rows");
+		matchHistory.shadowRoot.appendChild(history);
+		return matchHistory;
+	}
+
+	makeEditableUserInfo = () => {
+		const userInfo = new UserInfo({});
+		
+		userInfo.imgBox.onmouseover = (e) => {
+			userInfo.editOverlay.style.display = "block";
+			transition(userInfo.editOverlay, [["opacity", 0, 0.8]], 100);
+			userInfo.imgBox.onmouseleave = (e) => {
+				transition(userInfo.editOverlay, [["opacity", 0.8, 0]], 100).then(() => userInfo.editOverlay.style.setProperty("display", "none"));
+			}
+		};
+
+		const fileInput = document.createElement('input');
+		fileInput.type = 'file';
+		fileInput.style.display = 'none';
+
+		userInfo.shadowRoot.appendChild(fileInput);
+
+		userInfo.editOverlay.onclick = () => {
+			fileInput.onchange = () => {
+				if (fileInput.files.length > 0) {
+					const file = fileInput.files[0];
+					data.avatar = file;
+					updateUser(data);
+				}
+			};
+			fileInput.click(); // Trigger the click event
+		};
+
+		return userInfo;
 	}
 }
 

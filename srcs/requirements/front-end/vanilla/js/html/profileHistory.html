@@ -1,0 +1,88 @@
+<style>
+	* {
+		margin: 0;
+		padding: 0;
+	}
+	.history-container {
+		font-family: "Space Grotesk", sans-serif;
+	}
+	.titles-container {
+		display: inline-block;
+	}
+	.values-container {
+		display: inline-block;
+		margin: 0px 0px 0px 15px;
+		height: 35px;
+		width: 100%;
+		padding-top: 10px;
+		overflow-y: scroll;
+		border-top: 2px solid rgba(255, 255, 255, 0.1);
+		scrollbar-color: rgba(255, 255, 255, 0.1) rgba(255, 255, 255, 0.1);
+		scrollbar-width: thin;
+	}
+	.titles-container h3 {
+		margin: 0px 0px 14px 0px;
+	}
+	.values-container p {
+		margin: 0px 0px 18px 0px;
+	}
+	.history-container {
+		width: 100%; /* Adjust based on your layout */
+		padding: 10px;
+		box-sizing: border-box;
+	}
+	
+	.match-row {
+		display: flex;
+		justify-content: space-between;
+		margin-bottom: 10px; /* Spacing between rows */
+		overflow: auto; /* Adds a scrollbar if the row's content is too wide */
+	}
+	
+	.match-id, .tournament-name, .date, .winner {
+		min-width: 0; /* Allows the item to shrink below its content size, if necessary */
+		text-align: center;
+		white-space: nowrap; /* Ensures the content of each item stays on one line */
+		overflow: hidden; /* Hide overflow content */
+		text-overflow: ellipsis; /* Add ellipsis if the content is too long */
+	}
+	
+	/* Align the first and last items with the container's edges */
+	.match-id {
+		flex: 1;
+		text-align: left;
+	}
+	.tournament-name {
+		flex: 3;
+		text-align: center;
+	}
+	.date {
+		flex: 2;
+		text-align: center;
+	}
+	.winner {
+		flex: 2;
+		text-align: right;
+	}
+
+	#table-head {
+		text-decoration: underline;
+	}
+</style>
+<div class="history-container">
+	<div id="table-head" class="match-row">
+		<span class="match-id">Id</span>
+		<span class="tournament-name">Tournament</span>
+		<span class="date">Date</span>
+		<span class="winner">Winner</span>
+	</div>
+	<div id="match-rows">
+		<div class="match-row">
+			<span class="match-id">001</span>
+			<span class="tournament-name">Great Big Tournament</span>
+			<span class="date">01-03-2021</span>
+			<span class="winner">yridgway</span>
+		</div>
+	</div>
+	<!-- Add more match-rows here -->
+</div>
