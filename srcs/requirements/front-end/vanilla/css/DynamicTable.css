@@ -6,8 +6,12 @@
     margin-bottom: 1rem;
 }
 
+tournament-table {
+    display: block;
+}
+
 .table {
-    width: 100%;
+    display: table;
     margin-bottom: 1rem;
     color: hsl(240 3.8% 46.1);
     border-radius: 9px;
@@ -19,12 +23,19 @@
     border-bottom: 2px solid #dee2e6;
     color: rgba(255, 255, 255, 0.582);
     vertical-align:  middle;
+
     font-size: 0.875rem;
     line-height: 1.25rem;
     font-weight: 500;
-    text-align: left;
+    text-align: center;
     padding-left: 1rem;
     padding-right: 1rem;
+}
+
+.table td {
+    justify-content: center;
+    text-align: center;
+    vertical-align: middle;
 }
 
 .table tbody tr {

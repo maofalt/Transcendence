@@ -4,26 +4,49 @@ class TournamentTable extends BaseTable {
     constructor() {
         super();
         this.setHeaders(['Tournament Name', 'Host', 'Number of Players', 'Players Per Match', 'Status', 'Action', 'Details']);
+        this.applyColumnStyles = this.applyColumnStyles.bind(this);
     }
 
+
     //Method apply styles to the hable columns
-    applyColumnStyles() {
+    async applyColumnStyles() {
         this.columnStyles = {
             tournamentName: {
                 'font-weight': '700',
                 'vertical-align': 'middle',
-                'padding': '1rem',
+                'text-align': 'center',
             },
             host: {
-                'display': 'flex',
+                'display': 'block',
+                'vertical-align': 'middle',
+                'text-align': 'center',
+                'color': '#008000',
+            },
+            nbrOfPlayersTournament: {
                 'align-items': 'center',
-                'color': 'blue',
-                'margin-left': '1rem',
+                'vertical-align': 'middle',
+                'text-align': 'center',
+            },
+            nbrOfPlayersMatch: {
+                'align-items': 'center',
+                'vertical-align': 'middle',
+                'text-align': 'center',
+            },
+            state: {
+                'align-items': 'center',
+                'vertical-align': 'middle',
+                'text-align': 'center',
             },
             action: {
+                'align-items': 'center',
                 'vertical-align': 'middle',
                 'text-align': 'center',
                 'cursor': 'pointer',
+            },
+            details: {
+                'align-items': 'center',
+                'vertical-align': 'middle',
+                'text-align': 'center',
             },
         };
     }
@@ -38,8 +61,7 @@ class TournamentTable extends BaseTable {
         }
 
         //Apply styles
-        if (content)
-            Object.assign(element.style, style);
+        Object.assign(element.style, style);
         return element;
     }
 
