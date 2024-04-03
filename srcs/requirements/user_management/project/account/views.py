@@ -84,33 +84,27 @@ def home(request):
 
 @ensure_csrf_cookie
 @csrf_protect
+@authentication_classes([CustomJWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_user(request):
-    refreshToken = request.COOKIES.get('refreshToken', None)
-    try:
-        decoded_refresh_token = jwt.decode(refreshToken, settings.SECRET_KEY, algorithms=["HS256"])
-        print("DECODED REFRESHTOKEN: ", decoded_refresh_token)
-        uid = decoded_refresh_token['user_id']
-        try:
-            user = User.objects.get(pk=uid)
-            avatar_data = None
-            if user.avatar:
-                with open(user.avatar.path, "rb") as image_file:
-                    avatar_data = base64.b64encode(image_file.read()).decode('utf-8')
-            user_data = {
-                'user_id': user.id,
-                'username': user.username,
-                'last_valid_time': user.last_valid_time,
-                'avatar': avatar_data,
-                'playername': user.playername
-            }
-            return JsonResponse(user_data)
-        except User.DoesNotExist:
-            return JsonResponse({'error': 'User not found'}, status=404)
 
-    except jwt.ExpiredSignatureError:
-        return JsonResponse({'error': 'Refresh token has expired'}, status=400)
-    except jwt.InvalidTokenError:
-        return JsonResponse({'error': 'Invalid refresh token'}, status=400)
+    user = request.user
+    avatar_data = None
+    try:
+        if user.avatar:
+            with open(user.avatar.path, "rb") as image_file:
+                avatar_data = base64.b64encode(image_file.read()).decode('utf-8')
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+        
+    user_data = {
+        'user_id': user.id,
+        'username': user.username,
+        'last_valid_time': user.last_valid_time,
+        'avatar': avatar_data,
+        'playername': user.playername
+    }
+    return JsonResponse(user_data)
 
 @ensure_csrf_cookie
 @csrf_protect
@@ -296,7 +290,7 @@ def send_one_time_code(request, email=None):
 
     print("\n\nCHECK CODE ON SESSION: ", request.session.get('one_time_code'))
     subject = 'Your Access Code for PONG'
-    message = f'Your one-time code is: {escape(one_time_code)}'
+    message = f'Pong! Your one-time code is: {escape(one_time_code)}'
     from_email = 'no-reply@student.42.fr' 
     to_email = email
     send_mail(subject, message, from_email, [to_email])
@@ -669,7 +663,6 @@ class ProfileUpdateView(APIView):
 
     def get(self, request):
         user_form = ProfileUpdateForm(instance=request.user)
-        print("user_form: \n", user_form)
         serialized_form = model_to_dict(user_form.instance, fields=['id', 'username', 'playername', 'avatar', 'email', 'phone', 'two_factor_method'])
         if 'avatar' in serialized_form:
             avatar_url = request.build_absolute_uri(user_form.instance.avatar.url)
@@ -880,7 +873,7 @@ def send_sms_code(request, phone_number=None):
         request.session['one_time_code'] = one_time_code
 
         print("\n\nCHECK CODE ON SESSION: ", request.session.get('one_time_code'))
-        message = f'Pong! Your one-time code is: {one_time_code}'
+        message = f'Pong! Your one-time code is: {escape(one_time_code)}'
 
         subscription_arn = subscribe_user_to_sns_topic(phone_number)
         
