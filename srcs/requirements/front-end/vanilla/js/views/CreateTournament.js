@@ -16,6 +16,7 @@ export default class CreateTournament extends AbstractView {
       this.addPlayerDataToGameSettings = this.addPlayerDataToGameSettings.bind(this);
       this.getGameSettingsFromForm = this.getGameSettingsFromForm.bind(this);
       this.game = new Game();
+      // document.getElementById('gameContainer').removeChild(this.game.shadowRoot.querySelector("#leave-button"));
   }
   
   async init() {
@@ -81,8 +82,10 @@ export default class CreateTournament extends AbstractView {
       this.game = null;
       this.game = await new Game(matchID, width, height);
       document.getElementById('gameContainer').innerHTML = '';
-    // }
-    await this.game.init(); // Make sure this can be safely called multiple times or after updating settings
+      // }
+      await this.game.init(); // Make sure this can be safely called multiple times or after updating settings
+      document.getElementById('gameContainer').removeChild(document.getElementById('leave-button'));
+      document.getElementById('count-down').style.display = "none";
     console.log('Game initialized');
   }
 
@@ -122,7 +125,10 @@ export default class CreateTournament extends AbstractView {
                   required
                   placeholder="Enter tournament name">
 
-              <label for="nbr_of_player_total">Number of Players:</label>
+              <div style="display: flex; flex-direction: row; align-items : top;">
+                <label for="nbr_of_player_total" style="flex: 1;">Number of Players :&nbsp;</label>
+                <p id="total_players_value" style="color:deepskyblue; margin: 0; padding: 0;">2</p>
+              </div>
               <input 
                   type="range"
                   id="nbr_of_player_total" 
@@ -132,7 +138,7 @@ export default class CreateTournament extends AbstractView {
                   step="1"
                   value="2"
                   required
-                  oninput="this.nextElementSibling.value = this.value">
+                  oninput="document.querySelector('#total_players_value').textContent = this.value">
 
               <label for="registration_period_min">Registration Period (in minutes):</label>
               <input 
@@ -163,7 +169,10 @@ export default class CreateTournament extends AbstractView {
               <h3>Score & Players</h3>
               <div class="settings-card">
                 <div class="setting-input">
-                  <label for="nbr_of_players_per_match">Number of Players (2-8) :</label>
+                  <div style="display: flex; flex-direction: row; align-items : top;">
+                    <label for="nbr_of_players_per_match" style="flex: 1;">Number of Players (2-8) :&nbsp;</label>
+                    <p id="nbr_players_value" style="color:deepskyblue; margin: 0; padding: 0;">5</p>
+                  </div>
                   <input 
                     type="range" 
                     id="nbr_of_players_per_match"
@@ -172,38 +181,58 @@ export default class CreateTournament extends AbstractView {
                     max="8"
                     value="5"
                     step="1"
-                    oninput="this.nextElementSibling.value = this.value">
+                    oninput="document.querySelector('#nbr_players_value').textContent = this.value">
                 </div>
 
                 <div class="setting-input">
-                  <label for="nbr_of_rounds">Number of Rounds (1-10) :</label>
-                  <input type="range" id="nbr_of_rounds" name="nbr_of_rounds" min="1" max="10" step="1" value="10">
+                  <div style="display: flex; flex-direction: row; align-items : top;">
+                    <label for="nbr_of_rounds" style="flex: 1;">Number of Rounds (1-10) :&nbsp;</label>
+                    <p id="nbr_rounds_value" style="color:deepskyblue; margin: 0; padding: 0;">10</p>
+                  </div>
+                  <input type="range" id="nbr_of_rounds" name="nbr_of_rounds" min="1" max="10" step="1" value="10"
+                  oninput="document.querySelector('#nbr_rounds_value').textContent = this.value">
                 </div>
               </div>
 
               <h3>Field</h3>
               <div class="settings-card">
                 <div class="setting-input">
-                  <label for="walls_factor">Walls Size :</label>
-                  <input type="range" id="walls_factor" name="walls_factor" min="0" max="2" step="0.1" value="0.7">
+                  <div style="display: flex; flex-direction: row; align-items : top;">
+                    <label for="walls_factor" style="flex: 1;">Walls Size :&nbsp;</label>
+                    <p id="walls_factor_value" style="color:deepskyblue; margin: 0; padding: 0;">0.7</p>
+                  </div>
+                  <input type="range" id="walls_factor" name="walls_factor" min="0" max="2" step="0.1" value="0.7"
+                  oninput="document.querySelector('#walls_factor_value').textContent = this.value">
                 </div>
 
                 <div class="setting-input">
-                  <label for="size_of_goals">Size of Goals :</label>
-                  <input type="range" id="size_of_goals" name="size_of_goals" min="15" max="30" step="1" value="20">
+                  <div style="display: flex; flex-direction: row; align-items : top;">
+                    <label for="size_of_goals" style="flex: 1;">Size of Goals :&nbsp;</label>
+                    <p id="size_goals_value" style="color:deepskyblue; margin: 0; padding: 0;">20</p>
+                  </div>
+                  <input type="range" id="size_of_goals" name="size_of_goals" min="15" max="30" step="1" value="20"
+                  oninput="document.querySelector('#size_goals_value').textContent = this.value">
                 </div>
               </div>
 
               <h3>Paddles</h3>
               <div class="settings-card">
                 <div class="setting-input">
-                  <label for="paddle_height">Paddle Height :</label>
-                  <input type="range" id="paddle_height" name="paddle_height" min="1" max="12" step="1" value="7">
+                  <div style="display: flex; flex-direction: row; align-items : top;">
+                    <label for="paddle_height" style="flex: 1;">Paddle Height :</label>
+                    <p id="paddle_height_value" style="color:deepskyblue; margin: 0; padding: 0;">7</p>
+                  </div>
+                  <input type="range" id="paddle_height" name="paddle_height" min="1" max="12" step="1" value="7"
+                  oninput="document.querySelector('#paddle_height_value').textContent = this.value">
                 </div>
 
                 <div class="setting-input">
-                  <label for="paddle_speed">Paddle Speed :</label>
-                  <input type="range" id="paddle_speed" name="paddle_speed" min="0.1" max="1" step="0.1" value="0.2">
+                  <div style="display: flex; flex-direction: row; align-items : top;">
+                    <label for="paddle_speed" style="flex: 1;">Paddle Speed :</label>
+                    <p id="paddle_speed_value" style="color:deepskyblue; margin: 0; padding: 0;">0.2</p>
+                  </div>
+                  <input type="range" id="paddle_speed" name="paddle_speed" min="0.1" max="1" step="0.1" value="0.2"
+                  oninput="document.querySelector('#paddle_speed_value').textContent = this.value">
                 </div>
               </div>
 
@@ -211,18 +240,21 @@ export default class CreateTournament extends AbstractView {
               <div class="settings-card">
 
                 <div class="setting-input" id="ball-radius-input">
-                  <label for="ball_radius">Ball Radius :</label>
-                  <input type="range" id="ball_radius" name="ball_radius" min="0.5" max="7" step="0.1" value="1">
+                  <div style="display: flex; flex-direction: row; align-items : top;">
+                    <label for="ball_radius" style="flex: 1;">Ball Radius :</label>
+                    <p id="ball_radius_value" style="color:deepskyblue; margin: 0; padding: 0;">1</p>
+                  </div>
+                  <input type="range" id="ball_radius" name="ball_radius" min="0.5" max="7" step="0.1" value="1"
+                  oninput="document.querySelector('#ball_radius_value').textContent = this.value">
                 </div>
 
                 <div class="setting-input" id="ball-speed-input">
-                  <label for="ball_speed">Ball Speed :</label>
-                  <input type="number" id="ball_speed" name="ball_speed" min="0.1" max="1.1" step="0.1" value="0.3">
-                </div>
-
-                <div class="setting-input" id="ball_color-input">
-                  <label for="ball_color">Ball Color :</label>
-                  <input type="color" id="ball_color" name="ball_color" value="#ff0000">
+                  <div style="display: flex; flex-direction: row; align-items : top;">
+                    <label for="ball_speed" style="flex: 1;">Ball Speed :</label>
+                    <p id="ball_speed_value" style="color:deepskyblue; margin: 0; padding: 0;">0.3</p>
+                  </div>
+                  <input type="range" id="ball_speed" name="ball_speed" min="0.1" max="2" step="0.1" value="0.3"
+                  oninput="document.querySelector('#ball_speed_value').textContent = this.value">
                 </div>
               </div>
 
@@ -234,7 +266,7 @@ export default class CreateTournament extends AbstractView {
                   <datalist id="models">
                     <option value="none">
                     <option value="banana">
-                    <option value="donut sucré au sucre">
+                    <option value="donut_sucré_au_sucre">
                   </datalist>
                 </div>
 
@@ -250,6 +282,11 @@ export default class CreateTournament extends AbstractView {
                     <option value="1.8kVenus.jpg">
                     <option value="redSpace.jpg">
                   </datalist>
+                </div>
+
+                <div class="setting-input" id="ball_color-input">
+                  <label for="ball_color">Ball Color :</label>
+                  <input type="color" id="ball_color" name="ball_color" value="#ff0000">
                 </div>
               </div>
 
@@ -302,6 +339,7 @@ export default class CreateTournament extends AbstractView {
         "playersData": [
         ]
       }
+
       await this.addPlayerDataToGameSettings(gameSettings, [], gameSettings.gamemodeData.nbrOfPlayers);
       console.log('Game settings from form:', gameSettings);
       return gameSettings;

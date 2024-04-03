@@ -113,6 +113,7 @@ class Ball {
         // this.lastScoredOn = -1;
         this.r = ballData.radius;
         this.startingSp = ballData.speed;
+		this.currStartingSP = ballData.speed;
         this.sp = ballData.speed;
         this.col = parseInt(ballData.color, 16);
         this.model = ballData.model;
