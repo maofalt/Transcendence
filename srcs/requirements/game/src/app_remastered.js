@@ -498,9 +498,11 @@ function postMatchResult(matchId, winnerId) {
 }
 
 app.post('/createMatch', (req, res) => {
-	const gameSettings = req.body;
+	const { tournament_id, match_id, ...gameSettings } = req.body;
+
+	console.log("\nbanana\n", req.body);
 	
-	let matchID = setupMatch(gameSettings, gameSettings.tournament_id, gameSettings.match_id, res);
+	let matchID = setupMatch(gameSettings, tournament_id, match_id, res);
 	if (!matchID)
 		return ;
 
@@ -512,6 +514,7 @@ app.post('/createMultipleMatches', (req, res) => {
 	const matchIDs = [];
 
 	console.log("\nCREATE MULTIPLE MATCHES\n");
+	console.log(allGameSettings);
 
 	for (settings of allGameSettings.matches) {
 		const { tournament_id, match_id, ...gameSettings } = settings;
@@ -528,7 +531,7 @@ app.post('/createMultipleMatches', (req, res) => {
 
 function setupMatch(gameSettings, tournament_id, match_id, res) {
 
-	const matchID = generateMatchID(gameSettings);
+	const matchID = match_id; //generateMatchID(gameSettings);
 	
 	if (matches.has(matchID)) {
 		console.log("Match already exists");
