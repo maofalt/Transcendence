@@ -10,7 +10,7 @@ export default class FriendsList extends AbstractComponent {
 	constructor(options = {}) {
 		super();
 
-		this.friendBlocks = [];
+		this.friends = [];
 
 		// const styleEl = document.createElement('style');
 		// styleEl.textContent = profilePageStyles;
@@ -26,10 +26,10 @@ export default class FriendsList extends AbstractComponent {
 		listContainer.style.setProperty("scrollbar-color", "rgba(255, 255, 255, 0.1) rgba(255, 255, 255, 0.1)");
 		listContainer.style.setProperty("scrollbar-width", "thin");
 
-		this.fillList(listContainer);
+		this.fillList(listContainer, options.profileClick);
 	}
 
-	fillList = async (listContainer) => {
+	fillList = async (listContainer, profileClick) => {
 		const friends = await easyFetch(`/api/user_management/auth/friends`)
 		.then(res => {
 			let response = res.response;
@@ -54,9 +54,10 @@ export default class FriendsList extends AbstractComponent {
 		console.log("friends:", friends);
 
 		for (const friend of friends) {
+			friend.avatar = '/api/user_management' + friend.avatar;
 			let friendBlock = new FriendBlock(
 				{
-					avatar: '/api/user_management' + friend.avatar,
+					avatar: friend.avatar,
 					userName: friend.username,
 					status: friend.is_online ? "online" : "offline",
 				});
@@ -66,11 +67,12 @@ export default class FriendsList extends AbstractComponent {
 			// container.style.setProperty("transition", "background-color 0.1s ease-in-out");
 			friendBlock.onmouseover = () => container.style.setProperty("background-color", "rgba(0, 0, 0, 0.3)");
 			friendBlock.onmouseout = () => container.style.setProperty("background-color", "rgba(0, 0, 0, 0)");
+			friendBlock.onclick = () => profileClick(friend);
 			image.onmouseover = () => image.src = deleteIcon;
-			image.onmouseout = () => image.src = '/api/user_management' + friend.avatar;
+			image.onmouseout = () => image.src = friend.avatar;
 			image.onclick = () => this.removeFriend(friend.username);
 			listContainer.appendChild(friendBlock);
-			this.friendBlocks.push(friendBlock);
+			this.friends.push([friendBlock, friend]);
 		}
 		this.shadowRoot.appendChild(listContainer);
 	}

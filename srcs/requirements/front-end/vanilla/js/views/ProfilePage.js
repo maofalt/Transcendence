@@ -76,6 +76,26 @@ export default class ProfilePage extends AbstractComponent {
 		profile.shadowRoot.appendChild(deleteButton);
 
 
+		/* FRIEND PROFILE PANNEL */
+		this.friendElemsToBeFilled = {};
+		const friendProfile = new Pannel({dark: false, title: "Profile"});
+		friendProfile.shadowRoot.querySelector("#pannel-title").style.setProperty("padding", "0px 0px 0px 30px");
+		friendProfile.style.setProperty("display", "none");
+		this.friendElemsToBeFilled.friendProfile = friendProfile;
+		
+		// create the user info section with the avatar
+		const friendUserInfo = new UserInfo({});
+		this.friendElemsToBeFilled.friendUserInfo = friendUserInfo;
+		
+		// create the two pannels with history and stats
+		const friendGameStats = this.createGameStatsPannel(this.friendElemsToBeFilled);
+		const friendMatchHistory = this.createMatchHistoryPannel(this.friendElemsToBeFilled);
+
+		friendProfile.shadowRoot.appendChild(friendUserInfo);
+		friendProfile.shadowRoot.appendChild(friendGameStats);
+		friendProfile.shadowRoot.appendChild(friendMatchHistory);
+
+
 		/* FRIENDS SECTION */
 		const friendPannel = new Pannel({dark: false, title: "Friends"});
 
@@ -98,11 +118,18 @@ export default class ProfilePage extends AbstractComponent {
 		elemsToBeFilled.pannelTitle = friendsListPannel.shadowRoot.querySelector("#pannel-title"); // add to elemsToBeFilled to fill in fetch function
 
 		// create the friends list
-		const friendsList = new FriendsList();
-		friendsList.friendBlocks.forEach(friend => {
-			friend.style.cursor = "pointer";
-			friend.onclick = () => this.showFriendProfile(friendElemsToBeFilled);
-		});
+		const friendsList = new FriendsList({ profileClick: this.showFriendProfile });
+		// console.log("\nWHAA\n", friendsList);
+		// console.log("\nWHAA\n", friendsList.friends);
+
+		// friendsList.friends.forEach(boop => {
+		// 	console.log("boop", boop)
+		// });
+		// friendsList.friends.forEach(([block, data]) => {
+		// 	console.log("bwh", data);
+		// 	block.style.cursor = "pointer";
+		// 	block.onclick = () => this.showFriendProfile(data);
+		// });
 
 		friendsListPannel.shadowRoot.appendChild(friendsList);
 		friendPannel.shadowRoot.appendChild(addFriend);
@@ -128,25 +155,7 @@ export default class ProfilePage extends AbstractComponent {
 
 		areYouSure.shadowRoot.appendChild(confirmDeleteButton);
 		areYouSure.shadowRoot.appendChild(cancelDeleteButton);
-
-
-		/* FRIEND PROFILE PANNEL */
-		const friendElemsToBeFilled = {};
-		const friendProfile = new Pannel({dark: false, title: "Profile"});
-		friendProfile.shadowRoot.querySelector("#pannel-title").style.setProperty("padding", "0px 0px 0px 30px");
-		friendProfile.style.setProperty("display", "block");
-		
-		// create the user info section with the avatar
-		const friendUserInfo = new UserInfo({});
-		
-		// create the two pannels with history and stats
-		const friendGameStats = this.createGameStatsPannel(friendElemsToBeFilled);
-		const friendMatchHistory = this.createMatchHistoryPannel(friendElemsToBeFilled);
-
-		friendProfile.shadowRoot.appendChild(friendUserInfo);
-		friendProfile.shadowRoot.appendChild(friendGameStats);
-		friendProfile.shadowRoot.appendChild(friendMatchHistory);
-
+	
 
 		/* OTHER CONSTRUCTION */
 		// create go back button
@@ -165,8 +174,9 @@ export default class ProfilePage extends AbstractComponent {
 		this.fillMatchHistory(elemsToBeFilled.matchRows);
 	}
 
-	showFriendProfile = async (friendElemsToBeFilled) => {
-		
+	showFriendProfile = async (friendData) => {
+		this.friendElemsToBeFilled.friendProfile.style.setProperty("display", "block");
+		this.friendElemsToBeFilled.friendUserInfo.fetchAndFillElems(friendData);
 	}
 
 	fillUserValues = async (elemsToBeFilled) => {

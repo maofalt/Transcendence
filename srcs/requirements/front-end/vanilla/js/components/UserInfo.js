@@ -53,7 +53,6 @@ export default class UserInfo extends AbstractComponent {
 		
 		const userText = this.createUserText();
 
-		
 		this.imgBox.appendChild(this.editOverlay);
 		this.imgBox.appendChild(profilePicture);
 		avatarContainer.shadowRoot.appendChild(this.imgBox);
@@ -80,20 +79,21 @@ export default class UserInfo extends AbstractComponent {
 	}
 
 	fetchAndFillElems = async (details) => {
+		// console.log("DETAILS: ", details);
 		if (!details) {
 			details = JSON.parse(sessionStorage.getItem("userDetails"));
-			console.log("DETAILS:", details);
+			// console.log("DETAILS:", details);
 			if (!details)
 				details = await fetchUserDetails();
 		}
 		if (!details)
 			return ;
-		this.elemsToBeFilled.avatar = details.avatar;
+		this.elemsToBeFilled.avatar.src = details.avatar;
 		this.elemsToBeFilled.username.textContent = details.username;
-		this.elemsToBeFilled.statusIndicator.textContent = details.status;
+		this.elemsToBeFilled.statusIndicator.textContent = details.is_online ? "online" : "offline";
 		this.elemsToBeFilled.winsLosses.textContent = `${details.wins ? details.wins: "-"} W / ${details.losses ? details.losses: "-"} L`
-		this.elemsToBeFilled.status.style.color = details.status == "online" ? "green" : "red";
-		this.elemsToBeFilled.statusCircle.style.backgroundColor = details.status == "online" ? "green" : "red";
+		this.elemsToBeFilled.status.style.color = details.is_online ? "green" : "red";
+		this.elemsToBeFilled.statusCircle.style.backgroundColor = details.is_online ? "green" : "red";
 	}
 
 	createProfilePicture(avatar) {
