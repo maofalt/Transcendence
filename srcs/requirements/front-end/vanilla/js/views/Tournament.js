@@ -5,6 +5,7 @@ import TournamentTable from "@components/TournamentTable";
 import ActionButton from "@components/ActionButton";
 import NormalButton from '@components/NormalButton';
 import HostAvatar from '@components/HostAvatar';
+import NumberOfPlayers from '@components/NumberOfPlayers';
 import { makeApiRequest } from '@utils/makeApiRequest.js';
 import { navigateTo } from '@utils/Router.js';
 
@@ -71,15 +72,17 @@ export default class Tournament extends AbstractView {
 				const hostAvatarElement = document.createElement('host-avatar');
 				hostAvatarElement.setAttribute('name', hostName);
 				//APi call to recover host picture
-				
+
 				const hostElement = tournamentTable.createStyledHTMLObject('div', hostAvatarElement, Styles.host);
 				//const hostElement = tournamentTable.createStyledHTMLObject('div', `${hostName}`, Styles.host);
 			
 			//TOURNAMENT PLAYERS OER TOURNAMENT AND PLACE AVAILABLE	
 				const numberOfPlayersElement = tournamentTable.createStyledHTMLObject('div', `${tournament.joined}/${tournament.nbr_of_player_total}`, Styles.nbrOfPlayersTournament);
 			
-			// TOURNAMENT PLAYER  PER MATCH!!	
-				const numberOfPlayerPerMatch = tournamentTable.createStyledHTMLObject('div', `${tournament.nbr_of_player_match}`, Styles.nbrOfPlayersMatch);
+			// TOURNAMENT PLAYER  PER MATCH!!
+				const componentNbrOfPlayers = document.createElement('number-of-players');
+				componentNbrOfPlayers.setAttribute('nbrOfPlayers', tournament.nbr_of_player_match);	
+				const numberOfPlayerPerMatch = tournamentTable.createStyledHTMLObject('div', componentNbrOfPlayers, Styles.nbrOfPlayersMatch);
 			
 			//TOURNAMENT STATUS	
 				const tournamentStatus = tournamentTable.createStyledHTMLObject('div', `${tournament.state}`, Styles.state);
