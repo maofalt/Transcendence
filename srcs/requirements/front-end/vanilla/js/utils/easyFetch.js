@@ -39,12 +39,6 @@ export default async function easyFetch(url, options = { method: 'GET', body: nu
 			throw new Error('No response received');
 		}
 
-		if (response && response.status === 401) {
-			// Redirect to the login page
-			// window.location.href = '/login';
-			return Promise.reject('Unauthorized');
-		}
-
 		if (response.headers.get("content-length") === "0") {
 			return {
 				response,
@@ -69,10 +63,7 @@ export default async function easyFetch(url, options = { method: 'GET', body: nu
 
 	} catch (error) {
 		console.error('Request Failed:', error);
-		return {
-			response: null,
-			body: error.message || error
-		};
+		return Promise.reject('Request Failed');
 	}
 }
 

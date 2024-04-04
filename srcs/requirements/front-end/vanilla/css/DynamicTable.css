@@ -1,10 +1,31 @@
 /* DynamicTable.css - Comprehensive Styles */
+/* @font-face{
+    font-family: 'DS-Digital';
+    src: url('../js/assets/fonts/DS_Digital/DS-DIGI.TTF') format('truetype');
+} */
+
+/* @font-face{
+    font-family: 'DS-DigitalB';
+    src: url('../js/assets/fonts/DS_Digital/DS-DIGIB.TTF') format('truetype');
+} */
+
+@font-face {
+	font-family: 'Space Grotesk';
+	src: url('../js/assets/fonts/Space_Grotesk/static/SpaceGrotesk-Bold.ttf') format('truetype');
+}
+
+:host{
+    font-family: var(--main-font);
+
+}
+
 #table-title {
     color: var(--primary-text);
     font-size: 2.25rem;
     font-weight: 700;
     margin-bottom: 1rem;
 }
+
 
 tournament-table {
     display: block;
@@ -20,6 +41,7 @@ tournament-table {
 }
 
 .table thead th {
+    font-family: "Space Grotesk", sans-serif;
     border-bottom: 2px solid #dee2e6;
     color: rgba(255, 255, 255, 0.582);
     vertical-align:  middle;

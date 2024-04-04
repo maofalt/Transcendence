@@ -820,7 +820,7 @@ class TournamentMatchList(APIView):
                 'matches': []
             })
             serializer.is_valid()
-            return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
 
     def post(self, request, id):
