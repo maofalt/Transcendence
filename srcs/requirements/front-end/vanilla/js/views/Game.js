@@ -112,7 +112,7 @@ export default class Game extends AbstractComponent {
 		// Set up the game container
 		this.container = document.createElement('div');
 		this.container.id = 'gameContainer';
-		this.shaddowRoot.appendChild(this.container);
+		this.shadowRoot.appendChild(this.container);
 
 		// Create a new div
 		let countDown = document.createElement('div');
@@ -195,7 +195,7 @@ export default class Game extends AbstractComponent {
 		const protocol = 'wss';
 //		const query = window.location.search.replace('?', '');
 		const query = window.location.search.replace('?', '') || this.query;
-		// console.log("Query: ", query);
+		console.log("Query: ", query);
 		
 		let accessToken = sessionStorage.getItem('accessToken');
 		// console.log("Access Token: ", accessToken);
@@ -285,8 +285,8 @@ export default class Game extends AbstractComponent {
 		window.removeEventListener("keyup", this.handleKeyRelease.bind(this));
 
 		if (this.socket) {
-			console.log("FROM CLIENT : DELETE MATCH");
-			this.socket.emit("delete-match", matchID);
+			// console.log("FROM CLIENT : DELETE MATCH");
+			// this.socket.emit("delete-match", matchID);
 			this.socket.disconnect();
 		}
 
@@ -457,7 +457,7 @@ export default class Game extends AbstractComponent {
 
 	// Other methods (generateScene, updateScene, etc.) here
 	updateScene(data, socket) {
-		this.displayTimer(data);
+		// this.displayTimer(data);
 
 		// console.log("Updating Scene...");
 		if (data.ball.model) {

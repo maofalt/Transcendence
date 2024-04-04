@@ -80,11 +80,17 @@ export default class CreateTournament extends AbstractView {
 		// }
 		// this.game = null;
 		this.game = new Game(matchID, width, height);
-		document.getElementById('gameContainer').replaceChildren(this.game);
+		let gameContainer = document.getElementById('gameContainer')
+		if (gameContainer) {
+			console.log("GAME CONTAINER", gameContainer);
+			gameContainer.replaceChildren(this.game);
+		} else {
+			console.log("GAME CONTAINER NOT FOUND", gameContainer);
+		}
 		// }
 		// await this.game.init(); // Make sure this can be safely called multiple times or after updating settings
-		document.getElementById('gameContainer').removeChild(document.getElementById('leave-button'));
-		document.getElementById('count-down').style.display = "none";
+		// document.getElementById('gameContainer').removeChild(document.getElementById('leave-button'));
+		// document.getElementById('count-down').style.display = "none";
 		console.log('Game initialized');
 	}
 
@@ -113,43 +119,53 @@ export default class CreateTournament extends AbstractView {
 		return htmlElement.innerHTML;
 	}
 
+	async generateMatchID(gameSettings) {
+		const encoder = new TextEncoder();
+		const data = encoder.encode(JSON.stringify(gameSettings));
+		const buffer = await crypto.subtle.digest('SHA-256', data);
+		const hashArray = Array.from(new Uint8Array(buffer));
+		const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+		return hashHex;
+	}
+
 	async getGameSettingsFromForm() {
 		
 		try {
-				let gameSettings = {
-			"gamemodeData": {
-			"nbrOfPlayers": parseInt(document.getElementById('nbr_of_players_per_match').value),
-			"nbrOfRounds": parseInt(document.getElementById('nbr_of_rounds').value),
-			"timeLimit": 5,
-			"gameType": 0
-			},
-			"fieldData": {
-			"wallsFactor": parseFloat(document.getElementById('walls_factor').value),
-			"sizeOfGoals": parseInt(document.getElementById('size_of_goals').value)
-			},
-			"paddlesData": {
-			"width": 1,
-			"height": parseInt(document.getElementById('paddle_height').value),
-			"speed": parseFloat(document.getElementById('paddle_speed').value)
-			},
-			"ballData": {
-			"speed": parseFloat(document.getElementById('ball_speed').value),
-			"radius": parseFloat(document.getElementById('ball_radius').value),
-			"color": document.getElementById('ball_color').value,
-			"model": document.getElementById('ball-model').value,
-			"texture": document.getElementById('ball-texture').value
-			},
-			"playersData": [
-			]
-		}
-
-		await this.addPlayerDataToGameSettings(gameSettings, [], gameSettings.gamemodeData.nbrOfPlayers);
-		console.log('Game settings from form:', gameSettings);
-		return gameSettings;
-			} catch (error) {
-		console.log('ball color from form:', document.getElementById('ball_color').value);
-				console.error('Failed to join tournament:', error);
+			let gameSettings = {
+				// "tournament_id": 0,
+				// "match_id": 0,
+				"gamemodeData": {
+					"nbrOfPlayers": parseInt(document.getElementById('nbr_of_players_per_match').value),
+					"nbrOfRounds": parseInt(document.getElementById('nbr_of_rounds').value),
+					"timeLimit": 5,
+					"gameType": 0
+				},
+				"fieldData": {
+					"wallsFactor": parseFloat(document.getElementById('walls_factor').value),
+					"sizeOfGoals": parseInt(document.getElementById('size_of_goals').value)
+				},
+				"paddlesData": {
+					"width": 1,
+					"height": parseInt(document.getElementById('paddle_height').value),
+					"speed": parseFloat(document.getElementById('paddle_speed').value)
+				},
+				"ballData": {
+					"speed": parseFloat(document.getElementById('ball_speed').value),
+					"radius": parseFloat(document.getElementById('ball_radius').value),
+					"color": document.getElementById('ball_color').value,
+					"model": document.getElementById('ball-model').value,
+					"texture": document.getElementById('ball-texture').value
+				},
+				"playersData": []
 			}
+			await this.addPlayerDataToGameSettings(gameSettings, [], gameSettings.gamemodeData.nbrOfPlayers);
+			console.log('Game settings from form:', gameSettings);
+			// gameSettings.match_id = await this.generateMatchID(gameSettings);
+			return gameSettings;
+		} catch (error) {
+			console.log('ball color from form:', document.getElementById('ball_color').value);
+			console.error('Failed to join tournament:', error);
+		}
 		
 	}
 
@@ -187,6 +203,8 @@ export default class CreateTournament extends AbstractView {
 
 	async getBasicGameSettings() {
 		let gameSettings = {
+			// "tournament_id": 0,
+			// "match_id": 0,
 			"gamemodeData": {
 				"nbrOfPlayers": 3,
 				"nbrOfRounds": 10,
@@ -212,6 +230,7 @@ export default class CreateTournament extends AbstractView {
 		};
 		try {
 			await this.addPlayerDataToGameSettings(gameSettings);
+			// gameSettings.match_id = await this.generateMatchID(gameSettings);
 			return gameSettings;
 		} catch (error) {
 			console.error('Failed to get user:', error);
