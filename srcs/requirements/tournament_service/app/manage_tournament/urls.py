@@ -73,7 +73,7 @@ urlpatterns = [
     # Get aLL registration types
     # path('registration-types/', views.RegistrationTypeList.as_view(), name='resgistration-type-list'),
     
-    path('<int:tournament_id>/matches/', views.TournamentMatchList.as_view(), name='tournament-match-list'),
+    path('<int:id>/matches/', views.TournamentMatchList.as_view(), name='tournament-match-list'),
     # path('<int:tournament_id>/match-settings/', views.MatchSettingList.as_view(), name='match-setting-list'),
     # path('<int:tournament_id>/game-types/', views.GameTypeList.as_view(), name='game-type-list'),
     # path('<int:tournament_id>/tournament-types/', views.TournamentTypeList.as_view(), name='tournament-type-list'),
