@@ -450,10 +450,17 @@ function verifyMatchSettings(settings) {
 	console.log("MATCH SETTINGS VERIFICATION :");
 	console.log(settings);
 
+	const expectedCategories = ['gamemodeData', 'fieldData', 'paddlesData', 'ballData'];
+    for (const category of expectedCategories) {
+        if (!settings.hasOwnProperty(category)) {
+            return `Settings is missing ${category}`;
+        }
+    }
+
 	const checks = {
 		gamemodeData: {
 			nbrOfPlayers: value => (value >= 1 && value <= 8) ? null : "Nbr of players should be between 2 and 8",
-			// nbrOfRounds: value => (value >= 1 && value <= 10) ? null : "Nbr of Rounds should be between 1 and 10",
+			nbrOfRounds: value => (value >= 1 && value <= 10) ? null : "Nbr of Rounds should be between 1 and 10",
 		},
 		fieldData: {
 			sizeOfGoals: value => (value >= 15 && value <= 30) ? null : "Size of goals should be between 15 and 30",
@@ -469,7 +476,11 @@ function verifyMatchSettings(settings) {
 	};
 
 	for (const category in checks) {
+		if (!settings.hasOwnProperty(category))
+			return `Game Settings are missing ${category} property`;
 		for (const setting in checks[category]) {
+			if (checks[category].hasOwnProperty(setting) && !settings[category].hasOwnProperty(setting))
+				return `Game Settings are missing ${setting} property in ${category} object`;
 			const check = checks[category][setting];
 			const value = settings[category][setting];
 			const error = check(value);
@@ -548,6 +559,8 @@ app.post('/createMultipleMatches', (req, res) => {
 
 function setupMatch(gameSettings, tournament_id, match_id, res) {
 
+	console.log("CREATING MATCH : ", gameSettings);
+	gameSettings.gamemodeData.nbrOfRounds = 1;
 	if (!match_id) {
 		console.log("Generating match ID");
 		match_id = generateMatchID();
