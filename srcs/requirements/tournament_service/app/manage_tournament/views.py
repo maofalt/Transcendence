@@ -1018,8 +1018,8 @@ def generate_round(request, id, round):
         }
         serialized_matches.append(match_data)
 
-    webhook_thread = Thread(target=send_webhook_request, args=(serialized_matches,))
-    webhook_thread.start()
+    # webhook_thread = Thread(target=send_webhook_request, args=(serialized_matches,))
+    # webhook_thread.start()
 
     # Update tournament, matches state
     tournament.state = "started"
