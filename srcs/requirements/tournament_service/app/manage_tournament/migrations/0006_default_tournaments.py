@@ -48,6 +48,11 @@ def create_tournament(apps, schema_editor):
 
         #add host player to the tournament
         tournament.players.add(host_player)
+        for i, player_username in enumerate(players):
+            if player_username != host_player.username:
+                player, _ = Player.objects.get_or_create(id=i+1, username=player_username, defaults={'total_played': 0})
+                tournament.players.add(player)
+                tournament.save()
         print(f'Tournament {tournament.tournament_name} created with host player {host_player.username}')
 
 class Migration(migrations.Migration):
