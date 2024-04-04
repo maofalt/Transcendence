@@ -159,39 +159,16 @@ export default class Brackets extends AbstractComponent {
         const urlParams = new URLSearchParams(window.location.search);
         const tournamentId = urlParams.get("tournament");
 
-        const createMatchesButton = document.createElement("button");
-        createMatchesButton.textContent = "Create Matches";
-        createMatchesButton.onclick = () => this.createMatches(tournamentId);
-
-        const getDetailsButton = document.createElement("button");
-        getDetailsButton.textContent = "Get Details";
-        getDetailsButton.onclick = () => this.getTournamentDetails(tournamentId);
+        this.getTournamentDetails(tournamentId);
 
         this.shadowRoot.append(createMatchesButton, getDetailsButton);
     }
 
-    createMatches = async (tournamentId) => {
-        try {
-            const res = await easyFetch(`/api/tournament/${tournamentId}/match-generator/`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ "tournament_id": tournamentId }),
-            });
-            if (res.response.ok) {
-                displayPopup("Matches were created", 'success');
-            } else {
-                throw new Error(res.body.error || JSON.stringify(res.body));
-            }
-        } catch (error) {
-            displayPopup(`Request Failed: ${error}`, 'error');
-        }
-    };
 
     getTournamentDetails = async (tournamentId) => {
         try {
             const res = await easyFetch(`/api/tournament/${tournamentId}/matches/`);
             if (res.response.ok) {
-                displayPopup("Tournament Details Fetched", 'success');
                 this.renderTournamentBracket(res.body);
             } else {
                 throw new Error(res.body.error || JSON.stringify(res.body));
