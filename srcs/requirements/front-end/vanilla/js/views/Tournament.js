@@ -67,14 +67,15 @@ export default class Tournament extends AbstractView {
 			tournaments.forEach(async (tournament) => {
 				const response = await makeApiRequest(`/api/tournament/${tournament.id}/participants/`, 'GET');
 				const participants = response.body;
-				if (userName in participants) {
+				console.log("PARTICIPANTS", participants);
+				if (participants.players_username.includes(userName)) {
 					tournament.is_in_tournament = true;
 				} else {
 					tournament.is_in_tournament = false;
 				}
 			// TOURNAMENT STYLES APPLIED
 				const tournamentNameElement = tournamentTable.createStyledHTMLObject('div', tournament.tournament_name, Styles.tournamentName);
-			
+
 			//TOURNAMENST HOST 
 				//trying tor ecover the name id and the picture
 				const hostName = tournament.host_name;

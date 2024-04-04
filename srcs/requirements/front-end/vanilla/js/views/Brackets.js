@@ -295,7 +295,7 @@ export default class Brackets extends AbstractComponent {
                 displayPopup("Tournament Details Fetched", 'success');
 				// adjustPseudoElementHeight();
                 this.renderTournamentBracket(res.body);
-				this.dispatchEvent(new Event('tournamentDetailsFetched')); // Dispatch the custom event
+				// this.dispatchEvent(new Event('tournamentDetailsFetched')); // Dispatch the custom event
             } else {
                 throw new Error(res.body.error || JSON.stringify(res.body));
             }

@@ -15,6 +15,7 @@ export default class CreateTournament extends AbstractView {
 		this.getBasicGameSettings = this.getBasicGameSettings.bind(this);
 		this.addPlayerDataToGameSettings = this.addPlayerDataToGameSettings.bind(this);
 		this.getGameSettingsFromForm = this.getGameSettingsFromForm.bind(this);
+		this.handleSubmit = this.handleSubmit.bind(this);
 		// this.game = new Game();
 		// document.getElementById('gameContainer').removeChild(this.game.shadowRoot.querySelector("#leave-button"));
 	}
@@ -28,7 +29,7 @@ export default class CreateTournament extends AbstractView {
 			let createButton = new CustomButton({content: "Create Tournament", action: true,
 				style: {position: 'absolute', bottom: '30px', right: '3.3%', padding: "0px 30px"}});
 			tempDiv.appendChild(createButton);
-			createButton.onclick = () => this.handleSubmit.bind(this);
+			createButton.onclick = (event) => this.handleSubmit(event);
 			createButton.id = 'submitTournament';
 
 			// leave button
@@ -256,9 +257,9 @@ export default class CreateTournament extends AbstractView {
 
 		console.log('Submitting tournament:', tournamentAndGameSettings);
 		try {
-		const response = await makeApiRequest('/api/tournament/create-and-list/', 'POST', tournamentAndGameSettings);
+			const response = await makeApiRequest('/api/tournament/create-and-list/', 'POST', tournamentAndGameSettings);
 		} catch (error) {
-		console.error('Failed to create tournament:', error);
+			console.error('Failed to create tournament:', error);
 		}
 	}
 }
