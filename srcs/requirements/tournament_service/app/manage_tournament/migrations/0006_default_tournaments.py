@@ -39,7 +39,7 @@ def create_tournament(apps, schema_editor):
         #create tournament
         tournament = Tournament.objects.create(
             tournament_name=f'TEST_{i+1}',
-            nbr_of_player_total=game_setting['nbr_of_player'],
+            nbr_of_player_total=random.randint(game_setting['nbr_of_player'], 100),
             nbr_of_player_match=game_setting['nbr_of_player'],
             setting=match_setting,
             registration_period_min=random.randint(5, 60),

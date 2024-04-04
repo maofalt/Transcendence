@@ -54,14 +54,15 @@ const server = http.createServer(app);
 
 // create socket
 const io = socketIo(server, {
-	cors: {
-		origin: ["*"], // "wss://game.localhost:9443"], // You can specify the client's URL here for production
-		methods: ["GET", "POST"]
-	}
+    cors: {
+        origin: ["*"], // "wss://game.localhost:9443"], // You can specify the client's URL here for production
+        methods: ["GET", "POST"]
+    }
 });
 
-const game = io.of('/game');
-const notify = io.of('/notify');
+// const io = io.of('/game');
+
+// const notificationConnection = io.of('/notification'); 
 
 // express cors properties
 app.use((req, res, next) => {
@@ -83,20 +84,20 @@ server.listen(expressPort, () => {
 
 function gameLoop(matchID) {
 	let match = matches.get(matchID);
-	let gameState = render.updateData(match.gameState);
+	let gameState = render.updateData(match.gameState); 
 	if (gameState == 1) {
-		game.to(matchID).emit('destroy', match.gameState);
-		game.to(matchID).emit('refresh', match.gameState);
+		io.to(matchID).emit('destroy', match.gameState);
+		io.to(matchID).emit('refresh', match.gameState);
 	} else if (gameState == -1) {
 		clearInterval(match.gameInterval); // stop the loop
 		// match.gameState.ball.dir = match.gameState.camera.pos.sub(match.gameState.ball.pos);
-		game.to(matchID).emit('end-game', match.gameState);
+		io.to(matchID).emit('end-game', match.gameState);
 		postMatchResult(match.gameState.jisus_matchID, match.gameState.winner.accountID); // send the result of the match back;
 		matches.delete(matchID); // then delete the match;
 		return ;
 	}
 	// else if (gameState == 0) {
-	game.to(matchID).emit('render', match.gameState);
+	io.to(matchID).emit('render', match.gameState);
 }
 
 function countDown(match, mins, secs) {
@@ -127,7 +128,7 @@ function waitingRoom(matchID) {
 	let match = matches.get(matchID);
 	if (!match) {
 		console.log("Match not found");
-		// client.emit('error', 'Match not found'); 
+		// client.emit('error', 'Match not found');
 		// client.disconnect();
 		return ;
 	}
@@ -164,8 +165,9 @@ function waitingRoom(matchID) {
 		}
 	}
 
+	// console.log("gameState: ", match.gameState);
 	let gameState = render.updateData(match.gameState);
-	game.to(matchID).emit('render', match.gameState);
+	io.to(matchID).emit('render', match.gameState);
 }
 
 // gameInterval = setInterval(waitingLoop, 20);
@@ -173,9 +175,9 @@ function waitingRoom(matchID) {
 //====================================== SOCKET HANDLING ======================================//
 
 // function setPlayerStatus(client) {
-//     if (game.engine.clientsCount <= data.gamemode.nbrOfPlayers) {
-//         data.players[game.engine.clientsCount - 1].socketID = client.id;
-//         data.players[game.engine.clientsCount - 1].connected = true;
+//     if (io.engine.clientsCount <= data.gamemode.nbrOfPlayers) {
+//         data.players[io.engine.clientsCount - 1].socketID = client.id;
+//         data.players[io.engine.clientsCount - 1].connected = true;
 //     }
 // }
 
@@ -184,24 +186,33 @@ function waitingRoom(matchID) {
 //     console.log("CLIENT CONNECTED");
 //     client.join("gameRoom");
     
-//     if (game.engine.clientsCount == 1) {
+//     if (io.engine.clientsCount == 1) {
 //         data = init.initLobby(lobbySettings.lobbyData);
 //     }
 //     setPlayerStatus(client);
 
 
 //     console.log(`Client connected with ID: ${client.id}`);
-//     console.log(`Number of connected clients: ${game.engine.clientsCount}`);
+//     console.log(`Number of connected clients: ${io.engine.clientsCount}`);
 
 //     client.emit('generate', data);
 //     debugDisp.displayData(data);
 // }
 
-function handleConnectionV2(client) {
+function handleConnectionV2(client, query) {
 
-	console.log("\nCLIENT CONNECTED\n");
+    console.log("\nCLIENT CONNECTED\n");
+	client.matchID = query.replace("matchID=", "");
 
-	let match = client.match;
+	if (!client.matchID) {
+		console.error('Authentication error: Missing matchID');
+		throw new Error('Authentication error: Missing matchID.');
+	}
+
+    let match = matches.get(client.matchID);
+	if (!match) {
+		throw new Error('Match not found');
+	}
 
 	// - check if player is part of this match;
 	console.log("client.playerID: ", client.playerID);
@@ -225,7 +236,7 @@ function handleConnectionV2(client) {
     client.join(client.matchID);
     // console.log('match: ', util.inspect(match, {depth: null}));
     // client.emit('generate', JSON.stringify(match));
-	console.log('---DATA---\n', match.gameState, '\n---END---\n');
+	// console.log('---DATA---\n', match.gameState, '\n---END---\n');
     client.emit('generate', match.gameState);
     
     if (match.gameState.connectedPlayers == 1 && match.gameState.ongoing == false) {
@@ -241,202 +252,190 @@ function handleConnectionV2(client) {
     return (match);
 }
 
-function getMatch(client) {
-	client.matchID = client.handshake.query.matchID;
-	if (!client.matchID) {
-		console.error('Authentication error: Missing matchID');
-		throw new Error('Authentication error: Missing matchID.');
-	}
-	client.match = matches.get(client.matchID);
-	if (!client.match) {
-		throw new Error('Match not found');
-	}
-}
-
-function verifyAuthentication(client) {
-	return new Promise((resolve, reject) => {
+// authenticate user before establishing websocket connection
+io.use((client, next) => {
+	try {
+		//console.log("\nclient.handshake.query:\n", client.handshake);
+		// client.matchID = client.handshake.query.matchID;
+		// if (!client.matchID) {
+		// 	console.error('Authentication error: Missing matchID');
+		// 	next(new Error('Authentication error: Missing matchID.'));
+		// }
 		if (client.handshake.headers && client.handshake.auth) {
+			// Parse the auth from the handshake
 			const token = client.handshake.auth.accessToken;
+			console.log("\ntoken:\n", token);
+	
+			// Verify the token
 			jwt.verify(token, SECRET_KEY, function(err, decoded) {
+			// jwt.verify(token, SECRET_KEY, function(err, decoded) {
 				if (err) {
-					console.error('Authentication error: Could not verify token.', err);
-					reject(new Error('Authentication error: Could not verify token.'));
-				} else {
-					client.decoded = decoded;
-					client.playerID = decoded.username;
-					resolve(); // Successfully verified
+					console.error('HEHE Authentication error: Could not verify token.', err);
+					return next(new Error('WAWA Authentication error: Could not verify token.'));
 				}
+				client.decoded = decoded;
+				// get the playerID from the decoded token
+				client.playerID = decoded.username;
+				console.log("NIQUE TA MERDE DECODED!!!",decoded);
+				console.log("\nclient.playerID:\n", client.playerID);
+				// console.log("\ndecoded:\n", decoded);
+				next();
 			});
 		} else {
 			console.error('Authentication error: No token provided.');
-			reject(new Error('Authentication error: No token provided.'));
+			next(new Error('Authentication error: No token provided.'));
 		}
-	});
-}
-
-
-notify.use((client, next) => {
-	try {
-		verifyAuthentication(client).then(() => {
-			next();
-		}).catch(error => {
-			console.error('Error authenticating websocket: ', error);
-			next(error);
-		});
 	} catch (error) {
 		console.error('Error connecting websocket: ', error);
-		next(error);
-	}
-});
-
-notify.on('connection', (client) => {
-	clients.set(client.playerID, client);
-	// console.log("CLIENTS MAP:\n", clients);
-});
-
-// authenticate user before establishing websocket connection
-game.use((client, next) => {
-	try {
-		getMatch(client); // get the matchID and match from the client handshake
-
-		// verify the token and set the playerID
-		verifyAuthentication(client).then(() => {
-			next(); // proceed to game connection if authentication is successful
-		}).catch(error => {
-			console.error('Error authenticating websocket: ', error);
-			next(error); // disconnect the client if there's an error
-		});
-	} catch (error) {
-		console.error('Error connecting websocket: ', error);
-		next(error); // disconnect the client if there's an error
+		next(new Error('BLABLA Authentication error: ' + error));
 	}
 });
 
 // Set up Socket.IO event handlers
-game.on('connection', (client) => {
+io.on('connection', (client) => {
+	console.log("CLIENT CONNECTED");
+	clients.set(client.playerID, client);
 	try {
 		//handle client connection and match init + players status
-		console.log("\nclient:\n", client.decoded);
-		let match = handleConnectionV2(client);
-		let data = match.gameState;
-		
-		// player controls
-		client.on('moveUp', () => {
-			console.log(`client ${client.id} moving up`);
-			let player = data.players[client.playerID];
-			if (player && player.paddle && !player.paddle.dashSp) {
-				player.paddle.currSp = player.paddle.sp;
-			}
-		});
-		
-		client.on('moveDown', () => {
-			console.log(`client ${client.id} moving down`);
-			let player = data.players[client.playerID];
-			if (player && player.paddle && !player.paddle.dashSp) {
-				player.paddle.currSp = -player.paddle.sp;
-			}
-		});
-		
-		client.on('dash', () => {
-			console.log(`client ${client.id} dashing`);
-			let player = data.players[client.playerID];
-			if (player && player.paddle && !player.paddle.dashSp) {
-				if (player.paddle.currSp == 0) {
-					// do something for this err case
-					return ;
-				}
-				player.paddle.dashSp = player.paddle.currSp > 0 ? player.paddle.w * 1.5 : player.paddle.w * -1.5;
-				// player.paddle.dashSp = player.paddle.w * 1.5 * (player.paddle.currSp > 0);
-			}
-		});
-		
-		client.on('stop', () => {
-			console.log(`client ${client.id} stopping`);
-			let player = data.players[client.playerID];
-			if (player && player.paddle && !player.paddle.dashing) {
-				player.paddle.currSp = 0;
-			}
-		});
+		client.on('connect-game', (query) => {
 
-		client.on('delete-match', (matchID) => {
-			console.log("FROM BACKEND : DELETE MATCH",client.matchID);
-			// Print the keys in the matches map
-			console.log("Keys in matches map:", Array.from(matches.keys()))
-			if (matches.has(client.matchID)) {
-				console.log("INSIDE MATCH HAS MATCHID");
-				if (matches.get(client.matchID).gameState.gameInterval)
-					clearInterval(this.matches.get(client.matchID).gameState.gameInterval);
-				console.log("DELETING MATCH");
-				matches.delete(client.matchID);
-			} else if (matches.has(matchID)) {
-				console.log("INSIDE MATCH HAS MATCHID");
-				if (matches.get(matchID).gameState.gameInterval)
-					clearInterval(this.matches.get(matchID).gameState.gameInterval);
-				console.log("DELETING MATCH");
-				matches.delete(matchID);
+			// console.log("\nclient:\n", client.decoded);
+			let match;
+			let data;
+			try {
+				console.log("QUERY : ", query);
+				match = handleConnectionV2(client, query);
+				data = match.gameState;
+			} catch (error) {
+				console.error('Error connecting websocket: ', error);
+				client.emit('error', error.message);
 			}
-		});
-		
-		// disconnect event
-		client.on('disconnect', () => {
-			client.leave("gameRoom");
-			data.connectedPlayers--;
-			let player = data.players[client.playerID];
-			if (player)
-				player.connected = false;
-			if (data.connectedPlayers < 1) {
-				console.log("CLEARING INTERVAL");
-				clearInterval(match.gameInterval);
-				if (data.ongoing) {
-					data.winner = player;
-					if (data.jisus_matchID) {
-						postMatchResult(match.gameState.jisus_matchID, match.gameState.winner.accountID);
+
+			// player controls
+			client.on('moveUp', () => {
+				console.log(`client ${client.id} moving up`);
+				let player = data.players[client.playerID];
+				if (player && player.paddle && !player.paddle.dashSp) {
+					player.paddle.currSp = player.paddle.sp;
+				}
+			});
+
+			client.on('moveDown', () => {
+				console.log(`client ${client.id} moving down`);
+				let player = data.players[client.playerID];
+				if (player && player.paddle && !player.paddle.dashSp) {
+					player.paddle.currSp = -player.paddle.sp;
+				}
+			});
+			
+			client.on('dash', () => {
+				console.log(`client ${client.id} dashing`);
+				let player = data.players[client.playerID];
+				if (player && player.paddle && !player.paddle.dashSp) {
+					if (player.paddle.currSp == 0) {
+						// do something for this err case
+						return ;
 					}
-					matches.delete(client.matchID);
+					player.paddle.dashSp = player.paddle.currSp > 0 ? player.paddle.w * 1.5 : player.paddle.w * -1.5;
+					// player.paddle.dashSp = player.paddle.w * 1.5 * (player.paddle.currSp > 0);
 				}
-				console.log("SENDING CLEAN MSG");
-				client.emit("clean-all");
-				delete data;
-			}
-			// console.log(`Client disconnected with ID: ${client.id} (num clients: ${game.engine.clientsCount})`);
+			});
+			
+			client.on('stop', () => {
+				console.log(`client ${client.id} stopping`);
+				let player = data.players[client.playerID];
+				if (player && player.paddle && !player.paddle.dashing) {
+					player.paddle.currSp = 0;
+				}
+			});
+
+			client.on('delete-match', (matchID) => {
+				console.log("FROM BACKEND : DELETE MATCH",client.matchID);
+				// Print the keys in the matches map
+				// console.log("Keys in matches map:", Array.from(matches.keys()))
+				if (matches.has(client.matchID)) {
+					console.log("INSIDE MATCH HAS MATCHID");
+					if (matches.get(client.matchID).gameState.gameInterval)
+						clearInterval(this.matches.get(client.matchID).gameState.gameInterval);
+					console.log("DELETING MATCH");
+					matches.delete(client.matchID);
+				} else if (matches.has(matchID)) {
+					console.log("INSIDE MATCH HAS MATCHID");
+					if (matches.get(matchID).gameState.gameInterval)
+						clearInterval(this.matches.get(matchID).gameState.gameInterval);
+					console.log("DELETING MATCH");
+					matches.delete(matchID);
+				}
+			});
+			
+			// disconnect event
+			client.on('disconnect-game', () => {
+				client.leave("gameRoom");
+				if (data) {
+					data.connectedPlayers--;
+					let player = data.players[client.playerID];
+					if (player)
+						player.connected = false;
+					if (data.connectedPlayers < 1) {
+						console.log("CLEARING INTERVAL");
+						// jfdkfjh
+						clearInterval(match.gameInterval);
+						if (data.ongoing) {
+							data.winner = player;
+							if (data.jisus_matchID) {
+								postMatchResult(match.gameState.jisus_matchID, match.gameState.winner.accountID);
+							}
+							matches.delete(client.matchID);
+						}
+						console.log("SENDING CLEAN MSG");
+						// client.emit("clean-all");
+						delete data;
+					}
+				}
+				console.log(`Client disconnected with ID: ${client.id}`);
+			});
+
+			// setInterval(() => {
+			// 	const big = Buffer.alloc(1024 * 1024);
+			// 	client.emit('ping', [Date.now(), latency]);
+			// }, 1000);
+
+			// client.on('pong', timestamp => {
+			// 	latency = Date.now() - timestamp;
+
+				// process.stdout.clearLine(0);  // Clear current text
+				// process.stdout.cursorTo(0);   // Move cursor to beginning of line
+				// process.stdout.write(`${client.id} latency: ${latency}ms`); // Write new text
+				// console.log(`${client.id} latency: ${latency}ms`);
+			// });
 		});
-
-		// setInterval(() => {
-		// 	const big = Buffer.alloc(1024 * 1024);
-		// 	client.emit('ping', [Date.now(), latency]);
-		// }, 1000);
-
-		// client.on('pong', timestamp => {
-		// 	latency = Date.now() - timestamp;
-
-		// 	// process.stdout.clearLine(0);  // Clear current text
-		// 	// process.stdout.cursorTo(0);   // Move cursor to beginning of line
-		// 	// process.stdout.write(`${client.id} latency: ${latency}ms`); // Write new text
-		// 	// console.log(`${client.id} latency: ${latency}ms`);
-		// });
 
 	} catch (error) {
 		console.error('Error: ', error);
-		client.emit('error', error.message);
-		client.disconnect();
+		client.emit('error', JSON.parse(error));
+		// client.disconnect();
 	}
 });
 
 function generateMatchID(gameSettings) {
 	// Convert request content to a string representation
 	const string = JSON.stringify(gameSettings);
+
+	// console.log("MATCH SETTINGS STRING :", gameSettings);
+
+	// fkdj
 	// Use SHA-256 to hash the string
 	return crypto.createHash('sha256').update(string).digest('hex');
 }
 
 function verifyMatchSettings(settings) {
-	console.log("MATCH SETTINGS VERIFICATION :");
-	console.log(settings);
+	// console.log("MATCH SETTINGS VERIFICATION ");
+	// console.log(settings);
 
 	const checks = {
 		gamemodeData: {
-			nbrOfPlayers: value => (value >= 1 && value <= 8) ? null : "Nbr of players should be between 2 and 8",
-			// nbrOfRounds: value => (value >= 1 && value <= 10) ? null : "Nbr of Rounds should be between 1 and 10",
+			nbrOfPlayers: value => (value >= 2 && value <= 8) ? null : "Nbr of players should be between 2 and 8",
+			nbrOfRounds: value => (value >= 1 && value <= 10) ? null : "Nbr of Rounds should be between 1 and 10",
 		},
 		fieldData: {
 			sizeOfGoals: value => (value >= 15 && value <= 30) ? null : "Size of goals should be between 15 and 30",
@@ -444,7 +443,7 @@ function verifyMatchSettings(settings) {
 		},
 		paddlesData: {
 			width: value => (value === 1) ? null : "Paddles width should be 1",
-			height: value => (value >= 1 && value <= 12) ? null : "Paddles height should be between 1 and 10",
+			height: value => (value >= 1 && value <= 10) ? null : "Paddles height should be between 1 and 10",
 		},
 		ballData: {
 			radius: value => (value >= 0.5 && value <= 7) ? null : "Ball radius should be between 0.5 and 7",
@@ -470,7 +469,7 @@ function verifyMatchSettings(settings) {
 	// check if all players have different names, that they dont have an empty name
     let playerNames = settings.playersData.map(player => player.accountID);
     let uniquePlayerNames = [...new Set(playerNames)];
-	console.log("playerNames: ", playerNames, "uniquePlayerNames: ", uniquePlayerNames)
+
     if (playerNames.length !== uniquePlayerNames.length) {
         return "Multiple identical player IDs";
     }
@@ -486,7 +485,7 @@ function verifyMatchSettings(settings) {
 }
 
 function postMatchResult(matchId, winnerId) {
-	const url = `http://tournament:8001/matches/${matchId}/${winnerId}/`;
+	const url = `http://tournament/matches/${matchId}/${winnerId}/`;
 	
 	axios.post(url)
 		.then(response => {
@@ -496,6 +495,8 @@ function postMatchResult(matchId, winnerId) {
 			console.error('Error posting match result:', error);
 		});
 }
+
+
 
 app.post('/createMatch', (req, res) => {
 	const gameSettings = req.body;
@@ -513,7 +514,7 @@ app.post('/createMultipleMatches', (req, res) => {
 
 	console.log("\nCREATE MULTIPLE MATCHES\n");
 
-	for (settings of allGameSettings.matches) {
+	allGameSettings.matches.forEach(settings => {
 		const { tournament_id, match_id, ...gameSettings } = settings;
 
 		let matchID = setupMatch(gameSettings, tournament_id, match_id, res);
@@ -521,55 +522,45 @@ app.post('/createMultipleMatches', (req, res) => {
 			return ;
 
 		matchIDs.push(matchID);
-	}
+	});
 
 	res.json({ matchIDs });
 });
 
 function setupMatch(gameSettings, tournament_id, match_id, res) {
-
 	const matchID = generateMatchID(gameSettings);
-	
+				
 	if (matches.has(matchID)) {
 		console.log("Match already exists");
 		res.json({ matchID });
 		return null;
 	}
-	
+
 	let error = verifyMatchSettings(gameSettings);
 	if (error) {
-		console.log(error);
+		console.log("Error:", error);
 		res.status(400).json({ error });
 		return null;
 	}
-
-	// extract the players IDs from the players data
-	const players = gameSettings.playersData.map(player => player.accountID);
-
-	if (players.length == 1) {
-		postMatchResult(match_id, players[0]);
-		res.json({ matchID });
-		return null;
-	}
-
 	// Convert game settings to game state
 	const gameState = init.initLobby(gameSettings);
 	gameState.jisus_matchID = match_id;
 	
+	// console.log("\nMATCH CREATED\n");
 	matches.set(matchID, { gameState: gameState, gameInterval: 0 });
 
-	// Emit the new match notification to all players
+	const players = gameSettings.playersData.map(player => player.accountID);
 	console.log("\n\nPLAYERS :\n\n", players);
 	players.forEach(player => {
 		let client = clients.get(player);
 		if (client) {
-			console.log("EMITTING TO: ", player);
+			console.log("EMITTING TO: ", player); 
 			// console.log("EMITTED TO: ", client.playerID);
 			client.emit('new-match', matchID);
 		}
 	});
 
-	return matchID;
+	return matchID; 
 }
 
 // module.exports = { io };

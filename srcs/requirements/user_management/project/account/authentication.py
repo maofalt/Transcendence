@@ -1,6 +1,7 @@
 import jwt
 from django.contrib.auth import get_user_model
 from rest_framework import authentication, exceptions
+from rest_framework.exceptions import AuthenticationFailed
 import time
 import datetime
 from django.http import JsonResponse

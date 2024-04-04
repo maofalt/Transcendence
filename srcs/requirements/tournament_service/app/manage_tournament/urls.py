@@ -20,6 +20,7 @@ urlpatterns = [
 # JoinTournament:
     #   - POST /add_player/{tournament_id}/{player_id}/ - Add a player to a specific tournament.
     path('add-player/<int:tournament_id>/<int:player_id>/', views.JoinTournament.as_view(), name='add-player'),
+    path('unjoin/<int:tournament_id>/<str:username>/', views.UnjoinTournament.as_view(), name='unjoin-player'),
 
 # Tournament Participation:
     # GET /{id}/participants/ - Show the participants list for a tournament.
@@ -87,4 +88,5 @@ urlpatterns = [
 
 # Delete player data from Tournament DB
     path('delete/<str:username>/', views.DeletePlayer.as_view(), name='delete-player'),
+
 ]

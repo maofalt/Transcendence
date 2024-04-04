@@ -37,6 +37,7 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.permissions import AllowAny
 from rest_framework import serializers, generics, permissions, status, authentication, exceptions, viewsets
 from rest_framework.generics import ListAPIView
+# from rest_framework.exceptions import AuthenticationFailed
 from django.http import Http404
 
 # from django.utils.encoding import force_bytes, force_str
@@ -83,33 +84,29 @@ def home(request):
 
 @ensure_csrf_cookie
 @csrf_protect
+@authentication_classes([CustomJWTAuthentication])
+@api_view(['GET'])
+# @permission_classes([IsAuthenticated])
 def get_user(request):
-    refreshToken = request.COOKIES.get('refreshToken', None)
-    try:
-        decoded_refresh_token = jwt.decode(refreshToken, settings.SECRET_KEY, algorithms=["HS256"])
-        print("DECODED REFRESHTOKEN: ", decoded_refresh_token)
-        uid = decoded_refresh_token['user_id']
-        try:
-            user = User.objects.get(pk=uid)
-            avatar_data = None
-            if user.avatar:
-                with open(user.avatar.path, "rb") as image_file:
-                    avatar_data = base64.b64encode(image_file.read()).decode('utf-8')
-            user_data = {
-                'user_id': user.id,
-                'username': user.username,
-                'last_valid_time': user.last_valid_time,
-                'avatar': avatar_data,
-                'playername': user.playername
-            }
-            return JsonResponse(user_data)
-        except User.DoesNotExist:
-            return JsonResponse({'error': 'User not found'}, status=404)
 
-    except jwt.ExpiredSignatureError:
-        return JsonResponse({'error': 'Refresh token has expired'}, status=400)
-    except jwt.InvalidTokenError:
-        return JsonResponse({'error': 'Invalid refresh token'}, status=400)
+    user = request.user
+    print("User: ", user.username)
+    avatar_data = None
+    try:
+        if user.avatar:
+            with open(user.avatar.path, "rb") as image_file:
+                avatar_data = base64.b64encode(image_file.read()).decode('utf-8')
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+    user_data = {
+        'user_id': user.id,
+        'username': user.username,
+        'last_valid_time': user.last_valid_time,
+        'avatar': avatar_data,
+        'playername': user.playername
+    }
+    return JsonResponse(user_data)
 
 @ensure_csrf_cookie
 @csrf_protect
@@ -295,7 +292,7 @@ def send_one_time_code(request, email=None):
 
     print("\n\nCHECK CODE ON SESSION: ", request.session.get('one_time_code'))
     subject = 'Your Access Code for PONG'
-    message = f'Your one-time code is: {escape(one_time_code)}'
+    message = f'Pong! Your one-time code is: {escape(one_time_code)}'
     from_email = 'no-reply@student.42.fr' 
     to_email = email
     send_mail(subject, message, from_email, [to_email])
@@ -343,6 +340,7 @@ def get_serializer(user):
 @csrf_protect
 # @login_required
 # @require_POST
+@api_view(['POST'])
 @authentication_classes([CustomJWTAuthentication])
 @permission_classes([IsAuthenticated])
 def api_logout_view(request):
@@ -579,37 +577,32 @@ def friends_view(request):
 @csrf_protect
 @api_view(['GET'])
 @authentication_classes([CustomJWTAuthentication])
-@permission_classes([IsAuthenticated])
-# @authentication_classes([])
-# @permission_classes([AllowAny])
-def detail_view(request):
-    user = request.user
-    print("user: ", user)
-    if user:
-        # Serialize user data
+@permission_classes([AllowAny])
+def detail_view(request, username=None):
+    try:
+        if username:
+            user = get_object_or_404(User, username=username)
+        else:
+            user = request.user
+        print("user: ", user)
         data = {
             'username': user.username,
             'playername': user.playername,
-            'email': user.email,
+            # 'email': user.email,
             'avatar': user.avatar.url if user.avatar else None,
             'friends_count': user.friends.count(),
             'two_factor_method': user.two_factor_method,
-
         }
-        # return render(request, 'detail.html', {'data': data})
         return JsonResponse(data)
-    else:
+    except Http404:
         return JsonResponse({'error': 'User not found'}, status=404)
-    # else:
-    #     return JsonResponse({'error': 'User ID not found in token'}, status=401)
-    # else:
-    #     return JsonResponse({'error': 'Access token is missing'}, status=401)
-    # return render(request, 'detail.html', {'data': data})
+
 
 # @login_required
 @ensure_csrf_cookie
 @csrf_protect
 # @require_POST
+@api_view(['POST'])
 @authentication_classes([CustomJWTAuthentication])
 @permission_classes([IsAuthenticated])
 def add_friend(request, username):
@@ -624,6 +617,7 @@ def add_friend(request, username):
 @ensure_csrf_cookie
 @csrf_protect
 # @require_POST
+@api_view(['POST'])
 @authentication_classes([CustomJWTAuthentication])
 @permission_classes([IsAuthenticated])
 def remove_friend(request, username):
@@ -674,7 +668,6 @@ class ProfileUpdateView(APIView):
 
     def get(self, request):
         user_form = ProfileUpdateForm(instance=request.user)
-        print("user_form: \n", user_form)
         serialized_form = model_to_dict(user_form.instance, fields=['id', 'username', 'playername', 'avatar', 'email', 'phone', 'two_factor_method'])
         if 'avatar' in serialized_form:
             avatar_url = request.build_absolute_uri(user_form.instance.avatar.url)
@@ -871,6 +864,7 @@ def is_valid_phone_number(phone_number):
 @ensure_csrf_cookie
 @csrf_protect
 # @require_POST
+@api_view(['POST'])
 @authentication_classes([])
 @permission_classes([AllowAny])
 def send_sms_code(request, phone_number=None):
@@ -885,7 +879,7 @@ def send_sms_code(request, phone_number=None):
         request.session['one_time_code'] = one_time_code
 
         print("\n\nCHECK CODE ON SESSION: ", request.session.get('one_time_code'))
-        message = f'Pong! Your one-time code is: {one_time_code}'
+        message = f'Pong! Your one-time code is: {escape(one_time_code)}'
 
         subscription_arn = subscribe_user_to_sns_topic(phone_number)
         
@@ -931,6 +925,7 @@ def subscribe_user_to_sns_topic(phone_number):
 @ensure_csrf_cookie
 @csrf_protect
 # @require_POST
+@api_view(['POST'])
 @authentication_classes([CustomJWTAuthentication])
 @permission_classes([IsAuthenticated])
 def update_sandbox(request, phone_number=None):
@@ -1003,6 +998,7 @@ def is_phone_number_verified(phone_number):
 @ensure_csrf_cookie
 @csrf_protect
 # @require_POST
+@api_view(['POST'])
 @authentication_classes([CustomJWTAuthentication])
 @permission_classes([IsAuthenticated])
 def update_phone(request, phone_number=None):

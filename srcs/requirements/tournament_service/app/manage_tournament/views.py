@@ -5,6 +5,7 @@ from rest_framework import generics, permissions, status, authentication, except
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import AuthenticationFailed
 from .models import Tournament, TournamentMatch, MatchSetting, TournamentPlayer, Player, MatchParticipants
 from .serializers import TournamentSerializer, TournamentMatchSerializer, MatchSettingSerializer, SimplePlayerSerializer
 from .serializers import TournamentPlayerSerializer, GamemodeDataSerializer, FieldDataSerializer, PaddlesDataSerializer, BallDataSerializer, TournamentMatchRoundSerializer, TournamentMatchListSerializer
@@ -1008,7 +1009,7 @@ def generate_round(request, id, round):
             'fieldData': FieldDataSerializer(tournament.setting).data,
             'paddlesData': PaddlesDataSerializer(tournament.setting).data,
             'ballData': BallDataSerializer(tournament.setting).data,
-            'players': SimplePlayerSerializer(match.players.all(), many=True).data,
+            'playersData': SimplePlayerSerializer(match.players.all(), many=True).data,
         }
         serialized_matches.append(match_data)
 
@@ -1021,8 +1022,13 @@ def generate_round(request, id, round):
     for match in matches:
         match.state = "playing"
         match.save()
-    # return None
-    return Response(serialized_matches, status=status.HTTP_200_OK)
+
+    success, message = send_webhook_request(serialized_matches)
+    if success:
+        return Response(message, status=status.HTTP_200_OK)
+    else:
+        return Response({'error': message}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 def send_webhook_request(serialized_matches):
     game_backend_endpoint = 'http://game:3000/createMultipleMatches'
@@ -1032,9 +1038,10 @@ def send_webhook_request(serialized_matches):
 
     if response.status_code == 200:
         print("Webhook request successfully sent to the game backend.")
+        return True, "Webhook request successfully sent to the game backend."
     else:
         print("Failed to send webhook request to the game backend. Status code:", response.status_code)
-
+        return False, "Failed to send webhook request to the game backend. Status code: " + str(response.status_code)
 
 # @authentication_classes([CustomJWTAuthentication])
 def stream_notification(request, username, user_id, tournament_name, round_nbr):
@@ -1070,8 +1077,38 @@ class DeletePlayer(APIView):
             for match in matches:
                 match.players.remove(player)
                 match.players.add(player)
+                match.save()
 
             if tournament.host == player:
                 tournament.host = player
                 tournament.save()
         return JsonResponse({'message': f'Username for user {username} has been deleted in related tournaments.'})
+
+class UnjoinTournament(APIView):
+    authentication_classes = [CustomJWTAuthentication]
+
+    def post(self, request, tournament_id, username):
+        user_info = request.user
+        if not isinstance(user_info, tuple) or len(user_info) != 2:
+            raise exceptions.AuthenticationFailed('User information is not in the expected format')
+
+        uid, playername = user_info
+        if playername != username:
+            return JsonResponse({'message': "You are not authorized to unjoin the Tournament"}, status=status.HTTP_403_FORBIDDEN)
+        try:
+            player = get_object_or_404(Player, username=username)
+        except Http404:
+            return JsonResponse({'message': f'Player {username} not found.'}, status=status.HTTP_404_NOT_FOUND)
+        try:
+            tournament = get_object_or_404(Tournament, id=tournament_id)
+        except Http404:
+            return JsonResponse({'message': f'Tournament not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if tournament.state != 'waiting':
+            return JsonResponse({'message': 'Cannot unjoin this Tournament. The Tournament has been started or finished'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        if not tournament.players.filter(username=username).exists():
+            return JsonResponse({'message': f'Player {username} is not a participant of <{tournament.tournament_name}> Tournament'}, status=status.HTTP_404_NOT_FOUND)
+        tournament.players.remove(player)
+        tournament.save()
+        return JsonResponse({'message': f'Player {username} is not participating in the <{tournament.tournament_name}> Tournament anymore'})

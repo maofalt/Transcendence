@@ -151,8 +151,10 @@ export default class Game extends AbstractView {
 		leaveButton.onclick = () => {
 			this.cleanAll();
 
-			navigateTo("/");
+			window.history.back();
 		}
+
+		leaveButton.id = "leave-button";
 
 		this.container.appendChild(countDown);
 		this.container.appendChild(leaveButton);
@@ -196,22 +198,19 @@ export default class Game extends AbstractView {
 		const protocol = 'wss';
 //		const query = window.location.search.replace('?', '');
 		const query = window.location.search.replace('?', '') || this.query;
-
+		// console.log("Query: ", query);
 		
-		let accessTok = sessionStorage.getItem('accessToken');
-		console.log("Access Token: ", accessTok);
+		let accessToken = sessionStorage.getItem('accessToken');
+		// console.log("Access Token: ", accessToken);
 		// accessTok = accessTok.replace("Bearer ", ""); // replace the "Bearer " at the beginning of the value;
 
 		const io_url = hostname.includes("github.dev") ? `${protocol}://${hostname}` : `${protocol}://${hostname}:9443`;
-		console.log(`Connecting to ${io_url}`)
-		this.socket = io(`${io_url}`, {
+		console.log(`Connecting to ${io_url}/game`)
+		this.socket = io(`${io_url}/game`, {
 			path: '/game-logic/socket.io',
 			query: query,
-			accessToken: accessTok,
 			secure: hostname !== 'localhost',
-			rejectUnauthorized: false,
-			transports: ['websocket'],
-			auth: {accessToken: accessTok}
+			auth: { accessToken }
 		});
 
 		this.socket.on('error', (error) => {
@@ -244,7 +243,7 @@ export default class Game extends AbstractView {
 				this.updateScene(data);
 			// }
 			// console.log("FPS: " + 1000 / callTracker() + "fps");
-			fps = 1000 / callTracker();
+			// fps = 1000 / callTracker();
 			this.renderer.render(this.scene, this.camera);
 		});
 
@@ -269,27 +268,30 @@ export default class Game extends AbstractView {
 			console.log("END OF GAME");
 		});
 
-		this.socket.on('ping', ([timestamp, latency]) => {
-			this.socket.emit('pong', timestamp);
-			let str = `Ping: ${latency}ms - FPS: ${fps.toFixed(1)}`;
-			document.title = str;
-			//console.log(str);
-		});
+		// this.socket.on('ping', ([timestamp, latency]) => {
+		// 	this.socket.emit('pong', timestamp);
+		// 	let str = `Ping: ${latency}ms - FPS: ${fps.toFixed(1)}`;
+		// 	document.title = str;
+		// 	//console.log(str);
+		// });
 
 		this.socket.on("clean-all", () => {
 			this.cleanAll();
 		});
 	};
 
-	cleanAll() {
+	cleanAll(matchID) {
 		console.log("CLEANING CLIENT !!");
 		// Cleanup logic here (remove event listeners, etc.)
 		window.removeEventListener('resize', this.onWindowResize.bind(this));
 		window.removeEventListener("keydown", this.handleKeyPress.bind(this));
 		window.removeEventListener("keyup", this.handleKeyRelease.bind(this));
 
-		if (this.socket)
+		if (this.socket) {
+			console.log("FROM CLIENT : DELETE MATCH");
+			this.socket.emit("delete-match", matchID);
 			this.socket.disconnect();
+		}
 
 		if (this.scene)
 			this.scene.clear();
@@ -360,8 +362,9 @@ export default class Game extends AbstractView {
 		leaveButton.onclick = () => {
 			this.cleanAll();
 
-			navigateTo("/");
+			window.history.back();
 		}
+		leaveButton.id = "leave-button";
 		
 		uiLayer.appendChild(leaveButton);
 

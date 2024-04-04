@@ -14,6 +14,7 @@ import InputAugmented from "@components/InputAugmented";
 import InfoPopup from "@components/InfoPopup";
 import displayPopup from "@utils/displayPopup";
 import fetchUserDetails from "@utils/fetchUserDetails";
+import { initSocketConnection } from "@utils/websocket";
 
 export default class Signup extends AbstractComponent {
 	constructor(options = {}) {
@@ -378,6 +379,9 @@ export default class Signup extends AbstractComponent {
 				sessionStorage.setItem('expiryTimestamp', new Date().getTime() + body.expires_in * 1000);
 				sessionStorage.setItem('accessToken', body.access_token);
 				sessionStorage.setItem('tokenType', body.token_type);
+
+				// connect to the socket
+				initSocketConnection();
 
 				// get user details for the profile page
 				let details = await fetchUserDetails();
