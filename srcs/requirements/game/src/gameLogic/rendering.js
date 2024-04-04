@@ -129,8 +129,8 @@ function ballHitsPaddleSide (paddle, ball, segP1, segP2, scaledNormalVec, side) 
         let ballPath = futureHitPos.sub(potentialHitPoint);
         ball.pos = ball.pos.add(ballPath.scale(hitScaler));
         ball.dir = ball.pos.getDirFrom(paddle.pos).normalize();
-        if (side)
-            ball.sp += Math.abs(paddle.currSp) * 0.5;
+        // if (side)
+        //    ball.sp += Math.abs(paddle.currSp) * 0.5;
         return true;
     }
 }
@@ -216,22 +216,27 @@ function updatePaddles(data) {
 function updateBall(data) {
     paddleHit = ballHitsPaddle(data);
     wallHit = ((data.field.wallsSize || data.gamemode.nbrOfPlayers == 2) ? ballHitsWallV2(data) : 0);
-    if (paddleHit) {
+    /* if (paddleHit) {
         console.log("paddle hit");
     }
     if (wallHit) {
         console.log("wall hit");
-    }
+    }*/
     if (!paddleHit && !wallHit) {
         data.ball.pos = data.ball.pos.add(data.ball.dir.scale(data.ball.sp));
     } else if (paddleHit) {
         data.ball.sp *= 1.01;
+		data.ball.currStartingSp = data.ball.sp;
     }
     if (data.ball.pos.getDistFrom(new Vector(0, 0, 0)) > 
         (data.field.wallDist < data.field.goalDist ? data.field.goalDist: data.field.wallDist) + 20) {
         data.ball.pos = new Vector(0, 0, 0);
         data.ball.sp = data.ball.startingSp;
+		data.ball.currStartingSp = data.ball.sp;
     }
+	if (data.ball.sp > data.ball.currStartingSp) {
+		data.ball.sp *= 0.994;
+	}
 }
 
 // function endGame(data) {
