@@ -22,8 +22,8 @@
     align-items: center;
     justify-content: center;
     position: relative; /* Needed for positioning pseudo-elements */
-    gap: 30px;
 }
+
 
 .match-container {
     display: flex;
@@ -32,16 +32,16 @@
     align-items: center;
 }
 
-.matches-grid-container::before {
+/* .matches-grid-container::before {
     content: '';
     position: absolute;
-    left: calc(100% + 35px); /* Adjust so it aligns with the right edge of match-connectors */
-    top: 50%; /* Align to the vertical center */
-    transform: translateY(-50%); /* Adjust to center vertically */
-    width: 1px; /* Thickness of the vertical line */
+    left: calc(100% + 35px);
+    top: 50%;
+    transform: translateY(-50%); 
+    width: 1px;
     height: var(--pseudo-before-height, auto);
-    background-color: #ffffff; /* Color of the vertical line */
-}
+    background-color: #ffffff;
+} */
 
 .match-container::after {
     content: '';
@@ -53,11 +53,21 @@
     background-color: #ffffff;
 }
 
+.group-separator::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: -35px; /* Adjust based on gap between rounds */
+    width: 1px;
+    height: var(--pseudo-bridge, auto);
+    background-color: #ffffff;
+    transition: height 0.5s;
+}
+
 .match-grid {
     display: flex;
     flex-direction: column;
     gap: 5px;
-    /* padding: 0px 10px; */
     background-color: rgba(255, 255, 255, 0.1);
     border-radius: 5px;
     width: 130px;
@@ -78,10 +88,14 @@
 }
 
 /* Remove gap after the last match for each round */
-.matches-grid-container .match-container:last-child::after {
+/* .matches-grid-container .match-container:last-child::after {
     display: none;
-}
+} */
 
 .player-flex .non-winner {
     opacity: 0.4; /* 40% opacity for non-winning players' text */
+}
+
+.player-flex strong {
+    text-shadow: 0 0 1px #ffffff, 0 0 8px #ffffff; 
 }

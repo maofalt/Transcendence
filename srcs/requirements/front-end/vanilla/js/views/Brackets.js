@@ -32,90 +32,87 @@ function createTournamentBracket(data) {
 	const minHeight = (nbrSetting * 27) + ((nbrSetting - 1) * 5 + 10);
     // Generate rounds and matches
     sortedRounds.forEach((round, index) => {
-        const roundElement = document.createElement('div');
-        roundElement.classList.add('round');
-
-        // Create a container for matches to apply the grid layout
-        const matchesGridContainer = document.createElement('div');
-        matchesGridContainer.classList.add('matches-grid-container');
-
-        // Initialize the height for the current round
-        let roundHeight = 0;
+		const roundElement = document.createElement('div');
+		roundElement.classList.add('round');
+	
 		const matchesForRound = rounds[round];
-	    const numberOfMatches = matchesForRound.length;
+		const numberOfMatches = matchesForRound.length;
+		const groupSize = Math.ceil(numberOfMatches / nbrSetting);
+	
+		let matchesAdded = 0;
+	
+		
 
-        rounds[round].forEach((match, matchIndex) => {
-            const matchContainer = document.createElement('div');
-            matchContainer.classList.add('match-container');
+		for (let i = 0; i < groupSize; i++) {
+			const groupMatches = matchesForRound.slice(matchesAdded, matchesAdded + nbrSetting);
+			const matchesGridContainer = document.createElement('div');
+			matchesGridContainer.classList.add('matches-grid-container');
+			const gap = 30 + (30 * index - 1);
+	        matchesGridContainer.style.gap = `${gap}px`; // Set the gap dynamically
+			roundElement.style.setProperty('--pseudo-bridge', `${minHeight + gap}px`);
 
-            // Connect matches with a line in between them, except for the last one
-            if (matchIndex < rounds[round].length - 1) {
-                const connector = document.createElement('div');
-                connector.classList.add('match-connector');
-                matchContainer.appendChild(connector);
-            }
-
-            const matchElement = document.createElement('div');
-            matchElement.classList.add('match-grid');
-
-            match.players.forEach(player => {
-				const playerElement = document.createElement('div');
-				playerElement.classList.add('player-flex');
-				
-				const playerTextElement = document.createElement('span'); // Create inner span element
-				playerTextElement.textContent = player.username;
-				
-				if (match.winner_username && match.winner_username !== player.username) {
-					playerTextElement.classList.add('non-winner'); // Apply class to inner span
+			groupMatches.forEach((match, matchIndex) => {
+				const matchContainer = document.createElement('div');
+				console.log("matchIndex: ", matchIndex, "groupMatches.length: ", groupMatches.length);
+				if (matchIndex % nbrSetting === 0 && matchIndex != groupMatches.length - 1){
+					matchContainer.classList.add('group-separator');
 				}
-				
-				if (player.username === match.winner_username) {
-					playerTextElement.innerHTML = `<strong>${player.username}</strong>`; // Bold winner's username
+				matchContainer.classList.add('match-container');
+	
+				if (matchIndex < groupMatches.length - 1) {
+					const connector = document.createElement('div');
+					connector.classList.add('match-connector');
+					matchContainer.appendChild(connector);
 				}
-				
-				playerElement.appendChild(playerTextElement); // Append inner span to player-flex
-				
-				matchElement.appendChild(playerElement);
+	
+				const matchElement = document.createElement('div');
+				matchElement.classList.add('match-grid');
+	
+				match.players.forEach(player => {
+					const playerElement = document.createElement('div');
+					playerElement.classList.add('player-flex');
+	
+					const playerTextElement = document.createElement('span');
+					playerTextElement.textContent = player.username;
+	
+					if (match.winner_username && match.winner_username !== player.username) {
+						playerTextElement.classList.add('non-winner');
+					}
+	
+					if (player.username === match.winner_username) {
+						playerTextElement.innerHTML = `<strong>${player.username}</strong>`;
+					}
+	
+					playerElement.appendChild(playerTextElement);
+					matchElement.appendChild(playerElement);
+				});
+	
+				matchContainer.appendChild(matchElement);
+				matchesGridContainer.appendChild(matchContainer);
 			});
-			
-			
-
-            // Calculate match grid height dynamically based on number of players
-            // const matchGridHeight = match.players.length * 23 + (match.players.length - 1) * 5 + 10 ;
-            // // matchElement.style.height = `${matchGridHeight}px`;
-
-            // roundHeight += matchGridHeight + 30 + 2;
-
-            // Add a class to indicate winning match and apply styles accordingly
-            if (match.winner_username && index < sortedRounds.length - 1) {
-                const connector = document.createElement('div');
-                connector.classList.add('match-connector');
-                matchContainer.appendChild(connector);
-            }
-
-            matchContainer.appendChild(matchElement);
-            matchesGridContainer.appendChild(matchContainer);
-        });
-
-        // For each round, except for the last one, add right connectors to winners
-        if (index < sortedRounds.length - 1) {
-            const rightConnectorsContainer = document.createElement('div');
-            rightConnectorsContainer.classList.add('right-connectors-container');
-            matchesGridContainer.appendChild(rightConnectorsContainer);
-        }
-
-        roundElement.appendChild(matchesGridContainer);
-        roundsContainer.appendChild(roundElement);
-		console.log("data.matches.length: ", numberOfMatches);
-		roundHeight = (minHeight * (numberOfMatches - 1)) + (30 * (numberOfMatches - 1));
-		console.log("minHeight: ", minHeight);
-		console.log("roundHeight: ", roundHeight);
-		// 355 + 284
-        // Set the height for the current round using CSS variable
-        roundElement.style.setProperty('--pseudo-before-height', `${roundHeight}px`);
+	
+			roundElement.appendChild(matchesGridContainer);
+	
+			// Add separator before the next group if it's not the last group
+			console.log("groupSize: ", groupSize);
+			if (i < groupSize - 1 ) {
+				// if (i != groupSize - 1){
+					const separator = document.createElement('div');
+					matchesGridContainer.appendChild(separator);
+				// }
+				// matchesGridContainer.style.gap = `${0}px`;
+			}
+	
+			matchesAdded += nbrSetting;
+		}
+	
+		roundsContainer.appendChild(roundElement);
+	
+		let roundHeight = (minHeight * (numberOfMatches - 1)) + (30 * (numberOfMatches - 1));
+		roundElement.style.setProperty('--pseudo-before-height', `${roundHeight}px`);
 		roundElement.style.setProperty('--pseudo-minHeight', `${minHeight}px`);
-
-    });
+	});
+	
 
     // Append the rounds container to the bracket container
     bracketContainer.appendChild(roundsContainer);
