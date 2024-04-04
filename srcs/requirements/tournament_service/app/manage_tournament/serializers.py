@@ -70,10 +70,22 @@ class PlayerSerializer(serializers.ModelSerializer):
         model = Player
         fields = '__all__'
 
-class MatchParticipantsSerializer(serializers.ModelSerializer):
+# class BasicPlayerSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Player
+#         fields = ['id', 'username']
+
+class TournamentPlayerSerializer(serializers.ModelSerializer):
+    tournament_id = serializers.IntegerField(source='id')
+    players_id = serializers.PrimaryKeyRelatedField(source='players', many=True, queryset=Player.objects.all())
+    players_username = serializers.SerializerMethodField()
+    
     class Meta:
-        model = MatchParticipants
-        fields = ['id', 'match_id', 'round_number', 'player_id', 'is_winner']
+        model = Tournament
+        fields = ['tournament_id', 'tournament_name', 'players_id', 'players_username']
+
+    def get_players_username(self, obj):
+        return [player.username for player in obj.players.all()]
 
 class MatchGeneratorSerializer(serializers.Serializer):
     tournament_id = serializers.IntegerField()
@@ -124,8 +136,6 @@ class TournamentMatchListSerializer(serializers.Serializer):
     winner = serializers.CharField()
     matches = TournamentMatchSerializer(many=True)
     
-
-
 class GamemodeDataSerializer(serializers.ModelSerializer):
     nbrOfRounds = serializers.IntegerField(source='round_number') #assume it is for current round number
     nbrOfPlayers = serializers.SerializerMethodField() # it is returning not a nbr_of_player for match setting, it returns actaul number of payer for a current match
@@ -200,13 +210,6 @@ class TournamentMatchRoundSerializer(serializers.ModelSerializer):
     class Meta:
         model = TournamentMatch
         fields = ['tournament_id', 'match_id', 'gamemodeData', 'fieldData', 'paddlesData', 'ballData', 'players']
-
-class TournamentPlayerSerializer(serializers.ModelSerializer):
-    # username = serializers.CharField()
-    players = PlayerSerializer(many=True)
-    class Meta:
-        model = TournamentPlayer
-        fields = ['tournament_id', 'players']
 
 class SimpleTournamentSerializer(serializers.ModelSerializer):
     class Meta:
