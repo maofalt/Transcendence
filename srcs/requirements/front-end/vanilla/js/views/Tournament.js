@@ -19,7 +19,7 @@ export default class Tournament extends AbstractView {
 		this.data = [];
 	}
 
-	async getHtml() {
+	getHtml() {
 		return `
 			<div class="tournament">
 				</div>
@@ -27,10 +27,9 @@ export default class Tournament extends AbstractView {
 					<action-button 
 						data-text="CREATE"
 						id="createTournamentButton"
-						>
-					</action-button >
+					</action-button>
 				</div>
-	                <tournament-table id="tournamentTable"></tournament-table>
+				<tournament-table id="tournamentTable"></tournament-table>
 			</div>
 		`;
 	}
