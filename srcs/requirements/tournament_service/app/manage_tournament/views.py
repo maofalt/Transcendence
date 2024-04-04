@@ -803,7 +803,7 @@ class TournamentMatchList(APIView):
         # print("matches: ", matches)
         # serializer = TournamentMatchSerializer(matches, many=True)
        
-        matches = tournament.matches.all()
+        matches = tournament.matches.all().order_by('id')
 
         if matches:
             serialized_matches = TournamentMatchSerializer(matches, many=True)
@@ -814,7 +814,8 @@ class TournamentMatchList(APIView):
                 'date': tournament.created_at,
                 'round': matches.last().round_number + 1,
                 'winner': final_winner,
-                'matches': serialized_matches.data
+                'nbr_player_setting': tournament.setting.nbr_of_player,
+                'matches': serialized_matches.data,
             })
             serializer.is_valid()
             return Response(serializer.data)

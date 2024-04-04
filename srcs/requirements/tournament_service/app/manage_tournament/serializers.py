@@ -120,8 +120,10 @@ class TournamentMatchListSerializer(serializers.Serializer):
     tournament_name = serializers.CharField()
     date = serializers.CharField(source='created_at')
     round = serializers.IntegerField()
+    nbr_player_setting = serializers.IntegerField()
     winner = serializers.CharField()
     matches = TournamentMatchSerializer(many=True)
+    
 
 
 class GamemodeDataSerializer(serializers.ModelSerializer):
