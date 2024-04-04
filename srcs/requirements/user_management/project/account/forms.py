@@ -1,17 +1,21 @@
 from django import forms
+import re
 from .models import User
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth import password_validation
 from django.utils.translation import gettext as _
 
+def is_valid_phone_number(phone_number):
+    phone_number_pattern = r'^\+\d{1,15}$'
+    return bool(re.match(phone_number_pattern, phone_number))
 
 class ProfileUpdateForm(forms.ModelForm):
     two_factor_method = forms.ChoiceField(choices=User.TWO_FACTOR_OPTIONS, required=False)  # Include None value
 
     class Meta:
         model = User
-        fields = ['playername', 'avatar', 'phone', 'two_factor_method']
+        fields = ['username', 'playername', 'avatar', 'email', 'phone', 'two_factor_method']
 
     def clean_avatar(self):
         avatar = self.cleaned_data['avatar']
@@ -22,15 +26,22 @@ class ProfileUpdateForm(forms.ModelForm):
             #     raise forms.ValidationError('File size cannot exceed 2MB.')
         return avatar
 
+    def clean_phone(self):
+        phone = self.cleaned_data['phone']
+        if phone and not is_valid_phone_number(phone):
+            raise forms.ValidationError('Invalid phone number format.')
+        return phone
+
     def clean(self):
         cleaned_data = super().clean()
         two_factor_method = cleaned_data.get('two_factor_method')
         if two_factor_method == 'Off':
             cleaned_data['two_factor_method'] = '' 
-        for field in ['playername', 'avatar', 'phone', 'two_factor_method']:
+        for field in ['username', 'playername', 'avatar', 'email', 'phone', 'two_factor_method']:
             if not cleaned_data.get(field):
                 del cleaned_data[field]
         return cleaned_data
+
 
 # class ProfileUpdateForm(forms.ModelForm):
 #     TWO_FACTOR_OPTIONS = [
