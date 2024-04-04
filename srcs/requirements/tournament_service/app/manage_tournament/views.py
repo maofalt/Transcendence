@@ -9,7 +9,7 @@ from rest_framework.exceptions import AuthenticationFailed
 from .models import Tournament, TournamentMatch, MatchSetting, TournamentPlayer, Player, MatchParticipants
 from .serializers import TournamentSerializer, TournamentMatchSerializer, MatchSettingSerializer, SimplePlayerSerializer
 from .serializers import TournamentPlayerSerializer, GamemodeDataSerializer, FieldDataSerializer, PaddlesDataSerializer, BallDataSerializer, TournamentMatchRoundSerializer, TournamentMatchListSerializer
-from .serializers import PlayerSerializer, MatchParticipantsSerializer, TournamentRegistrationSerializer, PlayerGameStatsSerializer, SimpleTournamentSerializer
+from .serializers import PlayerSerializer, TournamentRegistrationSerializer, PlayerGameStatsSerializer, SimpleTournamentSerializer
 from .serializers import MatchGeneratorSerializer
 from django.conf import settings
 from rest_framework.views import APIView
@@ -74,7 +74,7 @@ class TournamentListCreate(generics.ListCreateAPIView):
             'ball_speed': validated_data.get('ball_speed', 0.7),
             'ball_radius': validated_data.get('ball_radius', 1),
             'ball_color': validated_data.get('ball_color', '#000000'),
-            'nbr_of_player': validated_data.get('nbr_of_player_match', 2)
+            'nbr_of_player': validated_data.get('nbr_of_player_match', 2),
         }
         match_setting = MatchSetting.objects.create(**match_setting_data)
 
@@ -562,17 +562,9 @@ class TournamentParticipantList(APIView):
             tournament = get_object_or_404(Tournament, id=id)
         except Http404:
             return JsonResponse({'error': 'Tournament not found'}, status=404)
-        # Check if the user is the tournament host or a registered participant
-        user_info = request.user
-        if not isinstance(user_info, tuple) or len(user_info) != 2:
-            raise exceptions.AuthenticationFailed('User information is not in the expected format')
 
-        uid, username = user_info
-        if tournament.host != uid:
-            return Response({"message": "You are not authorized to view the participant list."}, status=status.HTTP_403_FORBIDDEN)
-        
-        participants = TournamentPlayer.objects.filter(tournament_id=tournament)
-        serializer = TournamentPlayerSerializer(participants, many=True)
+        # participants = tournament.players.all().order_by('id')
+        serializer = TournamentPlayerSerializer(tournament)
         return Response(serializer.data)
 
 
@@ -914,12 +906,6 @@ class PlayerList(ListAPIView):
     queryset = Player.objects.all()
     serializer_class = PlayerSerializer
 
-class MatchParticipantsList(ListAPIView):
-    authentication_classes = [CustomJWTAuthentication]
-    # permission_classes = [IsAuthenticated] 
-    
-    queryset = MatchParticipants.objects.all()
-    serializer_class = MatchParticipantsSerializer
 
 def home(request):
     return render(request, 'home.html')
