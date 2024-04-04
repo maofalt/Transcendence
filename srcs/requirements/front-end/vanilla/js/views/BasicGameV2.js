@@ -854,7 +854,7 @@ export default class BasicGameV2 extends AbstractComponent {
         this.localgenerate(this.match.gameState);
         console.log("handleconnection",this.match);
         
-        this.match.gameInterval = setInterval(this.waitingRoom.bind(this), 10);    
+        this.match.gameInterval = setInterval(this.waitingRoom.bind(this), 20);
 
         console.log(`Player connected with ID: `);
     
@@ -1026,7 +1026,7 @@ export default class BasicGameV2 extends AbstractComponent {
                 render.getBallDir(this.match.gameState);
                 this.match.gameState.ongoing = true;
                 this.match.gameState.imminent = false;
-                this.match.gameInterval = setInterval(this.gameLoop.bind(this), 10);
+                this.match.gameInterval = setInterval(this.gameLoop.bind(this), 20);
             }
         }
     

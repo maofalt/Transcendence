@@ -160,7 +160,7 @@ function waitingRoom(matchID) {
 			render.getBallDir(match.gameState);
 			match.gameState.ongoing = true;
 			match.gameState.imminent = false;
-			match.gameInterval = setInterval(gameLoop, 10, matchID);
+			match.gameInterval = setInterval(gameLoop, 20, matchID);
 		}
 	}
 
@@ -228,11 +228,11 @@ function handleConnectionV2(client) {
 	console.log('---DATA---\n', match.gameState, '\n---END---\n');
     client.emit('generate', match.gameState);
     
-    if (match.gameState.connectedPlayers == 1 && match.gameState.ongoing == false) {
-		console.log("SETTING INTERVAL");
-        match.gameInterval = setInterval(waitingRoom, 10, client.matchID);
-        render.getBallDir(match.gameState);
-    }
+    // if (match.gameState.connectedPlayers == 1 && match.gameState.ongoing == false) {
+	// 	console.log("SETTING INTERVAL");
+    //     match.gameInterval = setInterval(waitingRoom, 20, client.matchID);
+    //     render.getBallDir(match.gameState);
+    // }
 
     console.log(`Player connected with ID: ${client.playerID}`);
 
@@ -363,22 +363,22 @@ game.on('connection', (client) => {
 		});
 
 		client.on('delete-match', (matchID) => {
-			console.log("FROM BACKEND : DELETE MATCH",client.matchID);
-			// Print the keys in the matches map
-			console.log("Keys in matches map:", Array.from(matches.keys()))
-			if (matches.has(client.matchID)) {
-				console.log("INSIDE MATCH HAS MATCHID");
-				if (matches.get(client.matchID).gameState.gameInterval)
-					clearInterval(this.matches.get(client.matchID).gameState.gameInterval);
-				console.log("DELETING MATCH");
-				matches.delete(client.matchID);
-			} else if (matches.has(matchID)) {
-				console.log("INSIDE MATCH HAS MATCHID");
-				if (matches.get(matchID).gameState.gameInterval)
-					clearInterval(this.matches.get(matchID).gameState.gameInterval);
-				console.log("DELETING MATCH");
-				matches.delete(matchID);
-			}
+			// console.log("FROM BACKEND : DELETE MATCH",client.matchID);
+			// // Print the keys in the matches map
+			// console.log("Keys in matches map:", Array.from(matches.keys()))
+			// if (matches.has(client.matchID)) {
+			// 	console.log("INSIDE MATCH HAS MATCHID");
+			// 	if (matches.get(client.matchID).gameState.gameInterval)
+			// 		clearInterval(this.matches.get(client.matchID).gameState.gameInterval);
+			// 	console.log("DELETING MATCH");
+			// 	matches.delete(client.matchID);
+			// } else if (matches.has(matchID)) {
+			// 	console.log("INSIDE MATCH HAS MATCHID");
+			// 	if (matches.get(matchID).gameState.gameInterval)
+			// 		clearInterval(this.matches.get(matchID).gameState.gameInterval);
+			// 	console.log("DELETING MATCH");
+			// 	matches.delete(matchID);
+			// }
 		});
 		
 		// disconnect event
@@ -389,8 +389,8 @@ game.on('connection', (client) => {
 			if (player)
 				player.connected = false;
 			if (data.connectedPlayers < 1) {
-				console.log("CLEARING INTERVAL");
-				clearInterval(match.gameInterval);
+				// console.log("CLEARING INTERVAL");
+				// clearInterval(match.gameInterval);
 				if (data.ongoing) {
 					data.winner = player;
 					if (data.jisus_matchID) {
@@ -398,8 +398,8 @@ game.on('connection', (client) => {
 					}
 					matches.delete(client.matchID);
 				}
-				console.log("SENDING CLEAN MSG");
-				client.emit("clean-all");
+				// console.log("SENDING CLEAN MSG");
+				// client.emit("clean-all");
 				delete data;
 			}
 			// console.log(`Client disconnected with ID: ${client.id} (num clients: ${game.engine.clientsCount})`);
@@ -609,6 +609,8 @@ function setupMatch(gameSettings, tournament_id, match_id, res) {
 		}
 	});
 
+	gameState.gameInterval = setInterval(waitingRoom, 20, matchID);
+    render.getBallDir(gameState);
 	return matchID;
 }
 
