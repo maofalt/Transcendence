@@ -21,16 +21,13 @@ function initSocketConnection() {
 		}
 		socket = io(`${io_url}/notify`, {
 			path: '/game-logic/socket.io',
-			accessToken,
 			secure: hostname !== 'localhost',
-			rejectUnauthorized: false,
-			transports: ['websocket'],
 			auth: { accessToken }
 		});
 
 		socket.on('new-match', (matchID) => {
 			let sticky = true;
-			let onClick = () => navigateTo(`/play?matchID=${matchID}`);
+			let onClick = () => window.location.href = `/play?matchID=${matchID}`;
 			displayPopup('New Match! Click to join', 'info', sticky, onClick);
 			console.log('new-match:', matchID);
 		});

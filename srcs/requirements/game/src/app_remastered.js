@@ -127,7 +127,7 @@ function waitingRoom(matchID) {
 	let match = matches.get(matchID);
 	if (!match) {
 		console.log("Match not found");
-		// client.emit('error', 'Match not found');
+		// client.emit('error', 'Match not found'); 
 		// client.disconnect();
 		return ;
 	}
@@ -254,54 +254,62 @@ function getMatch(client) {
 }
 
 function verifyAuthentication(client) {
-	if (client.handshake.headers && client.handshake.auth) {
-		// Parse the auth from the handshake
-		const token = client.handshake.auth.accessToken;
-		console.log("\ntoken:\n", token);
-
-		// Verify the token
-		jwt.verify(token, SECRET_KEY, function(err, decoded) {
-		// jwt.verify(token, SECRET_KEY, function(err, decoded) {
-			if (err) {
-				console.error('Authentication error: Could not verify token.', err);
-				throw new Error('Authentication error: Could not verify token.');
-			}
-			client.decoded = decoded;
-			// get the playerID from the decoded token
-			client.playerID = decoded.username;
-		});
-	} else {
-		console.error('Authentication error: No token provided.');
-		throw new Error('Authentication error: No token provided.');
-	}
+	return new Promise((resolve, reject) => {
+		if (client.handshake.headers && client.handshake.auth) {
+			const token = client.handshake.auth.accessToken;
+			jwt.verify(token, SECRET_KEY, function(err, decoded) {
+				if (err) {
+					console.error('Authentication error: Could not verify token.', err);
+					reject(new Error('Authentication error: Could not verify token.'));
+				} else {
+					client.decoded = decoded;
+					client.playerID = decoded.username;
+					resolve(); // Successfully verified
+				}
+			});
+		} else {
+			console.error('Authentication error: No token provided.');
+			reject(new Error('Authentication error: No token provided.'));
+		}
+	});
 }
+
 
 notify.use((client, next) => {
 	try {
-		verifyAuthentication(client);
+		verifyAuthentication(client).then(() => {
+			next();
+		}).catch(error => {
+			console.error('Error authenticating websocket: ', error);
+			next(error);
+		});
 	} catch (error) {
 		console.error('Error connecting websocket: ', error);
-		next(new Error(error));
+		next(error);
 	}
-	next();
 });
 
 notify.on('connection', (client) => {
 	clients.set(client.playerID, client);
-	console.log("CLIENTS MAP:\n", clients);
+	// console.log("CLIENTS MAP:\n", clients);
 });
 
 // authenticate user before establishing websocket connection
 game.use((client, next) => {
 	try {
-		//console.log("\nclient.handshake.query:\n", client.handshake);
-		getMatch(client);
-		verifyAuthentication(client);
+		getMatch(client); // get the matchID and match from the client handshake
+
+		// verify the token and set the playerID
+		verifyAuthentication(client).then(() => {
+			next(); // proceed to game connection if authentication is successful
+		}).catch(error => {
+			console.error('Error authenticating websocket: ', error);
+			next(error); // disconnect the client if there's an error
+		});
 	} catch (error) {
 		console.error('Error connecting websocket: ', error);
-		next(new Error(error));
+		next(error); // disconnect the client if there's an error
 	}
-	next();
 });
 
 // Set up Socket.IO event handlers
@@ -427,8 +435,8 @@ function verifyMatchSettings(settings) {
 
 	const checks = {
 		gamemodeData: {
-			nbrOfPlayers: value => (value >= 2 && value <= 8) ? null : "Nbr of players should be between 2 and 8",
-			nbrOfRounds: value => (value >= 1 && value <= 10) ? null : "Nbr of Rounds should be between 1 and 10",
+			nbrOfPlayers: value => (value >= 1 && value <= 8) ? null : "Nbr of players should be between 2 and 8",
+			// nbrOfRounds: value => (value >= 1 && value <= 10) ? null : "Nbr of Rounds should be between 1 and 10",
 		},
 		fieldData: {
 			sizeOfGoals: value => (value >= 15 && value <= 30) ? null : "Size of goals should be between 15 and 30",
@@ -436,7 +444,7 @@ function verifyMatchSettings(settings) {
 		},
 		paddlesData: {
 			width: value => (value === 1) ? null : "Paddles width should be 1",
-			height: value => (value >= 1 && value <= 10) ? null : "Paddles height should be between 1 and 10",
+			height: value => (value >= 1 && value <= 12) ? null : "Paddles height should be between 1 and 10",
 		},
 		ballData: {
 			radius: value => (value >= 0.5 && value <= 7) ? null : "Ball radius should be between 0.5 and 7",
@@ -462,7 +470,7 @@ function verifyMatchSettings(settings) {
 	// check if all players have different names, that they dont have an empty name
     let playerNames = settings.playersData.map(player => player.accountID);
     let uniquePlayerNames = [...new Set(playerNames)];
-
+	console.log("playerNames: ", playerNames, "uniquePlayerNames: ", uniquePlayerNames)
     if (playerNames.length !== uniquePlayerNames.length) {
         return "Multiple identical player IDs";
     }
@@ -478,7 +486,7 @@ function verifyMatchSettings(settings) {
 }
 
 function postMatchResult(matchId, winnerId) {
-	const url = `http://tournament/matches/${matchId}/${winnerId}/`;
+	const url = `http://tournament:8001/matches/${matchId}/${winnerId}/`;
 	
 	axios.post(url)
 		.then(response => {
@@ -505,7 +513,7 @@ app.post('/createMultipleMatches', (req, res) => {
 
 	console.log("\nCREATE MULTIPLE MATCHES\n");
 
-	allGameSettings.matches.forEach(settings => {
+	for (settings of allGameSettings.matches) {
 		const { tournament_id, match_id, ...gameSettings } = settings;
 
 		let matchID = setupMatch(gameSettings, tournament_id, match_id, res);
@@ -513,26 +521,37 @@ app.post('/createMultipleMatches', (req, res) => {
 			return ;
 
 		matchIDs.push(matchID);
-	});
+	}
 
 	res.json({ matchIDs });
 });
 
 function setupMatch(gameSettings, tournament_id, match_id, res) {
+
 	const matchID = generateMatchID(gameSettings);
-				
+	
 	if (matches.has(matchID)) {
 		console.log("Match already exists");
 		res.json({ matchID });
 		return null;
 	}
-
+	
 	let error = verifyMatchSettings(gameSettings);
 	if (error) {
-		console.log("Error:", error);
+		console.log(error);
 		res.status(400).json({ error });
 		return null;
 	}
+
+	// extract the players IDs from the players data
+	const players = gameSettings.playersData.map(player => player.accountID);
+
+	if (players.length == 1) {
+		postMatchResult(match_id, players[0]);
+		res.json({ matchID });
+		return null;
+	}
+
 	// Convert game settings to game state
 	const gameState = init.initLobby(gameSettings);
 	gameState.jisus_matchID = match_id;
@@ -540,12 +559,11 @@ function setupMatch(gameSettings, tournament_id, match_id, res) {
 	matches.set(matchID, { gameState: gameState, gameInterval: 0 });
 
 	// Emit the new match notification to all players
-	const players = gameSettings.playersData.map(player => player.accountID);
 	console.log("\n\nPLAYERS :\n\n", players);
 	players.forEach(player => {
 		let client = clients.get(player);
 		if (client) {
-			console.log("EMITTING TO: ", player); 
+			console.log("EMITTING TO: ", player);
 			// console.log("EMITTED TO: ", client.playerID);
 			client.emit('new-match', matchID);
 		}
