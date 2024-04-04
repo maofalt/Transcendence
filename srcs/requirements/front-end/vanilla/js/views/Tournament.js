@@ -112,8 +112,8 @@ export default class Tournament extends AbstractView {
 					buttonText = 'Play';
 					buttonEvent = () => navigateTo('/play?matchID=' + tournament.setting.id);
 				} else if (tournament.is_in_tournament && tournament.state === 'waiting') {
-					buttonText = 'Waiting';
-
+					buttonText = 'Unjoin';
+					// ADD UNJOIN ENDPOINT HERE
 				} else {
 					buttonText = 'Join';
 					buttonEvent = async () => await this.joinTournament(tournament.id);
