@@ -87,13 +87,12 @@
     justify-content: center;
 }
 
-/* Remove gap after the last match for each round */
-/* .matches-grid-container .match-container:last-child::after {
-    display: none;
-} */
-
 .player-flex .non-winner {
-    opacity: 0.4; /* 40% opacity for non-winning players' text */
+    opacity: 0.3; /* 40% opacity for non-winning players' text */
+}
+
+.player-flex .match-winner {
+    opacity: 0.8; /* 40% opacity for non-winning players' text */
 }
 
 .player-flex strong {
