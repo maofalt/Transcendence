@@ -38,10 +38,7 @@ function createTournamentBracket(data) {
 		const matchesForRound = rounds[round];
 		const numberOfMatches = matchesForRound.length;
 		const groupSize = Math.ceil(numberOfMatches / nbrSetting);
-	
-		let matchesAdded = 0;
-	
-		
+        let matchesAdded = 0;
 
 		for (let i = 0; i < groupSize; i++) {
 			const groupMatches = matchesForRound.slice(matchesAdded, matchesAdded + nbrSetting);
@@ -49,11 +46,13 @@ function createTournamentBracket(data) {
 			matchesGridContainer.classList.add('matches-grid-container');
 			const gap = 30 + (30 * index - 1);
 	        matchesGridContainer.style.gap = `${gap}px`; // Set the gap dynamically
-			roundElement.style.setProperty('--pseudo-bridge', `${minHeight + gap}px`);
+            let tmp = nbrSetting < numberOfMatches ? nbrSetting : numberOfMatches;
+            if (tmp == 1)
+                tmp = 2;
+            roundElement.style.setProperty('--pseudo-bridge', `${(minHeight + gap)*(tmp - 1)}px`);
 
 			groupMatches.forEach((match, matchIndex) => {
 				const matchContainer = document.createElement('div');
-				console.log("matchIndex: ", matchIndex, "groupMatches.length: ", groupMatches.length);
 				if (matchIndex % nbrSetting === 0 && matchIndex != groupMatches.length - 1){
 					matchContainer.classList.add('group-separator');
 				}
@@ -94,7 +93,7 @@ function createTournamentBracket(data) {
 			roundElement.appendChild(matchesGridContainer);
 	
 			// Add separator before the next group if it's not the last group
-			console.log("groupSize: ", groupSize);
+			
 			if (i < groupSize - 1 ) {
 				// if (i != groupSize - 1){
 					const separator = document.createElement('div');
