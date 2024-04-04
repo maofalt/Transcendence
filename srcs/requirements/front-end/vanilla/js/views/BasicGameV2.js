@@ -163,7 +163,7 @@ export default class BasicGameV2 extends AbstractComponent {
 		leaveButton.onclick = () => {
 			this.cleanAll();
 
-			navigateTo("/");
+			window.history.back();
 		}
 
 		this.container.appendChild(countDown);
@@ -344,7 +344,7 @@ export default class BasicGameV2 extends AbstractComponent {
 		leaveButton.onclick = () => {
 			this.cleanAll();
 
-			navigateTo("/");
+			window.history.back();
 		}
 		
 		uiLayer.appendChild(leaveButton);

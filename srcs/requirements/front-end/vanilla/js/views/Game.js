@@ -11,31 +11,32 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import CustomButton from '@components/CustomButton';
 import { navigateTo } from "@utils/Router";
+import AbstractComponent from "@components/AbstractComponent";
 
 
-function createCallTracker() {
-	let lastCallTime = 0; // Timestamp of the last call
+// function createCallTracker() {
+// 	let lastCallTime = 0; // Timestamp of the last call
 
-	// This function is called every time you want to track a call
-	return function trackCall() {
-	  const now = Date.now(); // Get current timestamp in milliseconds
-	  let elapsedTime = 0; // Initialize elapsed time
+// 	// This function is called every time you want to track a call
+// 	return function trackCall() {
+// 	  const now = Date.now(); // Get current timestamp in milliseconds
+// 	  let elapsedTime = 0; // Initialize elapsed time
   
-	  if (lastCallTime !== 0) { // Check if this is not the first call
-		elapsedTime = now - lastCallTime; // Calculate time since last call
-		// console.log(`Time since last call: ${elapsedTime} ms`);
-	  }
+// 	  if (lastCallTime !== 0) { // Check if this is not the first call
+// 		elapsedTime = now - lastCallTime; // Calculate time since last call
+// 		// console.log(`Time since last call: ${elapsedTime} ms`);
+// 	  }
   
-	  lastCallTime = now; // Update last call time to the current time for the next call
+// 	  lastCallTime = now; // Update last call time to the current time for the next call
   
-	  return elapsedTime; // Return the elapsed time between the last two calls
-	};
-  }
+// 	  return elapsedTime; // Return the elapsed time between the last two calls
+// 	};
+//   }
 
-// instance of the call tracker
-const callTracker = createCallTracker();
+// // instance of the call tracker
+// const callTracker = createCallTracker();
 
-let fps = 0;
+// let fps = 0;
 
 class SpObject {
     constructor(objMesh, dirMesh) {
@@ -52,7 +53,7 @@ class BoxObject {
     }
 }
 
-export default class Game extends AbstractView {
+export default class Game extends AbstractComponent {
 	constructor(query='', screenWidth, screenHeight) {
 		super();
 		this.loader = new GLTFLoader();
@@ -106,16 +107,12 @@ export default class Game extends AbstractView {
 		this.cleanAll();
 	}
 
-	async getHtml() {
-		return `
-			<div id="gameContainer"></div>
-		`;
-	};
-
-	async init() {
+	connectedCallback() {
 		console.log("init Game View...");
 		// Set up the game container
-		this.container = document.getElementById('gameContainer');
+		this.container = document.createElement('div');
+		this.container.id = 'gameContainer';
+		this.shadowRoot.appendChild(this.container);
 
 		// Create a new div
 		let countDown = document.createElement('div');
@@ -151,8 +148,10 @@ export default class Game extends AbstractView {
 		leaveButton.onclick = () => {
 			this.cleanAll();
 
-			navigateTo("/");
+			window.history.back();
 		}
+
+		leaveButton.id = "leave-button";
 
 		this.container.appendChild(countDown);
 		this.container.appendChild(leaveButton);
@@ -196,22 +195,19 @@ export default class Game extends AbstractView {
 		const protocol = 'wss';
 //		const query = window.location.search.replace('?', '');
 		const query = window.location.search.replace('?', '') || this.query;
-
+		console.log("Query: ", query);
 		
-		let accessTok = sessionStorage.getItem('accessToken');
-		console.log("Access Token: ", accessTok);
+		let accessToken = sessionStorage.getItem('accessToken');
+		// console.log("Access Token: ", accessToken);
 		// accessTok = accessTok.replace("Bearer ", ""); // replace the "Bearer " at the beginning of the value;
 
 		const io_url = hostname.includes("github.dev") ? `${protocol}://${hostname}` : `${protocol}://${hostname}:9443`;
-		console.log(`Connecting to ${io_url}`)
-		this.socket = io(`${io_url}`, {
+		console.log(`Connecting to ${io_url}/game`)
+		this.socket = io(`${io_url}/game`, {
 			path: '/game-logic/socket.io',
 			query: query,
-			accessToken: accessTok,
 			secure: hostname !== 'localhost',
-			rejectUnauthorized: false,
-			transports: ['websocket'],
-			auth: {accessToken: accessTok}
+			auth: { accessToken }
 		});
 
 		this.socket.on('error', (error) => {
@@ -244,7 +240,7 @@ export default class Game extends AbstractView {
 				this.updateScene(data);
 			// }
 			// console.log("FPS: " + 1000 / callTracker() + "fps");
-			fps = 1000 / callTracker();
+			// fps = 1000 / callTracker();
 			this.renderer.render(this.scene, this.camera);
 		});
 
@@ -269,27 +265,30 @@ export default class Game extends AbstractView {
 			console.log("END OF GAME");
 		});
 
-		this.socket.on('ping', ([timestamp, latency]) => {
-			this.socket.emit('pong', timestamp);
-			let str = `Ping: ${latency}ms - FPS: ${fps.toFixed(1)}`;
-			document.title = str;
-			//console.log(str);
-		});
+		// this.socket.on('ping', ([timestamp, latency]) => {
+		// 	this.socket.emit('pong', timestamp);
+		// 	let str = `Ping: ${latency}ms - FPS: ${fps.toFixed(1)}`;
+		// 	document.title = str;
+		// 	//console.log(str);
+		// });
 
 		this.socket.on("clean-all", () => {
 			this.cleanAll();
 		});
 	};
 
-	cleanAll() {
+	cleanAll(matchID) {
 		console.log("CLEANING CLIENT !!");
 		// Cleanup logic here (remove event listeners, etc.)
 		window.removeEventListener('resize', this.onWindowResize.bind(this));
 		window.removeEventListener("keydown", this.handleKeyPress.bind(this));
 		window.removeEventListener("keyup", this.handleKeyRelease.bind(this));
 
-		if (this.socket)
+		if (this.socket) {
+			// console.log("FROM CLIENT : DELETE MATCH");
+			// this.socket.emit("delete-match", matchID);
 			this.socket.disconnect();
+		}
 
 		if (this.scene)
 			this.scene.clear();
@@ -360,8 +359,9 @@ export default class Game extends AbstractView {
 		leaveButton.onclick = () => {
 			this.cleanAll();
 
-			navigateTo("/");
+			window.history.back();
 		}
+		leaveButton.id = "leave-button";
 		
 		uiLayer.appendChild(leaveButton);
 
@@ -457,7 +457,7 @@ export default class Game extends AbstractView {
 
 	// Other methods (generateScene, updateScene, etc.) here
 	updateScene(data, socket) {
-		this.displayTimer(data);
+		// this.displayTimer(data);
 
 		// console.log("Updating Scene...");
 		if (data.ball.model) {
@@ -862,3 +862,5 @@ export default class Game extends AbstractView {
 		this.scene.add(starSphereBase);
 	};
 }
+
+customElements.define('game-view', Game);
