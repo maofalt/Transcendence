@@ -79,8 +79,19 @@ function createTournamentBracket(data) {
                     }
 
                     if (player.username === match.winner_username) {
-                        playerTextElement.innerHTML = `<strong>${player.username}</strong>`;
+                        // playerTextElement.innerHTML = `<strong>${player.username}</strong>`;
+                        if (match.final_match) {
+                            playerTextElement.innerHTML = `<strong>${player.username}</strong>`;
+                            playerTextElement.style.textShadow = "0 0 1px #ffffff, 0 0 8px #ffffff";
+                        } else {
+                            playerTextElement.classList.add('match-winner');
+                            // playerTextElement.style.opacity = "0.7";
+                            // playerTextElement.style.textShadow = "0 0 1px #ffffff, 0 0 8px #ffffff";
+                        }
                     }
+                    // if (player.username === match.winner_username) {
+                    //     playerTextElement.innerHTML = `<strong>${player.username}</strong>`;
+                    // }
 
                     playerElement.appendChild(playerTextElement);
                     matchElement.appendChild(playerElement);
