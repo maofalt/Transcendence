@@ -25,6 +25,7 @@ from threading import Thread
 import requests
 from django.http import Http404, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseServerError
 from django.http import HttpResponse, JsonResponse
+import json
 from django.core import exceptions
 from django.utils.html import escape
 from django.views.decorators.csrf import csrf_exempt, csrf_protect, ensure_csrf_cookie
@@ -312,14 +313,14 @@ class MatchResult(APIView):
 
                 matches_in_progress = tournament.matches.filter(Q(state="waiting") | Q(state="playing"))
                 if matches_in_progress.exists():
-                    return JsonResponse({"message": "Cannot end the tournament while matches are in progress."}, status=400)
+                    return JsonResponse({"message": "Cannot end the tournament while matches are in progress."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
                 
                 tournament.state = "ended"
                 tournament.save()
                 serializer = TournamentMatchSerializer(finished_matches, many=True)
-                return JsonResponse({"data": serializer.data, "status": status.HTTP_200_OK, "message": 'The Tournament has been finished.', "winner": sorted_winners[0].username})
+                return JsonResponse(serializer.data, status=status.HTTP_200_OK)
             else:
-                return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'message': 'An Error occurred while updating the next round matches.'})
+                return JsonResponse({'message': 'An Error occurred while updating the next round matches.'}, status=HTTP_500_INTERNAL_SERVER_ERROR)
         for winner in winners:
             match = tournament.assign_player_to_match(winner, round)
             if match:
@@ -364,16 +365,16 @@ class MatchResult(APIView):
 
         cur_round = match.round_number
         if MatchResult.round_state(request, match.tournament_id, cur_round) == False:
-            # if MatchResult.round_state(request, match.tournament_id, cur_round) == False:
             return Response(status=204)
-            # return JsonResponse({'message': "Winner found and updated successfully", })
+            return JsonResponse({'message': "Winner found and updated successfully", })
 
         update = MatchResult.match_update(request, match.tournament_id, cur_round + 1)
         print('update: ', update)
         if update.status_code == 200:
             return JsonResponse(update.data, status=update.status_code)   # tournament finished
         elif update.status_code != 201:
-            return JsonResponse(update.data, status=update.status_code)
+            error_data = json.loads(update.content.decode('utf-8'))
+            return JsonResponse(error_data, status=update.status_code)
         response = generate_round(request, match.tournament_id, cur_round + 1)
         return JsonResponse(response.data, status=status.HTTP_201_CREATED, safe=False)
 
