@@ -132,8 +132,6 @@ export default class CreateTournament extends AbstractView {
 		
 		try {
 			let gameSettings = {
-				// "tournament_id": 0,
-				// "match_id": 0,
 				"gamemodeData": {
 					"nbrOfPlayers": parseInt(document.getElementById('nbr_of_players_per_match').value),
 					"nbrOfRounds": parseInt(document.getElementById('nbr_of_rounds').value),
@@ -203,8 +201,6 @@ export default class CreateTournament extends AbstractView {
 
 	async getBasicGameSettings() {
 		let gameSettings = {
-			// "tournament_id": 0,
-			// "match_id": 0,
 			"gamemodeData": {
 				"nbrOfPlayers": 3,
 				"nbrOfRounds": 10,

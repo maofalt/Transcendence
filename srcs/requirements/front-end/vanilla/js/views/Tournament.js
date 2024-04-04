@@ -57,12 +57,21 @@ export default class Tournament extends AbstractView {
 				return;
 			}
 
+			const responseUser = await makeApiRequest('/api/user_management/auth/getUser', 'GET');
+			const userName = responseUser.body.username;
+
 			await tournamentTable.applyColumnStyles();
 			let Styles = tournamentTable.columnStyles;
 			
 			// Map API data to table rows and add them to the table
 			tournaments.forEach(async (tournament) => {
-			
+				const response = await makeApiRequest(`/api/tournament/${tournament.id}/participants/`, 'GET');
+				const participants = response.body;
+				if (userName in participants) {
+					tournament.is_in_tournament = true;
+				} else {
+					tournament.is_in_tournament = false;
+				}
 			// TOURNAMENT STYLES APPLIED
 				const tournamentNameElement = tournamentTable.createStyledHTMLObject('div', tournament.tournament_name, Styles.tournamentName);
 			
@@ -89,35 +98,39 @@ export default class Tournament extends AbstractView {
 			
 			//TOURNAMENT ACTION BUTTONS	
 				//Join button on te action column to join corresponding tournament
-				const responseUser = await makeApiRequest('/api/user_management/auth/getUser', 'GET');
-				const userName = responseUser.body.username;
 				let buttonText = '';
 				let buttonEvent = null;
 				
 				if (hostName === userName && tournament.state === 'waiting') {
+					console.log("TOURNAMENT IS WAITING", tournament);
 					buttonText = 'Start';
 					buttonEvent = async () => {
 						const apiEndpoint = `/api/tournament/${tournament.id}/start/`;
 						await makeApiRequest(apiEndpoint, 'POST');
 					};
-				} else if (hostName === userName && tournament.state === 'started') {
-					buttonText = 'Joined';
-					// Optionally, you can disable the button if you don't want any action on it
+				} else if (tournament.is_in_tournament && tournament.state === 'started') {
+					buttonText = 'Play';
+					buttonEvent = () => navigateTo('/play?matchID=' + tournament.setting.id);
+				} else if (tournament.is_in_tournament && tournament.state === 'waiting') {
+					buttonText = 'Waiting';
+
 				} else {
 					buttonText = 'Join';
 					buttonEvent = async () => await this.joinTournament(tournament.id);
 				}
 				const actionButtonElement = tournamentTable.createStyledHTMLObject('button', buttonText, Styles.action);				
 				if (buttonEvent) {
-					actionButtonElement.addEventListener('click', buttonEvent);
+					actionButtonElement.onclick = buttonEvent;
 				}
 
 			//TOURNAMENT Details button to see the tournament state (either brackets and or results) opening th emodal
-			const tournamentDetails = tournamentTable.createStyledHTMLObject('button', '👁️', Styles.details);
-			tournamentDetails.addEventListener('click', () => {
-				console.log(`SOMEONE IS WATCHING 👁️ 👁️`);
-			});
-			//Add the constructed row to the table
+				const tournamentDetails = tournamentTable.createStyledHTMLObject('button', '👁️', Styles.details);
+				tournamentDetails.addEventListener('click', () => {
+					navigateTo(`/brackets?tournament=${tournament.id}`);
+					// console.log(`SOMEONE IS WATCHING 👁️ 👁️`);
+				});
+
+				//Add the constructed row to the table
 				tournamentTable.addRow([
 					tournamentNameElement,
 					hostElement,
