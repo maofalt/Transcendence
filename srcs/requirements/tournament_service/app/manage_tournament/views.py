@@ -298,7 +298,7 @@ class MatchResult(APIView):
         finished_matches = tournament.matches.filter(round_number=round - 1).order_by('id')
         matches_in_progress = finished_matches.filter(Q(state="waiting") | Q(state="playing"))
         if matches_in_progress.exists():
-            return Response({"message": "Cannot update next round, the previous round is on going."}, status=400)
+            return JsonResponse({"message": "Cannot update next round, the previous round is on going."}, status=400)
 
         winners = [match.winner for match in finished_matches if match.winner is not None]
         sorted_winners = sorted(winners, key=lambda user: user.id)
@@ -312,7 +312,7 @@ class MatchResult(APIView):
 
                 matches_in_progress = tournament.matches.filter(Q(state="waiting") | Q(state="playing"))
                 if matches_in_progress.exists():
-                    return Response({"message": "Cannot end the tournament while matches are in progress."}, status=400)
+                    return JsonResponse({"message": "Cannot end the tournament while matches are in progress."}, status=400)
                 
                 tournament.state = "ended"
                 tournament.save()
