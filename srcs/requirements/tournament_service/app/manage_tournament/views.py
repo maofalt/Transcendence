@@ -375,7 +375,7 @@ class MatchResult(APIView):
         elif update.status_code != 201:
             return JsonResponse(update.data, status=update.status_code)
         response = generate_round(request, match.tournament_id, cur_round + 1)
-        return JsonResponse(response, status=status.HTTP_201_CREATED, safe=False)
+        return JsonResponse(response.data, status=status.HTTP_201_CREATED, safe=False)
 
 
         
@@ -799,7 +799,11 @@ class TournamentMatchList(APIView):
         except Http404:
             return JsonResponse({'error': 'Tournament not found'}, status=404)
         self.check_object_permissions(request, tournament)
-        matches = tournament.matches.all()
+        # matches = TournamentMatch.objects.filter(tournament_id=tournament.id)
+        # print("matches: ", matches)
+        # serializer = TournamentMatchSerializer(matches, many=True)
+       
+        matches = tournament.matches.all().order_by('id')
 
         if matches:
             serialized_matches = TournamentMatchSerializer(matches, many=True)
@@ -808,9 +812,10 @@ class TournamentMatchList(APIView):
             serializer = TournamentMatchListSerializer(data={
                 'tournament_name': tournament_name,
                 'date': tournament.created_at,
-                'round': matches.last().round_number,
+                'round': matches.last().round_number + 1,
                 'winner': final_winner,
-                'matches': serialized_matches.data
+                'nbr_player_setting': tournament.setting.nbr_of_player,
+                'matches': serialized_matches.data,
             })
             serializer.is_valid()
             return Response(serializer.data)

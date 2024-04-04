@@ -97,6 +97,7 @@ class MatchGeneratorSerializer(serializers.Serializer):
 class TournamentMatchSerializer(serializers.ModelSerializer):
     winner_username = serializers.CharField(source='winner.username', read_only=True)
     players = PlayerSerializer(many=True)
+    # players = serializers.SerializerMethodField()
     tournament_name = serializers.SerializerMethodField()
 
     def get_tournament_name(self, obj):
@@ -106,6 +107,11 @@ class TournamentMatchSerializer(serializers.ModelSerializer):
         except Tournament.DoesNotExist:
             return None
 
+    
+    # def get_players(self, obj):
+    #     players = obj.players.all().order_by('id')
+    #     return [player.username for player in players]
+
     class Meta:
         model = TournamentMatch
         fields = ['id', 'state', 'tournament_name', 'winner_username', 'round_number', 'players']
@@ -114,8 +120,10 @@ class TournamentMatchListSerializer(serializers.Serializer):
     tournament_name = serializers.CharField()
     date = serializers.CharField(source='created_at')
     round = serializers.IntegerField()
+    nbr_player_setting = serializers.IntegerField()
     winner = serializers.CharField()
     matches = TournamentMatchSerializer(many=True)
+    
 
 
 class GamemodeDataSerializer(serializers.ModelSerializer):
@@ -214,7 +222,7 @@ class SimpleMatchSerializer(serializers.ModelSerializer):
         fields = ['id', 'tournament_id', 'round_number', 'players', 'winner']
 
     def get_players(self, obj):
-        players = obj.players.all()
+        players = obj.players.all().order_by('id')
         return [player.username for player in players]
 
     def get_winner(self, obj):
