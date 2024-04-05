@@ -141,7 +141,7 @@ export default class LoginPage extends AbstractComponent {
 				initSocketConnection();
 
 				let details = await fetchUserDetails();
-				sessionStorage.setItem('userDetails', JSON.stringify(details));
+				// sessionStorage.setItem('userDetails', JSON.stringify(details));
 
 				if (body.requires_2fa) {
 					displayPopup('login successful, please enter your 2fa code', 'info');

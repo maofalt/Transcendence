@@ -43,7 +43,8 @@ export default class ProfilePage extends AbstractComponent {
 			two_factor_method: "",
 		}
 
-		let elemsToBeFilled = {};
+		this.userElemsToBeFilled = {};
+		this.friendElemsToBeFilled = {};
 
 		// this.user = JSON.parse(sessionStorage.getItem("userDetails"));
 		// // console.log("USER:", this.user);
@@ -59,9 +60,9 @@ export default class ProfilePage extends AbstractComponent {
 		const userInfo = this.makeEditableUserInfo();
 		
 		// create the three pannels with user info and stats
-		const personalInfo = this.createPersonalInfoPannel(elemsToBeFilled);
-		const gameStats = this.createGameStatsPannel(elemsToBeFilled);
-		const matchHistory = this.createMatchHistoryPannel(elemsToBeFilled);
+		const personalInfo = this.createPersonalInfoPannel(this.userElemsToBeFilled);
+		const gameStats = this.createGameStatsPannel(this.userElemsToBeFilled);
+		const matchHistory = this.createMatchHistoryPannel(this.userElemsToBeFilled);
 
 		// create the delete account button
 		const deleteButton = new CustomButton({content: "Delete Account", delete: true, style: {margin: "10px 10px"}});
@@ -77,10 +78,24 @@ export default class ProfilePage extends AbstractComponent {
 
 
 		/* FRIEND PROFILE PANNEL */
-		this.friendElemsToBeFilled = {};
-		const friendProfile = new Pannel({dark: false, title: "Profile"});
-		friendProfile.shadowRoot.querySelector("#pannel-title").style.setProperty("padding", "0px 0px 0px 30px");
-		friendProfile.style.setProperty("display", "none");
+		const friendProfile = document.createElement("div");
+		friendProfile.style.display = "none";
+		friendProfile.style.position = "fixed";
+		friendProfile.style.top = "0";
+		friendProfile.style.left = "0";
+		friendProfile.style.width = "100%";
+		friendProfile.style.height = "100%";
+		friendProfile.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
+		
+		const friendProfilePannel = new Pannel({dark: false, title: "Profile"});
+		friendProfilePannel.shadowRoot.querySelector("#pannel-title").style.setProperty("padding", "0px 0px 0px 30px");
+		friendProfilePannel.style.position = "fixed";
+		friendProfilePannel.style.top = "50%";
+		friendProfilePannel.style.left = "50%";
+		friendProfilePannel.style.transform = "translate(-50%, -50%)";
+
+		friendProfile.appendChild(friendProfilePannel);
+
 		this.friendElemsToBeFilled.friendProfile = friendProfile;
 		
 		// create the user info section with the avatar
@@ -91,9 +106,9 @@ export default class ProfilePage extends AbstractComponent {
 		const friendGameStats = this.createGameStatsPannel(this.friendElemsToBeFilled);
 		const friendMatchHistory = this.createMatchHistoryPannel(this.friendElemsToBeFilled);
 
-		friendProfile.shadowRoot.appendChild(friendUserInfo);
-		friendProfile.shadowRoot.appendChild(friendGameStats);
-		friendProfile.shadowRoot.appendChild(friendMatchHistory);
+		friendProfilePannel.shadowRoot.appendChild(friendUserInfo);
+		friendProfilePannel.shadowRoot.appendChild(friendGameStats);
+		friendProfilePannel.shadowRoot.appendChild(friendMatchHistory);
 
 
 		/* FRIENDS SECTION */
@@ -115,26 +130,14 @@ export default class ProfilePage extends AbstractComponent {
 
 		// friends list pannel
 		const friendsListPannel = new Pannel({dark: true, title: `Friends List  ( ... )} )`});
-		elemsToBeFilled.pannelTitle = friendsListPannel.shadowRoot.querySelector("#pannel-title"); // add to elemsToBeFilled to fill in fetch function
+		this.userElemsToBeFilled.pannelTitle = friendsListPannel.shadowRoot.querySelector("#pannel-title"); // add to elemsToBeFilled to fill in fetch function
 
 		// create the friends list
 		const friendsList = new FriendsList({ profileClick: this.showFriendProfile });
-		// console.log("\nWHAA\n", friendsList);
-		// console.log("\nWHAA\n", friendsList.friends);
-
-		// friendsList.friends.forEach(boop => {
-		// 	console.log("boop", boop)
-		// });
-		// friendsList.friends.forEach(([block, data]) => {
-		// 	console.log("bwh", data);
-		// 	block.style.cursor = "pointer";
-		// 	block.onclick = () => this.showFriendProfile(data);
-		// });
 
 		friendsListPannel.shadowRoot.appendChild(friendsList);
 		friendPannel.shadowRoot.appendChild(addFriend);
 		friendPannel.shadowRoot.appendChild(friendsListPannel);
-
 
 		/* DELETION CONFIRMATION PANNEL */
 		const areYouSure = new Pannel({dark: true, title: "Are you sure you want to delete your account?\nThis can't be undone!", style: {display: "none", padding: "20px 20px 20px 20px"}});
@@ -170,110 +173,136 @@ export default class ProfilePage extends AbstractComponent {
 		this.shadowRoot.appendChild(friendProfile); // friend profile popup with stats and info about a friend
 
 		// fill in the values that need to be fetched
-		this.fillUserValues(elemsToBeFilled);
-		this.fillMatchHistory(elemsToBeFilled.matchRows);
+		this.fillUserValues(this.userElemsToBeFilled);
+		this.fillGameStats(this.userElemsToBeFilled);
 	}
 
 	showFriendProfile = async (friendData) => {
-		this.friendElemsToBeFilled.friendProfile.style.setProperty("display", "block");
+		// this.friendElemsToBeFilled.friendProfile.style.setProperty("display", "block");
+		fadeIn(this.friendElemsToBeFilled.friendProfile);
 		this.friendElemsToBeFilled.friendUserInfo.fetchAndFillElems(friendData);
+		this.fillGameStats(this.friendElemsToBeFilled, friendData.username);
+		this.friendElemsToBeFilled.friendProfile.onclick = (e) => {
+			if (e.target === this.friendElemsToBeFilled.friendProfile) {
+				// this.friendElemsToBeFilled.friendProfile.style.setProperty("display", "none");
+				fadeOut(this.friendElemsToBeFilled.friendProfile);
+			}
+		}
 	}
 
 	fillUserValues = async (elemsToBeFilled) => {
 		let user = JSON.parse(sessionStorage.getItem("userDetails"));
 		if (!user)
 			user = await fetchUserDetails();
+		let gameStats = await this.fetchGameStats(user.username);
+		user.wins = gameStats.nbr_of_won_matches;
+		user.losses = gameStats.nbr_of_lost_matches;
+		user.username = "woo";
+		console.log("User:", user);
+		await elemsToBeFilled.userInfo.fetchAndFillElems(user);
 		elemsToBeFilled.userPlayername.textContent = user.playername;
 		elemsToBeFilled.userEmail.textContent = user.email;
-		elemsToBeFilled.matchTotal.textContent = user.total;
-		elemsToBeFilled.matchWins.textContent = user.wins;
-		elemsToBeFilled.matchLosses.textContent = user.losses;
-		elemsToBeFilled.matchWinrate.textContent = user.winrate;
 		elemsToBeFilled.pannelTitle.textContent = `Friends List  ( ${user.friends_count} )`;
 	}
 
-	fillMatchHistory = async (matchRows) => {
-		// let matchHistory = await fetchMatchHistory();
-		let matchHistory = [
-			{
-				id: "001",
-				tournament: "Great Big Tournament",
-				date: "01-03-2021",
-				winner: "yridgway"
-			},
-			{
-				id: "002",
-				tournament: "Great Big Tournament",
-				date: "01-03-2021",
-				winner: "yridgway"
-			},
-			{
-				id: "003",
-				tournament: "Great Big Tournament",
-				date: "01-03-2021",
-				winner: "yridgway"
-			},
-			{
-				id: "004",
-				tournament: "Great Big Tournament",
-				date: "01-03-2021",
-				winner: "yridgway"
-			},
-			{
-				id: "005",
-				tournament: "Great Big Tournament",
-				date: "01-03-2021",
-				winner: "yridgway"
-			},
-			{
-				id: "006",
-				tournament: "Great Big Tournament",
-				date: "01-03-2021",
-				winner: "yridgway"
-			},
-			{
-				id: "007",
-				tournament: "Great Big Tournament",
-				date: "01-03-2021",
-				winner: "yridgway"
-			},
-			{
-				id: "008",
-				tournament: "Great Big Tournament",
-				date: "01-03-2021",
-				winner: "yridgway"
-			},
-			{
-				id: "009",
-				tournament: "Great Big Tournament",
-				date: "01-03-2021",
-				winner: "yridgway"
-			},
-			{
-				id: "010",
-				tournament: "Great Big Tournament",
-				date: "01-03-2021",
-				winner: "yridgway"
+	fillGameStats = async (elemsToBeFilled, username) => {
+		if (!username) {
+			let details = JSON.parse(sessionStorage.getItem("userDetails"));
+			if (!details) {
+				details = await fetchUserDetails();
+				// sessionStorage.setItem("userDetails", JSON.stringify(details));
 			}
-		];
-		matchRows.innerHTML = "";
+			username = details.username;
+		}
+		// let matchHistory = [
+		// 	{
+		// 		id: "001",
+		// 		tournament: "Great Big Tournament",
+		// 		date: "01-03-2021",
+		// 		winner: "yridgway"
+		// 	},
+		// 	{
+		// 		id: "002",
+		// 		tournament: "Great Big Tournament",
+		// 		date: "01-03-2021",
+		// 		winner: "yridgway"
+		// 	},
+		// 	{
+		// 		id: "003",
+		// 		tournament: "Great Big Tournament",
+		// 		date: "01-03-2021",
+		// 		winner: "yridgway"
+		// 	},
+		// 	{
+		// 		id: "004",
+		// 		tournament: "Great Big Tournament",
+		// 		date: "01-03-2021",
+		// 		winner: "yridgway"
+		// 	},
+		// 	{
+		// 		id: "005",
+		// 		tournament: "Great Big Tournament",
+		// 		date: "01-03-2021",
+		// 		winner: "yridgway"
+		// 	},
+		// 	{
+		// 		id: "006",
+		// 		tournament: "Great Big Tournament",
+		// 		date: "01-03-2021",
+		// 		winner: "yridgway"
+		// 	},
+		// 	{
+		// 		id: "007",
+		// 		tournament: "Great Big Tournament",
+		// 		date: "01-03-2021",
+		// 		winner: "yridgway"
+		// 	},
+		// 	{
+		// 		id: "008",
+		// 		tournament: "Great Big Tournament",
+		// 		date: "01-03-2021",
+		// 		winner: "yridgway"
+		// 	},
+		// 	{
+		// 		id: "009",
+		// 		tournament: "Great Big Tournament",
+		// 		date: "01-03-2021",
+		// 		winner: "yridgway"
+		// 	},
+		// 	{
+		// 		id: "010",
+		// 		tournament: "Great Big Tournament",
+		// 		date: "01-03-2021",
+		// 		winner: "yridgway"
+		// 	}
+		// ];
+		let gameStats = await this.fetchGameStats(username);
+
+		elemsToBeFilled.matchTotal.textContent = gameStats.total_played;
+		// elemsToBeFilled.tournamentWins.textContent = gameStats.nbr_of_won_tournaments;
+		elemsToBeFilled.matchWins.textContent = gameStats.nbr_of_won_matches;
+		elemsToBeFilled.matchLosses.textContent = gameStats.nbr_of_lost_matches;
+		elemsToBeFilled.matchWinrate.textContent = gameStats.nbr_of_won_matches / gameStats.total_played * 100 || "N/A";
+		let matchHistory = gameStats.played_tournaments;
+		console.log("Match History:", matchHistory);
+		elemsToBeFilled.matchRows.innerHTML = "";
 		matchHistory.forEach(match => {
-			console.log("Match:", match);
+			// console.log("Match:", match);
 			let matchRow = document.createElement("div");
 			matchRow.classList.add("match-row");
 			matchRow.innerHTML = `
 			<span class="match-id">${match.id}</span>
-			<span class="tournament-name">${match.tournament}</span>
+			<span class="tournament-name">${match.tournament_name}</span>
 			<span class="date">${match.date}</span>
 			<span class="winner">${match.winner}</span>
 			`;
-			matchRows.appendChild(matchRow);
+			elemsToBeFilled.matchRows.appendChild(matchRow);
 		});
 	}
 
-	fetchMatchHistory = async (userId) => {
-		let matchHistory = [];
-		await easyFetch(`/api/user_management/auth/stats/${userId}`)
+	fetchGameStats = async (username) => {
+		let gameStats = [];
+		await easyFetch(`/api/tournament/stats/${username}`)
 		.then(res => {
 			let response = res.response;
 			let body = res.body;
@@ -281,7 +310,7 @@ export default class ProfilePage extends AbstractComponent {
 			if (!response || !body) {
 				throw new Error("Response is null");
 			} else if (response.status === 200) {
-				matchHistory = body;
+				gameStats = body;
 			} else {
 				throw new Error(body.error || JSON.stringify(body));
 			}
@@ -289,7 +318,7 @@ export default class ProfilePage extends AbstractComponent {
 		.catch(error => {
 			displayPopup(error.message || error, "error");
 		});
-		return matchHistory;
+		return gameStats;
 	}
 
 	deleteAccount = async () => {
@@ -366,7 +395,7 @@ export default class ProfilePage extends AbstractComponent {
 	}
 
 	createGameStatsPannel = (elemsToBeFilled) => {
-		const gameStats = new Pannel({dark: true, title: "Game Stats", style: {display: "block", padding: "0px 0px 0px 20px"}});
+		const gameStats = new Pannel({dark: true, title: "Game Stats", style: {display: "block", padding: "0px 0px 0px 20px", width: "500px"}});
 		gameStats.shadowRoot.querySelector("#pannel-title").style.setProperty("margin", "10px 0px");
 		let stats = document.createElement("div");
 		stats.innerHTML = profileStatsHtml;
@@ -379,7 +408,7 @@ export default class ProfilePage extends AbstractComponent {
 	}
 
 	createMatchHistoryPannel = (elemsToBeFilled) => {
-		const matchHistory = new Pannel({dark: true, title: "Match History", style: {display: "block", padding: "20px 20px 20px 20px"}});
+		const matchHistory = new Pannel({dark: true, title: "Match History", style: {display: "block", padding: "20px 20px 20px 20px", width: "500px"}});
 		matchHistory.shadowRoot.querySelector("#pannel-title").style.setProperty("margin", "10px 0px");
 		let history = document.createElement("div");
 		history.innerHTML = profileHistoryHtml;
@@ -390,6 +419,7 @@ export default class ProfilePage extends AbstractComponent {
 
 	makeEditableUserInfo = () => {
 		const userInfo = new UserInfo({});
+		this.userElemsToBeFilled.userInfo = userInfo;
 		
 		userInfo.imgBox.onmouseover = (e) => {
 			userInfo.editOverlay.style.display = "block";

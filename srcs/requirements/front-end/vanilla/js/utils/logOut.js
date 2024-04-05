@@ -5,8 +5,7 @@ import fetchUserDetails from "@utils/fetchUserDetails";
 import { navigateTo } from '@utils/Router.js';
 
 export default async function logOut() {
-	sessionStorage.removeItem("accessToken");
-	sessionStorage.removeItem("tokenType");
+
 	await easyFetch('/api/user_management/auth/logout', {
 		method: 'POST',
 		headers: {
@@ -40,7 +39,7 @@ export default async function logOut() {
 	});
 
 	sessionStorage.clear();
-	
+
 	displayPopup("You have been logged out", "success");
 
 	navigateTo("/");

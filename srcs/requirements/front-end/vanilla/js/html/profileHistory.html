@@ -29,6 +29,7 @@
 	.history-container {
 		width: 100%; /* Adjust based on your layout */
 		padding: 10px;
+		padding-right: 0; /* Remove right padding */
 		box-sizing: border-box;
 	}
 	
@@ -64,9 +65,17 @@
 		flex: 2;
 		text-align: right;
 	}
-
 	#table-head {
 		text-decoration: underline;
+		padding-right: 15px;
+	}
+	#match-rows {
+		overflow-y: auto;
+		height: 150px;
+		padding-right: 5px;
+		border-top: 2px solid rgba(255, 255, 255, 0.1);
+		scrollbar-color: rgba(255, 255, 255, 0.1) rgba(255, 255, 255, 0.1);
+		scrollbar-width: thin;
 	}
 </style>
 <div class="history-container">

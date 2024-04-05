@@ -79,19 +79,23 @@ export default class UserInfo extends AbstractComponent {
 	}
 
 	fetchAndFillElems = async (details) => {
-		// console.log("DETAILS: ", details);
+		// if details has been passed in options, use it. Otherwise, fetch current user details
 		if (!details) {
 			details = JSON.parse(sessionStorage.getItem("userDetails"));
 			// console.log("DETAILS:", details);
-			if (!details)
+			if (!details) {
 				details = await fetchUserDetails();
+				// sessionStorage.setItem("userDetails", JSON.stringify(details));
+			}
 		}
 		if (!details)
 			return ;
+		details.wins = details.wins ? details.wins : "-";
+		details.losses = details.losses ? details.losses : "-";
 		this.elemsToBeFilled.avatar.src = details.avatar;
 		this.elemsToBeFilled.username.textContent = details.username;
 		this.elemsToBeFilled.statusIndicator.textContent = details.is_online ? "online" : "offline";
-		this.elemsToBeFilled.winsLosses.textContent = `${details.wins ? details.wins: "-"} W / ${details.losses ? details.losses: "-"} L`
+		this.elemsToBeFilled.winsLosses.textContent = `${details.wins} W / ${details.losses} L`
 		this.elemsToBeFilled.status.style.color = details.is_online ? "green" : "red";
 		this.elemsToBeFilled.statusCircle.style.backgroundColor = details.is_online ? "green" : "red";
 	}
