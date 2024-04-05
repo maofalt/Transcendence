@@ -173,10 +173,12 @@ class BallDataSerializer(serializers.ModelSerializer):
     speed = serializers.DecimalField(max_digits=3, decimal_places=2, source='ball_speed')
     radius = serializers.DecimalField(max_digits=3, decimal_places=2, source='ball_radius')
     color = serializers.CharField(source='ball_color')
+    model = serializers.CharField(source='ball_model')
+    texture = serializers.CharField(source='ball_texture')
     
     class Meta:
         model = MatchSetting
-        fields = ['speed', 'radius', 'color']
+        fields = ['speed', 'radius', 'color', 'model', 'texture']
 
 class SimplePlayerSerializer(serializers.ModelSerializer):
     accountID = serializers.CharField(source='username')
