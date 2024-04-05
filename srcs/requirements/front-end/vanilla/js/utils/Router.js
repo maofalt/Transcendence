@@ -37,8 +37,10 @@ export const routes = {
 	'/play': {
 		path: '/play',
 		view: Game,
+		component: 'game-view',
 		title: 'Game',
-		buttonText: 'Play'
+		buttonText: 'Play',
+		requiresLogin: true,
 	},
 	'/game': {
 		path: '/game',

@@ -91,7 +91,7 @@ function gameLoop(matchID) {
 		clearInterval(match.gameInterval); // stop the loop
 		// match.gameState.ball.dir = match.gameState.camera.pos.sub(match.gameState.ball.pos);
 		game.to(matchID).emit('end-game', match.gameState);
-		postMatchResult(match.gameState.jisus_matchID, match.gameState.winner.accountID); // send the result of the match back;
+		// postMatchResult(match.gameState.jisus_matchID, match.gameState.winner.accountID); // send the result of the match back;
 		matches.delete(matchID); // then delete the match;
 		return ;
 	}
@@ -242,13 +242,17 @@ function handleConnectionV2(client) {
 }
 
 function getMatch(client) {
-	client.matchID = client.handshake.query.matchID;
+	client.matchID = parseInt(client.handshake.query.matchID);
 	if (!client.matchID) {
+		console.log("client.handshake.query: ", client.handshake.query);
+		console.log("client.matchID: ", client.matchID);
 		console.error('Authentication error: Missing matchID');
 		throw new Error('Authentication error: Missing matchID.');
 	}
 	client.match = matches.get(client.matchID);
 	if (!client.match) {
+		console.log("matchid: ", client.matchID);
+		console.log("ALL MATCHES:\n", matches);
 		throw new Error('Match not found');
 	}
 }
@@ -390,7 +394,7 @@ game.on('connection', (client) => {
 				if (data.ongoing) {
 					data.winner = player;
 					if (data.jisus_matchID) {
-						postMatchResult(match.gameState.jisus_matchID, match.gameState.winner.accountID);
+						// postMatchResult(match.gameState.jisus_matchID, match.gameState.winner.accountID);
 					}
 					matches.delete(client.matchID);
 				}
@@ -422,21 +426,41 @@ game.on('connection', (client) => {
 	}
 });
 
-function generateMatchID(gameSettings) {
-	// Convert request content to a string representation
-	const string = JSON.stringify(gameSettings);
-	// Use SHA-256 to hash the string
-	return crypto.createHash('sha256').update(string).digest('hex');
+function generateMatchID() {
+	let matchID = -1;
+	const keys = Array.from(matches.keys());
+	if (keys.length > 0) {
+		const minKey = Math.min(...keys);
+		if (minKey > 0)
+			matchID = -1;
+		else
+			matchID = minKey - 1;
+		if (!matchID || matchID == NaN)
+			matchID = -1;
+	}
+	return matchID;
 }
+
+// // Convert request content to a string representation
+// const string = JSON.stringify(gameSettings);
+// // Use SHA-256 to hash the string
+// return crypto.createHash('sha256').update(string).digest('hex');
 
 function verifyMatchSettings(settings) {
 	console.log("MATCH SETTINGS VERIFICATION :");
 	console.log(settings);
 
+	const expectedCategories = ['gamemodeData', 'fieldData', 'paddlesData', 'ballData'];
+    for (const category of expectedCategories) {
+        if (!settings.hasOwnProperty(category)) {
+            return `Settings is missing ${category}`;
+        }
+    }
+
 	const checks = {
 		gamemodeData: {
 			nbrOfPlayers: value => (value >= 1 && value <= 8) ? null : "Nbr of players should be between 2 and 8",
-			// nbrOfRounds: value => (value >= 1 && value <= 10) ? null : "Nbr of Rounds should be between 1 and 10",
+			nbrOfRounds: value => (value >= 1 && value <= 10) ? null : "Nbr of Rounds should be between 1 and 10",
 		},
 		fieldData: {
 			sizeOfGoals: value => (value >= 15 && value <= 30) ? null : "Size of goals should be between 15 and 30",
@@ -452,7 +476,11 @@ function verifyMatchSettings(settings) {
 	};
 
 	for (const category in checks) {
+		if (!settings.hasOwnProperty(category))
+			return `Game Settings are missing ${category} property`;
 		for (const setting in checks[category]) {
+			if (checks[category].hasOwnProperty(setting) && !settings[category].hasOwnProperty(setting))
+				return `Game Settings are missing ${setting} property in ${category} object`;
 			const check = checks[category][setting];
 			const value = settings[category][setting];
 			const error = check(value);
@@ -498,9 +526,11 @@ function postMatchResult(matchId, winnerId) {
 }
 
 app.post('/createMatch', (req, res) => {
-	const gameSettings = req.body;
+	const { tournament_id, match_id, ...gameSettings } = req.body;
+
+	console.log("\nbanana\n", req.body);
 	
-	let matchID = setupMatch(gameSettings, gameSettings.tournament_id, gameSettings.match_id, res);
+	let matchID = setupMatch(gameSettings, tournament_id, match_id, res);
 	if (!matchID)
 		return ;
 
@@ -512,6 +542,7 @@ app.post('/createMultipleMatches', (req, res) => {
 	const matchIDs = [];
 
 	console.log("\nCREATE MULTIPLE MATCHES\n");
+	console.log(allGameSettings);
 
 	for (settings of allGameSettings.matches) {
 		const { tournament_id, match_id, ...gameSettings } = settings;
@@ -528,7 +559,16 @@ app.post('/createMultipleMatches', (req, res) => {
 
 function setupMatch(gameSettings, tournament_id, match_id, res) {
 
-	const matchID = generateMatchID(gameSettings);
+	console.log("CREATING MATCH : ", gameSettings);
+	gameSettings.gamemodeData.nbrOfRounds = 1;
+	if (!match_id) {
+		console.log("Generating match ID");
+		match_id = generateMatchID();
+		console.log("Generated match ID: ", match_id);
+	}
+
+	const matchID = match_id; // Convert match_id to a string
+	let error = verifyMatchSettings(gameSettings);
 	
 	if (matches.has(matchID)) {
 		console.log("Match already exists");
@@ -536,7 +576,7 @@ function setupMatch(gameSettings, tournament_id, match_id, res) {
 		return null;
 	}
 	
-	let error = verifyMatchSettings(gameSettings);
+	// let error = verifyMatchSettings(gameSettings);
 	if (error) {
 		console.log(error);
 		res.status(400).json({ error });
@@ -547,7 +587,7 @@ function setupMatch(gameSettings, tournament_id, match_id, res) {
 	const players = gameSettings.playersData.map(player => player.accountID);
 
 	if (players.length == 1) {
-		postMatchResult(match_id, players[0]);
+		// postMatchResult(match_id, players[0]);
 		res.json({ matchID });
 		return null;
 	}

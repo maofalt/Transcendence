@@ -1,0 +1,14 @@
+/*Number of players */
+:host {
+    display: block;
+    margin: 0 auto;
+}
+
+.players-icon {
+    width: 40px;
+    height: 40px;
+    background-size: cover;
+    background-position: center;
+    margin-left:auto;
+    margin-right: auto;
+}
