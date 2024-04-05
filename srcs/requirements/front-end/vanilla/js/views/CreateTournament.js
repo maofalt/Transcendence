@@ -153,8 +153,8 @@ export default class CreateTournament extends AbstractView {
 					"speed": parseFloat(document.getElementById('ball_speed').value),
 					"radius": parseFloat(document.getElementById('ball_radius').value),
 					"color": document.getElementById('ball_color').value,
-					"model": document.getElementById('ball-model').value,
-					"texture": document.getElementById('ball-texture').value
+					"model": document.getElementById('ball_model').value,
+					"texture": document.getElementById('ball_texture').value
 				},
 				"playersData": []
 			}

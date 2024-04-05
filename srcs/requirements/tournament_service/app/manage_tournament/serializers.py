@@ -137,15 +137,20 @@ class TournamentMatchListSerializer(serializers.Serializer):
     matches = TournamentMatchSerializer(many=True)
     
 class GamemodeDataSerializer(serializers.ModelSerializer):
-    nbrOfRounds = serializers.IntegerField(source='round_number') #assume it is for current round number
+    nbrOfRounds = serializers.SerializerMethodField() 
     nbrOfPlayers = serializers.SerializerMethodField() # it is returning not a nbr_of_player for match setting, it returns actaul number of payer for a current match
+    timeLimit = serializers.IntegerField(default=0)
 
     class Meta:
         model = TournamentMatch
-        fields = ['nbrOfPlayers', 'nbrOfRounds']
+        fields = ['nbrOfPlayers', 'nbrOfRounds', 'timeLimit']
 
     def get_nbrOfPlayers(self, obj):
         return obj.players.count()
+    
+    def get_nbrOfRounds(self, obj):
+        setting = MatchSetting.objects.get(id=obj.match_setting_id)
+        return setting.nbr_of_rounds
 
 class FieldDataSerializer(serializers.ModelSerializer):
     wallsFactor = serializers.IntegerField(source='walls_factor')
@@ -176,14 +181,14 @@ class BallDataSerializer(serializers.ModelSerializer):
 class SimplePlayerSerializer(serializers.ModelSerializer):
     accountID = serializers.CharField(source='username')
     assigned_colors = [
-        '#FF0000',  # Red
-        '#0000FF',  # Blue
-        '#00FF00',  # Green
-        '#FFFF00',  # Yellow
-        '#444444',  # Dark Grey
-        '#FFC0CB',  # Magenta
-        '#00FFFF',  # Cyan
-        '#FFFFFF',  # White
+        '0xFF0000',  # Red
+        '0x0000FF',  # Blue
+        '0x00FF00',  # Green
+        '0xFFFF00',  # Yellow
+        '0x444444',  # Dark Grey
+        '0xFFC0CB',  # Magenta
+        '0x00FFFF',  # Cyan
+        '0xFFFFFF',  # White
     ]
 
     class Meta:

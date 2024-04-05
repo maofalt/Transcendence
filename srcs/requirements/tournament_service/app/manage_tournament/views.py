@@ -74,8 +74,11 @@ class TournamentListCreate(generics.ListCreateAPIView):
             'paddle_speed': validated_data.get('paddle_speed', 0.5),
             'ball_speed': validated_data.get('ball_speed', 0.7),
             'ball_radius': validated_data.get('ball_radius', 1),
-            'ball_color': validated_data.get('ball_color', '#000000'),
+            'ball_color': validated_data.get('ball_color', '0x000000'),
+            'ball_model': validated_data.get('ball_model', ''),
+            'ball_texture': validated_data.get('ball_texture', ''),
             'nbr_of_player': validated_data.get('nbr_of_player_match', 2),
+            'nbr_of_rounds': validated_data.get('nbr_of_rounds', 2),
         }
         match_setting = MatchSetting.objects.create(**match_setting_data)
 
@@ -1005,9 +1008,9 @@ def generate_round(request, id, round):
         }
         serialized_matches.append(match_data)
 
-    # webhook_thread = Thread(target=send_webhook_request, args=(serialized_matches,))
-    # webhook_thread.start()
-
+    webhook_thread = Thread(target=send_webhook_request, args=(serialized_matches,))
+    webhook_thread.start()
+    print("serialized_matches:\n", serialized_matches)
     # Update tournament, matches state
     tournament.state = "started"
     tournament.save()
@@ -1015,25 +1018,28 @@ def generate_round(request, id, round):
         match.state = "playing"
         match.save()
 
-    success, message = send_webhook_request(serialized_matches)
-    if success:
-        return Response(message, status=status.HTTP_200_OK)
-    else:
-        return Response({'error': message}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    return Response({'message': 'Webhook request initiated'}, status=status.HTTP_200_OK)
+    # success, message = send_webhook_request(serialized_matches)
+    # if success:
+    #     return Response(message, status=status.HTTP_200_OK)
+    # else:
+    #     return Response({'error': message}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 def send_webhook_request(serialized_matches):
     game_backend_endpoint = 'http://game:3000/createMultipleMatches'
+
+    print("--------------------------------------\n")
 
     payload = {'matches': serialized_matches}
     response = requests.post(game_backend_endpoint, json=payload)
 
     if response.status_code == 200:
         print("Webhook request successfully sent to the game backend.")
-        return True, "Webhook request successfully sent to the game backend."
+        # return True, "Webhook request successfully sent to the game backend."
     else:
         print("Failed to send webhook request to the game backend. Status code:", response.status_code)
-        return False, "Failed to send webhook request to the game backend. Status code: " + str(response.status_code)
+        # return False, "Failed to send webhook request to the game backend. Status code: " + str(response.status_code)
 
 # @authentication_classes([CustomJWTAuthentication])
 def stream_notification(request, username, user_id, tournament_name, round_nbr):
