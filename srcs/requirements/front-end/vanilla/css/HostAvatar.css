@@ -30,4 +30,7 @@
     font-weight: bold;
     flex-grow: 1;
     text-align: left;
+    vertical-align: middle;
+    margin-top: auto;
+    margin-bottom: auto;
 }

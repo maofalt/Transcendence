@@ -14,7 +14,7 @@ export async function renewToken() {
 	}).then(async res => {
 		let response = res.response;
 		let body = res.body;
-		console.log("body", body);
+		// console.log("body", body);
 		if (response === null) {
 			throw new Error("Response is null");
 		}

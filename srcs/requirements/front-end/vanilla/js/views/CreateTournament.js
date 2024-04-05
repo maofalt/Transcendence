@@ -6,6 +6,8 @@ import Game from '@views/Game.js';
 import { htmlToElement } from '@utils/htmlToElement';
 import CustomButton from '@components/CustomButton.js';
 import createTournamentHtml from '@html/createTournament.html?raw';
+import easyFetch from '@utils/easyFetch';
+import displayPopup from '@utils/displayPopup';
 
 export default class CreateTournament extends AbstractView {
 
@@ -15,6 +17,7 @@ export default class CreateTournament extends AbstractView {
 		this.getBasicGameSettings = this.getBasicGameSettings.bind(this);
 		this.addPlayerDataToGameSettings = this.addPlayerDataToGameSettings.bind(this);
 		this.getGameSettingsFromForm = this.getGameSettingsFromForm.bind(this);
+		this.handleSubmit = this.handleSubmit.bind(this);
 		// this.game = new Game();
 		// document.getElementById('gameContainer').removeChild(this.game.shadowRoot.querySelector("#leave-button"));
 	}
@@ -28,7 +31,7 @@ export default class CreateTournament extends AbstractView {
 			let createButton = new CustomButton({content: "Create Tournament", action: true,
 				style: {position: 'absolute', bottom: '30px', right: '3.3%', padding: "0px 30px"}});
 			tempDiv.appendChild(createButton);
-			createButton.onclick = () => this.handleSubmit.bind(this);
+			createButton.onclick = (event) => this.handleSubmit(event);
 			createButton.id = 'submitTournament';
 
 			// leave button
@@ -132,8 +135,6 @@ export default class CreateTournament extends AbstractView {
 		
 		try {
 			let gameSettings = {
-				// "tournament_id": 0,
-				// "match_id": 0,
 				"gamemodeData": {
 					"nbrOfPlayers": parseInt(document.getElementById('nbr_of_players_per_match').value),
 					"nbrOfRounds": parseInt(document.getElementById('nbr_of_rounds').value),
@@ -203,8 +204,6 @@ export default class CreateTournament extends AbstractView {
 
 	async getBasicGameSettings() {
 		let gameSettings = {
-			// "tournament_id": 0,
-			// "match_id": 0,
 			"gamemodeData": {
 				"nbrOfPlayers": 3,
 				"nbrOfRounds": 10,
@@ -259,10 +258,45 @@ export default class CreateTournament extends AbstractView {
 		};
 
 		console.log('Submitting tournament:', tournamentAndGameSettings);
-		try {
-		const response = await makeApiRequest('/api/tournament/create-and-list/', 'POST', tournamentAndGameSettings);
-		} catch (error) {
-		console.error('Failed to create tournament:', error);
-		}
+		easyFetch('/api/tournament/create-and-list/', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: tournamentAndGameSettings
+		})
+		.then(res => {
+			let response = res.response;
+			let body = res.body;
+
+			if (!response || !body) {
+				throw new Error('Response is null');
+			} else if (response.ok) {
+				displayPopup('Tournament created', 'info');
+				navigateTo('/tournament');
+			} else if (response.status === 400) {
+				this.highlightInvalidFields(body);
+				displayPopup(Object.values(body)[0], 'error');
+			} else {
+				displayPopup(body.error || JSON.stringify(body), 'error');
+			}
+		})
+		.catch(error => {
+			displayPopup(error.message || error, 'error');
+			console.error('Failed to create tournament:', error);
+		});
+	}
+
+	highlightInvalidFields = (error) => {
+		const errorKeys = Object.keys(error);
+		console.log(errorKeys[0]);
+		console.log("highlighting invalid fields")
+		const inputs = document.querySelectorAll('input');
+		inputs.forEach(input => {
+			if (errorKeys.includes(input.name))
+				input.style.border = '2px solid red';
+			else
+				input.style.border = '';
+		});
 	}
 }
