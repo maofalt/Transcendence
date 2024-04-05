@@ -41,10 +41,10 @@ from django.views.decorators.csrf import csrf_exempt, csrf_protect, ensure_csrf_
 
 # ------------------------ Tournament -----------------------------------
 class TournamentListCreate(generics.ListCreateAPIView):
-    queryset = Tournament.objects.all()
+    queryset = Tournament.objects.all().order_by('-created_at')
     serializer_class = TournamentSerializer
     authentication_classes = [CustomJWTAuthentication]
-  
+
     def get(self, request, *args, **kwargs):
         print(">> GET: loading page\n")
         tournaments = self.get_queryset()
@@ -54,29 +54,32 @@ class TournamentListCreate(generics.ListCreateAPIView):
 
     def post(self, request, *args, **kwargs):
         print(">> received POST to creat a new tournament\n")
+        print("request.data: \n", request.data)
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         validated_data = serializer.validated_data
+        print("validated_data: \n", validated_data)
         user_info = request.user
         if not isinstance(user_info, tuple) or len(user_info) != 2:
             raise exceptions.AuthenticationFailed('User information is not in the expected format')
 
         uid, username = user_info
         host, _ = Player.objects.get_or_create(id=uid, username=username) # created wiil return False if the player already exists
-
         match_setting_data = {
-            'duration_sec': validated_data.get('duration_sec', 210),
-            'max_score': validated_data.get('max_score', 5),
-            'walls_factor': validated_data.get('walls_factor', 0),
-            'size_of_goals': validated_data.get('size_of_goals', 15),
-            'paddle_height': validated_data.get('paddle_height', 10),
-            'paddle_speed': validated_data.get('paddle_speed', 0.5),
-            'ball_speed': validated_data.get('ball_speed', 0.7),
-            'ball_radius': validated_data.get('ball_radius', 1),
-            'ball_color': validated_data.get('ball_color', '#000000'),
-            'nbr_of_player': validated_data.get('nbr_of_player_match', 2),
+            'walls_factor': validated_data['setting']['walls_factor'],
+            'size_of_goals': validated_data['setting']['size_of_goals'],
+            'paddle_height': validated_data['setting']['paddle_height'],
+            'paddle_speed': validated_data['setting']['paddle_speed'],
+            'ball_speed': validated_data['setting']['ball_speed'],
+            'ball_radius': validated_data['setting']['ball_radius'],
+            'ball_color': validated_data['setting']['ball_color'],
+            'ball_model': validated_data['setting']['ball_model'],
+            'ball_texture': validated_data['setting']['ball_texture'],
+            'nbr_of_player': validated_data['nbr_of_player_match'],
+            'nbr_of_rounds': validated_data['setting']['nbr_of_rounds'],
         }
+        print("match_setting_data: ", match_setting_data)
         match_setting = MatchSetting.objects.create(**match_setting_data)
 
         tournament = Tournament.objects.create(
@@ -92,7 +95,7 @@ class TournamentListCreate(generics.ListCreateAPIView):
         tournament.players.add(host)
 
         serialized_tournament  = TournamentSerializer(tournament)
-        escaped_data = escape(serialized_tournament.data)
+        # escaped_data = escape(serialized_tournament.data)
         return Response(serialized_tournament.data, status=status.HTTP_201_CREATED)
 
 # ------------------------ Assigning Players on the Tournament Tree -----------------------------------
@@ -318,7 +321,7 @@ class MatchResult(APIView):
                 tournament.state = "ended"
                 tournament.save()
                 serializer = TournamentMatchSerializer(finished_matches, many=True)
-                return JsonResponse(serializer.data, status=status.HTTP_200_OK)
+                return JsonResponse(serializer.data, status=status.HTTP_200_OK, safe=False)
             else:
                 return JsonResponse({'message': 'An Error occurred while updating the next round matches.'}, status=HTTP_500_INTERNAL_SERVER_ERROR)
         for winner in winners:
@@ -371,7 +374,8 @@ class MatchResult(APIView):
         update = MatchResult.match_update(request, match.tournament_id, cur_round + 1)
         print('update: ', update)
         if update.status_code == 200:
-            return JsonResponse(update.data, status=update.status_code)   # tournament finished
+            data = json.loads(update.content.decode('utf-8'))
+            return JsonResponse(data, status=update.status_code, safe=False)   # tournament finished
         elif update.status_code != 201:
             error_data = json.loads(update.content.decode('utf-8'))
             return JsonResponse(error_data, status=update.status_code)
@@ -854,16 +858,6 @@ class TournamentMatchDetail(APIView):
         match.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-# class TournamentMatchList(ListAPIView):
-#     authentication_classes = [CustomJWTAuthentication]
-#     # permission_classes = [IsAuthenticated] 
-#     serializer_class = TournamentMatchSerializer
-
-#     def get_queryset(self):
-#         tournament_id = self.kwargs['id']
-#         return TournamentMatch.objects.filter(tournament_id=tournament_id).order_by('id')
-
-
 # ---------------------------- Match Operations -------------------------------
 class MatchStart(APIView):
     authentication_classes = [CustomJWTAuthentication]
@@ -1005,9 +999,9 @@ def generate_round(request, id, round):
         }
         serialized_matches.append(match_data)
 
-    # webhook_thread = Thread(target=send_webhook_request, args=(serialized_matches,))
-    # webhook_thread.start()
-
+    webhook_thread = Thread(target=send_webhook_request, args=(serialized_matches,))
+    webhook_thread.start()
+    print("serialized_matches:\n", serialized_matches)
     # Update tournament, matches state
     tournament.state = "started"
     tournament.save()
@@ -1015,25 +1009,28 @@ def generate_round(request, id, round):
         match.state = "playing"
         match.save()
 
-    success, message = send_webhook_request(serialized_matches)
-    if success:
-        return Response(message, status=status.HTTP_200_OK)
-    else:
-        return Response({'error': message}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    return Response({'message': 'Webhook request initiated'}, status=status.HTTP_200_OK)
+    # success, message = send_webhook_request(serialized_matches)
+    # if success:
+    #     return Response(message, status=status.HTTP_200_OK)
+    # else:
+    #     return Response({'error': message}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 def send_webhook_request(serialized_matches):
     game_backend_endpoint = 'http://game:3000/createMultipleMatches'
+
+    print("--------------------------------------\n")
 
     payload = {'matches': serialized_matches}
     response = requests.post(game_backend_endpoint, json=payload)
 
     if response.status_code == 200:
         print("Webhook request successfully sent to the game backend.")
-        return True, "Webhook request successfully sent to the game backend."
+        # return True, "Webhook request successfully sent to the game backend."
     else:
         print("Failed to send webhook request to the game backend. Status code:", response.status_code)
-        return False, "Failed to send webhook request to the game backend. Status code: " + str(response.status_code)
+        # return False, "Failed to send webhook request to the game backend. Status code: " + str(response.status_code)
 
 # @authentication_classes([CustomJWTAuthentication])
 def stream_notification(request, username, user_id, tournament_name, round_nbr):
@@ -1085,6 +1082,7 @@ class UnjoinTournament(APIView):
             raise exceptions.AuthenticationFailed('User information is not in the expected format')
 
         uid, playername = user_info
+        print("username: ", username, "playername: ", playername)
         if playername != username:
             return JsonResponse({'message': "You are not authorized to unjoin the Tournament"}, status=status.HTTP_403_FORBIDDEN)
         try:
