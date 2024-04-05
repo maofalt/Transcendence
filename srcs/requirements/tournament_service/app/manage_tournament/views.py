@@ -374,7 +374,8 @@ class MatchResult(APIView):
         update = MatchResult.match_update(request, match.tournament_id, cur_round + 1)
         print('update: ', update)
         if update.status_code == 200:
-            return JsonResponse(update.data, status=update.status_code, safe=False)   # tournament finished
+            data = json.loads(update.content.decode('utf-8'))
+            return JsonResponse(data, status=update.status_code, safe=False)   # tournament finished
         elif update.status_code != 201:
             error_data = json.loads(update.content.decode('utf-8'))
             return JsonResponse(error_data, status=update.status_code)
