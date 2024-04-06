@@ -85,9 +85,10 @@ export default class ProfilePage extends AbstractComponent {
 		friendProfile.style.left = "0";
 		friendProfile.style.width = "100%";
 		friendProfile.style.height = "100%";
-		friendProfile.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
+		friendProfile.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
 		
 		const friendProfilePannel = new Pannel({dark: false, title: "Profile"});
+		// friendProfilePannel.shadowRoot.querySelector("#button-container").shadowRoot.style.setProperty("display", "none");
 		friendProfilePannel.shadowRoot.querySelector("#pannel-title").style.setProperty("padding", "0px 0px 0px 30px");
 		friendProfilePannel.style.position = "fixed";
 		friendProfilePannel.style.top = "50%";
