@@ -67,7 +67,7 @@ export default class ProfilePage extends AbstractComponent {
 		// create the delete account button
 		const deleteButton = new CustomButton({content: "Delete Account", delete: true, style: {margin: "10px 10px"}});
 		deleteButton.onclick = () => {
-			areYouSure.style.display = "block";
+			fadeIn(areYouSure);
 		};
 
 		profile.shadowRoot.appendChild(userInfo);
@@ -141,24 +141,41 @@ export default class ProfilePage extends AbstractComponent {
 		friendPannel.shadowRoot.appendChild(friendsListPannel);
 
 		/* DELETION CONFIRMATION PANNEL */
-		const areYouSure = new Pannel({dark: true, title: "Are you sure you want to delete your account?\nThis can't be undone!", style: {display: "none", padding: "20px 20px 20px 20px"}});
+		const areYouSure = document.createElement("div"); // dark background overlay
+		areYouSure.style.display = "none";
 		areYouSure.style.position = "fixed";
-		areYouSure.style.top = "50%";
-		areYouSure.style.left = "50%";
-		areYouSure.style.transform = "translate(-50%, -50%)";
+		areYouSure.style.top = "0";
+		areYouSure.style.left = "0";
+		areYouSure.style.width = "100%";
+		areYouSure.style.height = "100%";
+		areYouSure.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
 		areYouSure.style.zIndex = "9999";
 
+		// pannel with delete account confirmation / cancel
+		const areYouSurePannel = new Pannel({dark: true, title: "Are you sure you want to delete your account?\nThis can't be undone!", style: {padding: "20px 20px 20px 20px"}});
+		areYouSurePannel.style.position = "fixed";
+		areYouSurePannel.style.top = "50%";
+		areYouSurePannel.style.left = "50%";
+		areYouSurePannel.style.transform = "translate(-50%, -50%)";
+
 		const confirmDeleteButton = new CustomButton({content: "Yes, delete my account", delete: true, style: {margin: "10px"}});
-		confirmDeleteButton.onclick = () => {
+		confirmDeleteButton.onclick = () => { // send delete request when clicking confirm
 			this.deleteAccount();
 		};
 		const cancelDeleteButton = new CustomButton({content: "No, keep my account", action: true, style: {margin: "10px"}});
-		cancelDeleteButton.onclick = () => {
-			areYouSure.style.display = "none";
+		cancelDeleteButton.onclick = () => { // fade out when clicking cancel
+			fadeOut(areYouSure);
 		};
+		areYouSure.onclick = (e) => { // fade out when clicking away from pannel
+			if (e.target === areYouSure) {
+				fadeOut(areYouSure);
+			}
+		}
 
-		areYouSure.shadowRoot.appendChild(confirmDeleteButton);
-		areYouSure.shadowRoot.appendChild(cancelDeleteButton);
+		areYouSurePannel.shadowRoot.appendChild(confirmDeleteButton);
+		areYouSurePannel.shadowRoot.appendChild(cancelDeleteButton);
+
+		areYouSure.appendChild(areYouSurePannel);
 	
 
 		/* OTHER CONSTRUCTION */
@@ -198,8 +215,6 @@ export default class ProfilePage extends AbstractComponent {
 		let gameStats = await this.fetchGameStats(user.username);
 		user.wins = gameStats.nbr_of_won_matches;
 		user.losses = gameStats.nbr_of_lost_matches;
-		user.username = "woo";
-		console.log("User:", user);
 		await elemsToBeFilled.userInfo.fetchAndFillElems(user);
 		elemsToBeFilled.userPlayername.textContent = user.playername;
 		elemsToBeFilled.userEmail.textContent = user.email;
