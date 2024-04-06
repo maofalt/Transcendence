@@ -124,8 +124,15 @@ class MatchSetting(models.Model):
         MaxValueValidator(7, message="Ball radius cannot exceed 7.")
         ]
     )
-    ball_color = models.CharField(max_length=7, default='#000000', 
+    ball_color = models.CharField(max_length=8, default='0x000000', 
     validators=[RegexValidator(r'^#(?:[0-9a-fA-F]{3}){1,2}$', message="Invalid color format.")])
+    ball_model = models.CharField(default='')
+    ball_texture = models.CharField(default='')
+    nbr_of_rounds = models.IntegerField(default=5, 
+        validators=[MinValueValidator(1), 
+        MaxValueValidator(10)
+        ]
+    )
     nbr_of_player = models.IntegerField(default=2, 
         validators=[MinValueValidator(2), 
         MaxValueValidator(8)
