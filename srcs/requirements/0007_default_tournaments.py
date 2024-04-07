@@ -16,7 +16,10 @@ def create_random_game_setting(account_id):
         "paddle_speed": round(random.uniform(0.1, 3), 2),
         "ball_speed": round(random.uniform(0.1, 3), 2),
         "ball_radius": round(random.uniform(0.5, 7), 2),
-        "ball_color": "#00ffff",
+        "ball_color": "0x00ffff",
+        "nbr_of_rounds": 5,
+        "ball_texture": '',
+        "ball_model": '',
     }
 
     return game_setting
@@ -58,7 +61,7 @@ def create_tournament(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('manage_tournament', '0005_remove_tournamentmatch_participants_and_more'),
+        ('manage_tournament', '0006_matchsetting_ball_model_matchsetting_ball_texture_and_more'),
     ]
 
     operations = [

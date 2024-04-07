@@ -564,7 +564,7 @@ app.post('/createMultipleMatches', (req, res) => {
 function setupMatch(gameSettings, tournament_id, match_id, res) {
 
 	console.log("CREATING MATCH : ", gameSettings);
-	gameSettings.gamemodeData.nbrOfRounds = 1;
+	// gameSettings.gamemodeData.nbrOfRounds = 1;
 	if (!match_id) {
 		console.log("Generating match ID");
 		match_id = generateMatchID();
