@@ -990,7 +990,7 @@ def generate_round(request, id, round):
         match.save()
         match_data = {
             'tournament_id': match.tournament_id,
-            'match_id': match.id,
+            'matchID': match.id,
             'gamemodeData': GamemodeDataSerializer(match).data,
             'fieldData': FieldDataSerializer(tournament.setting).data,
             'paddlesData': PaddlesDataSerializer(tournament.setting).data,
