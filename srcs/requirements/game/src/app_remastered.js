@@ -226,8 +226,10 @@ function handleConnectionV2(client) {
     // console.log('match: ', util.inspect(match, {depth: null}));
     // client.emit('generate', JSON.stringify(match));
 	console.log('---DATA---\n', match.gameState, '\n---END---\n');
+	console.log("before disaster");
     client.emit('generate', match.gameState);
-    
+    console.log("after disaster");
+
     // if (match.gameState.connectedPlayers == 1 && match.gameState.ongoing == false) {
 	// 	console.log("SETTING INTERVAL");
     //     match.gameInterval = setInterval(waitingRoom, 20, client.matchID);
@@ -613,13 +615,13 @@ function setupMatch(gameSettings, tournament_id, match_id, res) {
 		}
 	});
 
-	gameState.gameInterval = setInterval(gameLoop, 20, matchID);
+	matches[matchID].gameInterval = setInterval(waitingRoom, 20, matchID);
     render.getBallDir(gameState);
-	console.log("All matches:");
-	for (const [matchID, match] of matches) {
-		console.log("Match ID:", matchID);
-		console.log("Match Data:", match);
-	}
+	// console.log("All matches:");
+	// for (const [matchID, match] of matches) {
+	// 	console.log("Match ID:", matchID);
+	// 	console.log("Match Data:", match);
+	// }
 	return matchID;
 }
 

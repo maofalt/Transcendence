@@ -226,6 +226,7 @@ export default class Game extends AbstractComponent {
 
 		this.socket.on('generate', data => {
 			// Generate scene and update it
+			// let parsedData = JSON.parse(data);
 			data.playersArray = Object.values(data.players);
 			console.log("data : ", data);
 			this.generateScene(data, this.socket);
