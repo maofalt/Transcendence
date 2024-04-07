@@ -613,8 +613,13 @@ function setupMatch(gameSettings, tournament_id, match_id, res) {
 		}
 	});
 
-	gameState.gameInterval = setInterval(waitingRoom, 20, matchID);
+	gameState.gameInterval = setInterval(gameLoop, 20, matchID);
     render.getBallDir(gameState);
+	console.log("All matches:");
+	for (const [matchID, match] of matches) {
+		console.log("Match ID:", matchID);
+		console.log("Match Data:", match);
+	}
 	return matchID;
 }
 
