@@ -382,6 +382,14 @@ game.on('connection', (client) => {
 			// 	matches.delete(matchID);
 			// }
 		});
+
+		client.on("connection_error", (err) => {
+			console.log("CONNECTION ERROR LOG :")
+			console.log(err.req);      // the request object
+			console.log(err.code);     // the error code, for example 1
+			console.log(err.message);  // the error message, for example "Session ID unknown"
+			console.log(err.context);  // some additional error context
+		});
 		
 		// disconnect event
 		client.on('disconnect', () => {
@@ -398,7 +406,7 @@ game.on('connection', (client) => {
 					if (data.jisus_matchID) {
 						// postMatchResult(match.gameState.jisus_matchID, match.gameState.winner.accountID);
 					}
-					matches.delete(client.matchID);
+					// matches.delete(client.matchID);
 				}
 				// console.log("SENDING CLEAN MSG");
 				// client.emit("clean-all");
@@ -615,7 +623,7 @@ function setupMatch(gameSettings, tournament_id, match_id, res) {
 		}
 	});
 
-	matches[matchID].gameInterval = setInterval(waitingRoom, 20, matchID);
+	matches.get(matchID).gameInterval = setInterval(waitingRoom, 20, matchID);
     render.getBallDir(gameState);
 	// console.log("All matches:");
 	// for (const [matchID, match] of matches) {
