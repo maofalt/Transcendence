@@ -584,11 +584,14 @@ def detail_view(request, username=None):
             user = get_object_or_404(User, username=username)
         else:
             user = request.user
+        email = user.email if username is None else None
+        phone = user.phone if username is None else None
         print("user: ", user)
         data = {
             'username': user.username,
             'playername': user.playername,
-            # 'email': user.email,
+            'email': email,
+            'phone': phone,
             'avatar': user.avatar.url if user.avatar else None,
             'friends_count': user.friends.count(),
             'two_factor_method': user.two_factor_method,
