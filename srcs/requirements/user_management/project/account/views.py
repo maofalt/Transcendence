@@ -679,12 +679,15 @@ class ProfileUpdateView(APIView):
     def post(self, request):
         user = request.user
         user_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user)
-        print("\n\n---------------\nuser_form: ", user_form)
+        print ("avartar : ", user.avatar)
+        print("POST data received:", request.POST)
+        print("request.FILES: ", request.FILES)
         if user_form.is_valid():        
             if 'playername' in request.POST and request.POST['playername'] != '':
                 if user.playername != request.POST['playername'] and User.objects.filter(playername=request.POST['playername']).exists():
                     return JsonResponse({'error': 'Playername already exists. Please choose a different one.'})
             user_form.save()
+            print ("avartar : ", user.avatar)
             return JsonResponse({'success': 'Your profile has been updated.'})
         else:
             return JsonResponse({'error': 'Form is not valid.'}, status=400)
