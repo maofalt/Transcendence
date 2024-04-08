@@ -15,7 +15,7 @@ class ProfileUpdateForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ['username', 'playername', 'avatar', 'email', 'phone', 'two_factor_method']
+        fields = ['playername', 'avatar', 'email', 'phone', 'two_factor_method']
 
     def clean_avatar(self):
         avatar = self.cleaned_data['avatar']
@@ -37,7 +37,8 @@ class ProfileUpdateForm(forms.ModelForm):
         two_factor_method = cleaned_data.get('two_factor_method')
         if two_factor_method == 'Off':
             cleaned_data['two_factor_method'] = '' 
-        for field in ['username', 'playername', 'avatar', 'email', 'phone', 'two_factor_method']:
+
+        for field in ['playername', 'avatar', 'email', 'phone', 'two_factor_method']:
             if not cleaned_data.get(field):
                 del cleaned_data[field]
         return cleaned_data

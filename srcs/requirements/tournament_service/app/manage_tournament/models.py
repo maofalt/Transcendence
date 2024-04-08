@@ -24,7 +24,7 @@ class Tournament(models.Model):
     )
     
     host = models.ForeignKey('Player', on_delete=models.CASCADE, related_name='hosted_tournaments')
-    tournament_result = models.ForeignKey('Player', on_delete=models.SET_NULL, null=True, related_name='won_tournaments')
+    winner = models.CharField(max_length=20, default='TBD')
     players = models.ManyToManyField('Player', related_name='tournaments')  # Direct many-to-many relationship with Player
     matches = models.ManyToManyField('TournamentMatch', related_name='tournaments')
     nbr_of_match = models.IntegerField(default=0)
