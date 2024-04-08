@@ -48,7 +48,6 @@ export default class Tournament extends AbstractView {
 
 	async getTournamentList() { 
 		//Create new table
-		console.log("GET TOURNAMENT LIST");
 		let tournamentTable = document.createElement('tournament-table');
 		
 		try {
@@ -77,14 +76,11 @@ export default class Tournament extends AbstractView {
 				if ((a.state === 'started' || a.state === 'ended') && b.state === 'waiting') return 1;
 				return 0;
 			});
-			console.log("TOURNAMENTS", tournaments);
-			console.log("tournament length", tournaments.length);
+
 			// Map API data to table rows and add them to the table
 			for (let i = 0; i < tournaments.length; i++) {
-				console.log("i = ", i);
 				const tournament = tournaments[i];
 				try {
-					console.log( "TOURNAMENT", tournament)
 					const response = await makeApiRequest(`/api/tournament/${tournament.id}/participants/`, 'GET');
 					const participants = response.body;
 
@@ -123,7 +119,6 @@ export default class Tournament extends AbstractView {
 					let buttonEvent = null;
 	
 					if (hostName === userName && tournament.state === 'waiting') {
-						console.log("TOURNAMENT IS WAITING", tournament);
 						buttonText = 'Start';
 						buttonEvent = async () => {
 							const apiEndpoint = `/api/tournament/${tournament.id}/start/`;
@@ -148,7 +143,6 @@ export default class Tournament extends AbstractView {
 					const tournamentDetails = tournamentTable.createStyledHTMLObject('button', '👁️', Styles.details);
 					tournamentDetails.addEventListener('click', () => {
 						navigateTo(`/brackets?tournament=${tournament.id}`);
-						// console.log(`SOMEONE IS WATCHING 👁️ 👁️`);
 					});
 	
 					// Add the constructed row to the table
@@ -210,7 +204,6 @@ export default class Tournament extends AbstractView {
 		try {
 			const apiEndpoint = `/api/tournament/add-player/${tournamentID}/${userID}/`;
 			const response = await makeApiRequest(apiEndpoint, 'POST');
-			console.log("RESPONSE", response);
 
 			if (response.status >= 400) { 
 				throw new Error('Failed to join tournament: ' + response.body);
