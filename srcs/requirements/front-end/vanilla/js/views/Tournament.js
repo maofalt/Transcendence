@@ -24,7 +24,6 @@ export default class Tournament extends AbstractView {
 	getHtml() {
 		return `
 			<div class="tournament">
-				</div>
 				<div class="action-button">
 					<action-button 
 						data-text="CREATE"
