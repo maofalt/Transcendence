@@ -37,8 +37,7 @@ export default class Tournament extends AbstractView {
 	async init() {
 		
 		const tournamentTable = await this.getTournamentList();
-		console.log("TOURNAMENT TABLE", tournamentTable);
-		//insert the table in the tournament div
+		tournamentTable.setAttribute('id', 'tournamentTable');		
 		const createTournamentButton = document.getElementById('createTournamentButton');
 		createTournamentButton.addEventListener('click', this.createTournament);
 		const tournamentDiv = document.querySelector('.tournament');
