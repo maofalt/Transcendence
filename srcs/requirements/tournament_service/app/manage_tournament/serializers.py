@@ -219,9 +219,10 @@ class TournamentMatchRoundSerializer(serializers.ModelSerializer):
         fields = ['tournament_id', 'matchID', 'gamemodeData', 'fieldData', 'paddlesData', 'ballData', 'players']
 
 class SimpleTournamentSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Tournament
-        fields = ['id', 'tournament_name']
+        fields = ['id', 'tournament_name', 'created_at', 'winner']
 
 class SimpleMatchSerializer(serializers.ModelSerializer):
     winner = serializers.SerializerMethodField()
