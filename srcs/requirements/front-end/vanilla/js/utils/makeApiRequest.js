@@ -7,17 +7,6 @@ export async function makeApiRequest(url, method = 'GET', body = null, headers =
 		if (headers['Content-Type'] != 'application/x-www-form-urlencoded')
 			headers['Content-Type'] = 'application/json';
 
-
-			// const accessToken = sessionStorage.getItem('accessToken');
-			// const tokenType = sessionStorage.getItem('tokenType');
-	
-			// const defaultHeaders = {
-			// 	'Accept': 'application/json',
-			// 	'Authorization': `${tokenType} ${accessToken}`,
-			// 	'X-CSRFToken': getCookie('csrftoken'),
-			// 	...options.headers,
-			// };
-		
 		//add bearer token
 		const accessToken =  sessionStorage.getItem('accessToken');
 		const tokenType = sessionStorage.getItem('tokenType');
@@ -51,7 +40,7 @@ export async function makeApiRequest(url, method = 'GET', body = null, headers =
 		response = await fetch(url, options);
 
 		// Check if response is OK
-		if (!response.ok) {
+		if (response.status >=  400) {
 			throw new Error(`HTTP error! Status: ${response.status}`);
 		}
 
@@ -80,6 +69,7 @@ export async function makeApiRequest(url, method = 'GET', body = null, headers =
 	} catch (error) {
 		// Returning error details
 		//const body = await response.json();
+		console.log("ERROR", error.message, response.body);
 		if (response && response.status === 401) {
 			// Redirect to the login page
 			window.location.href = '/login';
