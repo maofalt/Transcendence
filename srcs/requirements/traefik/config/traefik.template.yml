@@ -179,10 +179,10 @@ http:
       stripPrefix:
         prefixes: ["/game-logic"]
 
-  strip-front:
-    stripPrefix:
-      prefixes:
-        - "/front"
+    strip-front:
+      stripPrefix:
+        prefixes:
+          - "/front"
 
     tournament-headers:
       headers:
