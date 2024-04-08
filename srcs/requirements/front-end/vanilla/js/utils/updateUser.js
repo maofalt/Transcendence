@@ -5,7 +5,6 @@ import fetchUserDetails from "./fetchUserDetails";
 
 export default async function updateUser(data) {
 	const formData = new FormData();
-	formData.append('username', data.username);
 	formData.append('playername', data.playername);
 	formData.append('avatar', data.avatar);
 	formData.append('email', data.email);

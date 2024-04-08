@@ -35,7 +35,6 @@ export default class ProfilePage extends AbstractComponent {
 		// let user = options;
 
 		this.data = {
-			username: "",
 			playername: "",
 			avatar: "",
 			email: "",
@@ -215,8 +214,8 @@ export default class ProfilePage extends AbstractComponent {
 		user.wins = gameStats.nbr_of_won_matches;
 		user.losses = gameStats.nbr_of_lost_matches;
 		await elemsToBeFilled.userInfo.fetchAndFillElems(user);
-		elemsToBeFilled.userPlayername.textContent = user.playername;
-		elemsToBeFilled.userEmail.textContent = user.email;
+		elemsToBeFilled.userPlayername.textContent = user.playername || "N/A";
+		elemsToBeFilled.userEmail.textContent = user.email || "N/A";
 		elemsToBeFilled.pannelTitle.textContent = `Friends List  ( ${user.friends_count} )`;
 	}
 

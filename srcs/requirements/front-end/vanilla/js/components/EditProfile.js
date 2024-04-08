@@ -84,7 +84,6 @@ export default class EditProfile extends AbstractComponent {
 				return ;
 			}
 			updateUser({
-				username: "",
 				playername: playernameBlock.input.getValue() || "",
 				avatar: avatarFile || "",
 				email: emailBlock.input.getValue() || "",
