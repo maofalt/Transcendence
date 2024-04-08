@@ -188,9 +188,9 @@ export default class Tournament extends AbstractView {
 		try {
 			const apiEndpoint = `/api/tournament/add-player/${tournamentID}/${userID}/`;
 			const response = await makeApiRequest(apiEndpoint, 'POST');
-
+			console.log(response);
 			if (response.status >= 400) { 
-				throw new Error('Failed to join tournament: ' + response.body);
+				throw new Error('Failed to join tournament: ' + response.errorMessage);
 			}
 			displayPopup('Successfully joined the tournament!', 'success');
 			//navigateTo('/play?matchID=' + response.body.matchID); // Assuming navigation is desired on success

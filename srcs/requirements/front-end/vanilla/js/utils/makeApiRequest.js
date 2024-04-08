@@ -38,10 +38,16 @@ export async function makeApiRequest(url, method = 'GET', body = null, headers =
 
 		// Making the fetch call
 		response = await fetch(url, options);
-
 		// Check if response is OK
 		if (response.status >=  400) {
-			throw new Error(`HTTP error! Status: ${response.status}`);
+			// Use the error message from the API if available, otherwise default to 'Unknown error'
+			console.log("there is an error in the fetch");
+			const errorMessage = response.body || 'Unknown error occurred';
+			return {
+				status: response.status,
+				body: null,
+				errorMessage: errorMessage // Include the error message from the API
+			};
 		}
 
 		if (response.headers.get("content-length") === "0") {
