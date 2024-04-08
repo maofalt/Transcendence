@@ -172,19 +172,6 @@ export default class Tournament extends AbstractView {
 		navigateTo('/create-tournament');
 	}
 
-	// async joinTournament(tournamentID) {
-	
-	// 	try {
-	// 		const responseUser = await makeApiRequest(`/api/user_management/auth/getUser`,'GET');
-	// 		const userID = responseUser.body.user_id;
-	// 		const apiEndpoint = `/api/tournament/add-player/${tournamentID}/${userID}/`;
-	// 		const response = await makeApiRequest(apiEndpoint,'POST');
-	// 		//navigateTo('/play?matchID=' + response.body.matchID);
-	// 	} catch (error) {
-	// 		console.error('Failed to join tournament:', error);
-	// 	}
-	// }
-
 	async joinTournament(tournamentID) {
 		let userID;
 	
