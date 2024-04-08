@@ -42,8 +42,6 @@ export default class Tournament extends AbstractView {
 		createTournamentButton.addEventListener('click', this.createTournament);
 		const tournamentDiv = document.querySelector('.tournament');
 		tournamentDiv.appendChild(tournamentTable);
-
-		
 	}
 
 	async getTournamentList() { 
@@ -58,7 +56,6 @@ export default class Tournament extends AbstractView {
 				displayPopup('Action failed:', 'Failed to get tournament list');
 				throw new Error('Failed to get tournament list');
 			}
-			// Transform the data
 			if (tournaments.length === 0) {
 				this.data = [];
 				return;
