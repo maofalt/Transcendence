@@ -53,7 +53,6 @@ export default class ProfilePage extends AbstractComponent {
 
 		/* PROFILE PANNEL */
 		const profile = new Pannel({dark: false, title: "Profile"});
-		profile.shadowRoot.querySelector("#pannel-title").style.setProperty("padding", "0px 0px 0px 30px");
 		profile.style.setProperty("display", "block");
 		
 		// create the user info section with editable avatar
@@ -89,11 +88,11 @@ export default class ProfilePage extends AbstractComponent {
 		
 		const friendProfilePannel = new Pannel({dark: false, title: "Profile"});
 		// friendProfilePannel.shadowRoot.querySelector("#button-container").shadowRoot.style.setProperty("display", "none");
-		friendProfilePannel.shadowRoot.querySelector("#pannel-title").style.setProperty("padding", "0px 0px 0px 30px");
 		friendProfilePannel.style.position = "fixed";
 		friendProfilePannel.style.top = "50%";
 		friendProfilePannel.style.left = "50%";
 		friendProfilePannel.style.transform = "translate(-50%, -50%)";
+		friendProfilePannel.style.setProperty("display", "block");
 
 		friendProfile.appendChild(friendProfilePannel);
 
@@ -113,7 +112,7 @@ export default class ProfilePage extends AbstractComponent {
 
 
 		/* FRIENDS SECTION */
-		const friendPannel = new Pannel({dark: false, title: "Friends"});
+		const friendPannel = new Pannel({dark: false, title: "Friends", style: {"border-radius": "20px 20px 0px 20px"}});
 
 		// friend input form
 		const addFriend = new InputAugmented({
@@ -130,7 +129,7 @@ export default class ProfilePage extends AbstractComponent {
 		addFriend.shadowRoot.querySelector("#input-button").style.setProperty("font-size", "28px");
 
 		// friends list pannel
-		const friendsListPannel = new Pannel({dark: true, title: `Friends List  ( ... )} )`});
+		const friendsListPannel = new Pannel({dark: true, title: `Friends List  ( ... )} )`, style: {"border-radius": "20px 20px 0px 20px"}});
 		this.userElemsToBeFilled.pannelTitle = friendsListPannel.shadowRoot.querySelector("#pannel-title"); // add to elemsToBeFilled to fill in fetch function
 
 		// create the friends list
@@ -411,7 +410,7 @@ export default class ProfilePage extends AbstractComponent {
 	}
 
 	createGameStatsPannel = (elemsToBeFilled) => {
-		const gameStats = new Pannel({dark: true, title: "Game Stats", style: {display: "block", padding: "0px 0px 0px 20px", width: "500px"}});
+		const gameStats = new Pannel({dark: true, title: "Game Stats", style: {display: "block", padding: "0px 0px 0px 20px"}});
 		gameStats.shadowRoot.querySelector("#pannel-title").style.setProperty("margin", "10px 0px");
 		let stats = document.createElement("div");
 		stats.innerHTML = profileStatsHtml;
@@ -424,7 +423,7 @@ export default class ProfilePage extends AbstractComponent {
 	}
 
 	createMatchHistoryPannel = (elemsToBeFilled) => {
-		const matchHistory = new Pannel({dark: true, title: "Match History", style: {display: "block", padding: "20px 20px 20px 20px", width: "500px"}});
+		const matchHistory = new Pannel({dark: true, title: "Match History", style: {display: "block", "border-radius": "20px 20px 0px 20px"}});
 		matchHistory.shadowRoot.querySelector("#pannel-title").style.setProperty("margin", "10px 0px");
 		let history = document.createElement("div");
 		history.innerHTML = profileHistoryHtml;
