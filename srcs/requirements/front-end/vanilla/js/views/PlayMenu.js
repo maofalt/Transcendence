@@ -16,8 +16,8 @@ export default class PlayMenu extends AbstractComponent {
 		styleEl.textContent = style;
 		this.shadowRoot.appendChild(styleEl);
 
-		let classicPong = new Pannel({title: "Local", style: {padding: "18px 0"}});
-		let customGame = new Pannel({title: "Tournaments", style: {padding: "18px 0"}});
+		let classicPong = new Pannel({title: "Local", style: {padding: "18px 0", height: "400px"}});
+		let customGame = new Pannel({title: "Tournaments", style: {padding: "18px 0", height: "400px"}});
 		let bigTitle = new BigTitle({content: "Cosmic<br>Pong"});
 
 		const menu = document.createElement('div');

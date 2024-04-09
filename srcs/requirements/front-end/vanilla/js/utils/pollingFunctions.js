@@ -44,7 +44,7 @@ export async function renewToken() {
 		refreshSocketConnection();
 
 		let details = await fetchUserDetails();
-		sessionStorage.setItem('userDetails', JSON.stringify(details));
+		// sessionStorage.setItem('userDetails', JSON.stringify(details));
 
 		console.log('Updated accessToken on Storage');
 	}).catch(error => {
@@ -74,7 +74,7 @@ function refreshTokenLoop() {
 		renewToken();
 	}
 
-	if (accessToken !== null && expiryTime !== null && expiryTime < now) {
+	if (expiryTime !== null && expiryTime < now) {
 		sessionStorage.clear();
 	}
 

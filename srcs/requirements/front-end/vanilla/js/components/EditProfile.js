@@ -40,7 +40,7 @@ export default class EditProfile extends AbstractComponent {
 		this.shadowRoot.appendChild(friendsPannel);
 
 		const saveButton = new CustomButton({content: "Save", action: true, style: {width: "520px", margin: "20px 0px"}});
-		const resetPasswordButton = new CustomButton({content: "Reset Password", action: false, style: {width: "520px", margin: "20px 0px"}});
+		const resetPasswordButton = new CustomButton({content: "Change Password", action: false, style: {width: "520px", margin: "20px 0px"}});
 		
 		const goBack = new CustomButton({content: "< Back", style: {padding: "0px 20px", position: "absolute", left: "50px", bottom: "30px"}});
 		goBack.onclick = () => window.history.back();
@@ -84,7 +84,6 @@ export default class EditProfile extends AbstractComponent {
 				return ;
 			}
 			updateUser({
-				username: "",
 				playername: playernameBlock.input.getValue() || "",
 				avatar: avatarFile || "",
 				email: emailBlock.input.getValue() || "",
