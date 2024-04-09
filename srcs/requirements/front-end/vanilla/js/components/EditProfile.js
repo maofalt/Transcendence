@@ -213,7 +213,6 @@ export default class EditProfile extends AbstractComponent {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/x-www-form-urlencoded',
-				'X-CSRFToken': getCookie('csrftoken')
 			},
 			body: new URLSearchParams({ 'email': email, 'one_time_code': verificationCode, 'context': "signup" })
 		})
