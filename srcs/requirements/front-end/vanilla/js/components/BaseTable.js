@@ -29,6 +29,7 @@ class BaseTable extends HTMLElement {
         this.dataRows = [];
         this.currentPage = 1;
         this.itemsPerPage = 5;
+        this.rowDataByIdentifier = {};
     }
 
     //Utility to set column styles
@@ -43,8 +44,13 @@ class BaseTable extends HTMLElement {
         tableHeaders.innerHTML = headers.map(header => `<th>${header}</th>`).join('');
     }
     
-    addRow(cells) {
+    addRow(cells, identifier) {
+        const index = this.dataRows.length;
         this.dataRows.push(cells);
+
+        if (identifier) {
+            this.rowIndexByIdentifier[identifier] = index;
+        }
         this.renderCurrentPage();
     }
 
@@ -89,6 +95,16 @@ class BaseTable extends HTMLElement {
             });
             tbody.appendChild(row);
         });
+    }
+
+    updateRowByIdentifier(identifier, newCells) {
+        const index = this.rowIndexByIdentifier[identifier];
+        if (index !== undefined && this.dataRows[index]) {
+            this.dataRows[index] = newCells;
+            this.renderCurrentPage();
+        } else {
+            console.error(`Row with identifier ${identifier} not found.`);
+        }
     }
 
 }
