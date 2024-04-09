@@ -18,10 +18,17 @@ class BaseTable extends HTMLElement {
                         </tbody>
                     </table>
                 </div>
+                <div class="pagination-controls">
+                    <button id="prev-page">Previous</button>
+                    <button id="next-page">Next</button>
+                </div>
                 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
             </body>
         `;
         this.columnStyles = {};
+        this.dataRows = [];
+        this.currentPage = 1;
+        this.itemsPerPage = 5;
     }
 
     //Utility to set column styles
@@ -37,18 +44,51 @@ class BaseTable extends HTMLElement {
     }
     
     addRow(cells) {
-        const tbody = this.shadowRoot.querySelector('#table-body');
-        const row = document.createElement('tr');
-        cells.forEach(cellContent => {
-            const cell = document.createElement('td');
-            if (cellContent instanceof HTMLElement) {
-                cell.appendChild(cellContent);
-            } else {
-                cell.innerHTML = cellContent;
+        this.dataRows.push(cells);
+        this.renderCurrentPage();
+    }
+
+    connectedCallback() {
+        this.shadowRoot.getElementById('prev-page').addEventListener('click', () => {
+            if (this.currentPage > 1) {
+                this.currentPage--;
+                this.renderCurrentPage(); // Implement this method
             }
-            row.appendChild(cell);
         });
-        tbody.appendChild(row);
+        this.shadowRoot.getElementById('next-page').addEventListener('click', () => {
+            const maxPage = Math.ceil(this.dataRows.length / this.itemsPerPage);
+            if (this.currentPage < maxPage)
+            {            
+                this.currentPage++;
+                this.renderCurrentPage(); // Implement this method
+            }
+        });
+       this.renderCurrentPage();
+    }
+
+    renderCurrentPage() {
+        const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+        const endIndex = startIndex + this.itemsPerPage;
+        const pageRows = this.dataRows.slice(startIndex, endIndex);
+
+        // Clear the table body to prepare for new rows
+        const tbody = this.shadowRoot.querySelector('#table-body');
+        tbody.innerHTML = '';
+
+        // Add rows for the current page
+        pageRows.forEach(cells => {
+            const row = document.createElement('tr');
+            cells.forEach(cellContent => {
+                const cell = document.createElement('td');
+                if (cellContent instanceof HTMLElement) {
+                    cell.appendChild(cellContent);
+                } else {
+                    cell.innerHTML = cellContent;
+                }
+                row.appendChild(cell);
+            });
+            tbody.appendChild(row);
+        });
     }
 
 }
