@@ -235,7 +235,7 @@ export default class Tournament extends AbstractView {
 
 	async fetchTournamentData(tournamentID) {
 		try {
-			const response = await makeApiRequest(`/api/tournament/${tournamentID}/matches`, 'GET');
+			const response = await makeApiRequest(`/api/tournament/${tournamentID}/tournament`, 'GET');
 			console.log(response.body);
 			if (response.status >= 400) {
 				throw new Error('Failed to fetch tournament data: ' + response.errorMessage);
@@ -251,7 +251,6 @@ export default class Tournament extends AbstractView {
 	async fetchUserAvatar(username) {
 		try {
 			const response = await makeApiRequest(`/api/user_management/auth/detail/${username}`, 'GET');
-			console.log("userdetials", response.body);
 			if (response.status >= 400) { 
 				throw new Error('Failed to fetch user avatar.');
 			}
@@ -263,5 +262,6 @@ export default class Tournament extends AbstractView {
 			return null;
 		}
 	}
+
 
 }
