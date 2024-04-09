@@ -19,6 +19,7 @@ export default class Tournament extends AbstractView {
 		this.createTournament = this.createTournament.bind(this);	
 		this.joinTournament = this.joinTournament.bind(this);
 		this.startTournament = this.startTournament.bind(this);
+		this.unjoinTournament = this.unjoinTournament.bind(this);
 		this.data = [];
 	}
 
@@ -124,7 +125,7 @@ export default class Tournament extends AbstractView {
 						buttonEvent = () => navigateTo('/play?matchID=' + tournament.setting.id);
 					} else if (tournament.is_in_tournament && tournament.state === 'waiting') {
 						buttonText = 'Unjoin';
-						// ADD UNJOIN ENDPOINT HERE
+						buttonEvent = async () => await this.unjoinTournament(tournament.tournament_name, tournament.id, userName);
 					} else {
 						buttonText = 'Join';
 						buttonEvent = async () => await this.joinTournament(tournament.id);
@@ -211,5 +212,20 @@ export default class Tournament extends AbstractView {
 			displayPopup(error.message, 'error');
 		}
 	}
+
+	async unjoinTournament(tournamentName, tournamentID, userName) {
+		try {
+			const apiEndpoint = `/api/tournament/unjoin/${tournamentID}/${userName}/`;
+			const response = await makeApiRequest(apiEndpoint, 'POST');
+			if (response.status >= 400) { 
+				throw new Error('Failed to unjoin ' + tournamentName + ' tournament: ' + response.errorMessage);
+			}
+			displayPopup('Successfully unjoined the ' + tournamentName + ' tournament!', 'success');
+		} catch (error) {
+			console.error('Error unjoining ' + tournamentName + ' tournament:', error);
+			displayPopup(error.message, 'error');
+		}
+	}
+
 
 }
