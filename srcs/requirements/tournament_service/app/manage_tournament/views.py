@@ -1068,6 +1068,9 @@ class DeletePlayer(APIView):
                 match.players.add(player)
                 match.save()
 
+            if tournament.winenr != 'TBD'
+                tournament.winner = 'Unkown'
+                tournament.save()
             if tournament.host == player:
                 tournament.host = player
                 tournament.save()
