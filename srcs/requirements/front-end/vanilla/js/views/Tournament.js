@@ -20,6 +20,7 @@ export default class Tournament extends AbstractView {
 		this.joinTournament = this.joinTournament.bind(this);
 		this.startTournament = this.startTournament.bind(this);
 		this.unjoinTournament = this.unjoinTournament.bind(this);
+		this.fetchTournamentData = this.fetchTournamentData.bind(this);
 		this.data = [];
 	}
 
@@ -53,6 +54,7 @@ export default class Tournament extends AbstractView {
 		try {
 			const response = await makeApiRequest('/api/tournament/create-and-list/','GET');
 			let tournaments = response.body;
+			console.log(tournaments);
 			if (!tournaments) 
 			{	
 				displayPopup('Action failed:', 'Failed to get tournament list');
@@ -75,6 +77,8 @@ export default class Tournament extends AbstractView {
 				if ((a.state === 'started' || a.state === 'ended') && b.state === 'waiting') return 1;
 				return 0;
 			});
+
+			const test = this.fetchTournamentData(tournaments[0].id);
 
 			// Map API data to table rows and add them to the table
 			for (let i = 0; i < tournaments.length; i++) {
@@ -187,12 +191,10 @@ export default class Tournament extends AbstractView {
 		try {
 			const apiEndpoint = `/api/tournament/add-player/${tournamentID}/${userID}/`;
 			const response = await makeApiRequest(apiEndpoint, 'POST');
-			console.log(response);
 			if (response.status >= 400) { 
 				throw new Error('Failed to join tournament: ' + response.errorMessage);
 			}
 			displayPopup('Successfully joined the tournament!', 'success');
-			//navigateTo('/play?matchID=' + response.body.matchID); // Assuming navigation is desired on success
 		} catch (error) {
 			console.error('Error joining tournament:', error);
 			displayPopup(error.message, 'error');
@@ -224,6 +226,21 @@ export default class Tournament extends AbstractView {
 		} catch (error) {
 			console.error('Error unjoining ' + tournamentName + ' tournament:', error);
 			displayPopup(error.message, 'error');
+		}
+	}
+
+	async fetchTournamentData(tournamentID) {
+		try {
+			const response = await makeApiRequest(`/api/tournament/${tournamentID}/matches`, 'GET');
+			console.log(response.body);
+			if (response.status >= 400) {
+				throw new Error('Failed to fetch tournament data: ' + response.errorMessage);
+			}
+			return response.body;
+		} catch (error) {
+			console.error('Error fetching tournament data:', error);
+			displayPopup(error.message, 'error');
+			return null;
 		}
 	}
 
