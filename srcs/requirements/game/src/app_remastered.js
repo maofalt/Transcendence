@@ -526,11 +526,8 @@ function postMatchResult(matchId, winnerId) {
 }
 
 app.post('/createMatch', (req, res) => {
-	const { tournament_id, match_id, ...gameSettings } = req.body;
-
-	console.log("\nbanana\n", req.body);
 	
-	let matchID = setupMatch(gameSettings, tournament_id, match_id, res);
+	let matchID = setupMatch(req.body, res);
 	if (!matchID)
 		return ;
 
@@ -545,9 +542,8 @@ app.post('/createMultipleMatches', (req, res) => {
 	console.log(allGameSettings);
 
 	for (settings of allGameSettings.matches) {
-		const { tournament_id, match_id, ...gameSettings } = settings;
 
-		let matchID = setupMatch(gameSettings, tournament_id, match_id, res);
+		let matchID = setupMatch(settings, res);
 		if (!matchID)
 			return ;
 
@@ -557,17 +553,18 @@ app.post('/createMultipleMatches', (req, res) => {
 	res.json({ matchIDs });
 });
 
-function setupMatch(gameSettings, tournament_id, match_id, res) {
+function setupMatch(settings, res) {
+
+	let { tournament_id, matchID, ...gameSettings } = settings;
 
 	console.log("CREATING MATCH : ", gameSettings);
 	// gameSettings.gamemodeData.nbrOfRounds = 1;
-	if (!match_id) {
+	if (!matchID) {
 		console.log("Generating match ID");
-		match_id = generateMatchID();
-		console.log("Generated match ID: ", match_id);
+		matchID = generateMatchID();
+		console.log("Generated match ID: ", matchID);
 	}
 
-	const matchID = match_id; // Convert match_id to a string
 	let error = verifyMatchSettings(gameSettings);
 	
 	if (matches.has(matchID)) {
@@ -587,14 +584,13 @@ function setupMatch(gameSettings, tournament_id, match_id, res) {
 	const players = gameSettings.playersData.map(player => player.accountID);
 
 	if (players.length == 1) {
-		// postMatchResult(match_id, players[0]);
+		// postMatchResult(matchID, players[0]);
 		res.json({ matchID });
 		return null;
 	}
 
 	// Convert game settings to game state
 	const gameState = init.initLobby(gameSettings);
-	gameState.jisus_matchID = match_id;
 	
 	matches.set(matchID, { gameState: gameState, gameInterval: 0 });
 

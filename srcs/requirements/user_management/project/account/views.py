@@ -584,11 +584,14 @@ def detail_view(request, username=None):
             user = get_object_or_404(User, username=username)
         else:
             user = request.user
+        email = user.email if username is None else None
+        phone = user.phone if username is None else None
         print("user: ", user)
         data = {
             'username': user.username,
             'playername': user.playername,
-            # 'email': user.email,
+            'email': email,
+            'phone': phone,
             'avatar': user.avatar.url if user.avatar else None,
             'friends_count': user.friends.count(),
             'two_factor_method': user.two_factor_method,
@@ -679,12 +682,15 @@ class ProfileUpdateView(APIView):
     def post(self, request):
         user = request.user
         user_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user)
-        print("\n\n---------------\nuser_form: ", user_form)
+        print ("avartar : ", user.avatar)
+        print("POST data received:", request.POST)
+        print("request.FILES: ", request.FILES)
         if user_form.is_valid():        
             if 'playername' in request.POST and request.POST['playername'] != '':
                 if user.playername != request.POST['playername'] and User.objects.filter(playername=request.POST['playername']).exists():
                     return JsonResponse({'error': 'Playername already exists. Please choose a different one.'})
             user_form.save()
+            print ("avartar : ", user.avatar)
             return JsonResponse({'success': 'Your profile has been updated.'})
         else:
             return JsonResponse({'error': 'Form is not valid.'}, status=400)
@@ -956,10 +962,10 @@ def update_sandbox(request, phone_number=None):
 # @login_required
 @ensure_csrf_cookie
 @csrf_protect
-# @require_POST
-@authentication_classes([])
-@permission_classes([AllowAny])
-def verify_sandBox(request, otp=None, phone_number=None):
+@api_view(['POST'])
+@authentication_classes([CustomJWTAuthentication])
+@permission_classes([IsAuthenticated])
+def verify_sandBox(request, phone_number=None, otp=None):
     print("\n--Verify SandBox\n")
     if request.method == 'POST':
         if phone_number is None:

@@ -49,7 +49,6 @@ class TournamentListCreate(generics.ListCreateAPIView):
         print(">> GET: loading page\n")
         tournaments = self.get_queryset()
         serializer = self.get_serializer(tournaments, many=True)
-        escaped_data = escape(serializer.data)
         return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
@@ -319,6 +318,8 @@ class MatchResult(APIView):
                     return JsonResponse({"message": "Cannot end the tournament while matches are in progress."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
                 
                 tournament.state = "ended"
+                tournament.winner = sorted_winners[0].username
+                print("tournament.tournament_result: ", tournament.winner)
                 tournament.save()
                 serializer = TournamentMatchSerializer(finished_matches, many=True)
                 return JsonResponse(serializer.data, status=status.HTTP_200_OK, safe=False)
@@ -911,13 +912,12 @@ class PlayerStatsView(APIView):
 
     def get(self, request, username):
         player = Player.objects.get(username=username)
-        played_tournaments = Tournament.objects.filter(players__username=username)
+        played_tournaments = Tournament.objects.filter(players__username=username).exclude(state='waiting')
         played_matches = TournamentMatch.objects.filter(players__username=username)
 
         total_played = player.total_played
         nbr_of_won_matches = player.won_match.count()
         nbr_of_won_tournaments = player.won_tournament.count()
-
         serialized_tournaments = SimpleTournamentSerializer(played_tournaments, many=True)
 
         player_stats_data = {
@@ -990,7 +990,7 @@ def generate_round(request, id, round):
         match.save()
         match_data = {
             'tournament_id': match.tournament_id,
-            'match_id': match.id,
+            'matchID': match.id,
             'gamemodeData': GamemodeDataSerializer(match).data,
             'fieldData': FieldDataSerializer(tournament.setting).data,
             'paddlesData': PaddlesDataSerializer(tournament.setting).data,
