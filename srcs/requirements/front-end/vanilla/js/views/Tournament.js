@@ -21,6 +21,7 @@ export default class Tournament extends AbstractView {
 		this.startTournament = this.startTournament.bind(this);
 		this.unjoinTournament = this.unjoinTournament.bind(this);
 		this.fetchTournamentData = this.fetchTournamentData.bind(this);
+		this.fetchUserAvatar = this.fetchUserAvatar.bind(this);
 		this.data = [];
 	}
 
@@ -100,7 +101,10 @@ export default class Tournament extends AbstractView {
 					const hostName = tournament.host_name;
 					const hostAvatarElement = document.createElement('host-avatar');
 					hostAvatarElement.setAttribute('name', hostName);
-					//APi call to recover host picture
+					
+					const hostAvatar = await this.fetchUserAvatar(hostName);
+					if (hostAvatar)
+						hostAvatarElement.setAttribute('avatar', hostAvatar);
 	
 					const hostElement = tournamentTable.createStyledHTMLObject('div', hostAvatarElement, Styles.host);
 					//const hostElement = tournamentTable.createStyledHTMLObject('div', `${hostName}`, Styles.host);
@@ -244,5 +248,20 @@ export default class Tournament extends AbstractView {
 		}
 	}
 
+	async fetchUserAvatar(username) {
+		try {
+			const response = await makeApiRequest(`/api/user_management/auth/detail/${username}`, 'GET');
+			console.log("userdetials", response.body);
+			if (response.status >= 400) { 
+				throw new Error('Failed to fetch user avatar.');
+			}
+			let avatar = response.body.avatar;
+			const src = "/api/user_management" + avatar;
+			return src;
+		} catch (error) {
+			console.error('Error fetching user avatar:', error);
+			return null;
+		}
+	}
 
 }
