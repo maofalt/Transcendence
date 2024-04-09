@@ -17,7 +17,8 @@ export default class Tournament extends AbstractView {
 		super();
 
 		this.createTournament = this.createTournament.bind(this);	
-		this.joinTournament = this.joinTournament.bind(this);	
+		this.joinTournament = this.joinTournament.bind(this);
+		this.startTournament = this.startTournament.bind(this);
 		this.data = [];
 	}
 
@@ -117,10 +118,7 @@ export default class Tournament extends AbstractView {
 	
 					if (hostName === userName && tournament.state === 'waiting') {
 						buttonText = 'Start';
-						buttonEvent = async () => {
-							const apiEndpoint = `/api/tournament/${tournament.id}/start/`;
-							await makeApiRequest(apiEndpoint, 'POST');
-						};
+						buttonEvent = async () =>  await this.startTournament(tournament.id);
 					} else if (tournament.is_in_tournament && tournament.state === 'started') {
 						buttonText = 'Play';
 						buttonEvent = () => navigateTo('/play?matchID=' + tournament.setting.id);
@@ -200,5 +198,18 @@ export default class Tournament extends AbstractView {
 		}
 	}
 	
+	async startTournament(tournamentID) {
+		try {
+			const apiEndpoint = `/api/tournament/${tournamentID}/start/`;
+			const response = await makeApiRequest(apiEndpoint, 'POST');
+			if (response.status >= 400) { 
+				throw new Error('Failed to start tournament: ' + response.errorMessage);
+			}
+			displayPopup('Successfully started the tournament!', 'success');
+		} catch (error) {
+			console.error('Error starting tournament:', error);
+			displayPopup(error.message, 'error');
+		}
+	}
 
 }
