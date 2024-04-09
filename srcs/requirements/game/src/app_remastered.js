@@ -91,7 +91,7 @@ function gameLoop(matchID) {
 		clearInterval(match.gameInterval); // stop the loop
 		// match.gameState.ball.dir = match.gameState.camera.pos.sub(match.gameState.ball.pos);
 		game.to(matchID).emit('end-game', match.gameState);
-		// postMatchResult(match.gameState.jisus_matchID, match.gameState.winner.accountID); // send the result of the match back;
+		postMatchResult(matchID, match.gameState.winner.accountID); // send the result of the match back;
 		matches.delete(matchID); // then delete the match;
 		return ;
 	}
