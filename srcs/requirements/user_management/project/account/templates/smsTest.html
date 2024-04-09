@@ -69,7 +69,7 @@
         phoneNumber = phoneNumber.slice(0, 3) + phoneNumber.slice(4);
         $.ajax({
             type: 'POST',
-            url: '{% url "account:sendCodeSMS" %}',
+            url: '{% url "account:updateSandbox" %}',
             data: {phone_number: phoneNumber},
             headers: { "X-CSRFToken": getCookie('csrftoken') },
             success: function(data) {
@@ -85,9 +85,9 @@
         var oneTimeCode = $('input[name="one_time_code"]').val();
         console.log('submitOneTimeCode submit');
         $.ajax({
-            url: '{% url "account:verify_one_time_code" %}',
+            url: '{% url "account:verifySandBox" %}',
             type: 'POST',
-            data: { 'one_time_code': oneTimeCode, 'context': context },
+            data: {phone_number: phoneNumber, otp: oneTimeCod },
             headers: { "X-CSRFToken": getCookie('csrftoken') },
             success: function (data) {
                 console.log('One-time code verification successful:', data);

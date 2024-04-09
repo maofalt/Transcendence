@@ -962,10 +962,10 @@ def update_sandbox(request, phone_number=None):
 # @login_required
 @ensure_csrf_cookie
 @csrf_protect
-# @require_POST
-@authentication_classes([])
-@permission_classes([AllowAny])
-def verify_sandBox(request, otp=None, phone_number=None):
+@api_view(['POST'])
+@authentication_classes([CustomJWTAuthentication])
+@permission_classes([IsAuthenticated])
+def verify_sandBox(request, phone_number=None, otp=None):
     print("\n--Verify SandBox\n")
     if request.method == 'POST':
         if phone_number is None:
