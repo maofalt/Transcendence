@@ -97,6 +97,19 @@ class TournamentListCreate(generics.ListCreateAPIView):
         # escaped_data = escape(serialized_tournament.data)
         return Response(serialized_tournament.data, status=status.HTTP_201_CREATED)
 
+class TournamentData(APIView):
+    serializer_class = TournamentSerializer
+    authentication_classes = [CustomJWTAuthentication]
+
+    def get(self, request, id):
+        try:
+            tournament = get_object_or_404(Tournament, id=id)
+        except Http404:
+            return JsonResponse({'error': 'Tournament not found'}, status=404)
+
+        serializer = TournamentSerializer(tournament)
+        return Response(serializer.data)
+
 # ------------------------ Assigning Players on the Tournament Tree -----------------------------------
 
 class JoinTournament(generics.ListCreateAPIView):
@@ -1068,7 +1081,7 @@ class DeletePlayer(APIView):
                 match.players.add(player)
                 match.save()
 
-            if tournament.winenr != 'TBD'
+            if tournament.winenr != 'TBD':
                 tournament.winner = 'Unkown'
                 tournament.save()
             if tournament.host == player:

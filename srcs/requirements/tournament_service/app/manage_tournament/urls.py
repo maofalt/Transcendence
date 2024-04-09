@@ -12,6 +12,7 @@ urlpatterns = [
     #   - POST /create_and_list/ - Create a new tournament with the necessary settings and rules.
     #   - GET /create_and_list/ - show the list of tournament
     path('create-and-list/', views.TournamentListCreate.as_view(), name='tournament-list-create'),
+    path('<int:id>/tournament/', views.TournamentData.as_view(), name='tournament-data'),
     #   - GET /manage/{id}/ - Retrieve the details of a specific tournament.
     #   - PUT /manage/{id}/ - Update the settings or rules of a specific tournament.
     #   - DELETE /manage/{id}/ - Remove a tournament from the system.
