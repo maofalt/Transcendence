@@ -393,8 +393,8 @@ game.on('connection', (client) => {
 				clearInterval(match.gameInterval);
 				if (data.ongoing) {
 					data.winner = player;
-					if (data.jisus_matchID) {
-						// postMatchResult(match.gameState.jisus_matchID, match.gameState.winner.accountID);
+					if (data.matchID >= 0) {
+						postMatchResult(client.matchID, match.gameState.winner.accountID);
 					}
 					matches.delete(client.matchID);
 				}
@@ -584,7 +584,7 @@ function setupMatch(settings, res) {
 	const players = gameSettings.playersData.map(player => player.accountID);
 
 	if (players.length == 1) {
-		// postMatchResult(matchID, players[0]);
+		postMatchResult(matchID, players[0]);
 		res.json({ matchID });
 		return null;
 	}
