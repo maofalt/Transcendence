@@ -17,6 +17,15 @@ class TournamentSerializer(serializers.ModelSerializer):
         model = Tournament
         fields = ['id', 'tournament_name', 'nbr_of_player_total', 'nbr_of_player_match', 'setting', 'registration_period_min', 'host_id', 'joined', 'is_full', 'state', 'host_name']
 
+    def validate(self, data):
+        nbr_of_player_total = data.get('nbr_of_player_total')
+        nbr_of_player_match = data.get('nbr_of_player_match')
+
+        if nbr_of_player_match > nbr_of_player_total:
+            raise serializers.ValidationError("The number of players per match cannot be greater than the total number of players.")
+        
+        return data
+
     def get_host_name(self, obj):
         return obj.host.username
 
