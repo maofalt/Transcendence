@@ -127,7 +127,8 @@ class TournamentTable extends BaseTable {
             tournamentStatus,
             actionButtonElement,
             tournamentDetails
-        ]);
+        ],
+            tournament.id);
     }
     
     async fetchTournamentParticipants(tournamentID) {

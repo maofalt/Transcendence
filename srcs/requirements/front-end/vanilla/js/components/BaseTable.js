@@ -33,6 +33,7 @@ class BaseTable extends HTMLElement {
         this.currentPage = 1;
         this.itemsPerPage = 5;
         this.rowDataByIdentifier = {};
+        this.rowIndexByIdentifier = [];
     }
 
     //Utility to set column styles
@@ -48,13 +49,14 @@ class BaseTable extends HTMLElement {
     }
     
     addRow(cells, identifier) {
+        const newRow = new Row(identifier);
         const index = this.dataRows.length;
         this.dataRows.push(cells);
 
         if (identifier) {
             this.rowIndexByIdentifier[identifier] = index;
         }
-        this.renderCurrentPage();
+        this.renderCurrentPage();``
     }
 
     connectedCallback() {
