@@ -48,42 +48,46 @@ export default class EditProfile extends AbstractComponent {
 		const goBack = new CustomButton({content: "< Back", style: {padding: "0px 20px", position: "absolute", left: "50px", bottom: "30px"}});
 		goBack.onclick = () => window.history.back();
 
-		const verifySms = document.createElement("div");
-		verifySms.style.display = "none";
-		verifySms.style.position = "fixed";
-		verifySms.style.top = "0";
-		verifySms.style.left = "0";
-		verifySms.style.width = "100%";
-		verifySms.style.height = "100%";
-		verifySms.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
-		verifySms.onclick = (e) => { // Close the pannel when clicking outside
-			if (e.target === verifySms) {
-				fadeOut(verifySms);
+		const verifyCodeBlock = document.createElement("div");
+		verifyCodeBlock.style.display = "none";
+		verifyCodeBlock.style.position = "fixed";
+		verifyCodeBlock.style.top = "0";
+		verifyCodeBlock.style.left = "0";
+		verifyCodeBlock.style.width = "100%";
+		verifyCodeBlock.style.height = "100%";
+		verifyCodeBlock.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+		verifyCodeBlock.onclick = (e) => { // Close the pannel when clicking outside
+			if (e.target === verifyCodeBlock) {
+				fadeOut(verifyCodeBlock);
 			}
 		}
 		
-		const verifySmsPannel = new Pannel({dark: false, title: "Verify SMS", style: {padding: "15px"}});
-		// verifySmsPannel.shadowRoot.querySelector("#button-container").shadowRoot.style.setProperty("display", "none");
-		verifySmsPannel.style.position = "fixed";
-		verifySmsPannel.style.top = "50%";
-		verifySmsPannel.style.left = "50%";
-		verifySmsPannel.style.transform = "translate(-50%, -50%)";
-		verifySmsPannel.style.setProperty("display", "block");
+		const verifyCodePannel = new Pannel({dark: false, title: "Verify Code", style: {padding: "15px"}});
+		// verifyCodePannel.shadowRoot.querySelector("#button-container").shadowRoot.style.setProperty("display", "none");
+		verifyCodePannel.style.position = "fixed";
+		verifyCodePannel.style.top = "50%";
+		verifyCodePannel.style.left = "50%";
+		verifyCodePannel.style.transform = "translate(-50%, -50%)";
+		verifyCodePannel.style.setProperty("display", "block");
 
-		const verifySmsInput = new InputAugmented({
-			title: "SMS Code",
-			content: "SMS Code",
+		const verifyCodeInput = new InputAugmented({
+			title: "Code Code",
+			content: "Code Code",
 			type: "text",
 			button: {content: "Verify", action: true}
 		});
-		verifySmsInput.button.onclick = async () => {
-			if (!await this.verifySms()) {
+		verifyCodeInput.button.onclick = async () => {
+			if (verifyCodePannel.name = "phone" && !await this.verifySms(phoneBlock, verifyCodeInput)) {
+				return ;
+			} else if (verifyCodePannel.name = "email" && !await this.verifyEmail(emailBlock, verifyCodeInput)) {
 				return ;
 			}
-			fadeOut(verifySms);
+			fadeOut(verifyCodeBlock);
 		}
 
-		verifySms.appendChild(verifySmsPannel);
+		verifyCodePannel.shadowRoot.appendChild(verifyCodeInput);
+
+		verifyCodeBlock.appendChild(verifyCodePannel);
 
 		let playernameBlock = new InputAugmented({
 			title: "New Playername",
@@ -101,6 +105,16 @@ export default class EditProfile extends AbstractComponent {
 			type: "email",
 			button: {content: "Verify", action: false}
 		});
+		emailBlock.button.onclick = async () => {
+			let shouldContinue = await this.sendEmail(emailBlock);
+			if (!shouldContinue) {
+				emailBlock.input.input.style.setProperty("border", "2px solid red");
+				return ;
+			}
+			emailBlock.button.style.setProperty("border", "");
+			verifyCodePannel.name = "email";
+			fadeIn(verifyCodeBlock);
+		};
 
 		let phoneBlock = new InputAugmented({
 			title: "New Phone Number",
@@ -114,10 +128,12 @@ export default class EditProfile extends AbstractComponent {
 		phoneBlock.button.onclick = async () => {
 			let shouldContinue = await this.sendSMS(phoneBlock);
 			if (!shouldContinue) {
-				alert("SMS NOT sent" + shouldContinue);
+				phoneBlock.input.input.style.setProperty("border", "2px solid red");
 				return ;
 			}
-			fadeIn(verifySms);
+			phoneBlock.button.style.setProperty("border", "");
+			verifyCodePannel.name = "phone";
+			fadeIn(verifyCodeBlock);
 		};
 
 		let avatarBlock = new InputAugmented({
@@ -165,7 +181,7 @@ export default class EditProfile extends AbstractComponent {
 		this.shadowRoot.appendChild(goBack);
 		this.shadowRoot.appendChild(profile);
 		this.shadowRoot.appendChild(friendsPannel);
-		this.shadowRoot.appendChild(verifySms);
+		this.shadowRoot.appendChild(verifyCodeBlock);
 	}
 
 	sendSMS = async (phoneBlock) => {
@@ -203,18 +219,18 @@ export default class EditProfile extends AbstractComponent {
 		return valid;
 	}
 
-	verifySms = async (emailBlock, verifyCodeBlock) => {
-		var email = emailBlock.input.getValue();
+	verifySms = async (phoneBlock, verifyCodeBlock) => {
+		var phone = phoneBlock.input.getValue();
 		var verificationCode = verifyCodeBlock.input.getValue();
 
 		let valid = false;
 
-		await easyFetch('/api/user_management/auth/verify_code', {
+		await easyFetch('api/user_management/auth/verifySandBox', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/x-www-form-urlencoded',
 			},
-			body: new URLSearchParams({ 'email': email, 'one_time_code': verificationCode, 'context': "signup" })
+			body: new URLSearchParams({ 'phone_number': phone, 'otp': verificationCode })
 		})
 		.then(res => {
 			let response = res.response;
