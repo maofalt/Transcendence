@@ -217,6 +217,7 @@ export default class ProfilePage extends AbstractComponent {
 		elemsToBeFilled.userPlayername.textContent = user.playername || "N/A";
 		elemsToBeFilled.userEmail.textContent = user.email || "N/A";
 		elemsToBeFilled.userPhone.textContent = user.phone || "N/A";
+		console.log("user", user);
 		elemsToBeFilled.pannelTitle.textContent = `Friends List  ( ${user.friends_count} )`;
 	}
 
@@ -229,68 +230,6 @@ export default class ProfilePage extends AbstractComponent {
 			}
 			username = details.username;
 		}
-		// let matchHistory = [
-		// 	{
-		// 		id: "001",
-		// 		tournament: "Great Big Tournament",
-		// 		date: "01-03-2021",
-		// 		winner: "yridgway"
-		// 	},
-		// 	{
-		// 		id: "002",
-		// 		tournament: "Great Big Tournament",
-		// 		date: "01-03-2021",
-		// 		winner: "yridgway"
-		// 	},
-		// 	{
-		// 		id: "003",
-		// 		tournament: "Great Big Tournament",
-		// 		date: "01-03-2021",
-		// 		winner: "yridgway"
-		// 	},
-		// 	{
-		// 		id: "004",
-		// 		tournament: "Great Big Tournament",
-		// 		date: "01-03-2021",
-		// 		winner: "yridgway"
-		// 	},
-		// 	{
-		// 		id: "005",
-		// 		tournament: "Great Big Tournament",
-		// 		date: "01-03-2021",
-		// 		winner: "yridgway"
-		// 	},
-		// 	{
-		// 		id: "006",
-		// 		tournament: "Great Big Tournament",
-		// 		date: "01-03-2021",
-		// 		winner: "yridgway"
-		// 	},
-		// 	{
-		// 		id: "007",
-		// 		tournament: "Great Big Tournament",
-		// 		date: "01-03-2021",
-		// 		winner: "yridgway"
-		// 	},
-		// 	{
-		// 		id: "008",
-		// 		tournament: "Great Big Tournament",
-		// 		date: "01-03-2021",
-		// 		winner: "yridgway"
-		// 	},
-		// 	{
-		// 		id: "009",
-		// 		tournament: "Great Big Tournament",
-		// 		date: "01-03-2021",
-		// 		winner: "yridgway"
-		// 	},
-		// 	{
-		// 		id: "010",
-		// 		tournament: "Great Big Tournament",
-		// 		date: "01-03-2021",
-		// 		winner: "yridgway"
-		// 	}
-		// ];
 		let gameStats = await this.fetchGameStats(username);
 
 		elemsToBeFilled.matchTotal.textContent = gameStats.total_played;

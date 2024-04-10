@@ -77,10 +77,20 @@ export default class EditProfile extends AbstractComponent {
 			button: {content: "Verify", action: true}
 		});
 		verifyCodeInput.button.onclick = async () => {
-			if (verifyCodePannel.name = "phone" && !await this.verifySms(phoneBlock, verifyCodeInput)) {
-				return ;
-			} else if (verifyCodePannel.name = "email" && !await this.verifyEmail(emailBlock, verifyCodeInput)) {
-				return ;
+			if (verifyCodePannel.name == "phone") {
+				if (!await this.verifySms(phoneBlock, verifyCodeInput)) {
+					phoneBlock.setAttribute("verified", false);
+				} else {
+					phoneBlock.input.input.style.setProperty("border", "2px solid green");
+					phoneBlock.setAttribute("verified", true);
+				}
+			} else if (verifyCodePannel.name == "email") {
+				if (!await this.verifyEmail(emailBlock, verifyCodeInput)) {
+					emailBlock.setAttribute("verified", false);
+				} else {
+					emailBlock.input.input.style.setProperty("border", "2px solid green");
+					emailBlock.setAttribute("verified", true);
+				}
 			}
 			fadeOut(verifyCodeBlock);
 		}
@@ -100,7 +110,11 @@ export default class EditProfile extends AbstractComponent {
 			title: "New Email",
 			content: "example@example.com",
 			indicators: {
-				invalidEmailIndicator: ["Please click 'Verify' to update your email", () => this.emailIsValid(emailBlock)],
+				unverifiedIndicator: ["Please verify your email", () => this.isVerified(emailBlock)],
+				// emptyIndicator: ["Please enter your verified email", () => { 
+				// 	emailBlock.getAttribute('verified') == 'false' 
+				// 	|| (emailBlock.getAttribute('verified') == 'true' && emailBlock.input.getValue() === "")
+				// }],
 			},
 			type: "email",
 			button: {content: "Verify", action: false}
@@ -120,7 +134,11 @@ export default class EditProfile extends AbstractComponent {
 			title: "New Phone Number",
 			content: "+33 6 12 34 56 78",
 			indicators: {
-				invalidPhoneIndicator: ["Please click 'Verify' to update your phone number", () => this.phoneIsValid(phoneBlock)],
+				unverifiedIndicator: ["Please verify your phone number", () => this.isVerified(emailBlock)],
+				// emptyIndicator: ["Please enter your verified phone number", () => { 
+				// 	phoneBlock.getAttribute('verified') == 'false' 
+				// 	|| (phoneBlock.getAttribute('verified') == 'true' && phoneBlock.input.getValue() === "")
+				// }],
 			},
 			type: "tel",
 			button: {content: "Verify", action: false}
@@ -161,8 +179,8 @@ export default class EditProfile extends AbstractComponent {
 			updateUser({
 				playername: playernameBlock.input.getValue() || "",
 				avatar: avatarFile || "",
-				email: "",
-				phone: "",
+				email: emailBlock.input.getValue() || "",
+				phone: phoneBlock.input.getValue() || "",
 				two_factor_method: "",
 			});
 		}
@@ -182,6 +200,43 @@ export default class EditProfile extends AbstractComponent {
 		this.shadowRoot.appendChild(profile);
 		this.shadowRoot.appendChild(friendsPannel);
 		this.shadowRoot.appendChild(verifyCodeBlock);
+	}
+
+	sendEmail = async (emailBlock) => {
+		const email = emailBlock.input.getValue();
+		let valid = false;
+		await easyFetch('/api/user_management/auth/access_code', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded',
+			},
+			body: new URLSearchParams({ email })
+		})
+		.then(res => {
+			let response = res.response;
+			let body = res.body;
+
+			if (!response || !body) {
+				throw new Error('Empty Response');
+			} else if (response.status === 400) {
+				displayPopup(body.error || 'Invalid email', 'error');
+				valid = false;
+			} else if (!response.ok) {
+				displayPopup('Request Failed:', body.error || JSON.stringify(body), 'error');
+				valid = false;
+			} else if (response.status === 200 && body.success === true) {
+				displayPopup('Email sent to \'' + email + '\'', 'success');
+				valid = true;
+			} else {
+				displayPopup(body.error || JSON.stringify(body), 'error');
+			}
+		})
+		.catch(error => {
+			displayPopup(`Request Failed: ${error}`, 'error');
+			valid = false;
+		});
+		console.log("valid2: ", valid);
+		return valid;
 	}
 
 	sendSMS = async (phoneBlock) => {
@@ -219,40 +274,44 @@ export default class EditProfile extends AbstractComponent {
 		return valid;
 	}
 
-	// sendEmail = async (emailBlock) => {
-	// 	let valid = false;
-	// 	console.log("SENDING")
-	// 	const phone_number = phoneBlock.input.getValue().replace(/\s/g, '');
+	verifyEmail = async (emailBlock, verifyCodeBlock) => {
+		var email = emailBlock.input.getValue();
+		var verificationCode = verifyCodeBlock.input.getValue();
 
-	// 	await easyFetch('/api/user_management/auth/updateSandbox', {
-	// 		method: 'POST',
-	// 		headers: {
-	// 			'Content-Type': 'application/x-www-form-urlencoded',
-	// 		},
-	// 		body: new URLSearchParams({ phone_number })
-	// 	})
-	// 	.then(res => {
-	// 		let response = res.response;
-	// 		let body = res.body;
+		let valid = false;
 
-	// 		if (!response || !body) {
-	// 			throw new Error('Empty Response');
-	// 		} else if (response.status === 400) {
-	// 			displayPopup(body.error || 'Invalid number', 'error');
-	// 		} else if (!response.ok) {
-	// 			displayPopup('Request Failed:', body.error || JSON.stringify(body), 'error');
-	// 		} else if (response.status === 200 && body.success === true) {
-	// 			displayPopup('SMS code sent to \'' + phone_number + '\'', 'success');
-	// 			valid = true;
-	// 		} else {
-	// 			displayPopup(body.error || JSON.stringify(body), 'error');
-	// 		}
-	// 	})
-	// 	.catch(error => {
-	// 		displayPopup(`Request Failed: ${error}`, 'error');
-	// 	});
-	// 	return valid;
-	// }
+		await easyFetch('/api/user_management/auth/verify_code', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded',
+			},
+			body: new URLSearchParams({ 'email': email, 'one_time_code': verificationCode, 'context': "signup" })
+		})
+		.then(res => {
+			let response = res.response;
+			let body = res.body;
+
+			if (!response || !body) {
+				throw new Error('Empty Response');
+			} else if (response.status === 400) {
+				displayPopup(body.error || JSON.stringify(body), 'error');
+				valid = false;
+			} else if (!response.ok) {
+				displayPopup('Response Error: ' + (body.error || JSON.stringify(body)), 'error');
+				valid = false;
+			} else if (response.status === 200 && body.success === true) {
+				displayPopup(body.message || JSON.stringify(body), 'success');
+				valid = true;
+			} else {
+				displayPopup(body.error || JSON.stringify(body), 'error');
+			}
+		})
+		.catch(error => {
+			displayPopup(`Request Failed: ${error}`, 'error');
+			valid = false;
+		});
+		return valid
+	}
 
 	verifySms = async (phoneBlock, verifyCodeBlock) => {
 		var phone = phoneBlock.input.getValue();
@@ -280,7 +339,7 @@ export default class EditProfile extends AbstractComponent {
 				displayPopup('Response Error: ' + (body.error || JSON.stringify(body)), 'error');
 				valid = false;
 			} else if (response.status === 200 && body.success === true) {
-				// displayPopup(body.message || JSON.stringify(body), 'success');
+				displayPopup(body.message || JSON.stringify(body), 'success');
 				valid = true;
 			} else {
 				displayPopup(body.error || JSON.stringify(body), 'error');
@@ -293,46 +352,20 @@ export default class EditProfile extends AbstractComponent {
 		return valid
 	}
 
-	// verifySms = async (phoneBlock, verifyCodeBlock) => {
-	// 	var phone = phoneBlock.input.getValue();
-	// 	var verificationCode = verifyCodeBlock.input.getValue();
-
-	// 	let valid = false;
-
-	// 	await easyFetch('api/user_management/auth/verifySandBox', {
-	// 		method: 'POST',
-	// 		headers: {
-	// 			'Content-Type': 'application/x-www-form-urlencoded',
-	// 		},
-	// 		body: new URLSearchParams({ 'phone_number': phone, 'otp': verificationCode })
-	// 	})
-	// 	.then(res => {
-	// 		let response = res.response;
-	// 		let body = res.body;
-
-	// 		if (!response || !body) {
-	// 			throw new Error('Empty Response');
-	// 		} else if (response.status === 400) {
-	// 			displayPopup(body.error || JSON.stringify(body), 'error');
-	// 			valid = false;
-	// 		} else if (!response.ok) {
-	// 			displayPopup('Response Error: ' + (body.error || JSON.stringify(body)), 'error');
-	// 			valid = false;
-	// 		} else if (response.status === 200 && body.success === true) {
-	// 			// displayPopup(body.message || JSON.stringify(body), 'success');
-	// 			valid = true;
-	// 		} else {
-	// 			displayPopup(body.error || JSON.stringify(body), 'error');
-	// 		}
-	// 	})
-	// 	.catch(error => {
-	// 		displayPopup(`Request Failed: ${error}`, 'error');
-	// 		valid = false;
-	// 	});
-	// 	return valid
-	// }
+	isVerified = (block) => {
+		if (block.getAttribute('verified') == 'true') {
+			block.input.input.style.setProperty("border", "");
+			return true;
+		} else if (block.getAttribute('verified') == 'false') {
+			block.input.input.style.setProperty("border", "2px solid red");
+			return false;
+		} else {
+			return true;
+		}
+	}
 
 	emailIsValid = (emailBlock) => {
+
 		if (!emailBlock.input.getValue())
 			return true;
 		// let value = emailBlock.input.getValue();
