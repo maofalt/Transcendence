@@ -226,6 +226,7 @@ export default class Game extends AbstractComponent {
 
 		this.socket.on('generate', data => {
 			// Generate scene and update it
+			// let parsedData = JSON.parse(data);
 			data.playersArray = Object.values(data.players);
 			console.log("data : ", data);
 			this.generateScene(data, this.socket);
@@ -415,7 +416,7 @@ export default class Game extends AbstractComponent {
 	generateScene(data, socket) {
 		console.log("Generating Scene...");
 
-		this.renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+		this.renderer = new THREE.WebGLRenderer({ alpha: true, antialias: false });
 
 		// set the camera and set it to look at the center of the match
 		this.camera = new THREE.PerspectiveCamera(45, this.screenWidth / this.screenHeight, 0.1, 1000);
@@ -561,9 +562,9 @@ export default class Game extends AbstractComponent {
 		const scoreGeo = new TextGeometry(scoreText, this.textSettings);
 		// const scoreGeo = new TextGeometry(scoreText, this.TKtext);
 		
-		const profilePicMaterial = new THREE.MeshPhongMaterial({ map:profilePic });
-		var scoreMaterial = new THREE.MeshPhongMaterial({ color: data.gamemode.gameType ? 0xff0000 : 0xffffff });
-		var loginMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
+		const profilePicMaterial = new THREE.MeshBasicMaterial({ map:profilePic });
+		var scoreMaterial = new THREE.MeshBasicMaterial({ color: data.gamemode.gameType ? 0xff0000 : 0xffffff });
+		var loginMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
 		
 		const loginMesh = new THREE.Mesh(loginGeo, loginMaterial);
 		const scoreMesh = new THREE.Mesh(scoreGeo, scoreMaterial);
@@ -716,7 +717,7 @@ export default class Game extends AbstractComponent {
 			return ;
 		}
 		const wallGeometry = new THREE.BoxGeometry(data.field.wallsSize, 1, 2);
-		const wallMaterial = new THREE.MeshPhongMaterial({ color: data.ball.col, transparent: true, opacity: 1, reflectivity: 0.5 });
+		const wallMaterial = new THREE.MeshBasicMaterial({ color: data.ball.col, transparent: true, opacity: 1, reflectivity: 0.5 });
 		// console.log("number of players : ", data.gamemode.nbrOfPlayers);
 		for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
 			this.walls[i] = new THREE.Mesh(wallGeometry, wallMaterial); // create Material

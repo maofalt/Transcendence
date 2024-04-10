@@ -163,9 +163,9 @@ form {
     /* border: 1px solid blue; */
 }
 
-input {
+.input-tag {
     width: 100%;
-    padding: 8px 12px;
+    padding: 8px 0px;
     box-sizing: border-box;
     font-size: 14px;
     font-family: 'Space Grotesk', sans-serif;

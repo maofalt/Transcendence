@@ -46,7 +46,7 @@ export default class CreateTournament extends AbstractView {
 			await this.initializeGame(basicGameSettings);
 
 			let gameSettingsForm = document.getElementById('game-settings-form');
-			gameSettingsForm.querySelectorAll('input').forEach(input => {
+			gameSettingsForm.querySelectorAll('.input-tag').forEach(input => {
 				input.addEventListener('change', async (event) => {
 				event.preventDefault();
 				console.log('Responding to form changes');
