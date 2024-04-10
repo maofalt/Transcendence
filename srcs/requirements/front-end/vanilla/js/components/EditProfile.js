@@ -111,7 +111,7 @@ export default class EditProfile extends AbstractComponent {
 			content: "example@example.com",
 			indicators: {
 				unverifiedIndicator: ["Please verify your email", () => this.isVerified(emailBlock)],
-				// emptyIndicator: ["Please enter your verified email", () => this.emptyBlock(emailBlock)],
+				emptyIndicator: ["Please enter your verified email", () => this.emptyBlock(emailBlock)],
 			},
 			type: "email",
 			button: {content: "Verify", action: false}
@@ -132,7 +132,7 @@ export default class EditProfile extends AbstractComponent {
 			content: "+33 6 12 34 56 78",
 			indicators: {
 				unverifiedIndicator: ["Please verify your phone number", () => this.isVerified(emailBlock)],
-				// emptyIndicator: ["Please enter your verified phone", () => this.emptyBlock(emailBlock)],
+				emptyIndicator: ["Please enter your verified phone", () => this.emptyBlock(emailBlock)],
 			},
 			type: "tel",
 			button: {content: "Verify", action: false}
@@ -356,6 +356,13 @@ export default class EditProfile extends AbstractComponent {
 				return false;
 			return true;
 		}
+	}
+
+	emptyBlock = (block) => {
+		if (block.getAttribute('verified') == 'true' && block.input.getValue() == '') {
+			return false;
+		}
+		return true;
 	}
 
 	emailIsValid = (emailBlock) => {
