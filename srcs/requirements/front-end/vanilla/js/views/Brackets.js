@@ -161,7 +161,7 @@ export default class Brackets extends AbstractComponent {
 
         this.getTournamentDetails(tournamentId);
 
-        this.shadowRoot.append(createMatchesButton, getDetailsButton);
+        // this.shadowRoot.append(createMatchesButton, getDetailsButton);
     }
 
 

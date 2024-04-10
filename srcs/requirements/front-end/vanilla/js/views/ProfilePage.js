@@ -313,7 +313,7 @@ export default class ProfilePage extends AbstractComponent {
 			`;
 			matchRow.onmouseover = () => matchRow.style.setProperty("background-color", "rgba(0, 0, 0, 0.3)");
 			matchRow.onmouseout = () => matchRow.style.setProperty("background-color", "rgba(0, 0, 0, 0)");
-			// matchRow.onclick = () => navigateTo("/play?matchID=" + )
+			matchRow.onclick = () => navigateTo("/brackets?tournament=" + match.id);
 			elemsToBeFilled.matchRows.appendChild(matchRow);
 		});
 	}
