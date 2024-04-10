@@ -127,6 +127,7 @@ export default class Signup extends AbstractComponent {
 					'width': '40px',
 					'height': '40px',
 					'font-size': '25px',
+					// 'display': 'none',
 					// 'background-color': 'lightblue',
 				}
 			});
@@ -208,7 +209,6 @@ export default class Signup extends AbstractComponent {
 	/* FORM FLOW MANAGEMENT */
 	goNext = async (e, flow) => { // called when next button is pressed
 		e.preventDefault();
-		let canGoNext = 1;
 		if (this.flowIndex >= flow.length - 1)
 			return ;
 		console.log("before");
@@ -234,6 +234,8 @@ export default class Signup extends AbstractComponent {
 		
 		console.log("after");
 		this.flowIndex++;
+		// if (this.flowIndex > 0)
+		// 	document.getElementById("backButton").style.display = "block";
 		this.updateFormView(flow, this.flowIndex);
 	}
 
@@ -383,7 +385,7 @@ export default class Signup extends AbstractComponent {
 
 				// get user details for the profile page
 				let details = await fetchUserDetails();
-				sessionStorage.setItem('userDetails', JSON.stringify(details));
+				// sessionStorage.setItem('userDetails', JSON.stringify(details));
 
 				Router.navigateTo("/");
 				valid = true;

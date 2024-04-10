@@ -44,52 +44,48 @@ export async function renewToken() {
 		refreshSocketConnection();
 
 		let details = await fetchUserDetails();
-		sessionStorage.setItem('userDetails', JSON.stringify(details));
+		// sessionStorage.setItem('userDetails', JSON.stringify(details));
 
 		console.log('Updated accessToken on Storage');
 	}).catch(error => {
 		console.error('Error checking refresh:', error);
 		sessionStorage.clear();
-		console.log(sessionStorage);
 	});
 }
 
-function refreshTokenLoop() {
+export function refreshTokenLoop() {
 	const now = new Date().getTime();
 
 	const expiryTimestamp = sessionStorage.getItem("expiryTimestamp");
 	let expiryTime = parseInt(expiryTimestamp, 10);
-	if (!(expiryTime > now) || !(expiryTime < now + 100*24*60*60*1000)) {
-		expiryTime = now + 60000;
-	}
-	const accessToken = sessionStorage.getItem("accessToken");
-	const tokenType = sessionStorage.getItem("tokenType");
+	if (expiryTime && expiryTime > now && expiryTime < now + 100 * 24 * 60 * 60 * 1000) {
+		const accessToken = sessionStorage.getItem("accessToken");
+		const tokenType = sessionStorage.getItem("tokenType");
 
-	console.log('expiryTimestamp:', expiryTimestamp);
-	console.log('expiryTime:', expiryTime);
-	console.log('accessToken:', accessToken);
-	console.log('tokenType:', tokenType);
+		console.log('expiryTimestamp:', expiryTimestamp);
+		console.log('expiryTime:', expiryTime);
+		console.log('accessToken:', accessToken);
+		console.log('tokenType:', tokenType);
 
-	if (now >= expiryTime - 60000) {
-		renewToken();
-	}
+		if (now >= expiryTime - 60000) {
+			renewToken();
+		}
 
-	if (accessToken !== null && expiryTime !== null && expiryTime < now) {
+		// calculate remaining time until the token needs refreshing
+		let delayUntilRefresh = expiryTime - now - 30000;
+
+		console.log("delay", delayUntilRefresh);
+		console.log('Token will be refreshed in:', delayUntilRefresh);
+
+		if (delayUntilRefresh < 0) {
+			delayUntilRefresh = 30000;
+		}
+
+		// timeout to refresh the token just before it expires
+		setTimeout(refreshTokenLoop, delayUntilRefresh);
+	} else {
 		sessionStorage.clear();
 	}
-
-	// calculate remaining time until the token needs refreshing
-	let delayUntilRefresh = expiryTime - now - 30000;
-
-	console.log("delay", delayUntilRefresh);
-	console.log('Token will be refreshed in:', delayUntilRefresh);
-
-	if (delayUntilRefresh < 0) {
-		delayUntilRefresh = 30000;
-	}
-
-	// timeout to refresh the token just before it expires
-	setTimeout(refreshTokenLoop, delayUntilRefresh);
 }
 
 export function pollingFunctions() {

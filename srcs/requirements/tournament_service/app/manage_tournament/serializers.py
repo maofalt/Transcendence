@@ -3,6 +3,9 @@ from .models import Tournament, TournamentMatch, MatchSetting, GameType, Tournam
 from .models import RegistrationType, TournamentPlayer, Player, MatchParticipants
 
 class MatchSettingSerializer(serializers.ModelSerializer):
+    ball_model = serializers.CharField(allow_blank=True, required=False)
+    ball_texture = serializers.CharField(allow_blank=True, required=False)
+
     class Meta:
         model = MatchSetting
         fields = '__all__'
@@ -16,6 +19,15 @@ class TournamentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tournament
         fields = ['id', 'tournament_name', 'nbr_of_player_total', 'nbr_of_player_match', 'setting', 'registration_period_min', 'host_id', 'joined', 'is_full', 'state', 'host_name']
+
+    def validate(self, data):
+        nbr_of_player_total = data.get('nbr_of_player_total')
+        nbr_of_player_match = data.get('nbr_of_player_match')
+
+        if nbr_of_player_match > nbr_of_player_total:
+            raise serializers.ValidationError("The number of players per match cannot be greater than the total number of players.")
+       
+        return data
 
     def get_host_name(self, obj):
         return obj.host.username
@@ -139,11 +151,12 @@ class TournamentMatchListSerializer(serializers.Serializer):
 class GamemodeDataSerializer(serializers.ModelSerializer):
     nbrOfRounds = serializers.SerializerMethodField() 
     nbrOfPlayers = serializers.SerializerMethodField() # it is returning not a nbr_of_player for match setting, it returns actaul number of payer for a current match
-    timeLimit = serializers.IntegerField(default=0)
+    timeLimit = serializers.IntegerField(default=5)
+    gameType = serializers.IntegerField(default=0)
 
     class Meta:
         model = TournamentMatch
-        fields = ['nbrOfPlayers', 'nbrOfRounds', 'timeLimit']
+        fields = ['nbrOfPlayers', 'nbrOfRounds', 'timeLimit', 'gameType']
 
     def get_nbrOfPlayers(self, obj):
         return obj.players.count()
@@ -153,7 +166,7 @@ class GamemodeDataSerializer(serializers.ModelSerializer):
         return setting.nbr_of_rounds
 
 class FieldDataSerializer(serializers.ModelSerializer):
-    wallsFactor = serializers.IntegerField(source='walls_factor')
+    wallsFactor = serializers.DecimalField(max_digits=3, decimal_places=2, source='walls_factor')
     sizeOfGoals = serializers.IntegerField(source='size_of_goals')
 
     class Meta:
@@ -212,16 +225,17 @@ class TournamentMatchRoundSerializer(serializers.ModelSerializer):
     paddlesData = PaddlesDataSerializer()
     ballData = BallDataSerializer()
     players = SimplePlayerSerializer(many=True)
-    match_id = serializers.IntegerField(source='id')
+    matchID = serializers.IntegerField(source='id')
 
     class Meta:
         model = TournamentMatch
-        fields = ['tournament_id', 'match_id', 'gamemodeData', 'fieldData', 'paddlesData', 'ballData', 'players']
+        fields = ['tournament_id', 'matchID', 'gamemodeData', 'fieldData', 'paddlesData', 'ballData', 'players']
 
 class SimpleTournamentSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Tournament
-        fields = ['id', 'tournament_name']
+        fields = ['id', 'tournament_name', 'created_at', 'winner']
 
 class SimpleMatchSerializer(serializers.ModelSerializer):
     winner = serializers.SerializerMethodField()

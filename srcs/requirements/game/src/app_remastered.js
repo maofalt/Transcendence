@@ -91,7 +91,7 @@ function gameLoop(matchID) {
 		clearInterval(match.gameInterval); // stop the loop
 		// match.gameState.ball.dir = match.gameState.camera.pos.sub(match.gameState.ball.pos);
 		game.to(matchID).emit('end-game', match.gameState);
-		// postMatchResult(match.gameState.jisus_matchID, match.gameState.winner.accountID); // send the result of the match back;
+		postMatchResult(matchID, match.gameState.winner.accountID); // send the result of the match back;
 		matches.delete(matchID); // then delete the match;
 		return ;
 	}
@@ -403,8 +403,8 @@ game.on('connection', (client) => {
 				// clearInterval(match.gameInterval);
 				if (data.ongoing) {
 					data.winner = player;
-					if (data.jisus_matchID) {
-						// postMatchResult(match.gameState.jisus_matchID, match.gameState.winner.accountID);
+					if (data.matchID >= 0) {
+						postMatchResult(client.matchID, match.gameState.winner.accountID);
 					}
 					// matches.delete(client.matchID);
 				}
@@ -461,11 +461,17 @@ function verifyMatchSettings(settings) {
 	console.log(settings);
 
 	const expectedCategories = ['gamemodeData', 'fieldData', 'paddlesData', 'ballData'];
-    for (const category of expectedCategories) {
-        if (!settings.hasOwnProperty(category)) {
-            return `Settings is missing ${category}`;
-        }
-    }
+	for (const category of expectedCategories) {
+		if (!settings.hasOwnProperty(category)) {
+			return `Settings is missing ${category}`;
+		}
+	}
+
+	if (settings && settings.paddlesData && settings.paddlesData.speed && settings.ballData && settings.ballData.speed && settings.ballData.radius) {
+		settings.paddlesData.speed = parseFloat(settings.paddlesData.speed);
+		settings.ballData.speed = parseFloat(settings.ballData.speed);
+		settings.ballData.radius = parseFloat(settings.ballData.radius);
+	}
 
 	const checks = {
 		gamemodeData: {
@@ -540,11 +546,8 @@ function postMatchResult(matchId, winnerId) {
 }
 
 app.post('/createMatch', (req, res) => {
-	const { tournament_id, match_id, ...gameSettings } = req.body;
-
-	console.log("\nbanana\n", req.body);
 	
-	let matchID = setupMatch(gameSettings, tournament_id, match_id, res);
+	let matchID = setupMatch(req.body, res);
 	if (!matchID)
 		return ;
 
@@ -559,9 +562,8 @@ app.post('/createMultipleMatches', (req, res) => {
 	console.log(allGameSettings);
 
 	for (settings of allGameSettings.matches) {
-		const { tournament_id, match_id, ...gameSettings } = settings;
 
-		let matchID = setupMatch(gameSettings, tournament_id, match_id, res);
+		let matchID = setupMatch(settings, res);
 		if (!matchID)
 			return ;
 
@@ -571,26 +573,23 @@ app.post('/createMultipleMatches', (req, res) => {
 	res.json({ matchIDs });
 });
 
-function setupMatch(gameSettings, tournament_id, match_id, res) {
+function setupMatch(settings, res) {
+
+	let { tournament_id, matchID, ...gameSettings } = settings;
 
 	console.log("CREATING MATCH : ", gameSettings);
-	// gameSettings.gamemodeData.nbrOfRounds = 1;
-	if (!match_id) {
-		console.log("Generating match ID");
-		match_id = generateMatchID();
-		console.log("Generated match ID: ", match_id);
+
+	if (!matchID) {
+		matchID = generateMatchID();
 	}
 
-	const matchID = match_id; // Convert match_id to a string
-	let error = verifyMatchSettings(gameSettings);
-	
 	if (matches.has(matchID)) {
 		console.log("Match already exists");
 		res.json({ matchID });
 		return null;
 	}
-	
-	// let error = verifyMatchSettings(gameSettings);
+
+	let error = verifyMatchSettings(gameSettings);	
 	if (error) {
 		console.log(error);
 		res.status(400).json({ error });
@@ -601,14 +600,13 @@ function setupMatch(gameSettings, tournament_id, match_id, res) {
 	const players = gameSettings.playersData.map(player => player.accountID);
 
 	if (players.length == 1) {
-		// postMatchResult(match_id, players[0]);
+		postMatchResult(matchID, players[0]);
 		res.json({ matchID });
 		return null;
 	}
 
 	// Convert game settings to game state
 	const gameState = init.initLobby(gameSettings);
-	gameState.jisus_matchID = match_id;
 	
 	matches.set(matchID, { gameState: gameState, gameInterval: 0 });
 

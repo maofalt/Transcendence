@@ -15,35 +15,27 @@ export default class UserInfo extends AbstractComponent {
 	constructor(options = {}) {
 		super();
 
+		this.elemsToBeFilled = {};
+
 		const styleEl = document.createElement('style');
 		styleEl.textContent = styles;
 		this.shadowRoot.appendChild(styleEl);
 
-		this.addLater(options);
-	}
-
-	async addLater(options) {
+		/* MAIN PANNEL */
 		const pannel = new Pannel({title: "", dark: false, style: {width: "520px", height: "150px"}});
-        pannel.id = "pannel";
-        const ppContainer = new Pannel({title: "", dark: true, style: {width: "120px", height: "120px"}});
-        ppContainer.id = "pp-container";
+		pannel.id = "pannel";
+		pannel.shadowRoot.removeChild(pannel.shadowRoot.querySelector("#pannel-title"));
+		
+		// setup avatar image and container
+		const avatarContainer = new Pannel({title: "", dark: true, style: {width: "120px", height: "120px"}});
+		avatarContainer.id = "avatar-container";
+		avatarContainer.shadowRoot.removeChild(avatarContainer.shadowRoot.querySelector("#pannel-title"));
+		avatarContainer.style.setProperty("display", "flex");
+		avatarContainer.style.setProperty("justify-content", "center");
+		
+		this.imgBox = document.createElement('div');
+		this.styleImageBox(this.imgBox);
 
-        pannel.shadowRoot.removeChild(pannel.shadowRoot.querySelector("#pannel-title"));
-        ppContainer.shadowRoot.removeChild(ppContainer.shadowRoot.querySelector("#pannel-title"));
-        
-        ppContainer.style.setProperty("display", "flex");
-        ppContainer.style.setProperty("justify-content", "center");
-
-        this.imgBox = document.createElement('div');
-        this.setUpImageBox(this.imgBox);
-
-		let details = JSON.parse(sessionStorage.getItem("userDetails"));
-		console.log("DETAILS:", details);
-		if (!details)
-			details = await fetchUserDetails();
-
-        const userText = this.createUserText(details);
-        const profilePicture = this.createProfilePicture(details.avatar);
 		this.editOverlay = this.createProfilePicture(editIcon);
 		this.editOverlay.style.display = "none";
 		this.editOverlay.style.setProperty("position", "absolute"); 
@@ -55,17 +47,23 @@ export default class UserInfo extends AbstractComponent {
 		this.editOverlay.style.setProperty("background-clip", "padding-box");
 		this.editOverlay.style.setProperty("box-shadow", "0 0 0 10px rgba(0,0,0,0.5)");
 		this.editOverlay.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-        
+	
+		const profilePicture = this.createProfilePicture();
+		this.elemsToBeFilled.avatar = profilePicture;
+		
+		const userText = this.createUserText();
+
 		this.imgBox.appendChild(this.editOverlay);
-        this.imgBox.appendChild(profilePicture);
-        ppContainer.shadowRoot.appendChild(this.imgBox);
-        pannel.shadowRoot.appendChild(ppContainer);
-        pannel.shadowRoot.appendChild(userText);
+		this.imgBox.appendChild(profilePicture);
+		avatarContainer.shadowRoot.appendChild(this.imgBox);
+		pannel.shadowRoot.appendChild(avatarContainer);
+		pannel.shadowRoot.appendChild(userText);
+		this.createButtons(pannel);
 
-        this.createButtons(options, pannel);
+		this.fetchAndFillElems(options.details);
 
-        pannel.onmouseover = (e) => this.pannelHover(e, pannel, "pannel HOVERED !");
-		pannel.onmouseleave = (e) => this.pannelLeave(e, pannel, "pannel LEFT !");
+		// pannel.onmouseover = (e) => this.pannelHover(e, pannel, "pannel HOVERED !");
+		// pannel.onmouseleave = (e) => this.pannelLeave(e, pannel, "pannel LEFT !");
 
 		if (options.style) {
 			for (const [key, value] of Object.entries(options.style)) {
@@ -77,79 +75,102 @@ export default class UserInfo extends AbstractComponent {
 
 		// this.style.setProperty("font-family", "Anta");
 
-        this.shadowRoot.appendChild(pannel);
+		this.shadowRoot.appendChild(pannel);
 	}
 
-    createProfilePicture(avatar) {
-        const profilePicture = new Image();
-        profilePicture.classList.add("profile-picture");
-        profilePicture.src = avatar || defaultAvatar;
+	fetchAndFillElems = async (details) => {
+		// if details has been passed in options, use it. Otherwise, fetch current user details
+		if (!details) {
+			details = JSON.parse(sessionStorage.getItem("userDetails"));
+			// console.log("DETAILS:", details);
+			if (!details) {
+				details = await fetchUserDetails();
+				// sessionStorage.setItem("userDetails", JSON.stringify(details));
+			}
+		}
+		if (!details)
+			return ;
+		details.wins = details.wins ? details.wins : "-";
+		details.losses = details.losses ? details.losses : "-";
+		this.elemsToBeFilled.avatar.src = details.avatar;
+		this.elemsToBeFilled.username.textContent = details.username;
+		this.elemsToBeFilled.statusIndicator.textContent = details.is_online ? "online" : "offline";
+		this.elemsToBeFilled.winsLosses.textContent = `${details.wins} W / ${details.losses} L`
+		this.elemsToBeFilled.status.style.color = details.is_online ? "green" : "red";
+		this.elemsToBeFilled.statusCircle.style.backgroundColor = details.is_online ? "green" : "red";
+	}
+
+	createProfilePicture(avatar) {
+		const profilePicture = new Image();
+		profilePicture.classList.add("profile-picture");
+		profilePicture.src = avatar || defaultAvatar;
 		profilePicture.style.setProperty("width", "100%");
 		profilePicture.style.setProperty("height", "100%");
 		profilePicture.style.setProperty("object-fit", "cover");
 		profilePicture.style.setProperty("border-radius", "16px");
 		profilePicture.style.setProperty("box-shadow", "0 0 20px rgba(0, 0, 0, 0.6)");
-        return profilePicture;
-    }
+		return profilePicture;
+	}
 
-    createUserText(options) {
-        let statusColor;
-		if (options.status == "online") {
-			statusColor = "green";
-		} else if (options.status == "in game") {
-			statusColor = "orange";
-		} else
-			statusColor = "red";
+	createUserText() {
+		let statusColor = "red";
+		const userText = document.createElement('div');
+		userText.id = "user-text";
+		userText.style.setProperty("width", "100%");
+		userText.style.setProperty("height", "100%");
+		userText.style.setProperty("padding", "5px 15px 5px 15px");
+		userText.style.setProperty("flex", "1");
+		userText.innerHTML = `
+		<style>
+			h2 {
+				margin: 15px 0px;
+				padding: 0px;
+			}
+			p {
+				margin: 10px 0px;
+				padding: 0px;
+			}
+			#status {
+				margin: 0;
+				padding: 0;
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+				color: ${statusColor};
+			}
+			#status-circle {
+				width: 15px;
+				height: 15px;
+				margin-right: 5px;
+				background-color: ${statusColor};
+				border-radius: 50%;
+			}
+			#status-circle p {
+				margin: 0;
+				padding: 0;
+			}
+		</style>
+		<h2 id="user-username">Guest</h2>
+		<div id="status">
+			<div id="status-circle"></div>
+			<p id="status-indicator">offline</p>
+		</div>
+		<p id="wins-and-losses">- W / - L</p>
+		`;
+		userText.querySelector('h2').style.setProperty("color", "rgba(0, 217, 255, 1)");
+		// userText.querySelector('#status').style.setProperty("font-style", "italic");
 
-        const userText = document.createElement('div');
-        userText.id = "user-text";
-        userText.style.setProperty("width", "100%");
-        userText.style.setProperty("height", "100%");
-        userText.style.setProperty("padding", "5px 15px 5px 15px");
-        userText.style.setProperty("flex", "1");
-        userText.innerHTML = `
-        <style>
-            h2 {
-                margin: 15px 0px;
-                padding: 0px;
-            }
-            p {
-                margin: 10px 0px;
-                padding: 0px;
-            }
-            #status {
-                margin: 0;
-                padding: 0;
-                display: flex;
-                flex-direction: row;
-                align-items: center;
-                color: ${statusColor};
-            }
-            #status-circle {
-                width: 15px;
-                height: 15px;
-                margin-right: 5px;
-                background-color: ${statusColor};
-                border-radius: 50%;
-            }
-            #status-circle p {
-                margin: 0;
-                padding: 0;
-            }
-        </style>
-        <h2>${options.username ? options.username : "Guest"}</h2>
-        <div id="status">
-            <div id="status-circle"></div>
-            <p>${options.status ? options.status : "offline"}</p>
-        </div>
-        <p>${options.wins ? options.wins: "-"} W / ${options.losses ? options.losses: "-"} L</p>`;
-        userText.querySelector('h2').style.setProperty("color", "rgba(0, 217, 255, 1)");
-        // userText.querySelector('#status').style.setProperty("font-style", "italic");
-        return userText;
-    }
+		this.elemsToBeFilled.username = userText.querySelector("#user-username");
+		this.elemsToBeFilled.statusIndicator = userText.querySelector("#status-indicator");
+		this.elemsToBeFilled.winsLosses = userText.querySelector("#wins-and-losses");
+		this.elemsToBeFilled.status = userText.querySelector("#status");
+		this.elemsToBeFilled.statusCircle = userText.querySelector('#status-circle');
+		
+		return userText;
+	}
 
-    createButtons(options, pannel) {
-        let button1, button2;
+	createButtons(pannel) {
+		let button1, button2;
 		let style = {display: "block", margin: "15px 0px"};
 
 		if (isLoggedIn()) {
@@ -177,36 +198,36 @@ export default class UserInfo extends AbstractComponent {
 			};
 		}
 
-        const container = document.createElement("div");
-        container.id = "button-container";
-        container.appendChild(button1);
-        container.appendChild(button2);
-        container.style.setProperty("margin", "0px 15px 0px 15px");
-        container.style.setProperty("flex", "1");
-        pannel.shadowRoot.appendChild(container);
-    }
+		const container = document.createElement("div");
+		container.id = "button-container";
+		container.appendChild(button1);
+		container.appendChild(button2);
+		container.style.setProperty("margin", "0px 15px 0px 15px");
+		container.style.setProperty("flex", "1");
+		pannel.shadowRoot.appendChild(container);
+	}
 
-    setUpImageBox(imgBox) {
-        imgBox.id = "img-box";
-        imgBox.style.setProperty("width", "85%");
-        imgBox.style.setProperty("height", "85%");
+	styleImageBox(imgBox) {
+		imgBox.id = "img-box";
+		imgBox.style.setProperty("width", "85%");
+		imgBox.style.setProperty("height", "85%");
 		imgBox.style.setProperty("display", "flex");
 		imgBox.style.setProperty("justify-content", "center");
 		imgBox.style.setProperty("align-items", "center");
-    }
+	}
 
-    pannelHover = (e, pannel, arg) => {
+	pannelHover = (e, pannel, arg) => {
 		console.log(arg);
 		pannel.style.setProperty("background", "rgba(0, 0, 0, 0.5)");
 		pannel.style.setProperty("backdrop-filter", "blur(6px)");
-        // pannel.style.setProperty("color", "rgba(0, 217, 255, 1)");
+		// pannel.style.setProperty("color", "rgba(0, 217, 255, 1)");
 	}
-    
+	
 	pannelLeave = (e, pannel, arg) => {
-        console.log(arg);
+		console.log(arg);
 		pannel.style.setProperty("background", "rgba(255, 255, 255, 0.1)");
 		pannel.style.setProperty("backdrop-filter", "blur(16px)");
-        // pannel.style.setProperty("color", "white");
+		// pannel.style.setProperty("color", "white");
 	}
 
 	// Implement other methods or properties as needed
