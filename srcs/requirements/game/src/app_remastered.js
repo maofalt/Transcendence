@@ -533,10 +533,25 @@ function verifyMatchSettings(settings) {
 	return null;
 }
 
+function createHashedCode(id) {
+    const data = `${id}:${SECRET_KEY}`;
+    const hash = crypto.createHash('sha256').update(data).digest('hex');
+    return hash;
+}
+
+function verifyHashedCode(data, hashedCode) {
+    const expectedHash = createHashedCode(data);
+    return hashedCode === expectedHash;
+}
+
 function postMatchResult(matchId, winnerId) {
 	const url = `http://tournament:8001/matches/${matchId}/${winnerId}/`;
-	
-	axios.post(url)
+	const hashedCode  = createHashedCode(matchId.toString());
+	const payload = {
+        hashed_code: hashedCode
+    };
+
+	axios.post(url, payload)
 		.then(response => {
 			console.log('Match result posted successfully');
 		})
@@ -558,6 +573,13 @@ app.post('/createMultipleMatches', (req, res) => {
 	const allGameSettings = req.body;
 	const matchIDs = [];
 
+	const { matches, hashed_code } = allGameSettings;
+
+	const tournamentId = matches[0].tournament_id.toString();
+    if (!verifyHashedCode(tournamentId, hashed_code)) {
+        return res.status(403).json({ error: 'Unauthorized' });
+    }
+
 	console.log("\nCREATE MULTIPLE MATCHES\n");
 	console.log(allGameSettings);
 
@@ -572,6 +594,7 @@ app.post('/createMultipleMatches', (req, res) => {
 
 	res.json({ matchIDs });
 });
+
 
 function setupMatch(settings, res) {
 
