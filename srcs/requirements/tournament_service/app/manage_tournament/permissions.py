@@ -9,6 +9,7 @@ from .utils import create_hashed_code
 
 
 # ------------------------ Permissions -----------------------------------
+# for MatchResult from game backend
 
 class CustomAuthorization(BasePermission):
     def has_permission(self, request, view):
@@ -19,7 +20,6 @@ class CustomAuthorization(BasePermission):
             return False
 
         expected_hashed_code = create_hashed_code(match_id)
-
         return received_hashed_code == expected_hashed_code
 
 # class IsOwnerOrReadOnly(permissions.BasePermission):
