@@ -267,29 +267,40 @@ class TournamentTable extends BaseTable {
 	}
 
     createTournamentNameElement(tournament) {
-        return this.createStyledHTMLObject('div', tournament.tournament_name, this.columnStyles.tournamentName);
+        let tournamentNameElement = this.createStyledHTMLObject('div', tournament.tournament_name, this.columnStyles.tournamentName);
+        tournamentNameElement.header = 'Tournament Name';
+        return tournamentNameElement;
     }
     
     async createHostElement(hostName) {
         const hostAvatar = await this.fetchUserAvatar(hostName);
         const hostAvatarElement = document.createElement('host-avatar');
         hostAvatarElement.setAttribute('name', hostName);
-        if (hostAvatar) hostAvatarElement.setAttribute('avatar', hostAvatar);
-        return this.createStyledHTMLObject('div', hostAvatarElement, this.columnStyles.host);
+        if (hostAvatar)
+            hostAvatarElement.setAttribute('avatar', hostAvatar);
+        const styledElement = this.createStyledHTMLObject('div', hostAvatarElement, this.columnStyles.host);
+        styledElement.header = 'Host';
+        return styledElement;
     }
     
     createNumberOfPlayersElement(tournament) {
-        return this.createStyledHTMLObject('div', `${tournament.joined}/${tournament.nbr_of_player_total}`, this.columnStyles.nbrOfPlayersTournament);
+        const styledElement = this.createStyledHTMLObject('div', `${tournament.joined}/${tournament.nbr_of_player_total}`, this.columnStyles.nbrOfPlayersTournament);
+        styledElement.header = 'Number of Players';
+        return styledElement;
     }
     
     createNumberOfPlayerPerMatchElement(tournament) {
         const componentNbrOfPlayers = document.createElement('number-of-players');
         componentNbrOfPlayers.setAttribute('nbrOfPlayers', tournament.nbr_of_player_match);
-        return this.createStyledHTMLObject('div', componentNbrOfPlayers, this.columnStyles.nbrOfPlayersMatch);
+        const styledElement = this.createStyledHTMLObject('div', componentNbrOfPlayers, this.columnStyles.nbrOfPlayersMatch);
+        styledElement.header = 'Players Per Match';
+        return styledElement;
     }
     
     createTournamentStatusElement(tournament) {
-        return this.createStyledHTMLObject('div', tournament.state, this.columnStyles.state);
+        const styledElement = this.createStyledHTMLObject('div', tournament.state, this.columnStyles.state);
+        styledElement.header = 'Status';
+        return styledElement;
     }
     
     createActionButtonElement(tournament) {
@@ -311,13 +322,16 @@ class TournamentTable extends BaseTable {
         }
         
         const actionButton = this.createStyledHTMLObject('button', buttonText, this.columnStyles.action);
-        if (buttonEvent) actionButton.onclick = buttonEvent;
+        if (buttonEvent)
+            actionButton.onclick = buttonEvent;
+        actionButton.header = 'Action';
         return actionButton;
     }
     
     createTournamentDetailsElement(tournament) {
         const tournamentDetails = this.createStyledHTMLObject('button', '👁️', this.columnStyles.details);
         tournamentDetails.addEventListener('click', () => navigateTo(`/brackets?tournament=${tournament.id}`));
+        tournamentDetails.header = 'Details';
         return tournamentDetails;
     }
     
