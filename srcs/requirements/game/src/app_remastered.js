@@ -513,6 +513,13 @@ function verifyMatchSettings(settings) {
 	return null;
 }
 
+function createHashedCode(data) {
+    const hash = crypto.createHmac('sha256', SECRET_KEY)
+                       .update(data)
+                       .digest('hex');
+    return hash;
+}
+
 function postMatchResult(matchId, winnerId) {
 	const url = `http://tournament:8001/matches/${matchId}/${winnerId}/`;
 	
@@ -552,6 +559,7 @@ app.post('/createMultipleMatches', (req, res) => {
 
 	res.json({ matchIDs });
 });
+
 
 function setupMatch(settings, res) {
 
