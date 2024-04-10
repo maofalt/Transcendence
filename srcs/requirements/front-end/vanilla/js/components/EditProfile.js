@@ -332,8 +332,6 @@ export default class EditProfile extends AbstractComponent {
 	// 	return valid
 	// }
 
-	
-
 	emailIsValid = (emailBlock) => {
 		if (!emailBlock.input.getValue())
 			return true;
