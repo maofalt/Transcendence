@@ -22,6 +22,7 @@ export default class Tournament extends AbstractView {
 		this.unjoinTournament = this.unjoinTournament.bind(this);
 		this.fetchTournamentData = this.fetchTournamentData.bind(this);
 		this.fetchUserAvatar = this.fetchUserAvatar.bind(this);
+		this.updateTournamentRowInView = this.updateTournamentRowInView.bind(this);
 		this.data = [];
 	}
 
@@ -40,12 +41,12 @@ export default class Tournament extends AbstractView {
 
 	async init() {
 		
-		const tournamentTable = await this.getTournamentList();
-		tournamentTable.setAttribute('id', 'tournamentTable');		
+		this.tournamentTable = await this.getTournamentList();
+		this.tournamentTable.setAttribute('id', 'tournamentTable');		
 		const createTournamentButton = document.getElementById('createTournamentButton');
 		createTournamentButton.addEventListener('click', this.createTournament);
 		const tournamentDiv = document.querySelector('.tournament');
-		tournamentDiv.appendChild(tournamentTable);
+		tournamentDiv.appendChild(this.tournamentTable);
 	}
 
 	async getTournamentList() { 
@@ -79,7 +80,7 @@ export default class Tournament extends AbstractView {
 				return 0;
 			});
 
-			const test = this.fetchTournamentData(tournaments[0].id);
+			//const test = this.fetchTournamentData(tournaments[0].id);
 
 			// Map API data to table rows and add them to the table
 			for (let i = 0; i < tournaments.length; i++) {
@@ -203,6 +204,14 @@ export default class Tournament extends AbstractView {
 			console.error('Error joining tournament:', error);
 			displayPopup(error.message, 'error');
 		}
+		//fetch updated tournament row
+		const updatedTournamentData = await this.fetchTournamentData(tournamentID);
+		if (updatedTournamentData) {
+			this.updateTournamentRowInView(tournamentID, updatedTournamentData);
+		} else {
+			console.error('Failed to fetch updated tournament data.');
+		}
+
 	}
 	
 	async startTournament(tournamentID) {
@@ -217,6 +226,13 @@ export default class Tournament extends AbstractView {
 			console.error('Error starting tournament:', error);
 			displayPopup(error.message, 'error');
 		}
+		//fetch updated tournament row
+		const updatedTournamentData = await this.fetchTournamentData(tournamentID);
+		if (updatedTournamentData) {
+			this.updateTournamentRowInView(tournamentID, updatedTournamentData);
+		} else {
+			console.error('Failed to fetch updated tournament data.');
+		}
 	}
 
 	async unjoinTournament(tournamentName, tournamentID, userName) {
@@ -230,6 +246,13 @@ export default class Tournament extends AbstractView {
 		} catch (error) {
 			console.error('Error unjoining ' + tournamentName + ' tournament:', error);
 			displayPopup(error.message, 'error');
+		}
+		//fetch updated tournament row
+		const updatedTournamentData = await this.fetchTournamentData(tournamentID);
+		if (updatedTournamentData) {
+			this.updateTournamentRowInView(tournamentID, updatedTournamentData);
+		} else {
+			console.error('Failed to fetch updated tournament data.');
 		}
 	}
 
@@ -246,6 +269,7 @@ export default class Tournament extends AbstractView {
 			displayPopup(error.message, 'error');
 			return null;
 		}
+		
 	}
 
 	async fetchUserAvatar(username) {
@@ -261,6 +285,41 @@ export default class Tournament extends AbstractView {
 			console.error('Error fetching user avatar:', error);
 			return null;
 		}
+	}
+
+	// Method to update the tournament row with new data
+	updateTournamentRowInView(tournamentId, tournamentData) {
+	    // Assume tournamentData includes all necessary information about the tournament's current state
+	    const { joined, nbr_of_player_total, state, userName, hostName } = tournamentData;
+
+	    // Determine the correct button text and event based on the tournament's state and user's participation
+	    let buttonText = '';
+	    let buttonEvent = null;
+
+	    if (hostName === userName && state === 'waiting') {
+	        buttonText = 'Start';
+	        buttonEvent = async () => await this.startTournament(tournamentId);
+	    } else if (is_in_tournament && state === 'started') {
+	        buttonText = 'Play';
+	        buttonEvent = () => navigateTo(`/play?matchID=${tournamentId}`); // Adjust as necessary for your routing logic
+	    } else if (is_in_tournament && state === 'waiting') {
+	        buttonText = 'Unjoin';
+	        buttonEvent = async () => await this.unjoinTournament(tournamentId);
+	    } else {
+	        buttonText = 'Join';
+	        buttonEvent = async () => await this.joinTournament(tournamentId);
+	    }
+
+	    // Update the number of players and status cells directly
+	    this.tournamentTable.updateCellContent(tournamentId, 2, `${joined}/${nbr_of_player_total}`); // Assuming cell index for players
+	    this.tournamentTable.updateCellContent(tournamentId, 4, state); // Assuming cell index for status
+
+	    // Create a new action button with the determined text and event
+	    const actionButton = document.createElement('button');
+	    actionButton.textContent = buttonText;
+	    actionButton.addEventListener('click', buttonEvent);
+	    // Update the action button cell with the new button
+	    this.tournamentTable.updateCellContent(tournamentId, 5, actionButton); // Assuming cell index for the action button is correct
 	}
 
 
