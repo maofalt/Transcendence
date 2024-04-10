@@ -311,6 +311,9 @@ export default class ProfilePage extends AbstractComponent {
 			<span class="date">${match.date}</span>
 			<span class="winner">${match.winner}</span>
 			`;
+			matchRow.onmouseover = () => matchRow.style.setProperty("background-color", "rgba(0, 0, 0, 0.3)");
+			matchRow.onmouseout = () => matchRow.style.setProperty("background-color", "rgba(0, 0, 0, 0)");
+			// matchRow.onclick = () => navigateTo("/play?matchID=" + )
 			elemsToBeFilled.matchRows.appendChild(matchRow);
 		});
 	}
