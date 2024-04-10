@@ -66,17 +66,17 @@ class TournamentListCreate(generics.ListCreateAPIView):
         uid, username = user_info
         host, _ = Player.objects.get_or_create(id=uid, username=username) # created wiil return False if the player already exists
         match_setting_data = {
-            'walls_factor': validated_data['setting']['walls_factor'],
-            'size_of_goals': validated_data['setting']['size_of_goals'],
-            'paddle_height': validated_data['setting']['paddle_height'],
-            'paddle_speed': validated_data['setting']['paddle_speed'],
-            'ball_speed': validated_data['setting']['ball_speed'],
-            'ball_radius': validated_data['setting']['ball_radius'],
+            'walls_factor': float(validated_data['setting']['walls_factor']),
+            'size_of_goals': int(validated_data['setting']['size_of_goals']),
+            'paddle_height': int(validated_data['setting']['paddle_height']),
+            'paddle_speed': float(validated_data['setting']['paddle_speed']),
+            'ball_speed': float(validated_data['setting']['ball_speed']),
+            'ball_radius': float(validated_data['setting']['ball_radius']),
             'ball_color': validated_data['setting']['ball_color'],
             'ball_model': validated_data['setting']['ball_model'],
             'ball_texture': validated_data['setting']['ball_texture'],
-            'nbr_of_player': validated_data['nbr_of_player_match'],
-            'nbr_of_rounds': validated_data['setting']['nbr_of_rounds'],
+            'nbr_of_player': int(validated_data['nbr_of_player_match']),
+            'nbr_of_rounds': int(validated_data['setting']['nbr_of_rounds']),
         }
         print("match_setting_data: ", match_setting_data)
         match_setting = MatchSetting.objects.create(**match_setting_data)
@@ -286,7 +286,7 @@ class MatchGenerator(generics.ListCreateAPIView):
 
 
 class MatchResult(APIView):
-    authentication_classes = [CustomJWTAuthentication]
+    # authentication_classes = [CustomJWTAuthentication]
 
     @staticmethod
     def round_state(request, id, cur_round):
@@ -1010,6 +1010,7 @@ def generate_round(request, id, round):
             'ballData': BallDataSerializer(tournament.setting).data,
             'playersData': SimplePlayerSerializer(match.players.all(), many=True).data,
         }
+        print("match_data sent: ", match_data)
         serialized_matches.append(match_data)
 
     webhook_thread = Thread(target=send_webhook_request, args=(serialized_matches,))

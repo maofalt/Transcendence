@@ -151,11 +151,12 @@ class TournamentMatchListSerializer(serializers.Serializer):
 class GamemodeDataSerializer(serializers.ModelSerializer):
     nbrOfRounds = serializers.SerializerMethodField() 
     nbrOfPlayers = serializers.SerializerMethodField() # it is returning not a nbr_of_player for match setting, it returns actaul number of payer for a current match
-    timeLimit = serializers.IntegerField(default=0)
+    timeLimit = serializers.IntegerField(default=5)
+    gameType = serializers.IntegerField(default=0)
 
     class Meta:
         model = TournamentMatch
-        fields = ['nbrOfPlayers', 'nbrOfRounds', 'timeLimit']
+        fields = ['nbrOfPlayers', 'nbrOfRounds', 'timeLimit', 'gameType']
 
     def get_nbrOfPlayers(self, obj):
         return obj.players.count()
@@ -165,7 +166,7 @@ class GamemodeDataSerializer(serializers.ModelSerializer):
         return setting.nbr_of_rounds
 
 class FieldDataSerializer(serializers.ModelSerializer):
-    wallsFactor = serializers.IntegerField(source='walls_factor')
+    wallsFactor = serializers.DecimalField(max_digits=3, decimal_places=2, source='walls_factor')
     sizeOfGoals = serializers.IntegerField(source='size_of_goals')
 
     class Meta:
