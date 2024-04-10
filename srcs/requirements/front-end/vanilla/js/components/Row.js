@@ -8,8 +8,8 @@ class Row {
     }
 
     addCell(cell) {
-        const newCell = newCell(cellContent);
-        this.cells.push(cell);
+        const newCell = new Cell(cell);
+        this.cells.push(newCell);
         this.domElement.appendChild(cell.domElement);
     }
 
