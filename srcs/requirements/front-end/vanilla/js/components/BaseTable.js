@@ -1,3 +1,6 @@
+import Row from './Row.js';
+import Cell from './Cell.js';
+
 class BaseTable extends HTMLElement {
 
     constructor() {
