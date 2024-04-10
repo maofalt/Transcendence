@@ -219,6 +219,41 @@ export default class EditProfile extends AbstractComponent {
 		return valid;
 	}
 
+	// sendEmail = async (emailBlock) => {
+	// 	let valid = false;
+	// 	console.log("SENDING")
+	// 	const phone_number = phoneBlock.input.getValue().replace(/\s/g, '');
+
+	// 	await easyFetch('/api/user_management/auth/updateSandbox', {
+	// 		method: 'POST',
+	// 		headers: {
+	// 			'Content-Type': 'application/x-www-form-urlencoded',
+	// 		},
+	// 		body: new URLSearchParams({ phone_number })
+	// 	})
+	// 	.then(res => {
+	// 		let response = res.response;
+	// 		let body = res.body;
+
+	// 		if (!response || !body) {
+	// 			throw new Error('Empty Response');
+	// 		} else if (response.status === 400) {
+	// 			displayPopup(body.error || 'Invalid number', 'error');
+	// 		} else if (!response.ok) {
+	// 			displayPopup('Request Failed:', body.error || JSON.stringify(body), 'error');
+	// 		} else if (response.status === 200 && body.success === true) {
+	// 			displayPopup('SMS code sent to \'' + phone_number + '\'', 'success');
+	// 			valid = true;
+	// 		} else {
+	// 			displayPopup(body.error || JSON.stringify(body), 'error');
+	// 		}
+	// 	})
+	// 	.catch(error => {
+	// 		displayPopup(`Request Failed: ${error}`, 'error');
+	// 	});
+	// 	return valid;
+	// }
+
 	verifySms = async (phoneBlock, verifyCodeBlock) => {
 		var phone = phoneBlock.input.getValue();
 		var verificationCode = verifyCodeBlock.input.getValue();
@@ -257,6 +292,47 @@ export default class EditProfile extends AbstractComponent {
 		});
 		return valid
 	}
+
+	// verifySms = async (phoneBlock, verifyCodeBlock) => {
+	// 	var phone = phoneBlock.input.getValue();
+	// 	var verificationCode = verifyCodeBlock.input.getValue();
+
+	// 	let valid = false;
+
+	// 	await easyFetch('api/user_management/auth/verifySandBox', {
+	// 		method: 'POST',
+	// 		headers: {
+	// 			'Content-Type': 'application/x-www-form-urlencoded',
+	// 		},
+	// 		body: new URLSearchParams({ 'phone_number': phone, 'otp': verificationCode })
+	// 	})
+	// 	.then(res => {
+	// 		let response = res.response;
+	// 		let body = res.body;
+
+	// 		if (!response || !body) {
+	// 			throw new Error('Empty Response');
+	// 		} else if (response.status === 400) {
+	// 			displayPopup(body.error || JSON.stringify(body), 'error');
+	// 			valid = false;
+	// 		} else if (!response.ok) {
+	// 			displayPopup('Response Error: ' + (body.error || JSON.stringify(body)), 'error');
+	// 			valid = false;
+	// 		} else if (response.status === 200 && body.success === true) {
+	// 			// displayPopup(body.message || JSON.stringify(body), 'success');
+	// 			valid = true;
+	// 		} else {
+	// 			displayPopup(body.error || JSON.stringify(body), 'error');
+	// 		}
+	// 	})
+	// 	.catch(error => {
+	// 		displayPopup(`Request Failed: ${error}`, 'error');
+	// 		valid = false;
+	// 	});
+	// 	return valid
+	// }
+
+	
 
 	emailIsValid = (emailBlock) => {
 		if (!emailBlock.input.getValue())
