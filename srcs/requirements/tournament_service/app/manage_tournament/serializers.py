@@ -3,6 +3,9 @@ from .models import Tournament, TournamentMatch, MatchSetting, GameType, Tournam
 from .models import RegistrationType, TournamentPlayer, Player, MatchParticipants
 
 class MatchSettingSerializer(serializers.ModelSerializer):
+    ball_model = serializers.CharField(allow_blank=True, required=False)
+    ball_texture = serializers.CharField(allow_blank=True, required=False)
+
     class Meta:
         model = MatchSetting
         fields = '__all__'
@@ -23,7 +26,7 @@ class TournamentSerializer(serializers.ModelSerializer):
 
         if nbr_of_player_match > nbr_of_player_total:
             raise serializers.ValidationError("The number of players per match cannot be greater than the total number of players.")
-        
+       
         return data
 
     def get_host_name(self, obj):
