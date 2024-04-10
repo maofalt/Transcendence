@@ -111,10 +111,7 @@ export default class EditProfile extends AbstractComponent {
 			content: "example@example.com",
 			indicators: {
 				unverifiedIndicator: ["Please verify your email", () => this.isVerified(emailBlock)],
-				// emptyIndicator: ["Please enter your verified email", () => { 
-				// 	emailBlock.getAttribute('verified') == 'false' 
-				// 	|| (emailBlock.getAttribute('verified') == 'true' && emailBlock.input.getValue() === "")
-				// }],
+				// emptyIndicator: ["Please enter your verified email", () => this.emptyBlock(emailBlock)],
 			},
 			type: "email",
 			button: {content: "Verify", action: false}
@@ -125,7 +122,7 @@ export default class EditProfile extends AbstractComponent {
 				emailBlock.input.input.style.setProperty("border", "2px solid red");
 				return ;
 			}
-			emailBlock.button.style.setProperty("border", "");
+			emailBlock.input.input.style.setProperty("border", "");
 			verifyCodePannel.name = "email";
 			fadeIn(verifyCodeBlock);
 		};
@@ -135,10 +132,7 @@ export default class EditProfile extends AbstractComponent {
 			content: "+33 6 12 34 56 78",
 			indicators: {
 				unverifiedIndicator: ["Please verify your phone number", () => this.isVerified(emailBlock)],
-				// emptyIndicator: ["Please enter your verified phone number", () => { 
-				// 	phoneBlock.getAttribute('verified') == 'false' 
-				// 	|| (phoneBlock.getAttribute('verified') == 'true' && phoneBlock.input.getValue() === "")
-				// }],
+				// emptyIndicator: ["Please enter your verified phone", () => this.emptyBlock(emailBlock)],
 			},
 			type: "tel",
 			button: {content: "Verify", action: false}
@@ -149,7 +143,7 @@ export default class EditProfile extends AbstractComponent {
 				phoneBlock.input.input.style.setProperty("border", "2px solid red");
 				return ;
 			}
-			phoneBlock.button.style.setProperty("border", "");
+			phoneBlock.input.input.style.setProperty("border", "");
 			verifyCodePannel.name = "phone";
 			fadeIn(verifyCodeBlock);
 		};
@@ -354,12 +348,12 @@ export default class EditProfile extends AbstractComponent {
 
 	isVerified = (block) => {
 		if (block.getAttribute('verified') == 'true') {
-			block.input.input.style.setProperty("border", "");
 			return true;
 		} else if (block.getAttribute('verified') == 'false') {
-			block.input.input.style.setProperty("border", "2px solid red");
 			return false;
 		} else {
+			if (block.input.getValue() != '')
+				return false;
 			return true;
 		}
 	}

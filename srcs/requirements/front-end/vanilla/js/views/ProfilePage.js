@@ -92,6 +92,7 @@ export default class ProfilePage extends AbstractComponent {
 		friendProfilePannel.style.left = "50%";
 		friendProfilePannel.style.transform = "translate(-50%, -50%)";
 		friendProfilePannel.style.setProperty("display", "block");
+		friendProfilePannel.style.setProperty("border-radius", "20px 20px 0px 20px");
 
 		friendProfile.appendChild(friendProfilePannel);
 
@@ -233,10 +234,10 @@ export default class ProfilePage extends AbstractComponent {
 		let gameStats = await this.fetchGameStats(username);
 
 		elemsToBeFilled.matchTotal.textContent = gameStats.total_played;
-		// elemsToBeFilled.tournamentWins.textContent = gameStats.nbr_of_won_tournaments;
+		elemsToBeFilled.tournamentsWon.textContent = gameStats.nbr_of_won_tournaments;
 		elemsToBeFilled.matchWins.textContent = gameStats.nbr_of_won_matches;
 		elemsToBeFilled.matchLosses.textContent = gameStats.nbr_of_lost_matches;
-		elemsToBeFilled.matchWinrate.textContent = gameStats.nbr_of_won_matches / gameStats.total_played * 100 || "N/A";
+		elemsToBeFilled.matchWinrate.textContent = (gameStats.nbr_of_won_matches / gameStats.total_played * 100).toFixed(1).toString() + "%" || "N/A";
 		let matchHistory = gameStats.played_tournaments;
 		console.log("Match History:", matchHistory);
 		elemsToBeFilled.matchRows.innerHTML = "";
@@ -358,6 +359,7 @@ export default class ProfilePage extends AbstractComponent {
 		gameStats.shadowRoot.querySelector("#pannel-title").style.setProperty("margin", "10px 0px");
 		let stats = document.createElement("div");
 		stats.innerHTML = profileStatsHtml;
+		elemsToBeFilled.tournamentsWon = stats.querySelector("#tournaments-won");
 		elemsToBeFilled.matchTotal = stats.querySelector("#match-total");
 		elemsToBeFilled.matchWins = stats.querySelector("#match-wins");
 		elemsToBeFilled.matchLosses = stats.querySelector("#match-losses");
