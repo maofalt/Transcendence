@@ -5,6 +5,7 @@ class TournamentTable extends BaseTable {
         super();
         this.setHeaders(['Tournament Name', 'Host', 'Number of Players', 'Players Per Match', 'Status', 'Action', 'Details']);
         this.applyColumnStyles = this.applyColumnStyles.bind(this);
+        this.updateCellContent = this.updateCellContent.bind(this);
     }
 
 
@@ -77,6 +78,27 @@ class TournamentTable extends BaseTable {
         joinButton.addEventListener('click', () => console.log('Join clicked'));
 
         this.addRow([tournamentName, host, numberOfPlayers, timeRemaining, tournamentType, registrationMode, joinButton]);
+    }
+
+    // Add this method in TournamentTable for updating specific cell contents
+    updateCellContent(tournamentId, cellIndex, newContent) {
+        const rowSelector = `#row-${tournamentId}`;
+        const row = this.shadowRoot.querySelector(rowSelector);
+        if (!row || !row.cells[cellIndex]) {
+            console.error("Row or cell not found.");
+            return;
+        }
+
+        // Clear existing cell content
+        const cell = row.cells[cellIndex];
+        cell.innerHTML = '';
+
+        // Add new content
+        if (typeof newContent === 'string') {
+            cell.textContent = newContent;
+        } else if (newContent instanceof Node) {
+            cell.appendChild(newContent);
+        }
     }
 }
 
