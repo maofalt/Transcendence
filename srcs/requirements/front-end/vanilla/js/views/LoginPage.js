@@ -12,6 +12,7 @@ import easyFetch from "@utils/easyFetch";
 import fetchUserDetails from "@utils/fetchUserDetails";
 import InputAugmented from "@components/InputAugmented";
 import displayPopup from "@utils/displayPopup";
+import { refreshTokenLoop } from "@utils/pollingFunctions";
 import { initSocketConnection } from "@utils/websocket";
 
 export default class LoginPage extends AbstractComponent {
@@ -149,6 +150,8 @@ export default class LoginPage extends AbstractComponent {
 				}
 
 				displayPopup('Login successful', 'success');
+
+				refreshTokenLoop();
 
 				Router.navigateTo("/");
 			}

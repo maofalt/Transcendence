@@ -91,7 +91,7 @@ function gameLoop(matchID) {
 		clearInterval(match.gameInterval); // stop the loop
 		// match.gameState.ball.dir = match.gameState.camera.pos.sub(match.gameState.ball.pos);
 		game.to(matchID).emit('end-game', match.gameState);
-		// postMatchResult(match.gameState.jisus_matchID, match.gameState.winner.accountID); // send the result of the match back;
+		postMatchResult(matchID, match.gameState.winner.accountID); // send the result of the match back;
 		matches.delete(matchID); // then delete the match;
 		return ;
 	}
@@ -393,8 +393,8 @@ game.on('connection', (client) => {
 				clearInterval(match.gameInterval);
 				if (data.ongoing) {
 					data.winner = player;
-					if (data.jisus_matchID) {
-						// postMatchResult(match.gameState.jisus_matchID, match.gameState.winner.accountID);
+					if (data.matchID >= 0) {
+						postMatchResult(client.matchID, match.gameState.winner.accountID);
 					}
 					matches.delete(client.matchID);
 				}
@@ -451,11 +451,17 @@ function verifyMatchSettings(settings) {
 	console.log(settings);
 
 	const expectedCategories = ['gamemodeData', 'fieldData', 'paddlesData', 'ballData'];
-    for (const category of expectedCategories) {
-        if (!settings.hasOwnProperty(category)) {
-            return `Settings is missing ${category}`;
-        }
-    }
+	for (const category of expectedCategories) {
+		if (!settings.hasOwnProperty(category)) {
+			return `Settings is missing ${category}`;
+		}
+	}
+
+	if (settings && settings.paddlesData && settings.paddlesData.speed && settings.ballData && settings.ballData.speed && settings.ballData.radius) {
+		settings.paddlesData.speed = parseFloat(settings.paddlesData.speed);
+		settings.ballData.speed = parseFloat(settings.ballData.speed);
+		settings.ballData.radius = parseFloat(settings.ballData.radius);
+	}
 
 	const checks = {
 		gamemodeData: {
@@ -566,22 +572,18 @@ function setupMatch(settings, res) {
 	let { tournament_id, matchID, ...gameSettings } = settings;
 
 	console.log("CREATING MATCH : ", gameSettings);
-	// gameSettings.gamemodeData.nbrOfRounds = 1;
+
 	if (!matchID) {
-		console.log("Generating match ID");
 		matchID = generateMatchID();
-		console.log("Generated match ID: ", matchID);
 	}
 
-	let error = verifyMatchSettings(gameSettings);
-	
 	if (matches.has(matchID)) {
 		console.log("Match already exists");
 		res.json({ matchID });
 		return null;
 	}
-	
-	// let error = verifyMatchSettings(gameSettings);
+
+	let error = verifyMatchSettings(gameSettings);	
 	if (error) {
 		console.log(error);
 		res.status(400).json({ error });
@@ -592,7 +594,7 @@ function setupMatch(settings, res) {
 	const players = gameSettings.playersData.map(player => player.accountID);
 
 	if (players.length == 1) {
-		// postMatchResult(matchID, players[0]);
+		postMatchResult(matchID, players[0]);
 		res.json({ matchID });
 		return null;
 	}

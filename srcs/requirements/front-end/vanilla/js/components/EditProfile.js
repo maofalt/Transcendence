@@ -12,6 +12,9 @@ import UserInfo from "./UserInfo";
 import FriendsList from "@components/FriendsList";
 import updateUser from "@utils/updateUser";
 import fetchUserDetails from "@utils/fetchUserDetails";
+import easyFetch from "@utils/easyFetch";
+import displayPopup from "@utils/displayPopup";
+import { fadeIn, fadeOut, transition } from "@utils/animate";
 
 export default class EditProfile extends AbstractComponent {
 	constructor(options = {}) {
@@ -45,6 +48,47 @@ export default class EditProfile extends AbstractComponent {
 		const goBack = new CustomButton({content: "< Back", style: {padding: "0px 20px", position: "absolute", left: "50px", bottom: "30px"}});
 		goBack.onclick = () => window.history.back();
 
+		const verifyCodeBlock = document.createElement("div");
+		verifyCodeBlock.style.display = "none";
+		verifyCodeBlock.style.position = "fixed";
+		verifyCodeBlock.style.top = "0";
+		verifyCodeBlock.style.left = "0";
+		verifyCodeBlock.style.width = "100%";
+		verifyCodeBlock.style.height = "100%";
+		verifyCodeBlock.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+		verifyCodeBlock.onclick = (e) => { // Close the pannel when clicking outside
+			if (e.target === verifyCodeBlock) {
+				fadeOut(verifyCodeBlock);
+			}
+		}
+		
+		const verifyCodePannel = new Pannel({dark: false, title: "Verify Code", style: {padding: "15px"}});
+		// verifyCodePannel.shadowRoot.querySelector("#button-container").shadowRoot.style.setProperty("display", "none");
+		verifyCodePannel.style.position = "fixed";
+		verifyCodePannel.style.top = "50%";
+		verifyCodePannel.style.left = "50%";
+		verifyCodePannel.style.transform = "translate(-50%, -50%)";
+		verifyCodePannel.style.setProperty("display", "block");
+
+		const verifyCodeInput = new InputAugmented({
+			title: "Code Code",
+			content: "Code Code",
+			type: "text",
+			button: {content: "Verify", action: true}
+		});
+		verifyCodeInput.button.onclick = async () => {
+			if (verifyCodePannel.name = "phone" && !await this.verifySms(phoneBlock, verifyCodeInput)) {
+				return ;
+			} else if (verifyCodePannel.name = "email" && !await this.verifyEmail(emailBlock, verifyCodeInput)) {
+				return ;
+			}
+			fadeOut(verifyCodeBlock);
+		}
+
+		verifyCodePannel.shadowRoot.appendChild(verifyCodeInput);
+
+		verifyCodeBlock.appendChild(verifyCodePannel);
+
 		let playernameBlock = new InputAugmented({
 			title: "New Playername",
 			content: "Playername",
@@ -56,11 +100,41 @@ export default class EditProfile extends AbstractComponent {
 			title: "New Email",
 			content: "example@example.com",
 			indicators: {
-				invalidEmailIndicator: ["Invalid Email", () => this.emailIsValid(emailBlock)],
+				invalidEmailIndicator: ["Please click 'Verify' to update your email", () => this.emailIsValid(emailBlock)],
 			},
 			type: "email",
-			// button: {content: "Send Code", action: false}
+			button: {content: "Verify", action: false}
 		});
+		emailBlock.button.onclick = async () => {
+			let shouldContinue = await this.sendEmail(emailBlock);
+			if (!shouldContinue) {
+				emailBlock.input.input.style.setProperty("border", "2px solid red");
+				return ;
+			}
+			emailBlock.button.style.setProperty("border", "");
+			verifyCodePannel.name = "email";
+			fadeIn(verifyCodeBlock);
+		};
+
+		let phoneBlock = new InputAugmented({
+			title: "New Phone Number",
+			content: "+33 6 12 34 56 78",
+			indicators: {
+				invalidPhoneIndicator: ["Please click 'Verify' to update your phone number", () => this.phoneIsValid(phoneBlock)],
+			},
+			type: "tel",
+			button: {content: "Verify", action: false}
+		});
+		phoneBlock.button.onclick = async () => {
+			let shouldContinue = await this.sendSMS(phoneBlock);
+			if (!shouldContinue) {
+				phoneBlock.input.input.style.setProperty("border", "2px solid red");
+				return ;
+			}
+			phoneBlock.button.style.setProperty("border", "");
+			verifyCodePannel.name = "phone";
+			fadeIn(verifyCodeBlock);
+		};
 
 		let avatarBlock = new InputAugmented({
 			title: "Upload Avatar",
@@ -80,13 +154,14 @@ export default class EditProfile extends AbstractComponent {
 		saveButton.onclick = async () => {
 			if (!await playernameBlock.validate() 
 				|| !await emailBlock.validate() 
-				|| !await avatarBlock.validate()) {
+				|| !await avatarBlock.validate()
+				|| !await phoneBlock.validate()) {
 				return ;
 			}
 			updateUser({
 				playername: playernameBlock.input.getValue() || "",
 				avatar: avatarFile || "",
-				email: emailBlock.input.getValue() || "",
+				email: "",
 				phone: "",
 				two_factor_method: "",
 			});
@@ -97,6 +172,7 @@ export default class EditProfile extends AbstractComponent {
 
 		form.appendChild(playernameBlock);
 		form.appendChild(emailBlock);
+		form.appendChild(phoneBlock);
 		form.appendChild(avatarBlock);
 		form.appendChild(resetPasswordButton);
 		form.appendChild(saveButton);
@@ -105,14 +181,173 @@ export default class EditProfile extends AbstractComponent {
 		this.shadowRoot.appendChild(goBack);
 		this.shadowRoot.appendChild(profile);
 		this.shadowRoot.appendChild(friendsPannel);
+		this.shadowRoot.appendChild(verifyCodeBlock);
 	}
+
+	sendSMS = async (phoneBlock) => {
+		let valid = false;
+		console.log("SENDING")
+		const phone_number = phoneBlock.input.getValue().replace(/\s/g, '');
+
+		await easyFetch('/api/user_management/auth/updateSandbox', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded',
+			},
+			body: new URLSearchParams({ phone_number })
+		})
+		.then(res => {
+			let response = res.response;
+			let body = res.body;
+
+			if (!response || !body) {
+				throw new Error('Empty Response');
+			} else if (response.status === 400) {
+				displayPopup(body.error || 'Invalid number', 'error');
+			} else if (!response.ok) {
+				displayPopup('Request Failed:', body.error || JSON.stringify(body), 'error');
+			} else if (response.status === 200 && body.success === true) {
+				displayPopup('SMS code sent to \'' + phone_number + '\'', 'success');
+				valid = true;
+			} else {
+				displayPopup(body.error || JSON.stringify(body), 'error');
+			}
+		})
+		.catch(error => {
+			displayPopup(`Request Failed: ${error}`, 'error');
+		});
+		return valid;
+	}
+
+	// sendEmail = async (emailBlock) => {
+	// 	let valid = false;
+	// 	console.log("SENDING")
+	// 	const phone_number = phoneBlock.input.getValue().replace(/\s/g, '');
+
+	// 	await easyFetch('/api/user_management/auth/updateSandbox', {
+	// 		method: 'POST',
+	// 		headers: {
+	// 			'Content-Type': 'application/x-www-form-urlencoded',
+	// 		},
+	// 		body: new URLSearchParams({ phone_number })
+	// 	})
+	// 	.then(res => {
+	// 		let response = res.response;
+	// 		let body = res.body;
+
+	// 		if (!response || !body) {
+	// 			throw new Error('Empty Response');
+	// 		} else if (response.status === 400) {
+	// 			displayPopup(body.error || 'Invalid number', 'error');
+	// 		} else if (!response.ok) {
+	// 			displayPopup('Request Failed:', body.error || JSON.stringify(body), 'error');
+	// 		} else if (response.status === 200 && body.success === true) {
+	// 			displayPopup('SMS code sent to \'' + phone_number + '\'', 'success');
+	// 			valid = true;
+	// 		} else {
+	// 			displayPopup(body.error || JSON.stringify(body), 'error');
+	// 		}
+	// 	})
+	// 	.catch(error => {
+	// 		displayPopup(`Request Failed: ${error}`, 'error');
+	// 	});
+	// 	return valid;
+	// }
+
+	verifySms = async (phoneBlock, verifyCodeBlock) => {
+		var phone = phoneBlock.input.getValue();
+		var verificationCode = verifyCodeBlock.input.getValue();
+
+		let valid = false;
+
+		await easyFetch('api/user_management/auth/verifySandBox', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded',
+			},
+			body: new URLSearchParams({ 'phone_number': phone, 'otp': verificationCode })
+		})
+		.then(res => {
+			let response = res.response;
+			let body = res.body;
+
+			if (!response || !body) {
+				throw new Error('Empty Response');
+			} else if (response.status === 400) {
+				displayPopup(body.error || JSON.stringify(body), 'error');
+				valid = false;
+			} else if (!response.ok) {
+				displayPopup('Response Error: ' + (body.error || JSON.stringify(body)), 'error');
+				valid = false;
+			} else if (response.status === 200 && body.success === true) {
+				// displayPopup(body.message || JSON.stringify(body), 'success');
+				valid = true;
+			} else {
+				displayPopup(body.error || JSON.stringify(body), 'error');
+			}
+		})
+		.catch(error => {
+			displayPopup(`Request Failed: ${error}`, 'error');
+			valid = false;
+		});
+		return valid
+	}
+
+	// verifySms = async (phoneBlock, verifyCodeBlock) => {
+	// 	var phone = phoneBlock.input.getValue();
+	// 	var verificationCode = verifyCodeBlock.input.getValue();
+
+	// 	let valid = false;
+
+	// 	await easyFetch('api/user_management/auth/verifySandBox', {
+	// 		method: 'POST',
+	// 		headers: {
+	// 			'Content-Type': 'application/x-www-form-urlencoded',
+	// 		},
+	// 		body: new URLSearchParams({ 'phone_number': phone, 'otp': verificationCode })
+	// 	})
+	// 	.then(res => {
+	// 		let response = res.response;
+	// 		let body = res.body;
+
+	// 		if (!response || !body) {
+	// 			throw new Error('Empty Response');
+	// 		} else if (response.status === 400) {
+	// 			displayPopup(body.error || JSON.stringify(body), 'error');
+	// 			valid = false;
+	// 		} else if (!response.ok) {
+	// 			displayPopup('Response Error: ' + (body.error || JSON.stringify(body)), 'error');
+	// 			valid = false;
+	// 		} else if (response.status === 200 && body.success === true) {
+	// 			// displayPopup(body.message || JSON.stringify(body), 'success');
+	// 			valid = true;
+	// 		} else {
+	// 			displayPopup(body.error || JSON.stringify(body), 'error');
+	// 		}
+	// 	})
+	// 	.catch(error => {
+	// 		displayPopup(`Request Failed: ${error}`, 'error');
+	// 		valid = false;
+	// 	});
+	// 	return valid
+	// }
 
 	emailIsValid = (emailBlock) => {
 		if (!emailBlock.input.getValue())
 			return true;
-		let value = emailBlock.input.getValue();
-		let valid = value.includes('@');
-		return valid;
+		// let value = emailBlock.input.getValue();
+		// let valid = value.includes('@');
+		// return valid;
+		return false;
+	}
+
+	phoneIsValid = (phoneBlock) => {
+		if (!phoneBlock.input.getValue())
+			return true;
+		// let value = phoneBlock.input.getValue();
+		// let valid = value.includes('+') && value.length > 10;
+		// return valid;
+		return false;
 	}
 
 }

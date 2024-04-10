@@ -26,8 +26,9 @@ export default async function updateUser(data) {
 			throw new Error(body.error || JSON.stringify(body));
 		} else if (response.status === 200) {
 			displayPopup(body.success || JSON.stringify(body), 'success');
-			let details = await fetchUserDetails();
-			// sessionStorage.setItem('userDetails', JSON.stringify(details));
+
+			await fetchUserDetails(); // Update new user details
+
 			navigateTo("/profile");
 		} else {
 			throw new Error(body.error || JSON.stringify(body));

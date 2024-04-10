@@ -32,11 +32,16 @@ export default class InputAugmented extends AbstractComponent {
 			this.description.style.setProperty("margin-top", "-3px");
 			this.shadowRoot.appendChild(this.description);
 		}
+
+		this.inputBox = document.createElement('div');
+		this.inputBox.id = "input-box";
 		
 		this.input = new InputField({type: options.type, content: options.content});
 		this.input.id = "input-field";
 		this.input.style.setProperty("marin-bottom", "0px");
-		this.shadowRoot.appendChild(this.input);
+		this.inputBox.appendChild(this.input);
+
+		this.shadowRoot.appendChild(this.inputBox);
 		
 		let indicatorsBox = document.createElement('div');
 		indicatorsBox.id = "indicators-box";
@@ -68,6 +73,7 @@ export default class InputAugmented extends AbstractComponent {
 			this.button = new CustomButton({content : options.button.content, action: options.button.action});
 			this.shadowRoot.appendChild(this.button);
 			this.button.id = "input-button";
+			this.inputBox.appendChild(this.button);
 		}
 		
 		// this.style.setProperty("height", "145px");
