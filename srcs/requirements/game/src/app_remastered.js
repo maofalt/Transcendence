@@ -451,11 +451,17 @@ function verifyMatchSettings(settings) {
 	console.log(settings);
 
 	const expectedCategories = ['gamemodeData', 'fieldData', 'paddlesData', 'ballData'];
-    for (const category of expectedCategories) {
-        if (!settings.hasOwnProperty(category)) {
-            return `Settings is missing ${category}`;
-        }
-    }
+	for (const category of expectedCategories) {
+		if (!settings.hasOwnProperty(category)) {
+			return `Settings is missing ${category}`;
+		}
+	}
+
+	if (settings && settings.paddlesData && settings.paddlesData.speed && settings.ballData && settings.ballData.speed && settings.ballData.radius) {
+		settings.paddlesData.speed = parseFloat(settings.paddlesData.speed);
+		settings.ballData.speed = parseFloat(settings.ballData.speed);
+		settings.ballData.radius = parseFloat(settings.ballData.radius);
+	}
 
 	const checks = {
 		gamemodeData: {
@@ -558,22 +564,18 @@ function setupMatch(settings, res) {
 	let { tournament_id, matchID, ...gameSettings } = settings;
 
 	console.log("CREATING MATCH : ", gameSettings);
-	// gameSettings.gamemodeData.nbrOfRounds = 1;
+
 	if (!matchID) {
-		console.log("Generating match ID");
 		matchID = generateMatchID();
-		console.log("Generated match ID: ", matchID);
 	}
 
-	let error = verifyMatchSettings(gameSettings);
-	
 	if (matches.has(matchID)) {
 		console.log("Match already exists");
 		res.json({ matchID });
 		return null;
 	}
-	
-	// let error = verifyMatchSettings(gameSettings);
+
+	let error = verifyMatchSettings(gameSettings);	
 	if (error) {
 		console.log(error);
 		res.status(400).json({ error });

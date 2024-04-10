@@ -425,7 +425,7 @@ export default class ProfilePage extends AbstractComponent {
 	}
 
 	createMatchHistoryPannel = (elemsToBeFilled) => {
-		const matchHistory = new Pannel({dark: true, title: "Match History", style: {display: "block", "border-radius": "20px 20px 0px 20px"}});
+		const matchHistory = new Pannel({dark: true, title: "Tournament History", style: {display: "block", "border-radius": "20px 20px 0px 20px"}});
 		matchHistory.shadowRoot.querySelector("#pannel-title").style.setProperty("margin", "10px 0px");
 		let history = document.createElement("div");
 		history.innerHTML = profileHistoryHtml;
