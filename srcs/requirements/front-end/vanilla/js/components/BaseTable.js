@@ -51,12 +51,18 @@ class BaseTable extends HTMLElement {
     addRow(cells, identifier) {
         const newRow = new Row(identifier);
         const index = this.dataRows.length;
-        this.dataRows.push(cells);
+
+        cells.forEach(cellContent => {
+            const newCell = new Cell(cellContent);
+            newRow.addCell(newCell);
+        });
+
+        this.dataRows.push(newRow);
 
         if (identifier) {
             this.rowIndexByIdentifier[identifier] = index;
         }
-        this.renderCurrentPage();``
+        this.renderCurrentPage();
     }
 
     connectedCallback() {
@@ -87,18 +93,8 @@ class BaseTable extends HTMLElement {
         tbody.innerHTML = '';
 
         // Add rows for the current page
-        pageRows.forEach(cells => {
-            const row = document.createElement('tr');
-            cells.forEach(cellContent => {
-                const cell = document.createElement('td');
-                if (cellContent instanceof HTMLElement) {
-                    cell.appendChild(cellContent);
-                } else {
-                    cell.innerHTML = cellContent;
-                }
-                row.appendChild(cell);
-            });
-            tbody.appendChild(row);
+        pageRows.forEach(row => {
+            tbody.appendChild(row.domElement);
         });
     }
 
