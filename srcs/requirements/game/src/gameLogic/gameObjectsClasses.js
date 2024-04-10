@@ -134,7 +134,6 @@ class Data {
     constructor(lobbyData) {
         this.connectedPlayers = 0;
         this.gameInterval = 0;
-        this.jisus_matchID = 0;
 
         this.imminent = false;
         this.ongoing = false;
