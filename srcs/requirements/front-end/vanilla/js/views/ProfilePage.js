@@ -128,7 +128,7 @@ export default class ProfilePage extends AbstractComponent {
 		addFriend.shadowRoot.querySelector("#input-button").style.setProperty("font-size", "28px");
 
 		// friends list pannel
-		const friendsListPannel = new Pannel({dark: true, title: `Friends List  ( ... )} )`, style: {"border-radius": "20px 20px 0px 20px"}});
+		const friendsListPannel = new Pannel({dark: true, title: `Friends List  ()} )`, style: {"border-radius": "20px 20px 0px 20px"}});
 		this.userElemsToBeFilled.pannelTitle = friendsListPannel.shadowRoot.querySelector("#pannel-title"); // add to elemsToBeFilled to fill in fetch function
 
 		// create the friends list
@@ -216,6 +216,7 @@ export default class ProfilePage extends AbstractComponent {
 		await elemsToBeFilled.userInfo.fetchAndFillElems(user);
 		elemsToBeFilled.userPlayername.textContent = user.playername || "N/A";
 		elemsToBeFilled.userEmail.textContent = user.email || "N/A";
+		elemsToBeFilled.userPhone.textContent = user.phone || "N/A";
 		elemsToBeFilled.pannelTitle.textContent = `Friends List  ( ${user.friends_count} )`;
 	}
 
@@ -310,6 +311,9 @@ export default class ProfilePage extends AbstractComponent {
 			<span class="date">${match.date}</span>
 			<span class="winner">${match.winner}</span>
 			`;
+			matchRow.onmouseover = () => matchRow.style.setProperty("background-color", "rgba(0, 0, 0, 0.3)");
+			matchRow.onmouseout = () => matchRow.style.setProperty("background-color", "rgba(0, 0, 0, 0)");
+			// matchRow.onclick = () => navigateTo("/play?matchID=" + )
 			elemsToBeFilled.matchRows.appendChild(matchRow);
 		});
 	}
@@ -374,7 +378,7 @@ export default class ProfilePage extends AbstractComponent {
 				'Content-Type': 'application/x-www-form-urlencoded',
 			},
 		})
-		.then(res => {
+		.then(async res => {
 			let response = res.response;
 			let body = res.body;
 			console.log("Response:", response);
@@ -384,6 +388,7 @@ export default class ProfilePage extends AbstractComponent {
 				throw new Error("Username not found");
 			} else if (response.status === 200) {
 				displayPopup("Friend added", "success");
+				await fetchUserDetails(); // Update new user details
 				router();
 				valid = true;
 			} else {
@@ -404,6 +409,7 @@ export default class ProfilePage extends AbstractComponent {
 		infos.innerHTML = profileInfoHtml;
 		elemsToBeFilled.userPlayername = infos.querySelector("#user-playername");
 		elemsToBeFilled.userEmail = infos.querySelector("#user-email");
+		elemsToBeFilled.userPhone = infos.querySelector("#user-phone");
 		personalInfo.shadowRoot.appendChild(infos);
 		return personalInfo;
 	}
@@ -422,7 +428,7 @@ export default class ProfilePage extends AbstractComponent {
 	}
 
 	createMatchHistoryPannel = (elemsToBeFilled) => {
-		const matchHistory = new Pannel({dark: true, title: "Match History", style: {display: "block", "border-radius": "20px 20px 0px 20px"}});
+		const matchHistory = new Pannel({dark: true, title: "Tournament History", style: {display: "block", "border-radius": "20px 20px 0px 20px"}});
 		matchHistory.shadowRoot.querySelector("#pannel-title").style.setProperty("margin", "10px 0px");
 		let history = document.createElement("div");
 		history.innerHTML = profileHistoryHtml;

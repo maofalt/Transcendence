@@ -5,6 +5,7 @@ import easyFetch from "@utils/easyFetch";
 import displayPopup from "@utils/displayPopup";
 import { router } from "@utils/Router";
 import deleteIcon from "@images/delete-icon.png";
+import fetchUserDetails from "@utils/fetchUserDetails";
 
 export default class FriendsList extends AbstractComponent {
 	constructor(options = {}) {
@@ -85,7 +86,7 @@ export default class FriendsList extends AbstractComponent {
 				'Content-Type': 'application/x-www-form-urlencoded',
 			},
 		})
-		.then(res => {
+		.then(async res => {
 			let response = res.response;
 			let body = res.body;
 
@@ -93,6 +94,7 @@ export default class FriendsList extends AbstractComponent {
 				throw new Error("Response is null");
 			} else if (response.status === 200) {
 				displayPopup("Friend removed", "info");
+				await fetchUserDetails(); // Update new user details
 				router();
 			} else {
 				throw new Error(body.error || JSON.stringify(body));
