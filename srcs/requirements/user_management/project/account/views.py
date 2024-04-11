@@ -306,11 +306,9 @@ def send_one_time_code(request, email=None):
 def verify_one_time_code(request):
     if request.method == 'POST':
         csrf_token = get_token(request)
-        print("\n\nCSRF Token from request:", request.headers.get('X-CSRFToken'))
         submitted_code = request.POST.get('one_time_code')
         stored_code = request.session.get('one_time_code')
         context = request.POST.get('context')
-        print("REQUEST CODE: ", request.POST)
         print("\n\ncode from Session : ", stored_code)
         print("code from User : ", submitted_code, '\n\n')
         pending_username = request.session.get('pending_username')
@@ -323,6 +321,12 @@ def verify_one_time_code(request):
                     user.is_online = True
                     print(f"Is Online: {user.is_online}")
                     user.save()
+                if context == 'update':
+                    if 'email' in request.POST:
+                        email = request.POST['email']
+                        request.session['verified_email'] = email
+                    else:
+                        return JsonResponse({'success': False, 'error': escape('missing email for verify_one_time_code'), 'csrf_token': csrf_token}, status=400)
                 return JsonResponse({'success': True, 'message': escape('One-time code verification successful'), 'csrf_token': csrf_token})
             else:
                 return JsonResponse({'success': False, 'error': escape('One-time code verification failed'), 'csrf_token': csrf_token}, status=400)
@@ -689,6 +693,29 @@ class ProfileUpdateView(APIView):
             if 'playername' in request.POST and request.POST['playername'] != '':
                 if user.playername != request.POST['playername'] and User.objects.filter(playername=request.POST['playername']).exists():
                     return JsonResponse({'error': 'Playername already exists. Please choose a different one.'})
+            
+            if 'email' in request.POST and request.POST['email'] != '':    
+                verified_email = request.session.get('verified_email')
+                submitted_email = request.POST.get('email')
+                if verified_email:
+                    if submitted_email and verified_email != submitted_email:
+                        del request.session['verified_email']
+                        return JsonResponse({'error': 'Submitted email does not match the verified email.'})
+                    del request.session['verified_email']
+                else:
+                    return JsonResponse({'error': 'Not found verified email'})
+
+            if 'phone' in request.POST and request.POST['phone'] != '':    
+                verified_phone = request.session.get('verified_phone')
+                submitted_phone = request.POST.get('phone')
+                if verified_phone:
+                    if submitted_phone and verified_phone != submitted_phone:
+                        del request.session['verified_phone']
+                        return JsonResponse({'error': 'Submitted phone number does not match the verified phone number'})
+                    del request.session['verified_phone']
+                else:
+                    return JsonResponse({'error': 'Not found verified phone number'})
+            
             user_form.save()
             print ("avartar : ", user.avatar)
             return JsonResponse({'success': 'Your profile has been updated.'})
@@ -939,18 +966,21 @@ def update_sandbox(request, phone_number=None):
         if phone_number is None:
             phone_number = request.POST.get('phone_number', '')
             print("phone_number: ", phone_number)
-        if phone_number == request.user.phone:
-            return JsonResponse({'success': True, 'message': 'Your number is already verified', 'verified': True})
         if not is_valid_phone_number(phone_number):
             return JsonResponse({'success': False, 'error': 'Invalid phone number format'}, status=400)
-        if is_phone_number_verified(phone_number):
+        if phone_number == request.user.phone or is_phone_number_verified(phone_number):
+            request.session['verified_phone'] = phone_number
             return JsonResponse({'success': True, 'message': 'Your number is already verified', 'verified': True})
+
+        # if is_phone_number_verified(phone_number):
+        #     return JsonResponse({'success': True, 'message': 'Your number is already verified', 'verified': True})
         # Add phone number to 'Sandbox destination phone numbers andd send OTP'
         try:
             sns_client.create_sms_sandbox_phone_number(
                 PhoneNumber=phone_number,
                 LanguageCode='en-US'  # Adjust language code as needed
             )
+            
             print("Phone number added to Sandbox destination phone numbers and OTP sent successfully:")
             return JsonResponse({'success': True, 'message': 'SMS message sent successfully'})
         except Exception as e:
@@ -980,6 +1010,7 @@ def verify_sandBox(request, phone_number=None, otp=None):
                 PhoneNumber=phone_number,
                 OneTimePassword=otp
             )
+            request.session['verified_phone'] = phone_number
             print("Phone number verified in the SMS sandbox:", phone_number)
             return JsonResponse({'success': True, 'message': 'Phone number verified'})
         except Exception as e:
