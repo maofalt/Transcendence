@@ -321,7 +321,7 @@ def verify_one_time_code(request):
                     user.is_online = True
                     print(f"Is Online: {user.is_online}")
                     user.save()
-                if context == 'update':
+                if context == 'update' or context == 'signup':
                     if 'email' in request.POST:
                         email = request.POST['email']
                         request.session['verified_email'] = email
@@ -395,6 +395,15 @@ def is_email_valid(email):
 
     if User.objects.filter(email=email).exists():
         return False, "Email already in use."
+
+    verified_email = request.session.get('verified_email')
+    if verified_email:
+        if verified_email != email:
+            del request.session['verified_email']
+            return JsonResponse({'error': 'Submitted email does not match the verified email.'})
+        del request.session['verified_email']
+    else:
+        return JsonResponse({'error': 'Not found verified email'})
 
     return True, None  # No error message needed on success
 
@@ -701,7 +710,7 @@ class ProfileUpdateView(APIView):
                     if submitted_email and verified_email != submitted_email:
                         del request.session['verified_email']
                         return JsonResponse({'error': 'Submitted email does not match the verified email.'})
-                    del request.session['verified_email']
+          f          del request.session['verified_email']
                 else:
                     return JsonResponse({'error': 'Not found verified email'})
 
