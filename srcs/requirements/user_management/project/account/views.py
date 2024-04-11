@@ -396,15 +396,6 @@ def is_email_valid(email):
     if User.objects.filter(email=email).exists():
         return False, "Email already in use."
 
-    verified_email = request.session.get('verified_email')
-    if verified_email:
-        if verified_email != email:
-            del request.session['verified_email']
-            return JsonResponse({'error': 'Submitted email does not match the verified email.'})
-        del request.session['verified_email']
-    else:
-        return JsonResponse({'error': 'Not found verified email'})
-
     return True, None  # No error message needed on success
 
 def validate_user_password(password, username=""):
@@ -497,6 +488,16 @@ def api_signup_view(request):
 
         if not (username and password and playername and email):
             return JsonResponse({'success': False, 'error': escape('All fields are required')})
+
+        verified_email = request.session.get('verified_email')
+        print("verified_email: ", verified_email)
+        if verified_email:
+            if verified_email != email:
+                del request.session['verified_email']
+                return JsonResponse({'error': 'Submitted email does not match the verified email.'})
+            del request.session['verified_email']
+        else:
+            return JsonResponse({'error': 'Not found verified email'})
 
         # Create the user
         user = User(
@@ -701,29 +702,29 @@ class ProfileUpdateView(APIView):
         if user_form.is_valid():        
             if 'playername' in request.POST and request.POST['playername'] != '':
                 if user.playername != request.POST['playername'] and User.objects.filter(playername=request.POST['playername']).exists():
-                    return JsonResponse({'error': 'Playername already exists. Please choose a different one.'})
+                    return JsonResponse({'error': 'Playername already exists. Please choose a different one.'}, status=400)
             
             if 'email' in request.POST and request.POST['email'] != '':    
                 verified_email = request.session.get('verified_email')
                 submitted_email = request.POST.get('email')
                 if verified_email:
                     if submitted_email and verified_email != submitted_email:
-                        del request.session['verified_email']
-                        return JsonResponse({'error': 'Submitted email does not match the verified email.'})
-          f          del request.session['verified_email']
+                        # del request.session['verified_email']
+                        return JsonResponse({'error': 'Submitted email does not match the verified email.'}, status=400)
+                    
+                    del request.session['verified_email']
                 else:
-                    return JsonResponse({'error': 'Not found verified email'})
+                    return JsonResponse({'error': 'verify your email'}, status=400)
 
             if 'phone' in request.POST and request.POST['phone'] != '':    
                 verified_phone = request.session.get('verified_phone')
                 submitted_phone = request.POST.get('phone')
                 if verified_phone:
                     if submitted_phone and verified_phone != submitted_phone:
-                        del request.session['verified_phone']
-                        return JsonResponse({'error': 'Submitted phone number does not match the verified phone number'})
+                        return JsonResponse({'error': 'Submitted phone number does not match the verified phone number'}, status=400)
                     del request.session['verified_phone']
                 else:
-                    return JsonResponse({'error': 'Not found verified phone number'})
+                    return JsonResponse({'error': 'verify your phone number'}, status=400)
             
             user_form.save()
             print ("avartar : ", user.avatar)
