@@ -41,6 +41,7 @@ export default async function fetchUserDetails() {
 					username: body.username,
 					playername: body.playername,
 					email: body.email,
+					phone: body.phone,
 					avatar: "/api/user_management" + body.avatar,
 					status: "online",
 					is_online: true,
