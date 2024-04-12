@@ -1,3 +1,6 @@
+import Row from './Row.js';
+import Cell from './Cell.js';
+
 class BaseTable extends HTMLElement {
 
     constructor() {
@@ -29,6 +32,7 @@ class BaseTable extends HTMLElement {
         this.dataRows = [];
         this.currentPage = 1;
         this.itemsPerPage = 5;
+        this.rowIndexByIdentifier = [];
     }
 
     //Utility to set column styles
@@ -43,8 +47,19 @@ class BaseTable extends HTMLElement {
         tableHeaders.innerHTML = headers.map(header => `<th>${header}</th>`).join('');
     }
     
-    addRow(cells) {
-        this.dataRows.push(cells);
+    addRow(cells, identifier) {
+        const newRow = new Row(identifier);
+        const index = this.dataRows.length;
+
+        cells.forEach(cellContent => {
+            newRow.addCell(cellContent, cellContent.header);
+        });
+
+        this.dataRows.push(newRow);
+
+        if (identifier) {
+            this.rowIndexByIdentifier[identifier] = index;
+        }
         this.renderCurrentPage();
     }
 
@@ -76,20 +91,30 @@ class BaseTable extends HTMLElement {
         tbody.innerHTML = '';
 
         // Add rows for the current page
-        pageRows.forEach(cells => {
-            const row = document.createElement('tr');
-            cells.forEach(cellContent => {
-                const cell = document.createElement('td');
-                if (cellContent instanceof HTMLElement) {
-                    cell.appendChild(cellContent);
-                } else {
-                    cell.innerHTML = cellContent;
-                }
-                row.appendChild(cell);
-            });
-            tbody.appendChild(row);
+        pageRows.forEach(row => {
+            tbody.appendChild(row.domElement);
         });
     }
+
+    updateRowByIdentifier(identifier, newCells) {
+        const rowIndex = this.rowIndexByIdentifier[identifier];
+        if (rowIndex !== undefined && this.dataRows[rowIndex]) {
+            const row = this.dataRows[rowIndex];
+            newCells.forEach(newCell => {
+                if (row.cells.has(newCell.header)) {
+                    row.updateCell(newCell.header, newCell);
+                } else {
+                    // If the cell doesn't exist, add it
+                    row.addCell(newCell, newCell.header);
+                }
+            });
+            this.renderCurrentPage();
+        } else {
+            console.log(`Row with identifier ${identifier} not found.`);
+            console.error(`Row with identifier ${identifier} not found.`);
+        }
+    }
+    
 
 }
 
