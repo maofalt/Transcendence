@@ -3,26 +3,22 @@ import Cell from './Cell.js';
 class Row {
     constructor(identifier, header) {
         this.identifier = identifier;
-        this.headers = header;
-        this.cells = [];
-        this.dataIntersection = {};
+        this.cells = new Map();
         this.domElement = document.createElement('tr');
     }
 
-    addCell(cell) {
-        const newCell = new Cell(cell);
-        this.dataIntersection[cell.header] = newCell;
-        this.cells.push(newCell);
-        this.domElement.appendChild(cell.domElement);
+    addCell(cellContent, header) {
+        const newCell = new Cell(cellContent);
+        this.cells.set(header, newCell);
+        this.domElement.appendChild(newCell.domElement);
     }
 
-    // updateCell(cellIndex, newValue) {
-    //     if(this.cells[cellIndex]) {
-    //         this.cells[cellIndex].updateValue(newValue);
-    //     } else {
-    //         console.error(`Cell at index ${cellIndex} does not exist.`);
-    //     }
-    // }
+    updateCell(header, newValue) {
+        const cell = this.cell.get(header);
+        if (cell) {
+            cell.updateValue(newValue);
+        }
+    }
 }
 
 export default Row;
