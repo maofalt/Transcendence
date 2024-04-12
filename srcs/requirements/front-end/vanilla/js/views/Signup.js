@@ -115,6 +115,8 @@ export default class Signup extends AbstractComponent {
 
 		let nextButton = new CustomButton({content: "Next", action: true});
 		nextButton.id = "nextButton";
+		nextButton.tabIndex = 0;
+		
 		let backButton = new CustomButton(
 			{
 				content: "↩", // "⇦", // "↵", //"↶", //"↩", 
@@ -132,9 +134,11 @@ export default class Signup extends AbstractComponent {
 				}
 			});
 		backButton.id = "backButton";
+	
 		let finalSignupButton = new CustomButton({content: "Sign Up", action: true});
 		finalSignupButton.style.display = "none";
 		finalSignupButton.id = "finalSignupButton";
+		
 		pannel.shadowRoot.appendChild(nextButton);
 		pannel.shadowRoot.appendChild(finalSignupButton);
 		pannel.shadowRoot.appendChild(backButton);

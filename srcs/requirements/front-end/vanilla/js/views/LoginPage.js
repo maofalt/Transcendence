@@ -48,22 +48,9 @@ export default class LoginPage extends AbstractComponent {
 		
 		let loginButton = new CustomButton({content: "Log In", action: true, style: {margin: "15px 0px 0px 0px", "border-radius": "20px"}});
 		loginButton.tabIndex = 0;
-		loginButton.onfocus = () => {
-			loginButton.onkeydown = (e) => {
-				if (e.key === "Enter") {
-					loginButton.click();
-				}
-			}
-		}
+
 		let signUpButton = new CustomButton({content: "Sign Up", action: false, style: {margin: "20px 0px 20px 0px"}});
 		signUpButton.tabIndex = 0;
-		signUpButton.onfocus = () => {
-			signUpButton.onkeydown = (e) => {
-				if (e.key === "Enter") {
-					signUpButton.click();
-				}
-			}
-		}
 
 		let buttons = document.createElement('div');
 		buttons.appendChild(loginButton);
