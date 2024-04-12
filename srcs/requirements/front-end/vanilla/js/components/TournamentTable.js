@@ -192,14 +192,6 @@ class TournamentTable extends BaseTable {
 			console.error('Error joining tournament:', error);
 			displayPopup(error.message, 'error');
 		}
-		//fetch updated tournament row
-		// const updatedTournamentData = await this.fetchTournamentData(tournamentID);
-		// if (updatedTournamentData) {
-		// 	this.updateTournamentRowInView(tournamentID, updatedTournamentData);
-		// } else {
-		// 	console.error('Failed to fetch updated tournament data.');
-		// }
-
 	}
 	
 	async startTournament(tournamentID) {
@@ -214,13 +206,7 @@ class TournamentTable extends BaseTable {
 			console.error('Error starting tournament:', error);
 			displayPopup(error.message, 'error');
 		}
-		//fetch updated tournament row
-		// const updatedTournamentData = await this.fetchTournamentData(tournamentID);
-		// if (updatedTournamentData) {
-		// 	this.updateTournamentRowInView(tournamentID, updatedTournamentData);
-		// } else {
-		// 	console.error('Failed to fetch updated tournament data.');
-		// }
+
 	}
 
 	async unjoinTournament(tournamentName, tournamentID) {
@@ -235,13 +221,6 @@ class TournamentTable extends BaseTable {
 			console.error('Error unjoining ' + tournamentName + ' tournament:', error);
 			displayPopup(error.message, 'error');
 		}
-		//fetch updated tournament row
-		// const updatedTournamentData = await this.fetchTournamentData(tournamentID);
-		// if (updatedTournamentData) {
-		// 	this.updateTournamentRowInView(tournamentID, updatedTournamentData);
-		// } else {
-		// 	console.error('Failed to fetch updated tournament data.');
-		// }
 	}
 
 	async fetchTournamentData(tournamentID) {
@@ -311,7 +290,7 @@ class TournamentTable extends BaseTable {
         styledElement.header = 'Status';
         return styledElement;
     }
-    
+
     createActionButtonElement(tournament) {
         let buttonText = '';
         let buttonEvent = null;
@@ -322,40 +301,32 @@ class TournamentTable extends BaseTable {
     
         if (tournament.host_name === this.userName && tournament.state === 'waiting') {
             buttonText = 'Start';
-            buttonEvent = () => {
-                document.dispatchEvent(new CustomEvent('startTournament', {
-                    detail: { tournamentId: tournament.id }
-                }));
+            buttonEvent = async () => {
+                await this.performAction('startTournament', tournament.id);
+                document.dispatchEvent(new CustomEvent('updateTournamentRow', { detail: { tournamentId: tournament.id } }));
             };
         } else if (tournament.is_in_tournament && tournament.state === 'started') {
             buttonText = 'Play';
             buttonEvent = () => navigateTo('/play?matchID=' + tournament.setting.id);
         } else if (tournament.is_in_tournament && tournament.state === 'waiting') {
             buttonText = 'Unjoin';
-            buttonEvent = () => {
-                document.dispatchEvent(new CustomEvent('unjoinTournament', {
-                    detail: {
-                        tournamentId: tournament.id,
-                        tournamentName: tournament.tournament_name
-                    }
-                }));
+            buttonEvent = async () => {
+                await this.performAction('unjoinTournament', tournament.id, tournament.tournament_name);
+                document.dispatchEvent(new CustomEvent('updateTournamentRow', { detail: { tournamentId: tournament.id } }));
             };
         } else {
             buttonText = 'Join';
-            buttonEvent = () => {
-                document.dispatchEvent(new CustomEvent('joinTournament', {
-                    detail: { tournamentId: tournament.id }
-                }));
+            buttonEvent = async () => {
+                await this.performAction('joinTournament', tournament.id);
+                document.dispatchEvent(new CustomEvent('updateTournamentRow', { detail: { tournamentId: tournament.id } }));
             };
         }
     
         actionButton.textContent = buttonText;
         if (buttonEvent) {
-            actionButton.onclick = () => {
-                buttonEvent();
-                document.dispatchEvent(new CustomEvent('updateTournamentRow', { detail: { tournamentId: tournament.id } }));
-            };
+            actionButton.onclick = buttonEvent;
         }
+    
         return actionButton;
     }
 
@@ -379,6 +350,12 @@ class TournamentTable extends BaseTable {
     handleUnjoinTournament(event) {
         const { tournamentId, tournamentName } = event.detail;
         this.unjoinTournament(tournamentName, tournamentId);
+    }
+
+    async performAction(actionType, tournamentId, tournamentName = '') {
+        document.dispatchEvent(new CustomEvent(actionType, { detail: { tournamentId, tournamentName } }));
+        // Simulate API call
+        await new Promise(resolve => setTimeout(resolve, 100)); // Mock API delay
     }
 
     async handleUpdateRow(event) {
