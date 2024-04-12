@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Tournament, TournamentMatch, MatchSetting, GameType, TournamentType
 from .models import RegistrationType, TournamentPlayer, Player, MatchParticipants
+from decimal import Decimal
 
 class MatchSettingSerializer(serializers.ModelSerializer):
     ball_model = serializers.CharField(default='', allow_blank=True, required=False)
