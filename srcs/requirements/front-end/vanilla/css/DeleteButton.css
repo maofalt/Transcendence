@@ -56,6 +56,13 @@ p {
 	transition: all 300ms;
 }
 
+:host(:focus) {
+	transition: all 0ms;
+	outline: 1px solid black;
+	outline-offset: 2px;
+	box-shadow: 0 0 0 2px rgb(122, 180, 255);
+}
+
 /* TESTING COLORS */
 
 /* :host {
