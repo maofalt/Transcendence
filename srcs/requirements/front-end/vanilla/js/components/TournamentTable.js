@@ -6,6 +6,7 @@ import HostAvatar from '@components/HostAvatar';
 import NumberOfPlayers from '@components/NumberOfPlayers';
 import { makeApiRequest } from '@utils/makeApiRequest.js';
 import { navigateTo } from '@utils/Router.js';
+import easyFetch from "@utils/easyFetch";
 import displayPopup from '@utils/displayPopup';
 
 
@@ -324,7 +325,7 @@ class TournamentTable extends BaseTable {
 				// Find the first match that is playing and contains the specified username
 				const match = matches.find(match => 
 					match.state === "playing" && 
-					match.players.some(player => player.username === userName)
+					match.players.some(player => player.username === this.userName)
 				);
 				// Return the id of the found match, or null if no match is found
 				const matchID = match ? match.id : null;
