@@ -29,6 +29,13 @@ class TournamentTable extends BaseTable {
         this.fetchTournamentParticipants = this.fetchTournamentParticipants.bind(this);
 
         this.startPeriodicUpdate = this.startPeriodicUpdate.bind(this);
+
+        // Set up event listeners
+        document.addEventListener('startTournament', this.handleStartTournament.bind(this));
+        document.addEventListener('joinTournament', this.handleJoinTournament.bind(this));
+        document.addEventListener('unjoinTournament', this.handleUnjoinTournament.bind(this));
+        document.addEventListener('updateTournamentRow', this.handleUpdateRow.bind(this));
+
     }
 
  
@@ -186,12 +193,12 @@ class TournamentTable extends BaseTable {
 			displayPopup(error.message, 'error');
 		}
 		//fetch updated tournament row
-		const updatedTournamentData = await this.fetchTournamentData(tournamentID);
-		if (updatedTournamentData) {
-			this.updateTournamentRowInView(tournamentID, updatedTournamentData);
-		} else {
-			console.error('Failed to fetch updated tournament data.');
-		}
+		// const updatedTournamentData = await this.fetchTournamentData(tournamentID);
+		// if (updatedTournamentData) {
+		// 	this.updateTournamentRowInView(tournamentID, updatedTournamentData);
+		// } else {
+		// 	console.error('Failed to fetch updated tournament data.');
+		// }
 
 	}
 	
@@ -208,12 +215,12 @@ class TournamentTable extends BaseTable {
 			displayPopup(error.message, 'error');
 		}
 		//fetch updated tournament row
-		const updatedTournamentData = await this.fetchTournamentData(tournamentID);
-		if (updatedTournamentData) {
-			this.updateTournamentRowInView(tournamentID, updatedTournamentData);
-		} else {
-			console.error('Failed to fetch updated tournament data.');
-		}
+		// const updatedTournamentData = await this.fetchTournamentData(tournamentID);
+		// if (updatedTournamentData) {
+		// 	this.updateTournamentRowInView(tournamentID, updatedTournamentData);
+		// } else {
+		// 	console.error('Failed to fetch updated tournament data.');
+		// }
 	}
 
 	async unjoinTournament(tournamentName, tournamentID) {
@@ -229,12 +236,12 @@ class TournamentTable extends BaseTable {
 			displayPopup(error.message, 'error');
 		}
 		//fetch updated tournament row
-		const updatedTournamentData = await this.fetchTournamentData(tournamentID);
-		if (updatedTournamentData) {
-			this.updateTournamentRowInView(tournamentID, updatedTournamentData);
-		} else {
-			console.error('Failed to fetch updated tournament data.');
-		}
+		// const updatedTournamentData = await this.fetchTournamentData(tournamentID);
+		// if (updatedTournamentData) {
+		// 	this.updateTournamentRowInView(tournamentID, updatedTournamentData);
+		// } else {
+		// 	console.error('Failed to fetch updated tournament data.');
+		// }
 	}
 
 	async fetchTournamentData(tournamentID) {
@@ -309,27 +316,49 @@ class TournamentTable extends BaseTable {
         let buttonText = '';
         let buttonEvent = null;
     
+        // Create the button
+        const actionButton = this.createStyledHTMLObject('button', '', this.columnStyles.action);
+        actionButton.header = 'Action';
+    
         if (tournament.host_name === this.userName && tournament.state === 'waiting') {
             buttonText = 'Start';
-            buttonEvent = () => this.startTournament(tournament.id);
+            buttonEvent = () => {
+                document.dispatchEvent(new CustomEvent('startTournament', {
+                    detail: { tournamentId: tournament.id }
+                }));
+            };
         } else if (tournament.is_in_tournament && tournament.state === 'started') {
             buttonText = 'Play';
             buttonEvent = () => navigateTo('/play?matchID=' + tournament.setting.id);
         } else if (tournament.is_in_tournament && tournament.state === 'waiting') {
             buttonText = 'Unjoin';
-            buttonEvent = () => this.unjoinTournament(tournament.tournament_name, tournament.id);
+            buttonEvent = () => {
+                document.dispatchEvent(new CustomEvent('unjoinTournament', {
+                    detail: {
+                        tournamentId: tournament.id,
+                        tournamentName: tournament.tournament_name
+                    }
+                }));
+            };
         } else {
             buttonText = 'Join';
-            buttonEvent = () => this.joinTournament(tournament.id);
+            buttonEvent = () => {
+                document.dispatchEvent(new CustomEvent('joinTournament', {
+                    detail: { tournamentId: tournament.id }
+                }));
+            };
         }
-        
-        const actionButton = this.createStyledHTMLObject('button', buttonText, this.columnStyles.action);
-        if (buttonEvent)
-            actionButton.onclick = buttonEvent;
-        actionButton.header = 'Action';
+    
+        actionButton.textContent = buttonText;
+        if (buttonEvent) {
+            actionButton.onclick = () => {
+                buttonEvent();
+                document.dispatchEvent(new CustomEvent('updateTournamentRow', { detail: { tournamentId: tournament.id } }));
+            };
+        }
         return actionButton;
     }
-    
+
     createTournamentDetailsElement(tournament) {
         const tournamentDetails = this.createStyledHTMLObject('button', '👁️', this.columnStyles.details);
         tournamentDetails.addEventListener('click', () => navigateTo(`/brackets?tournament=${tournament.id}`));
@@ -337,6 +366,42 @@ class TournamentTable extends BaseTable {
         return tournamentDetails;
     }
     
+    handleStartTournament(event) {
+        const { tournamentId } = event.detail;
+        this.startTournament(tournamentId);
+    }
+    
+    handleJoinTournament(event) {
+        const { tournamentId } = event.detail;
+        this.joinTournament(tournamentId);
+    }
+    
+    handleUnjoinTournament(event) {
+        const { tournamentId, tournamentName } = event.detail;
+        this.unjoinTournament(tournamentName, tournamentId);
+    }
+
+    async handleUpdateRow(event) {
+        const { tournamentId } = event.detail;
+        const tournament = await this.fetchTournamentData(tournamentId);
+        if (tournament) {
+            const participants = await this.fetchTournamentParticipants(tournament.id);
+            tournament.is_in_tournament = participants.players_username.includes(this.userName);
+        
+            const tournamentNameElement = this.createTournamentNameElement(tournament);
+            const hostElement = await this.createHostElement(tournament.host_name);
+            const numberOfPlayersElement = this.createNumberOfPlayersElement(tournament);
+            const numberOfPlayerPerMatch = this.createNumberOfPlayerPerMatchElement(tournament);
+            const tournamentStatus = this.createTournamentStatusElement(tournament);
+            const actionButtonElement = this.createActionButtonElement(tournament);
+            const tournamentDetails = this.createTournamentDetailsElement(tournament);
+
+            const newCellData = [ tournamentNameElement, hostElement, numberOfPlayersElement, numberOfPlayerPerMatch, tournamentStatus, actionButtonElement, tournamentDetails ];
+            this.updateRowByIdentifier(tournamentId, newCellData);
+        } else {
+            console.error('Failed to fetch updated tournament data.');
+        }
+    }
 
     startPeriodicUpdate() {
 		const tournamentIdentifiers = Object.keys(this.rowIndexByIdentifier);
