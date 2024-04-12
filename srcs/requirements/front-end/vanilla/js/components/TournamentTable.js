@@ -307,7 +307,34 @@ class TournamentTable extends BaseTable {
             };
         } else if (tournament.is_in_tournament && tournament.state === 'started') {
             buttonText = 'Play';
-            buttonEvent = () => navigateTo('/play?matchID=' + tournament.setting.id);
+			buttonEvent = async () => {
+				// fetch tournament details
+				let matches = null;
+				try {
+					const res = await easyFetch(`/api/tournament/${tournament.id}/matches/`);
+					if (res.response.ok) {
+						matches = res.body.matches
+					} else {
+						throw new Error(res.body.error || JSON.stringify(res.body));
+					}
+				} catch (error) {
+					displayPopup(`Request Failed: ${error}`, 'error');
+					return ;
+				}
+				// Find the first match that is playing and contains the specified username
+				const match = matches.find(match => 
+					match.state === "playing" && 
+					match.players.some(player => player.username === userName)
+				);
+				// Return the id of the found match, or null if no match is found
+				const matchID = match ? match.id : null;
+				if (matchID == null) {
+					displayPopup("No match for you!", "info");
+					return ;
+				}
+				window.location.href = '/play?matchID=' + matchID;
+				// navigateTo('/play?matchID=' + matchID);
+			}
         } else if (tournament.is_in_tournament && tournament.state === 'waiting') {
             buttonText = 'Unjoin';
             buttonEvent = async () => {
