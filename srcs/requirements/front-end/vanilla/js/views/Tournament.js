@@ -39,6 +39,8 @@ export default class Tournament extends AbstractView {
 		createTournamentButton.addEventListener('click', this.createTournament);
 		const tournamentDiv = document.querySelector('.tournament');
 		tournamentDiv.appendChild(this.tournamentTable);
+
+		//this.tournamentTable.startPeriodicUpdate();
 	}
 
 	async getTournamentList() { 
@@ -76,6 +78,5 @@ export default class Tournament extends AbstractView {
 		return tournamentTable;
 	}
 	
-
 
 }
