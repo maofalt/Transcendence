@@ -6,9 +6,9 @@ from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth import password_validation
 from django.utils.translation import gettext as _
 
-def is_valid_phone_number(phone_number):
-    phone_number_pattern = r'^\+\d{1,15}$'
-    return bool(re.match(phone_number_pattern, phone_number))
+# def is_valid_phone_number(phone_number):
+#     phone_number_pattern = r'^\+\d{1,15}$'
+#     return bool(re.match(phone_number_pattern, phone_number))
 
 class ProfileUpdateForm(forms.ModelForm):
     two_factor_method = forms.ChoiceField(choices=User.TWO_FACTOR_OPTIONS, required=False)  # Include None value
@@ -26,11 +26,11 @@ class ProfileUpdateForm(forms.ModelForm):
             #     raise forms.ValidationError('File size cannot exceed 2MB.')
         return avatar
 
-    def clean_phone(self):
-        phone = self.cleaned_data['phone']
-        if phone and not is_valid_phone_number(phone):
-            raise forms.ValidationError('Invalid phone number format.')
-        return phone
+    # def clean_phone(self):
+    #     phone = self.cleaned_data['phone']
+    #     if phone and not is_valid_phone_number(phone):
+    #         raise forms.ValidationError('Invalid phone number format.')
+    #     return phone
 
     def clean(self):
         cleaned_data = super().clean()

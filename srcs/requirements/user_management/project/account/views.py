@@ -726,9 +726,8 @@ class ProfileUpdateView(APIView):
                     return JsonResponse({'error': 'verify your email'}, status=400)
 
             if 'phone' in request.POST and request.POST['phone'] != '':
-
                 if not is_valid_phone_number(request.POST.get('phone')):
-                    return JsonResponse({'success': False, 'error': 'Invalid phone number format'}, status=400)
+                    return JsonResponse({'error': 'Invalid phone number format'}, status=400)
  
                 verified_phone = request.session.get('verified_phone')
                 submitted_phone = request.POST.get('phone')
