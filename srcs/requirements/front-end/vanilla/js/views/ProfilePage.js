@@ -92,6 +92,7 @@ export default class ProfilePage extends AbstractComponent {
 		friendProfilePannel.style.left = "50%";
 		friendProfilePannel.style.transform = "translate(-50%, -50%)";
 		friendProfilePannel.style.setProperty("display", "block");
+		friendProfilePannel.style.setProperty("border-radius", "20px 20px 0px 20px");
 
 		friendProfile.appendChild(friendProfilePannel);
 
@@ -217,6 +218,7 @@ export default class ProfilePage extends AbstractComponent {
 		elemsToBeFilled.userPlayername.textContent = user.playername || "N/A";
 		elemsToBeFilled.userEmail.textContent = user.email || "N/A";
 		elemsToBeFilled.userPhone.textContent = user.phone || "N/A";
+		console.log("user", user);
 		elemsToBeFilled.pannelTitle.textContent = `Friends List  ( ${user.friends_count} )`;
 	}
 
@@ -229,75 +231,13 @@ export default class ProfilePage extends AbstractComponent {
 			}
 			username = details.username;
 		}
-		// let matchHistory = [
-		// 	{
-		// 		id: "001",
-		// 		tournament: "Great Big Tournament",
-		// 		date: "01-03-2021",
-		// 		winner: "yridgway"
-		// 	},
-		// 	{
-		// 		id: "002",
-		// 		tournament: "Great Big Tournament",
-		// 		date: "01-03-2021",
-		// 		winner: "yridgway"
-		// 	},
-		// 	{
-		// 		id: "003",
-		// 		tournament: "Great Big Tournament",
-		// 		date: "01-03-2021",
-		// 		winner: "yridgway"
-		// 	},
-		// 	{
-		// 		id: "004",
-		// 		tournament: "Great Big Tournament",
-		// 		date: "01-03-2021",
-		// 		winner: "yridgway"
-		// 	},
-		// 	{
-		// 		id: "005",
-		// 		tournament: "Great Big Tournament",
-		// 		date: "01-03-2021",
-		// 		winner: "yridgway"
-		// 	},
-		// 	{
-		// 		id: "006",
-		// 		tournament: "Great Big Tournament",
-		// 		date: "01-03-2021",
-		// 		winner: "yridgway"
-		// 	},
-		// 	{
-		// 		id: "007",
-		// 		tournament: "Great Big Tournament",
-		// 		date: "01-03-2021",
-		// 		winner: "yridgway"
-		// 	},
-		// 	{
-		// 		id: "008",
-		// 		tournament: "Great Big Tournament",
-		// 		date: "01-03-2021",
-		// 		winner: "yridgway"
-		// 	},
-		// 	{
-		// 		id: "009",
-		// 		tournament: "Great Big Tournament",
-		// 		date: "01-03-2021",
-		// 		winner: "yridgway"
-		// 	},
-		// 	{
-		// 		id: "010",
-		// 		tournament: "Great Big Tournament",
-		// 		date: "01-03-2021",
-		// 		winner: "yridgway"
-		// 	}
-		// ];
 		let gameStats = await this.fetchGameStats(username);
 
 		elemsToBeFilled.matchTotal.textContent = gameStats.total_played;
-		// elemsToBeFilled.tournamentWins.textContent = gameStats.nbr_of_won_tournaments;
+		elemsToBeFilled.tournamentsWon.textContent = gameStats.nbr_of_won_tournaments;
 		elemsToBeFilled.matchWins.textContent = gameStats.nbr_of_won_matches;
 		elemsToBeFilled.matchLosses.textContent = gameStats.nbr_of_lost_matches;
-		elemsToBeFilled.matchWinrate.textContent = gameStats.nbr_of_won_matches / gameStats.total_played * 100 || "N/A";
+		elemsToBeFilled.matchWinrate.textContent = (gameStats.nbr_of_won_matches / gameStats.total_played * 100).toFixed(1).toString() + "%" || "N/A";
 		let matchHistory = gameStats.played_tournaments;
 		console.log("Match History:", matchHistory);
 		elemsToBeFilled.matchRows.innerHTML = "";
@@ -313,7 +253,7 @@ export default class ProfilePage extends AbstractComponent {
 			`;
 			matchRow.onmouseover = () => matchRow.style.setProperty("background-color", "rgba(0, 0, 0, 0.3)");
 			matchRow.onmouseout = () => matchRow.style.setProperty("background-color", "rgba(0, 0, 0, 0)");
-			// matchRow.onclick = () => navigateTo("/play?matchID=" + )
+			matchRow.onclick = () => navigateTo("/brackets?tournament=" + match.id);
 			elemsToBeFilled.matchRows.appendChild(matchRow);
 		});
 	}
@@ -419,6 +359,7 @@ export default class ProfilePage extends AbstractComponent {
 		gameStats.shadowRoot.querySelector("#pannel-title").style.setProperty("margin", "10px 0px");
 		let stats = document.createElement("div");
 		stats.innerHTML = profileStatsHtml;
+		elemsToBeFilled.tournamentsWon = stats.querySelector("#tournaments-won");
 		elemsToBeFilled.matchTotal = stats.querySelector("#match-total");
 		elemsToBeFilled.matchWins = stats.querySelector("#match-wins");
 		elemsToBeFilled.matchLosses = stats.querySelector("#match-losses");

@@ -11,10 +11,10 @@ from .serializers import TournamentSerializer, TournamentMatchSerializer, MatchS
 from .serializers import TournamentPlayerSerializer, GamemodeDataSerializer, FieldDataSerializer, PaddlesDataSerializer, BallDataSerializer, TournamentMatchRoundSerializer, TournamentMatchListSerializer
 from .serializers import PlayerSerializer, TournamentRegistrationSerializer, PlayerGameStatsSerializer, SimpleTournamentSerializer
 from .serializers import MatchGeneratorSerializer
-from django.conf import settings
 from rest_framework.views import APIView
 # from rest_framework_simplejwt.authentication import JWTAuthentication
 from .authentication import CustomJWTAuthentication
+from .permissions import CustomAuthorization
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 # from .permissions import  IsOwnerOrReadOnly, IsHostOrParticipant
 from django.contrib.auth.models import User
@@ -29,15 +29,8 @@ import json
 from django.core import exceptions
 from django.utils.html import escape
 from django.views.decorators.csrf import csrf_exempt, csrf_protect, ensure_csrf_cookie
+from .utils import create_hashed_code
 
-# to test
-    # - bigger value for nbr_of_player_match than nbr_of_player_total
-    # - webhooking
-    # - account deletion view is replacing all the player name data on Tournament and Match
-    # - check return 'date' data from TournamentMatchList
-    # - crash between HttpResponse and framework.Response
-# to do
-    # - delete unused field from model (tournament_result, nbr_of_match ...) or use them
 
 # ------------------------ Tournament -----------------------------------
 class TournamentListCreate(generics.ListCreateAPIView):
@@ -215,78 +208,10 @@ class MatchGenerator(generics.ListCreateAPIView):
 
         return JsonResponse(serializer.data, status=status.HTTP_201_CREATED, safe=False)
 
-# @api_view(['POST'])
-# @ensure_csrf_cookie
-# @csrf_protect
-# @authentication_classes([CustomJWTAuthentication])
-# def match_generator(request, id):
-#     # authentication_classes = [CustomJWTAuthentication]
-#     # serializer_class = MatchGeneratorSerializer
-#     # queryset = TournamentMatch.objects.all()
-
-#     print("Tournament id: ", id)
-#     try:
-#         tournament = get_object_or_404(Tournament, id=id)
-#     except Http404:
-#         return JsonResponse({'error': 'Tournament not found'}, status=404)
-#     user_info = request.user
-#     if not isinstance(user_info, tuple) or len(user_info) != 2:
-#         raise exceptions.AuthenticationFailed('User information is not in the expected format')
-
-#     uid, username = user_info
-#     if tournament.host.id != uid:
-#         return Response({"message": "You are not authorized to generate Tournament."}, status=status.HTTP_403_FORBIDDEN)
-#     match_setting = tournament.setting
-#     tournament.calculate_nbr_of_match()
-#     print("nbr_of_match of T: ", tournament.nbr_of_match)
-
-#     # Create TournamentMatch instances
-#     round = 0
-#     players_total = tournament.players.count()
-#     print("players_total: ", players_total)
-#     players_match = tournament.nbr_of_player_match
-#     print("players_match: ", players_match)
-#     added_match = players_total // players_match
-#     if players_total % players_match != 0:
-#         added_match += 1
-#     tmp = added_match
-#     for _ in range(tournament.nbr_of_match):
-#         print("round: ", round, "mathches: ", added_match)
-#         added_match -= 1
-
-#         tournament_match = TournamentMatch.objects.create(
-#             tournament_id=tournament.id,
-#             match_setting_id=match_setting.id,
-#             round_number=round,
-#         )
-#         print("created Match: ", tournament_match)
-#         tournament.matches.add(tournament_match)
-
-#         if added_match == 0:
-#             round += 1
-#             winners = tmp
-#             added_match = winners // players_match
-#             if winners % players_match != 0:
-#                 added_match += 1
-#             tmp = added_match
-
-#     players = tournament.players.all().order_by('id')
-#     print("all player: ", tournament.players.count())
-#     for player in players:
-#         match = tournament.assign_player_to_match(player, 0)
-#         if match:
-#             print(f"Player {player} added to match {match}")
-#         else:
-#             print(f"No available matches for player {player}")
-
-#     tournament_matches = TournamentMatch.objects.filter(tournament_id=tournament.id).order_by('id')
-#     serializer = TournamentMatchSerializer(tournament_matches, many=True)
-
-#     return JsonResponse(serializer.data, status=status.HTTP_201_CREATED, safe=False)
-
 
 class MatchResult(APIView):
     # authentication_classes = [CustomJWTAuthentication]
+    permission_classes = [CustomAuthorization]
 
     @staticmethod
     def round_state(request, id, cur_round):
@@ -397,44 +322,6 @@ class MatchResult(APIView):
         return JsonResponse(response.data, status=status.HTTP_201_CREATED, safe=False)
 
 
-        
-
-# class MatchResult(APIView):
-#     authentication_classes = [CustomJWTAuthentication]
-
-#     def post(self, request, match_id, player_id, score):
-#         print("match_id : ", match_id,  "player_id: ", player_id, "score: ", score)
-#         match = get_object_or_404(TournamentMatch, id=match_id)
-
-#         if match.state != "ended":
-#             return Response(f"Match {match_id} is not finished")
-#         try:
-#             player = match.players.get(id=player_id)
-#         except Player.DoesNotExist:
-#             return Response(f"Player with id {player_id} not found in the match", status=status.HTTP_404_NOT_FOUND)
-        
-#         for participant in match.participants.all():
-#             print("participant id : ", participant.player_id)
-#             if participant.player_id == player_id:
-#                 player.total_played += 1
-#                 player.save()
-#                 participant.participant_score = score
-#                 participant.save()
-
-#         score_unset = match.participants.filter(participant_score=0)
-
-#         if not score_unset.exists():
-#             winner = match.participants.order_by('-participant_score').first()
-#             winner.is_winner = True
-#             winner.save()
-#             player = match.players.get(id=winner.player_id)
-#             player.won_match.add(match)
-#             player.save()
-#             return Response("Winner found and updated successfully")
-#         else:
-#             return Response("Winner not found yet. Some players score is missing")
-
-
 class MatchUpdate(APIView):
     authentication_classes = [CustomJWTAuthentication]
     serializer_class = MatchGeneratorSerializer
@@ -524,53 +411,6 @@ class TournamentRoundState(APIView):
         else:
             return Response({'round': None, "message": "An Error occurred while checking Round state"})
 
-# class TournamentRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
-#     queryset = Tournament.objects.all()
-#     serializer_class = TournamentSerializer
-#     authentication_classes = [CustomJWTAuthentication]
-
-#     def destroy(self, request, *args, **kwargs):
-#         tournament_id = self.kwargs.get('tournament_id')
-        
-#         try:
-#             tournament = Tournament.objects.get(pk=tournament_id)
-#         except Tournament.DoesNotExist:
-#             raise Http404("Tournament does not exist")
-
-#         # Check if the requesting user is the host of the tournament
-#         if request.user == tournament.host.id:
-#             tournament.state = 'destroyed'
-#             tournament.save()
-#             return JsonResponse({'message': 'Tournament deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
-#         else:
-#             return JsonResponse({'error': 'You don\'t have permission to delete this tournament'}, status=status.HTTP_403_FORBIDDEN)
-
-# class TournamentRegistrationCreate(generics.CreateAPIView):
-#     queryset = TournamentRegistration.objects.all()
-#     serializer_class = TournamentRegistrationSerializer
-#     authentication_classes = [CustomJWTAuthentication]
-#     permission_classes = [IsAuthenticated]  # Only authenticated users can register
-
-#     def post(self, request, *args, **kwargs):
-#         tournament_id = kwargs.get('id')
-#         tournament = get_object_or_404(Tournament, pk=id)
-#         player_id = request.data.get('player_id')
-#         player = get_object_or_404(Player, pk=player_id)
-
-#         if TournamentPlayer.objects.filter(tournament_id=tournament, player=player).exists():
-#             return Response({"message": "Player already registered."}, status=status.HTTP_400_BAD_REQUEST)
-
-#         tournament_player = TournamentPlayer.objects.create(tournament_id=tournament, player=player)
-#         # Serialize and return the new TournamentPlayer
-#         serializer = self.get_serializer(tournament_player)
-#         try:
-#             return super().post(request, *args, **kwargs)
-#         except ValidationError as e:
-#             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        
-#         return Response({"message": "Player registered successfully."}, serializer.data, status=status.HTTP_201_CREATED)
-
-
 # --------------------------- Tournament Participants -----------------------------------    
 class TournamentParticipantList(APIView):
     authentication_classes = [CustomJWTAuthentication]
@@ -655,8 +495,11 @@ class TournamentStart(APIView):
             if response.status_code != 201:
                 return response
             game_response = generate_round(request, id, 0)
+            print("game_response: ", game_response)
             if game_response.status_code != 200:
-                return game_response   
+                return game_response  
+        else:
+            return JsonResponse(status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
         tournament_matches = TournamentMatch.objects.filter(tournament_id=tournament.id).order_by('id')
         serializer = TournamentMatchSerializer(tournament_matches, many=True)     
         # return response
@@ -723,51 +566,6 @@ class TournamentStart(APIView):
         serializer = TournamentMatchSerializer(tournament_matches, many=True)
 
         return JsonResponse(serializer.data, status=status.HTTP_201_CREATED, safe=False)
-
-
-
-# class TournamentStart(APIView):
-#     authentication_classes = [CustomJWTAuthentication]
-#     # permission_classes = [IsAuthenticated]
-
-#     def post(self, request, id):
-#         try:
-#             tournament = get_object_or_404(Tournament, id=id)
-#         except Http404:
-#             return JsonResponse({'error': 'Tournament not found'}, status=404)
-#         user_info = request.user
-#         if not isinstance(user_info, tuple) or len(user_info) != 2:
-#             raise exceptions.AuthenticationFailed('User information is not in the expected format')
-
-#         uid, username = user_info
-
-#         if tournament.host.id != uid:
-#             return Response({"message": "Only the tournament host can start the tournament."}, status=403)
-
-#         # Update tournament state to start
-#         tournament.state = "started"
-#         tournament.save()
-#         tournament_players = tournament.players.all()
-
-#         round_nbr = 0
-#         while True:
-#             tournament = Tournament.objects.get(id=id)
-#             if tournament.state == 'ended':
-#                 break
-#             if round_nbr != 0:
-#                 match_update(request, tournament_id, round_nbr)
-#             generate_round(request, tournament.id, round_nbr)
-            
-#             for player in tournament_players:
-#                 response = stream_notification(request, player.username, player.id, tournament.name, round_nbr)
-#                 if response.status_code != 200:
-#                     return response
-#             while round_state(request, tournament.id, round_nbr):
-#                 time.sleep(1)
-#             round_nbr += 1
-#         return Response({"status": "Tournament finished"})
-    
-
 
 
 
@@ -945,48 +743,6 @@ class PlayerStatsView(APIView):
         serializer = PlayerGameStatsSerializer(player_stats_data)
         return Response(serializer.data)
 
-# class GenerateRound(APIView):
-#     authentication_classes = [CustomJWTAuthentication]
-
-#     def post(self, request, tournament_id, round):
-#         try:
-#             tournament = get_object_or_404(Tournament, id=tournament_id)
-#         except Http404:
-#             return JsonResponse({'error': 'Tournament not found'}, status=404)
-#         matches = tournament.matches.filter(round_number=round).order_by('id')
-
-#         serialized_matches = []
-#         for match in matches:
-#             match.state = "playing"
-#             match.save()
-#             match_data = {
-#                 'tournament_id': match.tournament_id,
-#                 'match_id': match.id,
-#                 'gamemodeData': GamemodeDataSerializer(match).data,
-#                 'fieldData': FieldDataSerializer(tournament.setting).data,
-#                 'paddlesData': PaddlesDataSerializer(tournament.setting).data,
-#                 'ballData': BallDataSerializer(tournament.setting).data,
-#                 'players': SimplePlayerSerializer(match.players.all(), many=True).data,
-#             }
-#             serialized_matches.append(match_data)
-
-#         webhook_thread = Thread(target=self.send_webhook_request, args=(serialized_matches,))
-#         webhook_thread.start()
-
-#         return Response(serialized_matches, status=status.HTTP_200_OK)
-
-#     def send_webhook_request(self, serialized_matches):
-#         game_backend_endpoint = 'http://game:3000/createMultipleMatches'
-
-#         payload = {'matches': serialized_matches}
-#         response = requests.post(game_backend_endpoint, json=payload)
-
-#         if response.status_code == 200:
-#             print("Webhook request successfully sent to the game backend.")
-#         else:
-#             print("Failed to send webhook request to the game backend. Status code:", response.status_code)
-
-
 def generate_round(request, id, round):
     try:
         tournament = get_object_or_404(Tournament, id=id)
@@ -1010,10 +766,10 @@ def generate_round(request, id, round):
             'ballData': BallDataSerializer(tournament.setting).data,
             'playersData': SimplePlayerSerializer(match.players.all(), many=True).data,
         }
-        print("match_data sent: ", match_data)
         serialized_matches.append(match_data)
+    print("serialized_matches:\n", serialized_matches)
 
-    webhook_thread = Thread(target=send_webhook_request, args=(serialized_matches,))
+    webhook_thread = Thread(target=send_webhook_request, args=(serialized_matches, tournament.id))
     webhook_thread.start()
     print("serialized_matches:\n", serialized_matches)
     # Update tournament, matches state
@@ -1023,44 +779,29 @@ def generate_round(request, id, round):
         match.state = "playing"
         match.save()
 
+    webhook_thread.join()
+    global webhook_response
+    if webhook_response is not None and webhook_response.status_code != 200:
+        error_data = json.loads(webhook_response.content.decode('utf-8'))
+        return JsonResponse(error_data, status=webhook_response.status_code)
     return Response({'message': 'Webhook request initiated'}, status=status.HTTP_200_OK)
-    # success, message = send_webhook_request(serialized_matches)
-    # if success:
-    #     return Response(message, status=status.HTTP_200_OK)
-    # else:
-    #     return Response({'error': message}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
-def send_webhook_request(serialized_matches):
+def send_webhook_request(serialized_matches, tournament_id):
+    global webhook_response
     game_backend_endpoint = 'http://game:3000/createMultipleMatches'
 
     print("--------------------------------------\n")
 
-    payload = {'matches': serialized_matches}
+    hashed_code = create_hashed_code(tournament_id)
+    payload = {'matches': serialized_matches, 'hashed_code': hashed_code}
     response = requests.post(game_backend_endpoint, json=payload)
 
     if response.status_code == 200:
         print("Webhook request successfully sent to the game backend.")
-        # return True, "Webhook request successfully sent to the game backend."
     else:
         print("Failed to send webhook request to the game backend. Status code:", response.status_code)
-        # return False, "Failed to send webhook request to the game backend. Status code: " + str(response.status_code)
 
-# @authentication_classes([CustomJWTAuthentication])
-def stream_notification(request, username, user_id, tournament_name, round_nbr):
-    def event_stream(username, user_id, tournament_name, round_nbr):
-        countdown = 60
-        round = round_nbr + 1
-        while countdown >= 0:
-            notification_data = f"Hello, {username}! Your next match for  Tournament < {tournament_name} >, round {round} will start in {countdown} seconds"
-            event = f"data: {notification_data}\n\n"
-            yield event
-            time.sleep(1)
-            countdown -= 1
-
-    response = StreamingHttpResponse(event_stream(username, user_id), content_type='text/event-stream')
-    response['Cache-Control'] = 'no-cache'
-    return response
+    webhook_response = response
 
 #after this APIView session need to delete token data from sessionStorage
 class DeletePlayer(APIView):
