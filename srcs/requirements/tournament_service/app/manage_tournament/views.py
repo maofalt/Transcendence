@@ -5,7 +5,7 @@ from rest_framework import generics, permissions, status, authentication, except
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.exceptions import AuthenticationFailed, ValidationError
 from .models import Tournament, TournamentMatch, MatchSetting, TournamentPlayer, Player, MatchParticipants
 from .serializers import TournamentSerializer, TournamentMatchSerializer, MatchSettingSerializer, SimplePlayerSerializer
 from .serializers import TournamentPlayerSerializer, GamemodeDataSerializer, FieldDataSerializer, PaddlesDataSerializer, BallDataSerializer, TournamentMatchRoundSerializer, TournamentMatchListSerializer
@@ -32,6 +32,7 @@ from django.views.decorators.csrf import csrf_exempt, csrf_protect, ensure_csrf_
 from .utils import create_hashed_code
 
 
+
 # ------------------------ Tournament -----------------------------------
 class TournamentListCreate(generics.ListCreateAPIView):
     queryset = Tournament.objects.all().order_by('-created_at')
@@ -47,31 +48,146 @@ class TournamentListCreate(generics.ListCreateAPIView):
     def post(self, request, *args, **kwargs):
         print(">> received POST to creat a new tournament\n")
         print("request.data: \n", request.data)
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        input_data=request.data
 
-        validated_data = serializer.validated_data
-        print("validated_data: \n", validated_data)
+        try:
+            input_data['nbr_of_player_match'] = int(input_data['nbr_of_player_match'])
+            input_data['nbr_of_player_total'] = int(input_data['nbr_of_player_total'])
+            input_data['registration_period_min'] = int(input_data['registration_period_min'])
+
+            input_data['setting']['walls_factor'] = float(input_data['setting']['walls_factor'])
+            input_data['setting']['size_of_goals'] = int(input_data['setting']['size_of_goals'])
+            input_data['setting']['paddle_height'] = int(input_data['setting']['paddle_height'])
+            input_data['setting']['paddle_speed'] = float(input_data['setting']['paddle_speed'])
+            input_data['setting']['ball_speed'] = float(input_data['setting']['ball_speed'])
+            input_data['setting']['ball_radius'] = float(input_data['setting']['ball_radius'])
+            input_data['setting']['nbr_of_player'] = int(input_data['setting']['nbr_of_players_per_match'])
+            input_data['setting']['nbr_of_rounds'] = int(input_data['setting']['nbr_of_rounds'])
+
+            input_data['setting'].pop('nbr_of_players_per_match', None)
+        except KeyError as e:
+            missing_field = str(e)
+            error_message = f"Missing field '{missing_field}' in the request data"
+            return Response({'error': error_message}, status=status.HTTP_400_BAD_REQUEST)
+        except ValidationError as e:
+            print("Error: ", e.detail)
+            return Response({'error': str(e.detail)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            print(f"Error: {e}")
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        print("input_data: \n", input_data)
+        try:
+            serializer = TournamentSerializer(data=input_data)
+            serializer.is_valid(raise_exception=True)
+        except ValidationError as e:
+            error_message = str(e.detail.get('non_field_errors', ['Unknown error'])[0])
+            print("Error: ", e.detail)
+            print("Error message: ", error_message)
+            if error_message == 'Unknown error':
+                error_messages = []
+                for field, errors in e.detail.items():
+                    if isinstance(errors, dict):
+                        for nested_field, nested_errors in errors.items():
+                            for error in nested_errors:
+                                error_messages.append(f"'{nested_field}': {error}")
+                    else:
+                        for error in errors:
+                            error_messages.append(f"'{field}': {error}")
+                    error_message = "\n".join(error_messages)
+            return Response({'error': error_message}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            print(f"Error: {e}")
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
         user_info = request.user
         if not isinstance(user_info, tuple) or len(user_info) != 2:
             raise exceptions.AuthenticationFailed('User information is not in the expected format')
 
         uid, username = user_info
         host, _ = Player.objects.get_or_create(id=uid, username=username) # created wiil return False if the player already exists
-        match_setting_data = {
-            'walls_factor': float(validated_data['setting']['walls_factor']),
-            'size_of_goals': int(validated_data['setting']['size_of_goals']),
-            'paddle_height': int(validated_data['setting']['paddle_height']),
-            'paddle_speed': float(validated_data['setting']['paddle_speed']),
-            'ball_speed': float(validated_data['setting']['ball_speed']),
-            'ball_radius': float(validated_data['setting']['ball_radius']),
-            'ball_color': validated_data['setting']['ball_color'],
-            'ball_model': validated_data['setting']['ball_model'],
-            'ball_texture': validated_data['setting']['ball_texture'],
-            'nbr_of_player': int(validated_data['nbr_of_player_match']),
-            'nbr_of_rounds': int(validated_data['setting']['nbr_of_rounds']),
-        }
-        print("match_setting_data: ", match_setting_data)
+        
+        # try:
+        #     setting_data = request.data.pop('setting', None)
+        #     if setting_data is not None:
+        #         # Convert string values to int or float
+        #         setting_data['walls_factor'] = float(setting_data['walls_factor'])
+        #         setting_data['size_of_goals'] = int(setting_data['size_of_goals'])
+        #         setting_data['paddle_height'] = int(setting_data['paddle_height'])
+        #         setting_data['paddle_speed'] = float(setting_data['paddle_speed'])
+        #         setting_data['ball_speed'] = float(setting_data['ball_speed'])
+        #         setting_data['ball_radius'] = float(setting_data['ball_radius'])
+        #         setting_data['nbr_of_player'] = int(setting_data['nbr_of_player'])
+        #         setting_data['nbr_of_rounds'] = int(setting_data['nbr_of_rounds'])
+        #     except KeyError as e:
+        #         print(f"Error: {e} key is missing in setting_data")
+        #         # Handle the missing key error as needed
+        #     except ValueError as e:
+        #         print(f"Error: {e} in converting string to int or float")
+        #         # Handle the value conversion error as needed
+        #     except Exception as e:
+        #         print(f"Error: {e}")ck to request.data
+
+        #     input_data = request.data
+        #     request.data['setting'] = setting_data
+
+
+        #     print("----- request.data: \n", request.data)
+        #     serializer = self.get_serializer(data=request.data)
+        #     serializer.is_valid(raise_exception=True)
+        # except ValidationError as e:
+        #     error_message = str(e.detail.get('non_field_errors', ['Unknown error'])[0])
+        #     print("Error: ", e.detail)
+        #     print("Error message: ", error_message)
+        #     if error_message == 'Unknown error':
+        #         error_messages = []
+        #         for field, errors in e.detail.items():
+        #             if isinstance(errors, dict):
+        #                 for nested_field, nested_errors in errors.items():
+        #                     for error in nested_errors:
+        #                         error_messages.append(f"'{nested_field}': {error}")
+        #             else:
+        #                 for error in errors:
+        #                     error_messages.append(f"'{field}': {error}")
+        #             error_message = "\n".join(error_messages)
+        #     return Response({'error': error_message}, status=status.HTTP_400_BAD_REQUEST)
+
+        # validated_data = serializer.validated_data
+        # print("validated_data: \n", validated_data)
+        # user_info = request.user
+        # if not isinstance(user_info, tuple) or len(user_info) != 2:
+        #     raise exceptions.AuthenticationFailed('User information is not in the expected format')
+
+        # uid, username = user_info
+        # host, _ = Player.objects.get_or_create(id=uid, username=username) # created wiil return False if the player already exists
+        # try:
+        #     match_setting_data = {
+        #         'walls_factor': float(validated_data['setting']['walls_factor']),
+        #         'size_of_goals': int(validated_data['setting']['size_of_goals']),
+        #         'paddle_height': int(validated_data['setting']['paddle_height']),
+        #         'paddle_speed': float(validated_data['setting']['paddle_speed']),
+        #         'ball_speed': float(validated_data['setting']['ball_speed']),
+        #         'ball_radius': float(validated_data['setting']['ball_radius']),
+        #         'ball_color': validated_data['setting']['ball_color'],
+        #         'ball_model': validated_data['setting']['ball_model'],
+        #         'ball_texture': validated_data['setting']['ball_texture'],
+        #         'nbr_of_player': int(validated_data['nbr_of_player_match']),
+        #         'nbr_of_rounds': int(validated_data['setting']['nbr_of_rounds']),
+        #     }
+        # except KeyError as e:
+        #     missing_field = str(e)
+        #     error_message = f"Missing field '{missing_field}' in the request data"
+        #     return Response({'error': error_message}, status=status.HTTP_400_BAD_REQUEST)
+        # except ValidationError as e:
+        #     print("Error: ", e.detail)
+        #     return Response({'error': str(e.detail)}, status=status.HTTP_400_BAD_REQUEST)
+        # print("match_setting_data: ", match_setting_data)
+        # try:
+        #     serializer=MatchSettingSerializer(data=match_setting_data)
+        #     serializer.is_valid(raise_exception=True)
+        # except ValidationError as e:
+        #     print("Error: ", e.detail)
+        #     return Response({'error': str(e.detail)}, status=status.HTTP_400_BAD_REQUEST)
         match_setting = MatchSetting.objects.create(**match_setting_data)
 
         tournament = Tournament.objects.create(
@@ -87,7 +203,6 @@ class TournamentListCreate(generics.ListCreateAPIView):
         tournament.players.add(host)
 
         serialized_tournament  = TournamentSerializer(tournament)
-        # escaped_data = escape(serialized_tournament.data)
         return Response(serialized_tournament.data, status=status.HTTP_201_CREATED)
 
 class TournamentData(APIView):

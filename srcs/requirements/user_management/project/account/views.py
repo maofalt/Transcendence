@@ -424,7 +424,7 @@ def validate_username_view(request):
         if valid:
             return JsonResponse({'valid': True})
         else:
-            return JsonResponse({'valid': False, 'error': error_message})
+            return JsonResponse({'valid': False, 'error': error_message}, status=400)
     return JsonResponse({'error': escape('Invalid request method')}, status=400)
 
 def validate_email_view(request):
@@ -434,7 +434,7 @@ def validate_email_view(request):
         if valid:
             return JsonResponse({'valid': True})
         else:
-            return JsonResponse({'valid': False, 'error': error_message})
+            return JsonResponse({'valid': False, 'error': error_message}, status=400)
     return JsonResponse({'error': escape('Invalid request method')}, status=400)
 
 def validate_password_view(request):
@@ -444,7 +444,7 @@ def validate_password_view(request):
         if valid:
             return JsonResponse({'valid': True})
         else:
-            return JsonResponse({'valid': False, 'error': error_message})
+            return JsonResponse({'valid': False, 'error': error_message}, status=400)
     return JsonResponse({'error': escape('Invalid request method')}, status=400)
 
 def validate_player_name_view(request):
@@ -454,7 +454,7 @@ def validate_player_name_view(request):
         if valid:
             return JsonResponse({'valid': True})
         else:
-            return JsonResponse({'valid': False, 'error': error_message})
+            return JsonResponse({'valid': False, 'error': error_message}, status=400)
     return JsonResponse({'error': escape('Invalid request method')}, status=400)
 
 @csrf_protect
@@ -472,22 +472,22 @@ def api_signup_view(request):
         # Validate each field using the utility functions
         valid, error_message = validate_username(username)
         if not valid:
-            return JsonResponse({'success': False, 'error': error_message})
+            return JsonResponse({'success': False, 'error': error_message}, status=400)
 
         valid, error_message = is_email_valid(email)
         if not valid:
-            return JsonResponse({'success': False, 'error': error_message})
+            return JsonResponse({'success': False, 'error': error_message}, status=400)
 
         valid, error_message = validate_user_password(password, username)
         if not valid:
-            return JsonResponse({'success': False, 'error': error_message})
+            return JsonResponse({'success': False, 'error': error_message}, status=400)
 
         valid, error_message = validate_player_name(playername)
         if not valid:
-            return JsonResponse({'success': False, 'error': error_message})
+            return JsonResponse({'success': False, 'error': error_message}, status=400)
 
         if not (username and password and playername and email):
-            return JsonResponse({'success': False, 'error': escape('All fields are required')})
+            return JsonResponse({'success': False, 'error': escape('All fields are required')}, status=400)
 
         verified_email = request.session.get('verified_email')
         print("verified_email: ", verified_email)
@@ -497,7 +497,7 @@ def api_signup_view(request):
                 return JsonResponse({'error': 'Submitted email does not match the verified email.'})
             del request.session['verified_email']
         else:
-            return JsonResponse({'error': 'Not found verified email'})
+            return JsonResponse({'error': 'verify your email'}, status=400)
 
         # Create the user
         user = User(
@@ -511,7 +511,7 @@ def api_signup_view(request):
         try:
             user.save()
         except IntegrityError as e:
-            return JsonResponse({'success': False, 'error': escape('User creation failed.')})
+            return JsonResponse({'success': False, 'error': escape('User creation failed.')}, status=400)
 
         print(" >>  User created successfully.")
 
@@ -595,7 +595,10 @@ def friends_view(request):
 def detail_view(request, username=None):
     try:
         if username:
-            user = get_object_or_404(User, username=username)
+            try:
+                user = get_object_or_404(User, username=username)
+            except Http404:
+                return JsonResponse({'error': 'User not found'}, status=404)
         else:
             user = request.user
         email = user.email if username is None else None

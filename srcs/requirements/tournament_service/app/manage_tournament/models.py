@@ -126,8 +126,8 @@ class MatchSetting(models.Model):
     )
     ball_color = models.CharField(max_length=8, default='0x000000', 
     validators=[RegexValidator(r'^#(?:[0-9a-fA-F]{3}){1,2}$', message="Invalid color format.")])
-    ball_model = models.CharField(default='')
-    ball_texture = models.CharField(default='')
+    ball_model = models.CharField(null=True, default='')
+    ball_texture = models.CharField(null=True, default='')
     nbr_of_rounds = models.IntegerField(default=5, 
         validators=[MinValueValidator(1), 
         MaxValueValidator(10)

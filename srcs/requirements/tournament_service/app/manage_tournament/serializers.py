@@ -3,8 +3,8 @@ from .models import Tournament, TournamentMatch, MatchSetting, GameType, Tournam
 from .models import RegistrationType, TournamentPlayer, Player, MatchParticipants
 
 class MatchSettingSerializer(serializers.ModelSerializer):
-    ball_model = serializers.CharField(allow_blank=True, required=False)
-    ball_texture = serializers.CharField(allow_blank=True, required=False)
+    ball_model = serializers.CharField(default='', allow_blank=True, required=False)
+    ball_texture = serializers.CharField(default='', allow_blank=True, required=False)
 
     class Meta:
         model = MatchSetting
@@ -20,43 +20,46 @@ class TournamentSerializer(serializers.ModelSerializer):
         model = Tournament
         fields = ['id', 'tournament_name', 'nbr_of_player_total', 'nbr_of_player_match', 'setting', 'registration_period_min', 'host_id', 'joined', 'is_full', 'state', 'host_name']
 
+    def to_internal_value(self, data):
+        print("In to_internal_value:", data)
+        return super().to_internal_value(data)
+        
     def validate(self, data):
         nbr_of_player_total = data.get('nbr_of_player_total')
         nbr_of_player_match = data.get('nbr_of_player_match')
 
         if nbr_of_player_match > nbr_of_player_total:
-            raise serializers.ValidationError("The number of players per match cannot be greater than the total number of players.")
-       
+            raise serializers.ValidationError("The number of players per match cannot be greater than the total number of players", code='custom_error')
         return data
 
     def get_host_name(self, obj):
         return obj.host.username
 
-    def create(self, validated_data):
-        setting_data = validated_data.pop('setting')  # Extract data from MatchSetting
-        setting = MatchSetting.objects.create(**setting_data)  # Create a new MatchSetting object
-        tournament = Tournament.objects.create(setting=setting, **validated_data)  # Create a new Tournament object
+    # def create(self, validated_data):
+    #     # setting_data = validated_data.pop('setting')  # Extract data from MatchSetting
+    #     # setting = MatchSetting.objects.create(**setting_data)  # Create a new MatchSetting object
+    #     tournament = Tournament.objects.create(setting=setting, **validated_data)  # Create a new Tournament object
 
-        return tournament
+    #     return tournament
 
-    def update(self, instance, validated_data):
-        setting_data = validated_data.pop('setting')
-        setting = instance.setting
+    # def update(self, instance, validated_data):
+    #     setting_data = validated_data.pop('setting')
+    #     setting = instance.setting
 
-        instance.id = validated_data.get('id', instance.id)
-        instance.tournament_name = validated_data.get('tournament_name', instance.tournament_name)
-        instance.nbr_of_player_total = validated_data.get('nbr_of_player_total', instance.nbr_of_player_total)
-        instance.nbr_of_player_match = validated_data.get('nbr_of_player_match', instance.nbr_of_player_match)
-        instance.registration_period_min = validated_data.get('registration_period_min', instance.registration_period_min)
-        # instance.host_id = validated_data.get('host_id', instance.host_id)
-        instance.save()
+    #     instance.id = validated_data.get('id', instance.id)
+    #     instance.tournament_name = validated_data.get('tournament_name', instance.tournament_name)
+    #     instance.nbr_of_player_total = validated_data.get('nbr_of_player_total', instance.nbr_of_player_total)
+    #     instance.nbr_of_player_match = validated_data.get('nbr_of_player_match', instance.nbr_of_player_match)
+    #     instance.registration_period_min = validated_data.get('registration_period_min', instance.registration_period_min)
+    #     # instance.host_id = validated_data.get('host_id', instance.host_id)
+    #     instance.save()
 
-        # `MatchSetting` is a one-to-one relationship with `Tournament`
-        for field, value in setting_data.items():
-            setattr(setting, field, value)
-        setting.save()
+    #     # `MatchSetting` is a one-to-one relationship with `Tournament`
+    #     for field, value in setting_data.items():
+    #         setattr(setting, field, value)
+    #     setting.save()
 
-        return instance
+    #     return instance
 
     def get_joined(self, obj):
         return obj.players.count()
