@@ -32,6 +32,12 @@ export default class CustomButton extends AbstractComponent {
 			}
 		}
 
+		this.onkeydown = (e) => {
+			if (e.key === "Enter") {
+				this.click();
+			}
+		}
+
 		this.shadowRoot.appendChild(p);
 	}
 }

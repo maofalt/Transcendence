@@ -46,8 +46,11 @@ export default class LoginPage extends AbstractComponent {
 			type: "password"
 		});
 		
-		let loginButton = new CustomButton({content: "Log In", action: true, style: {margin: "15px 0px 0px 0px"}});
+		let loginButton = new CustomButton({content: "Log In", action: true, style: {margin: "15px 0px 0px 0px", "border-radius": "20px"}});
+		loginButton.tabIndex = 0;
+
 		let signUpButton = new CustomButton({content: "Sign Up", action: false, style: {margin: "20px 0px 20px 0px"}});
+		signUpButton.tabIndex = 0;
 
 		let buttons = document.createElement('div');
 		buttons.appendChild(loginButton);
@@ -78,12 +81,20 @@ export default class LoginPage extends AbstractComponent {
 			this.submitLoginForm(e, usernameBlock, passwordBlock);
 		};
 
-		passwordBlock.input.oninput = () => {
-			passwordBlock.input.input.style.outline = "none";
+		passwordBlock.input.onkeydown = (e) => {
+			passwordBlock.input.input.style.outline = "";
+			if (e.key === "Enter") {
+				loginButton.click();
+			}
 		}
 
-		usernameBlock.input.oninput = () => {
-			usernameBlock.input.input.style.outline = "none";
+		usernameBlock.input.onkeydown = (e) => {
+			usernameBlock.input.input.style.outline = "";
+			console.log("e.key", e.key)
+			if (e.key === "Enter") {
+				console.log('enter');
+				passwordBlock.input.input.focus();
+			}
 		}
 
 		p.onclick = () => Router.navigateTo("/forgot");
