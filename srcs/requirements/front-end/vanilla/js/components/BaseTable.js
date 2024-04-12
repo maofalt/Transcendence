@@ -98,16 +98,13 @@ class BaseTable extends HTMLElement {
 
     updateRowByIdentifier(identifier, newCells) {
         const rowIndex = this.rowIndexByIdentifier[identifier];
-        console.log('updateRowByIdentifier', identifier, rowIndex);
         if (rowIndex !== undefined && this.dataRows[rowIndex]) {
             const row = this.dataRows[rowIndex];
             newCells.forEach(newCell => {
                 if (row.cells.has(newCell.header)) {
-                    console.log('row and cell exist');
                     row.updateCell(newCell.header, newCell);
                 } else {
                     // If the cell doesn't exist, add it
-                    console.log('row and cell do not exist');
                     row.addCell(newCell, newCell.header);
                 }
             });
