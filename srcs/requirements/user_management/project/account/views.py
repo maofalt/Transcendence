@@ -287,6 +287,9 @@ def generate_one_time_code():
 def send_one_time_code(request, email=None):
     if email is None and request.method == 'POST':
         email = request.POST.get('email', None)
+    valid, error_message = is_email_valid(email)
+    if not valid:
+        return JsonResponse({'valid': False, 'error': error_message}, status=400)
     one_time_code = generate_one_time_code()
     request.session['one_time_code'] = one_time_code
 
@@ -411,7 +414,7 @@ def validate_user_password(password, username=""):
 
 def validate_player_name(playername):
     # This regex allows alphanumeric characters, dashes, and underscores
-    if re.match(r'^[\w-]+$', playername):
+    if re.match(r'^[\w\s-]+$', playername):
         return True, None
     return False, "Player name contains invalid characters."
 
@@ -493,7 +496,7 @@ def api_signup_view(request):
         print("verified_email: ", verified_email)
         if verified_email:
             if verified_email != email:
-                del request.session['verified_email']
+                # del request.session['verified_email']
                 return JsonResponse({'error': 'Submitted email does not match the verified email.'})
             del request.session['verified_email']
         else:
@@ -704,10 +707,13 @@ class ProfileUpdateView(APIView):
         print("request.FILES: ", request.FILES)
         if user_form.is_valid():        
             if 'playername' in request.POST and request.POST['playername'] != '':
-                if user.playername != request.POST['playername'] and User.objects.filter(playername=request.POST['playername']).exists():
-                    return JsonResponse({'error': 'Playername already exists. Please choose a different one.'}, status=400)
-            
+                valid, error_message = validate_player_name(request.POST.get('playername'))
+                if not valid:
+                    return JsonResponse({'error': error_message}, status=400)
             if 'email' in request.POST and request.POST['email'] != '':    
+                valid, error_message = is_email_valid(request.POST.get('email'))
+                if not valid:
+                    return JsonResponse({'error': error_message}, status=400)
                 verified_email = request.session.get('verified_email')
                 submitted_email = request.POST.get('email')
                 if verified_email:
@@ -719,7 +725,11 @@ class ProfileUpdateView(APIView):
                 else:
                     return JsonResponse({'error': 'verify your email'}, status=400)
 
-            if 'phone' in request.POST and request.POST['phone'] != '':    
+            if 'phone' in request.POST and request.POST['phone'] != '':
+
+                if not is_valid_phone_number(request.POST.get('phone')):
+                    return JsonResponse({'success': False, 'error': 'Invalid phone number format'}, status=400)
+ 
                 verified_phone = request.session.get('verified_phone')
                 submitted_phone = request.POST.get('phone')
                 if verified_phone:
@@ -730,7 +740,6 @@ class ProfileUpdateView(APIView):
                     return JsonResponse({'error': 'verify your phone number'}, status=400)
             
             user_form.save()
-            print ("avartar : ", user.avatar)
             return JsonResponse({'success': 'Your profile has been updated.'})
         else:
             return JsonResponse({'error': 'Form is not valid.'}, status=400)
