@@ -634,18 +634,19 @@ function setupMatch(settings, res) {
 	matches.set(matchID, { gameState: gameState, gameInterval: 0 });
 
 	// Emit the new match notification to all players
-	console.log("\n\nPLAYERS :\n\n", players);
-	players.forEach(player => {
-		let client = clients.get(player);
-		if (client) {
-			console.log("EMITTING TO: ", player);
-			// console.log("EMITTED TO: ", client.playerID);
-			client.emit('new-match', matchID);
-		}
-	});
+	if (matchID >= 0) {
+		console.log("\n\nPLAYERS :\n\n", players);
+		players.forEach(player => {
+			let client = clients.get(player);
+			if (client) {
+				console.log("EMITTING TO: ", player);
+				client.emit('new-match', matchID);
+			}
+		});
+	}
 
 	matches.get(matchID).gameInterval = setInterval(waitingRoom, 20, matchID);
-    render.getBallDir(gameState);
+	render.getBallDir(gameState);
 	// console.log("All matches:");
 	// for (const [matchID, match] of matches) {
 	// 	console.log("Match ID:", matchID);
