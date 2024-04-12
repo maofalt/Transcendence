@@ -42,7 +42,15 @@ class ProfileUpdateForm(forms.ModelForm):
             if not cleaned_data.get(field):
                 del cleaned_data[field]
         return cleaned_data
-
+    
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if commit:
+            instance.save()
+        if instance.pk is not None and 'phone' in self.changed_data and self.cleaned_data['phone'] != self.initial['phone']:
+            # Remove the old phone number from the sandbox
+            remove_phone_number_from_sandbox(self.initial['phone'])
+        return instance
 
 # class ProfileUpdateForm(forms.ModelForm):
 #     TWO_FACTOR_OPTIONS = [
