@@ -53,8 +53,8 @@ class BaseTable extends HTMLElement {
         const index = this.dataRows.length;
 
         cells.forEach(cellContent => {
-            const newCell = new Cell(cellContent);
-            newRow.addCell(newCell);
+            //const newCell = new Cell(cellContent);
+            newRow.addCell(cellContent);
         });
 
         this.dataRows.push(newRow);
