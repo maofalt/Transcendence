@@ -1,7 +1,7 @@
 class Cell {
     constructor(content) {
-      this.content = content;
       this.domElement = document.createElement('td');
+      this.content = content;
       this.updateValue(content);
     }
   
@@ -10,7 +10,7 @@ class Cell {
       if (newValue instanceof HTMLElement) {
         this.domElement.appendChild(newValue);
       } else {
-        this.domElement.textContent = newValue;
+        this.domElement.textContent = String(newValue);
       }
     }
   }
