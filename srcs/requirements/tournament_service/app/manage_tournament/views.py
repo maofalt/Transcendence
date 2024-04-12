@@ -129,6 +129,8 @@ class TournamentListCreate(generics.ListCreateAPIView):
         serialized_tournament  = TournamentSerializer(tournament)
         return Response(serialized_tournament.data, status=status.HTTP_201_CREATED)
 
+        
+
 class TournamentData(APIView):
     serializer_class = TournamentSerializer
     authentication_classes = [CustomJWTAuthentication]
