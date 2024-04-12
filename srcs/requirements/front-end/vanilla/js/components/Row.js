@@ -14,7 +14,7 @@ class Row {
     }
 
     updateCell(header, newValue) {
-        const cell = this.cell.get(header);
+        const cell = this.cells.get(header);
         if (cell) {
             cell.updateValue(newValue);
         }
