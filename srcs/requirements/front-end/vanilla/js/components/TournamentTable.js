@@ -27,6 +27,8 @@ class TournamentTable extends BaseTable {
 
         this.processTournament = this.processTournament.bind(this);
         this.fetchTournamentParticipants = this.fetchTournamentParticipants.bind(this);
+
+        this.startPeriodicUpdate = this.startPeriodicUpdate.bind(this);
     }
 
  
@@ -335,6 +337,35 @@ class TournamentTable extends BaseTable {
         return tournamentDetails;
     }
     
+
+    startPeriodicUpdate() {
+		const tournamentIdentifiers = Object.keys(this.rowIndexByIdentifier);
+		let index = 0;
+		let iterations = 0;
+
+        const newName = "BANANA";
+	
+
+		const updateRow = () => {
+			if (iterations < 10) {
+				const identifier = tournamentIdentifiers[index];
+				const newName = "BANANA" + index;
+				let tournamentNameElement = this.createStyledHTMLObject('div', newName, this.columnStyles.tournamentName);
+				tournamentNameElement.header = 'Tournament Name';
+                const newCellData = [tournamentNameElement];
+				console.log('i=[', identifier, '] newName=[', newName, ']');
+				this.updateRowByIdentifier(identifier, newCellData);
+	
+				index = (index + 1) % tournamentIdentifiers.length;
+				iterations++;
+	
+				setTimeout(updateRow, 1000);
+			}
+		};
+	
+		updateRow();
+	}
+
 
 }
 
