@@ -48,6 +48,11 @@ export default class Signup extends AbstractComponent {
 			description: "Can be changed anytime.",
 			type: "text"
 		});
+		playernameBlock.onkeydown = (e) => {
+			if (e.key === "Enter") {
+				emailBlock.input.input.focus();
+			}
+		}
 
 		let emailBlock = new InputAugmented({
 			title: "Email",
@@ -60,6 +65,11 @@ export default class Signup extends AbstractComponent {
 			type: "email",
 			// button: {content: "Send Code", action: false}
 		});
+		emailBlock.onkeydown = (e) => {
+			if (e.key === "Enter") {
+				nextButton.click();
+			}
+		}
 
 		/* Username and Password */
 		let idBlock = new InputAugmented({
@@ -72,6 +82,11 @@ export default class Signup extends AbstractComponent {
 			type: "text",
 			description: "A unique Username. Will be displayed in Games and Tournaments. Cannot be changed."
 		});
+		idBlock.onkeydown = (e) => {
+			if (e.key === "Enter") {
+				passwordBlock.input.input.focus();
+			}
+		}
 
 		let passwordBlock = new InputAugmented({
 			title: "Password",
@@ -86,6 +101,11 @@ export default class Signup extends AbstractComponent {
 			},
 			type: "password"
 		});
+		passwordBlock.onkeydown = (e) => {
+			if (e.key === "Enter") {
+				confirmPasswordBlock.input.input.focus();
+			}
+		}
 
 		let confirmPasswordBlock = new InputAugmented({
 			title: "Confirm Password",
@@ -96,6 +116,11 @@ export default class Signup extends AbstractComponent {
 			},
 			type: "password"
 		});
+		confirmPasswordBlock.onkeydown = (e) => {
+			if (e.key === "Enter") {
+				nextButton.click();
+			}
+		}
 
 		/* Verify Code */
 		let verifyCodeBlock = new InputAugmented({
@@ -109,6 +134,11 @@ export default class Signup extends AbstractComponent {
 			type: "text",
 			// button: {content: "Verify Code", action: false}
 		});
+		verifyCodeBlock.onkeydown = (e) => {
+			if (e.key === "Enter") {
+				finalSignupButton.click();
+			}
+		}
 
 		/* Privacy Policy */
 			// put privacy policy block here
