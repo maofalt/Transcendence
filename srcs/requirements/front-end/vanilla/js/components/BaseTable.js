@@ -32,7 +32,6 @@ class BaseTable extends HTMLElement {
         this.dataRows = [];
         this.currentPage = 1;
         this.itemsPerPage = 5;
-        this.rowDataByIdentifier = {};
         this.rowIndexByIdentifier = [];
     }
 
@@ -53,8 +52,7 @@ class BaseTable extends HTMLElement {
         const index = this.dataRows.length;
 
         cells.forEach(cellContent => {
-            //const newCell = new Cell(cellContent);
-            newRow.addCell(cellContent);
+            newRow.addCell(cellContent, cellContent.header);
         });
 
         this.dataRows.push(newRow);
@@ -99,14 +97,27 @@ class BaseTable extends HTMLElement {
     }
 
     updateRowByIdentifier(identifier, newCells) {
-        const index = this.rowIndexByIdentifier[identifier];
-        if (index !== undefined && this.dataRows[index]) {
-            this.dataRows[index] = newCells;
+        const rowIndex = this.rowIndexByIdentifier[identifier];
+        console.log('updateRowByIdentifier', identifier, rowIndex);
+        if (rowIndex !== undefined && this.dataRows[rowIndex]) {
+            const row = this.dataRows[rowIndex];
+            newCells.forEach(newCell => {
+                if (row.cells.has(newCell.header)) {
+                    console.log('row and cell exist');
+                    row.updateCell(newCell.header, newCell);
+                } else {
+                    // If the cell doesn't exist, add it
+                    console.log('row and cell do not exist');
+                    row.addCell(newCell, newCell.header);
+                }
+            });
             this.renderCurrentPage();
         } else {
+            console.log(`Row with identifier ${identifier} not found.`);
             console.error(`Row with identifier ${identifier} not found.`);
         }
     }
+    
 
 }
 
