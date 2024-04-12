@@ -32,11 +32,9 @@ export default class CustomButton extends AbstractComponent {
 			}
 		}
 
-		this.onfocus = () => {
-			this.onkeydown = (e) => {
-				if (e.key === "Enter") {
-					this.click();
-				}
+		this.onkeydown = (e) => {
+			if (e.key === "Enter") {
+				this.click();
 			}
 		}
 
