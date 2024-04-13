@@ -631,10 +631,12 @@ def detail_view(request, username=None):
 def add_friend(request, username):
     try:
         friend = get_object_or_404(User, username=username)
-        request.user.add_friend(friend)
+        ret, message = request.user.add_friend(friend)
+        if not ret:
+            return JsonResponse({'error': message}, status=400)
         return JsonResponse({'message': 'Friend added successfully', 'added_friend': friend.username})
     except Http404:
-        return JsonResponse({'error': 'Friend not found'}, status=404)
+        return JsonResponse({'error': 'User not found'}, status=404)
     
 # @login_required
 @ensure_csrf_cookie
@@ -739,6 +741,7 @@ class ProfileUpdateView(APIView):
                     return JsonResponse({'error': 'verify your phone number'}, status=400)
             
             user_form.save()
+            print("avatar: ", user.avatar)
             return JsonResponse({'success': 'Your profile has been updated.'})
         else:
             return JsonResponse({'error': 'Form is not valid.'}, status=400)
