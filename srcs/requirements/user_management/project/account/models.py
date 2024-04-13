@@ -23,7 +23,16 @@ class User(AbstractUser):
     two_factor_method = models.CharField(max_length=10, choices=TWO_FACTOR_OPTIONS, default='off', null=True, blank=True)
 
     def add_friend(self, friend):
-        self.friends.add(friend)
+        try:
+            if friend in self   .friends.all():
+                return False, 'Friend already added'
+            if friend == self:
+                return False, 'You cannot add yourself as a friend'
+            self.friends.add(friend)
+            return True, 'Friend added successfully'
+        except Exception as e:
+            return False, str(e)
+        # self.friends.add(friend)
 
     def remove_friend(self, friend):
         self.friends.remove(friend)
