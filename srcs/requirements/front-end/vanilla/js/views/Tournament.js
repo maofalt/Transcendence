@@ -9,6 +9,7 @@ import NumberOfPlayers from '@components/NumberOfPlayers';
 import { makeApiRequest } from '@utils/makeApiRequest.js';
 import { navigateTo } from '@utils/Router.js';
 import displayPopup from '@utils/displayPopup';
+import easyFetch from "@utils/easyFetch";
 
 
 export default class Tournament extends AbstractView {
