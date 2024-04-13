@@ -25,6 +25,7 @@ class TournamentTable extends BaseTable {
 		this.unjoinTournament = this.unjoinTournament.bind(this);
 		this.fetchTournamentData = this.fetchTournamentData.bind(this);
 		this.fetchUserAvatar = this.fetchUserAvatar.bind(this);
+        this.playTournament = this.playTournament.bind(this);
 
         this.processTournament = this.processTournament.bind(this);
         this.fetchTournamentParticipants = this.fetchTournamentParticipants.bind(this);
@@ -36,6 +37,7 @@ class TournamentTable extends BaseTable {
         document.addEventListener('joinTournament', this.handleJoinTournament.bind(this));
         document.addEventListener('unjoinTournament', this.handleUnjoinTournament.bind(this));
         document.addEventListener('updateTournamentRow', this.handleUpdateRow.bind(this));
+        document.addEventListener('playTournament', this.handlePlayTournament.bind(this));
 
     }
 
@@ -79,7 +81,7 @@ class TournamentTable extends BaseTable {
                 'align-items': 'center',
                 'vertical-align': 'middle',
                 'text-align': 'center',
-            },
+            },event
         };
     }
 
@@ -309,33 +311,9 @@ class TournamentTable extends BaseTable {
         } else if (tournament.is_in_tournament && tournament.state === 'started') {
             buttonText = 'Play';
 			buttonEvent = async () => {
-				// fetch tournament details
-				let matches = null;
-				try {
-					const res = await easyFetch(`/api/tournament/${tournament.id}/matches/`);
-					if (res.response.ok) {
-						matches = res.body.matches
-					} else {
-						throw new Error(res.body.error || JSON.stringify(res.body));
-					}
-				} catch (error) {
-					displayPopup(`Request Failed: ${error}`, 'error');
-					return ;
-				}
-				// Find the first match that is playing and contains the specified username
-				const match = matches.find(match => 
-					match.state === "playing" && 
-					match.players.some(player => player.username === this.userName)
-				);
-				// Return the id of the found match, or null if no match is found
-				const matchID = match ? match.id : null;
-				if (matchID == null) {
-					displayPopup("No match for you!", "info");
-					return ;
-				}
-				window.location.href = '/play?matchID=' + matchID;
-				// navigateTo('/play?matchID=' + matchID);
-			}
+                await this.performAction('playTournament', tournament.id);
+                //document.dispatchEvent(new CustomEvent('updateTournamentRow', { detail: { tournamentId: tournament.id } }));
+            };
         } else if (tournament.is_in_tournament && tournament.state === 'waiting') {
             buttonText = 'Unjoin';
             buttonEvent = async () => {
@@ -380,10 +358,15 @@ class TournamentTable extends BaseTable {
         this.unjoinTournament(tournamentName, tournamentId);
     }
 
+    handlePlayTournament(event) {
+        const { tournamentId } = event.detail;
+        this.playTournament(tournamentId);
+    }
+
     async performAction(actionType, tournamentId, tournamentName = '') {
         document.dispatchEvent(new CustomEvent(actionType, { detail: { tournamentId, tournamentName } }));
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 100)); // Mock API delay
+        
+        await new Promise(resolve => setTimeout(resolve, 100));
     }
 
     async handleUpdateRow(event) {
@@ -406,6 +389,35 @@ class TournamentTable extends BaseTable {
         } else {
             console.error('Failed to fetch updated tournament data.');
         }
+    }
+
+    async playTournament(tournamentID) {
+        // fetch tournament details
+		let matches = null;
+		try {
+			const res = await easyFetch(`/api/tournament/${tournamentID}/matches/`);
+            console.log("Playtournament: " + res);
+			if (res.response.ok) {
+				matches = res.body.matches
+			} else {
+				throw new Error(res.body.error || JSON.stringify(res.body));
+			}
+		} catch (error) {
+			displayPopup(`Request Failed: ${error}`, 'error');
+			return ;
+		}
+		// Find the first match that is playing and contains the specified username
+		const match = matches.find(match => 
+			match.state === "playing" && 
+			match.players.some(player => player.username === this.userName)
+		);
+		// Return the id of the found match, or null if no match is found
+		const matchID = match ? match.id : null;
+		if (matchID == null) {
+			displayPopup("No match for you!", "info");
+			return ;
+		}
+		window.location.href = '/play?matchID=' + matchID;
     }
 
     startPeriodicUpdate() {
