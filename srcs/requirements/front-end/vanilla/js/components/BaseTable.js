@@ -33,6 +33,7 @@ class BaseTable extends HTMLElement {
         this.currentPage = 1;
         this.itemsPerPage = 5;
         this.rowIndexByIdentifier = [];
+        this.totalRows= [];
     }
 
     //Utility to set column styles
@@ -47,54 +48,88 @@ class BaseTable extends HTMLElement {
         tableHeaders.innerHTML = headers.map(header => `<th>${header}</th>`).join('');
     }
     
+    // addRow(cells, identifier) {
+    //     const newRow = new Row(identifier);
+    //     const index = this.dataRows.length;
+
+    //     cells.forEach(cellContent => {
+    //         newRow.addCell(cellContent, cellContent.header);
+    //     });
+
+    //     this.dataRows.push(newRow);
+
+    //     if (identifier) {
+    //         this.rowIndexByIdentifier[identifier] = index;
+    //     }
+    //     this.renderCurrentPage();
+    // }
+
     addRow(cells, identifier) {
         const newRow = new Row(identifier);
-        const index = this.dataRows.length;
-
         cells.forEach(cellContent => {
             newRow.addCell(cellContent, cellContent.header);
         });
-
         this.dataRows.push(newRow);
+        this.totalRows.push(newRow.domElement);
+        this.shadowRoot.querySelector('#table-body').appendChild(newRow.domElement);
+        newRow.domElement.style.display = 'none';
 
         if (identifier) {
-            this.rowIndexByIdentifier[identifier] = index;
+            this.rowIndexByIdentifier[identifier] = this.totalRows.length - 1;
         }
-        this.renderCurrentPage();
     }
 
     connectedCallback() {
         this.shadowRoot.getElementById('prev-page').addEventListener('click', () => {
+            console.log('prev-page clicked');
             if (this.currentPage > 1) {
                 this.currentPage--;
-                this.renderCurrentPage(); // Implement this method
+                this.renderCurrentPage();
             }
         });
         this.shadowRoot.getElementById('next-page').addEventListener('click', () => {
+            console.log('next-page clicked');
             const maxPage = Math.ceil(this.dataRows.length / this.itemsPerPage);
-            if (this.currentPage < maxPage)
-            {            
+            console.log('maxPage', maxPage);
+            if (this.currentPage < maxPage) {
                 this.currentPage++;
-                this.renderCurrentPage(); // Implement this method
+                this.renderCurrentPage();
             }
         });
-       this.renderCurrentPage();
+        this.renderCurrentPage();
     }
 
+    // renderCurrentPage() {
+    //     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    //     const endIndex = startIndex + this.itemsPerPage;
+    //     const pageRows = this.dataRows.slice(startIndex, endIndex);
+    
+    //     const tbody = this.shadowRoot.querySelector('#table-body');
+        
+    //     while (tbody.firstChild) {
+    //         tbody.removeChild(tbody.firstChild);
+    //     }
+    
+    //     pageRows.forEach(row => {
+    //         tbody.appendChild(row.domElement);
+    //     });
+    // }
+    
     renderCurrentPage() {
         const startIndex = (this.currentPage - 1) * this.itemsPerPage;
         const endIndex = startIndex + this.itemsPerPage;
-        const pageRows = this.dataRows.slice(startIndex, endIndex);
 
-        // Clear the table body to prepare for new rows
-        const tbody = this.shadowRoot.querySelector('#table-body');
-        tbody.innerHTML = '';
+        console.log('startIndex', startIndex);
+        console.log('endIndex', endIndex);
+        // Hide all rows
+        this.totalRows.forEach(row => row.style.display = 'none');
 
-        // Add rows for the current page
-        pageRows.forEach(row => {
-            tbody.appendChild(row.domElement);
-        });
+        // Show only rows for the current page
+        for (let i = startIndex; i < endIndex && i < this.totalRows.length; i++) {
+            this.totalRows[i].style.display = '';
+        }
     }
+
 
     updateRowByIdentifier(identifier, newCells) {
         const rowIndex = this.rowIndexByIdentifier[identifier];
