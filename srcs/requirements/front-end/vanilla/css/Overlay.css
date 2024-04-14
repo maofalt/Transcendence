@@ -1,0 +1,30 @@
+/* overlay-styles.css */
+.overlay {
+    height: 0%;
+    width: 100%;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0, 0.4);
+    backdrop-filter: blur(8px);
+    overflow-y: hidden;
+    transition: 0.5s;
+  }
+
+.overlay-content {
+    position: relative;
+    top: 25%; /* Adjust according to design */
+    width: 100%;
+    text-align: center;
+    margin-top: 30px;
+}
+
+.closebtn {
+    position: absolute;
+    top: 20px;
+    right: 45px;
+    font-size: 60px;
+    cursor: pointer;
+}
