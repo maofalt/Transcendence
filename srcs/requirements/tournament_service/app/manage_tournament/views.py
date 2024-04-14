@@ -540,6 +540,8 @@ class TournamentStart(APIView):
 
         if tournament.host.id != uid:
             return Response({"message": "Only the tournament host can start the tournament."}, status=403)
+        if tournament.players.count() < 2:
+            return JsonResponse({'error': 'Not enough players to start the tournament'}, status=400)
         with transaction.atomic():
             tournament = Tournament.objects.select_for_update().get(id=id)
             if tournament.matches.count() == 0:
@@ -637,7 +639,7 @@ def auto_win_for_single_player(request, tournament_id, round_number):
                 player.won_match.add(match)
                 player.save()
                 match.state = "ended"
-                match.winner = player.username
+                match.winner = player
                 match.save()
                 return JsonResponse({'message': 'Match ended with a single participant'}, status=200)
     return JsonResponse({'message': 'All matches have multiple participants'}, status=200)
@@ -823,11 +825,14 @@ def generate_round(request, id, round):
     except Http404:
         return JsonResponse({'error': 'Tournament not found'}, status=404)
     try:
-        matches = tournament.matches.filter(round_number=round, state__ne='ended').order_by('id')
+        matches = tournament.matches.filter(round_number=round).exclude(state='ended').order_by('id')
         # matches = tournament.matches.filter(round_number=round).order_by('id')
     except AttributeError:
         return JsonResponse({'error': 'Matches not found or cannot be filtered.'}, status=404)
     
+    if not matches.exists():
+        return JsonResponse({'message': 'No matches found for the current round'}, status=204)
+        
     serialized_matches = []
     for match in matches:
         match.state = "playing"
