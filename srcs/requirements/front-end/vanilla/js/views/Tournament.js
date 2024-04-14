@@ -11,7 +11,7 @@ import { navigateTo } from '@utils/Router.js';
 import displayPopup from '@utils/displayPopup';
 import easyFetch from "@utils/easyFetch";
 import CustomButton from '@components/CustomButton';
-
+import Overlay from '../components/Overlay';
 
 export default class Tournament extends AbstractView {
 
@@ -19,6 +19,7 @@ export default class Tournament extends AbstractView {
 		super();
 		this.data = [];
 		this.createTournament = this.createTournament.bind(this);
+		//initialize the overlay
 	}
 
 	getHtml() {
@@ -30,29 +31,34 @@ export default class Tournament extends AbstractView {
 	}
 
 	async init() {
+		const tournamentDiv = document.querySelector('.tournament');
+        this.overlay = new Overlay({});
+		this.overlay.id = "custom-overlay";
+        tournamentDiv.appendChild(this.overlay);
+		
 		this.tournamentTable = await this.getTournamentList();
 		this.tournamentTable.setAttribute('id', 'tournamentTable');
+		tournamentDiv.appendChild(this.tournamentTable);
+
 		const createTournamentButton = this.tournamentTable.shadowRoot.getElementById('create-button');
 		createTournamentButton.addEventListener('click', this.createTournament);
 		/*
 		For Miguel :
-			you can get any button by doing the following :
-			this.tournamentTable.shadowRoot.getElementById('<button id>');
-
-			IDs for each element:
-			create : "create-button";
-			manage : "manage-button";
-			search : "search-button";
-			search bar : "search-bar";
-			refresh : "refresh-button";
-
-			I left the event listener instead of doing
-			button.onclick = () => functionToCall;
-			because for some reason it didnt work. the event listener works fine, so...
+		you can get any button by doing the following :
+		this.tournamentTable.shadowRoot.getElementById('<button id>');
+		
+		IDs for each element:
+		create : "create-button";
+		manage : "manage-button";
+		search : "search-button";
+		search bar : "search-bar";
+		refresh : "refresh-button";
+		
+		I left the event listener instead of doing
+		button.onclick = () => functionToCall;
+		because for some reason it didnt work. the event listener works fine, so...
 		*/
-		const tournamentDiv = document.querySelector('.tournament');
-		tournamentDiv.appendChild(this.tournamentTable);
-
+		
 		const leaveButton = new CustomButton({content: "< Back", action : false,
 		style: {
 			position: "absolute",

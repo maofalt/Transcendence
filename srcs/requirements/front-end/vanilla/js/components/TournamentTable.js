@@ -41,12 +41,6 @@ class TournamentTable extends BaseTable {
         this.handlePlayTournament = this.handlePlayTournament.bind(this);
 
         this.setupEventListeners();
-
-        //initialize the overlay
-        this.overlay = document.createElement('custom-overlay');
-        this.shadowRoot.appendChild(this.overlay);
-
-
     }
 
  
@@ -350,9 +344,10 @@ class TournamentTable extends BaseTable {
     createTournamentDetailsElement(tournament) {
         const tournamentDetails = this.createStyledHTMLObject('button', '👁️', this.columnStyles.details);
         tournamentDetails.addEventListener('click', () => {
-            this.overlay.show();
+            const overlay = document.getElementById("custom-overlay");
+            overlay.show();
 
-            const overlayContent = this.overlay.shadowRoot.querySelector('.overlay-content');
+            const overlayContent = overlay.shadowRoot.querySelector('.overlay-content');
             overlayContent.innerHTML = ``;
 
             const bracketsComponent = new Brackets(tournament.id);
