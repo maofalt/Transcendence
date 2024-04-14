@@ -4,6 +4,8 @@ import ActionButton from "@components/ActionButton";
 import NormalButton from '@components/NormalButton';
 import HostAvatar from '@components/HostAvatar';
 import NumberOfPlayers from '@components/NumberOfPlayers';
+import Brackets from "@components/Brackets";
+import Overlay from '@components/Overlay';
 import { makeApiRequest } from '@utils/makeApiRequest.js';
 import { navigateTo } from '@utils/Router.js';
 import easyFetch from "@utils/easyFetch";
@@ -39,6 +41,11 @@ class TournamentTable extends BaseTable {
         this.handlePlayTournament = this.handlePlayTournament.bind(this);
 
         this.setupEventListeners();
+
+        //initialize the overlay
+        this.overlay = document.createElement('custom-overlay');
+        this.shadowRoot.appendChild(this.overlay);
+
 
     }
 
@@ -293,7 +300,6 @@ class TournamentTable extends BaseTable {
     }
 
     createActionButtonElement(tournament) {
-        console.log('createActionButtonElement');
         let buttonText = '';
         let buttonEvent = null;
         // Create the button
@@ -343,7 +349,15 @@ class TournamentTable extends BaseTable {
 
     createTournamentDetailsElement(tournament) {
         const tournamentDetails = this.createStyledHTMLObject('button', '👁️', this.columnStyles.details);
-        tournamentDetails.addEventListener('click', () => navigateTo(`/brackets?tournament=${tournament.id}`));
+        tournamentDetails.addEventListener('click', () => {
+            this.overlay.show();
+
+            const overlayContent = this.overlay.shadowRoot.querySelector('.overlay-content');
+            overlayContent.innerHTML = ``;
+
+            const bracketsComponent = new Brackets(tournament.id);
+            overlayContent.appendChild(bracketsComponent);
+        });
         tournamentDetails.header = 'Details';
         return tournamentDetails;
     }
