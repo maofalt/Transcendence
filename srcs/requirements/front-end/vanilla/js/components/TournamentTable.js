@@ -367,6 +367,13 @@ class TournamentTable extends BaseTable {
                 await this.performAction('unjoinTournament', tournament.id, tournament.tournament_name);
                 // document.dispatchEvent(new CustomEvent('updateTournamentRow', { detail: { tournamentId: tournament.id } }));
             };
+        }else if (tournament.state === 'ended') {
+            buttonText = 'Ended';
+            buttonColor = 'gray';
+            //desactivate button
+            actionButton.disabled = true;
+            //change the cursors to normal
+            actionButton.style.cursor = "default";
         } else {
             buttonText = 'Join';
             buttonColor = 'deepskyblue';
