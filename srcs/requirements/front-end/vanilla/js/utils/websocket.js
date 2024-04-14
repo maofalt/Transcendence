@@ -27,7 +27,8 @@ function initSocketConnection() {
 
 		socket.on('new-match', (matchID) => {
 			let sticky = true;
-			let onClick = () => window.location.href = `/play?matchID=${matchID}`;
+			// let onClick = () => window.location.href = `/play?matchID=${matchID}`;
+			let onClick = () => navigateTo(`/play?matchID=${matchID}`);
 			displayPopup('New Match! Click to join', 'info', sticky, onClick);
 			console.log('new-match:', matchID);
 		});

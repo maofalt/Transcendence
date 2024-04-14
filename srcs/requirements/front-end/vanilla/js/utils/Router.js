@@ -1,6 +1,7 @@
 // Router.js
 import Tournament from '@views/Tournament.js';
 import Game from '@views/Game.js';
+import GameView from '@views/GameView';
 import NotFound from '@views/NotFound.js';
 import CreateTournament from '@views/CreateTournament.js';
 import ProfilePage from '@views/ProfilePage.js';

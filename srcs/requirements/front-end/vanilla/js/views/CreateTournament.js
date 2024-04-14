@@ -3,6 +3,7 @@ import AbstractView from "./AbstractView";
 import { makeApiRequest } from '@utils/makeApiRequest.js';
 import { navigateTo } from '@utils/Router.js';
 import Game from '@views/Game.js';
+import GameView from '@views/GameView.js';
 import { htmlToElement } from '@utils/htmlToElement';
 import CustomButton from '@components/CustomButton.js';
 import createTournamentHtml from '@html/createTournament.html?raw';
