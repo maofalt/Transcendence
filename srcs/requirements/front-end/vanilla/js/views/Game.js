@@ -204,6 +204,7 @@ export default class Game extends AbstractComponent {
 
 		const io_url = hostname.includes("github.dev") ? `${protocol}://${hostname}` : `${protocol}://${hostname}:9443`;
 		console.log(`Connecting to ${io_url}/game`)
+		
 		this.socket = io(`${io_url}/game`, {
 			path: '/game-logic/socket.io',
 			query: query,

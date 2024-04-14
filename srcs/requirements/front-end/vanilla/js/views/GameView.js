@@ -102,6 +102,12 @@ export default class Game extends AbstractView {
 		console.log("Screen size: ", this.screenWidth, this.screenHeight);
 	};
 
+	async getHtml() {
+		return `
+			<div id="gameContainer"></div>
+		`;
+	};
+
 	destroy() {
 		this.cleanAll();
 	}
@@ -111,7 +117,7 @@ export default class Game extends AbstractView {
 		// Set up the game container
 		this.container = document.createElement('div');
 		this.container.id = 'gameContainer';
-		this.shadowRoot.appendChild(this.container);
+		// this.shadowRoot.appendChild(this.container);
 
 		// Create a new div
 		let countDown = document.createElement('div');

@@ -42,6 +42,13 @@ export const routes = {
 		buttonText: 'Play',
 		requiresLogin: true,
 	},
+	// '/play': {
+	// 	path: '/play',
+	// 	view: GameView,
+	// 	title: 'Game',
+	// 	buttonText: 'Play',
+	// 	requiresLogin: true,
+	// },
 	'/game': {
 		path: '/game',
 		view: PlayMenu,
