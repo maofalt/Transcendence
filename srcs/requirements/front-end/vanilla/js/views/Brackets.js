@@ -4,33 +4,24 @@ import styles from '@css/Brackets.css?raw';
 import easyFetch from "@utils/easyFetch";
 import displayPopup from "@utils/displayPopup";
 
-function createTournamentBracket(data) {
-    const bracketContainer = document.createElement('div');
-    bracketContainer.classList.add('tournament-bracket');
 
-    // Tournament header
+function createTournamentHeader(container, data) {
     const tournamentHeader = document.createElement('h2');
     tournamentHeader.textContent = `Tournament: ${data.tournament_name}`;
-    bracketContainer.appendChild(tournamentHeader);
+    container.appendChild(tournamentHeader);
+}
 
-    // Group matches by round_number
+function generateGroupMatches(data) {
     const rounds = data.matches.reduce((acc, match) => {
         acc[match.round_number] = acc[match.round_number] || [];
         acc[match.round_number].push(match);
         return acc;
     }, {});
 
-    // Sort rounds
-    const sortedRounds = Object.keys(rounds).sort((a, b) => parseInt(a) - parseInt(b));
+    return rounds;
+}
 
-    // Container for rounds (columns)
-    const roundsContainer = document.createElement('div');
-    roundsContainer.classList.add('rounds-container');
-
-    const nbrSetting = data.nbr_player_setting;
-    const minHeight = (nbrSetting * 27) + ((nbrSetting - 1) * 5 + 10);
-
-    // Generate rounds and matches
+function generateRoundsAndMatches(sortedRounds, rounds, roundsContainer, nbrSetting, minHeight) {
     sortedRounds.forEach((round, index) => {
         const roundElement = document.createElement('div');
         roundElement.classList.add('round');
@@ -40,6 +31,7 @@ function createTournamentBracket(data) {
         const groupSize = Math.ceil(numberOfMatches / nbrSetting);
         let matchesAdded = 0;
 
+        // Process each group within the round
         for (let i = 0; i < groupSize; i++) {
             const groupMatches = matchesForRound.slice(matchesAdded, matchesAdded + nbrSetting);
             const matchesGridContainer = document.createElement('div');
@@ -79,20 +71,14 @@ function createTournamentBracket(data) {
                     }
 
                     if (player.username === match.winner_username) {
-                        // playerTextElement.innerHTML = `<strong>${player.username}</strong>`;
                         if (match.final_match) {
                             playerTextElement.innerHTML = `<strong>${player.username}</strong>`;
                             playerTextElement.style.textShadow = "0 0 1px #ffffff, 0 0 8px #ffffff";
                         } else {
                             playerTextElement.classList.add('match-winner');
-                            // playerTextElement.style.opacity = "0.7";
-                            // playerTextElement.style.textShadow = "0 0 1px #ffffff, 0 0 8px #ffffff";
+
                         }
                     }
-                    // if (player.username === match.winner_username) {
-                    //     playerTextElement.innerHTML = `<strong>${player.username}</strong>`;
-                    // }
-
                     playerElement.appendChild(playerTextElement);
                     matchElement.appendChild(playerElement);
                 });
@@ -119,14 +105,16 @@ function createTournamentBracket(data) {
         roundElement.style.setProperty('--pseudo-minHeight', `${minHeight}px`);
     });
 
-    // display the final winner
+}
+
+
+function displayFinalMatchAndWinner(data, roundsContainer, bracketContainer, minHeight) {
+
     const finalRoundElement = document.createElement('div');
     finalRoundElement.classList.add('round');
     finalRoundElement.classList.add('final-round');
 
     const finalMatchElement = document.createElement('div');
-    // finalMatchElement.classList.add('match-grid');
-
     const finalPlayerElement = document.createElement('div');
     finalPlayerElement.classList.add('player-flex');
 
@@ -142,8 +130,36 @@ function createTournamentBracket(data) {
     finalRoundElement.style.setProperty('--pseudo-minHeight', `${minHeight}px`);
     
     bracketContainer.appendChild(roundsContainer);
+}
+
+function createTournamentBracket(data) {
+    const bracketContainer = document.createElement('div');
+    bracketContainer.classList.add('tournament-bracket');
+
+    // 1. Create and append the tournament header
+    const tournamentHeader = createTournamentHeader(bracketContainer, data);
+
+    // 2. Group matches by round_number
+    const rounds = generateGroupMatches(data);    
+    
+    // 3. Sort rounds and prepare container for rounds
+    const sortedRounds = Object.keys(rounds).sort((a, b) => parseInt(a) - parseInt(b));
+    const roundsContainer = document.createElement('div');
+    roundsContainer.classList.add('rounds-container');
+
+    // Parameters for calculating dynamic styles
+    const nbrSetting = data.nbr_player_setting;
+    const minHeight = (nbrSetting * 27) + ((nbrSetting - 1) * 5 + 10);
+
+    // 4. Generate each round and its matches
+    generateRoundsAndMatches(sortedRounds, rounds, roundsContainer, nbrSetting, minHeight);
+    
+    // 5- Display final match and winner
+    displayFinalMatchAndWinner(data, roundsContainer, bracketContainer, minHeight);
+
     return bracketContainer;
 }
+
 
 // Brackets class extending AbstractComponent
 export default class Brackets extends AbstractComponent {
