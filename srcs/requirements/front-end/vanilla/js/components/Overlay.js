@@ -31,5 +31,5 @@ class Overlay extends HTMLElement {
     }
 }
 
-customElements.define('custom-overlay', OverlayComponent);
+customElements.define('custom-overlay', Overlay);
 export default Overlay;
