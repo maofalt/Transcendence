@@ -310,14 +310,14 @@ class TournamentTable extends BaseTable {
 
         if (tournament.host_name === this.userName && tournament.state === 'waiting') {
             buttonText = 'Start';
-            buttonColor = 'green';
+            buttonColor = 'deepskyblue';
             buttonEvent = async () => {
                 await this.performAction('startTournament', tournament.id);
                 document.dispatchEvent(new CustomEvent('updateTournamentRow', { detail: { tournamentId: tournament.id } }));
             };
         } else if (tournament.is_in_tournament && tournament.state === 'started') {
             buttonText = 'Play';
-            buttonColor = 'deepskyblue';
+            buttonColor = 'green';
 			buttonEvent = async () => {
                 await this.performAction('playTournament', tournament.id);
                 //document.dispatchEvent(new CustomEvent('updateTournamentRow', { detail: { tournamentId: tournament.id } }));
@@ -331,7 +331,7 @@ class TournamentTable extends BaseTable {
             };
         } else {
             buttonText = 'Join';
-            buttonColor = 'blue';
+            buttonColor = 'deepskyblue';
             buttonEvent = async () => {
                 await this.performAction('joinTournament', tournament.id);
                 document.dispatchEvent(new CustomEvent('updateTournamentRow', { detail: { tournamentId: tournament.id } }));
