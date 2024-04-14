@@ -4,6 +4,7 @@ import ActionButton from "@components/ActionButton";
 import NormalButton from '@components/NormalButton';
 import HostAvatar from '@components/HostAvatar';
 import NumberOfPlayers from '@components/NumberOfPlayers';
+import Overlay from '@components/Overlay';
 import { makeApiRequest } from '@utils/makeApiRequest.js';
 import { navigateTo } from '@utils/Router.js';
 import easyFetch from "@utils/easyFetch";
@@ -343,7 +344,14 @@ class TournamentTable extends BaseTable {
 
     createTournamentDetailsElement(tournament) {
         const tournamentDetails = this.createStyledHTMLObject('button', '👁️', this.columnStyles.details);
-        tournamentDetails.addEventListener('click', () => navigateTo(`/brackets?tournament=${tournament.id}`));
+        //tournamentDetails.addEventListener('click', () => navigateTo(`/brackets?tournament=${tournament.id}`));
+        tournamentDetails.addEventListener('click', () => {
+            let overlay = document.querySelector('custom-overlay') || document.createElement('custom-overlay');
+            document.body.appendChild(overlay);
+            overlay.show();
+            // Optionally, load dynamic content into the overlay
+            overlay.shadowRoot.querySelector('.overlay-content').innerHTML = `<h1>Details for ${tournament.tournament_name}</h1>`;
+        });
         tournamentDetails.header = 'Details';
         return tournamentDetails;
     }
