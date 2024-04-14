@@ -10,6 +10,7 @@ import { makeApiRequest } from '@utils/makeApiRequest.js';
 import { navigateTo } from '@utils/Router.js';
 import displayPopup from '@utils/displayPopup';
 import easyFetch from "@utils/easyFetch";
+import CustomButton from '@components/CustomButton';
 
 
 export default class Tournament extends AbstractView {
@@ -22,26 +23,45 @@ export default class Tournament extends AbstractView {
 
 	getHtml() {
 		return `
+			<h2 id="tournament-page-title">Tournaments</h2>
 			<div class="tournament">
-				<div class="action-button">
-					<action-button 
-						data-text="CREATE"
-						id="createTournamentButton"
-					</action-button>
-				</div>
 			</div>
 		`;
 	}
 
 	async init() {
-		
 		this.tournamentTable = await this.getTournamentList();
-		this.tournamentTable.setAttribute('id', 'tournamentTable');		
-		const createTournamentButton = document.getElementById('createTournamentButton');
+		this.tournamentTable.setAttribute('id', 'tournamentTable');
+		const createTournamentButton = this.tournamentTable.shadowRoot.getElementById('create-button');
 		createTournamentButton.addEventListener('click', this.createTournament);
+		/*
+		For Miguel :
+			you can get any button by doing the following :
+			this.tournamentTable.shadowRoot.getElementById('<button id>');
+
+			IDs for each element:
+			create : "create-button";
+			manage : "manage-button";
+			search : "search-button";
+			search bar : "search-bar";
+			refresh : "refresh-button";
+
+			I left the event listener instead of doing
+			button.onclick = () => functionToCall;
+			because for some reason it didnt work. the event listener works fine, so...
+		*/
 		const tournamentDiv = document.querySelector('.tournament');
 		tournamentDiv.appendChild(this.tournamentTable);
 
+		const leaveButton = new CustomButton({content: "< Back", action : false,
+		style: {
+			position: "absolute",
+			bottom: "30px",
+			left: "50px",
+			padding: "0px 15px"
+		}});
+		leaveButton.onclick = () => navigateTo("/");
+		tournamentDiv.appendChild(leaveButton);
 	}
 
 	async getTournamentList() { 
