@@ -1,18 +1,21 @@
 /* overlay-styles.css */
 .overlay {
-    position: fixed;
-    display: none;
+    height: 0%;
     width: 100%;
-    height: 100%;
+    position: fixed;
+    z-index: 1;
     top: 0;
     left: 0;
-    background-color: rgba(0,0,0,0.9);
-    z-index: 1000;
-}
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0, 0.4);
+    backdrop-filter: blur(8px);
+    overflow-y: hidden;
+    transition: 0.5s;
+  }
 
 .overlay-content {
     position: relative;
-    top: 25%;
+    top: 25%; /* Adjust according to design */
     width: 100%;
     text-align: center;
     margin-top: 30px;
