@@ -44,8 +44,8 @@ class BaseTable extends HTMLElement {
         this.searchBar = document.createElement("input");
         this.searchBar.id = "search-bar";
         this.searchBar.placeholder = "Tournament name";
-        this.searchButton = new CustomButton({content: "Search", action: true});
-        this.searchButton.id = "search-button";
+        // this.searchButton = new CustomButton({content: "Search", action: true});
+        // this.searchButton.id = "search-button";
         this.refreshButton = new CustomButton({content: "Refresh", action: false});
         this.refreshButton.id = "refresh-button";
         this.shadowRoot.querySelector("#buttons-bar").appendChild(this.createButton);
@@ -53,7 +53,7 @@ class BaseTable extends HTMLElement {
         this.shadowRoot.querySelector("#buttons-bar").appendChild(this.midSpace);
         
         this.shadowRoot.querySelector("#buttons-bar").appendChild(this.searchBar);
-        this.shadowRoot.querySelector("#buttons-bar").appendChild(this.searchButton);
+        //this.shadowRoot.querySelector("#buttons-bar").appendChild(this.searchButton);
         this.searchBar.addEventListener('keyup', () => this.filterRows(this.searchBar.value));
 
 
@@ -136,7 +136,7 @@ class BaseTable extends HTMLElement {
     
 
     filterRows(searchTerm) {
-        const searchLower = searchTerm.toLowerCase();
+        const searchLower = searchTerm.replace(/\s+/g, '').toLowerCase();
         this.filteredRows = this.dataRows.filter(row => {
             const cell = row.cells.get('Tournament Name');
             if (!cell) return false;
