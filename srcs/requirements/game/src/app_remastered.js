@@ -612,7 +612,7 @@ function setupMatch(settings, res) {
 		return null;
 	}
 
-	let error = verifyMatchSettings(gameSettings);	
+	let error = verifyMatchSettings(gameSettings);
 	if (error) {
 		console.log(error);
 		res.status(400).json({ error });
@@ -623,8 +623,8 @@ function setupMatch(settings, res) {
 	const players = gameSettings.playersData.map(player => player.accountID);
 
 	if (players.length == 1) {
-		postMatchResult(matchID, players[0]);
-		res.json({ matchID });
+		// postMatchResult(matchID, players[0]);
+		res.json({ "error": "Not enough players to start a match" });
 		return null;
 	}
 
@@ -633,19 +633,20 @@ function setupMatch(settings, res) {
 	
 	matches.set(matchID, { gameState: gameState, gameInterval: 0 });
 
-	// Emit the new match notification to all players
-	console.log("\n\nPLAYERS :\n\n", players);
-	players.forEach(player => {
-		let client = clients.get(player);
-		if (client) {
-			console.log("EMITTING TO: ", player);
-			// console.log("EMITTED TO: ", client.playerID);
-			client.emit('new-match', matchID);
-		}
-	});
+	// Emit the new match notification to all players (if it isn't a preview match; < 0)
+	if (matchID >= 0) {
+		console.log("\n\nPLAYERS :\n\n", players);
+		players.forEach(player => {
+			let client = clients.get(player);
+			if (client) {
+				console.log("EMITTING TO: ", player);
+				client.emit('new-match', matchID);
+			}
+		});
+	}
 
 	matches.get(matchID).gameInterval = setInterval(waitingRoom, 20, matchID);
-    render.getBallDir(gameState);
+	render.getBallDir(gameState);
 	// console.log("All matches:");
 	// for (const [matchID, match] of matches) {
 	// 	console.log("Match ID:", matchID);
