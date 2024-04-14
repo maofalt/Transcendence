@@ -21,7 +21,92 @@ function generateGroupMatches(data) {
     return rounds;
 }
 
-function generateRoundsAndMatches(sortedRounds, rounds, roundsContainer, nbrSetting, minHeight) {
+function displayMatchPlayers(match, matchElement, matchesGridContainer, matchContainer) {
+    match.players.forEach(player => {
+        const playerElement = document.createElement('div');
+        playerElement.classList.add('player-flex');
+
+        const playerTextElement = document.createElement('span');
+        playerTextElement.textContent = player.username;
+
+        if (match.winner_username && match.winner_username !== player.username) {
+            playerTextElement.classList.add('non-winner');
+        }
+
+        if (player.username === match.winner_username) {
+            if (match.final_match) {
+                playerTextElement.innerHTML = `<strong>${player.username}</strong>`;
+                playerTextElement.style.textShadow = "0 0 1px #ffffff, 0 0 8px #ffffff";
+            } else {
+                playerTextElement.classList.add('match-winner');
+
+            }
+        }
+        playerElement.appendChild(playerTextElement);
+        matchElement.appendChild(playerElement);
+    });
+}
+
+function processEachMatch(groupMatches, roundElement, matchesGridContainer, nbrSetting) {
+    groupMatches.forEach((match, matchIndex) => {
+        const matchContainer = document.createElement('div');
+        if (matchIndex % nbrSetting === 0 && matchIndex != groupMatches.length - 1){
+            matchContainer.classList.add('group-separator');
+        }
+        matchContainer.classList.add('match-container');
+
+        if (matchIndex < groupMatches.length - 1) {
+            const connector = document.createElement('div');
+            connector.classList.add('match-connector');
+            matchContainer.appendChild(connector);
+        }
+
+        const matchElement = document.createElement('div');
+        matchElement.classList.add('match-grid');
+
+        // Display the match players
+        displayMatchPlayers(match, matchElement, matchesGridContainer, matchContainer);
+
+
+        matchContainer.appendChild(matchElement);
+        matchesGridContainer.appendChild(matchContainer);
+    });
+}
+
+function processEachGroup(matchesForRound, roundElement, groupSize, matchesAdded, nbrSetting, numberOfMatches, roundsContainer, minHeight, index) {
+    
+    for (let i = 0; i < groupSize; i++) {
+        const groupMatches = matchesForRound.slice(matchesAdded, matchesAdded + nbrSetting);
+        const matchesGridContainer = document.createElement('div');
+        matchesGridContainer.classList.add('matches-grid-container');
+        const gap = 30 + (30 * index - 1);
+        matchesGridContainer.style.gap = `${gap}px`; // Set the gap dynamically
+        
+        let tmp = nbrSetting < numberOfMatches ? nbrSetting : numberOfMatches;
+        
+        if (tmp == 1)
+            tmp = 2;
+        roundElement.style.setProperty('--pseudo-bridge', `${(minHeight + gap)*(tmp - 1)}px`);
+
+        // Process each match within the group
+        processEachMatch(groupMatches, roundElement, matchesGridContainer, nbrSetting);
+        roundElement.appendChild(matchesGridContainer);
+
+        // Add separator before the next group if it's not the last group
+        if (i < groupSize - 1 ) {
+            const separator = document.createElement('div');
+            matchesGridContainer.appendChild(separator);
+        }
+        matchesAdded += nbrSetting;
+    }
+}
+
+function generateRoundsAndMatches(sortedRounds, 
+        rounds, 
+        roundsContainer, 
+        nbrSetting, 
+        minHeight)
+{
     sortedRounds.forEach((round, index) => {
         const roundElement = document.createElement('div');
         roundElement.classList.add('round');
@@ -32,74 +117,17 @@ function generateRoundsAndMatches(sortedRounds, rounds, roundsContainer, nbrSett
         let matchesAdded = 0;
 
         // Process each group within the round
-        for (let i = 0; i < groupSize; i++) {
-            const groupMatches = matchesForRound.slice(matchesAdded, matchesAdded + nbrSetting);
-            const matchesGridContainer = document.createElement('div');
-            matchesGridContainer.classList.add('matches-grid-container');
-            const gap = 30 + (30 * index - 1);
-            matchesGridContainer.style.gap = `${gap}px`; // Set the gap dynamically
-            let tmp = nbrSetting < numberOfMatches ? nbrSetting : numberOfMatches;
-            if (tmp == 1)
-                tmp = 2;
-            roundElement.style.setProperty('--pseudo-bridge', `${(minHeight + gap)*(tmp - 1)}px`);
-
-            groupMatches.forEach((match, matchIndex) => {
-                const matchContainer = document.createElement('div');
-                if (matchIndex % nbrSetting === 0 && matchIndex != groupMatches.length - 1){
-                    matchContainer.classList.add('group-separator');
-                }
-                matchContainer.classList.add('match-container');
-
-                if (matchIndex < groupMatches.length - 1) {
-                    const connector = document.createElement('div');
-                    connector.classList.add('match-connector');
-                    matchContainer.appendChild(connector);
-                }
-
-                const matchElement = document.createElement('div');
-                matchElement.classList.add('match-grid');
-
-                match.players.forEach(player => {
-                    const playerElement = document.createElement('div');
-                    playerElement.classList.add('player-flex');
-
-                    const playerTextElement = document.createElement('span');
-                    playerTextElement.textContent = player.username;
-
-                    if (match.winner_username && match.winner_username !== player.username) {
-                        playerTextElement.classList.add('non-winner');
-                    }
-
-                    if (player.username === match.winner_username) {
-                        if (match.final_match) {
-                            playerTextElement.innerHTML = `<strong>${player.username}</strong>`;
-                            playerTextElement.style.textShadow = "0 0 1px #ffffff, 0 0 8px #ffffff";
-                        } else {
-                            playerTextElement.classList.add('match-winner');
-
-                        }
-                    }
-                    playerElement.appendChild(playerTextElement);
-                    matchElement.appendChild(playerElement);
-                });
-
-                matchContainer.appendChild(matchElement);
-                matchesGridContainer.appendChild(matchContainer);
-            });
-
-            roundElement.appendChild(matchesGridContainer);
-
-            // Add separator before the next group if it's not the last group
-            if (i < groupSize - 1 ) {
-                const separator = document.createElement('div');
-                matchesGridContainer.appendChild(separator);
-            }
-
-            matchesAdded += nbrSetting;
-        }
+        processEachGroup(   matchesForRound, 
+                            roundElement, 
+                            groupSize, 
+                            matchesAdded, 
+                            nbrSetting, 
+                            numberOfMatches, 
+                            roundsContainer, 
+                            minHeight, 
+                            index);
 
         roundsContainer.appendChild(roundElement);
-
         let roundHeight = (minHeight * (numberOfMatches - 1)) + (30 * (numberOfMatches - 1));
         roundElement.style.setProperty('--pseudo-before-height', `${roundHeight}px`);
         roundElement.style.setProperty('--pseudo-minHeight', `${minHeight}px`);
