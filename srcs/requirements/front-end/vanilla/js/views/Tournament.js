@@ -9,6 +9,7 @@ import NumberOfPlayers from '@components/NumberOfPlayers';
 import { makeApiRequest } from '@utils/makeApiRequest.js';
 import { navigateTo } from '@utils/Router.js';
 import displayPopup from '@utils/displayPopup';
+import easyFetch from "@utils/easyFetch";
 
 
 export default class Tournament extends AbstractView {
@@ -16,6 +17,7 @@ export default class Tournament extends AbstractView {
 	constructor() {
 		super();
 		this.data = [];
+		this.createTournament = this.createTournament.bind(this);
 	}
 
 	getHtml() {
@@ -40,7 +42,6 @@ export default class Tournament extends AbstractView {
 		const tournamentDiv = document.querySelector('.tournament');
 		tournamentDiv.appendChild(this.tournamentTable);
 
-		//this.tournamentTable.startPeriodicUpdate();
 	}
 
 	async getTournamentList() { 
@@ -78,5 +79,9 @@ export default class Tournament extends AbstractView {
 		return tournamentTable;
 	}
 	
+	async createTournament() {
+		navigateTo('/create-tournament');
+	}
+
 
 }

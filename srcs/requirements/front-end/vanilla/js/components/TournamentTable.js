@@ -6,6 +6,7 @@ import HostAvatar from '@components/HostAvatar';
 import NumberOfPlayers from '@components/NumberOfPlayers';
 import { makeApiRequest } from '@utils/makeApiRequest.js';
 import { navigateTo } from '@utils/Router.js';
+import easyFetch from "@utils/easyFetch";
 import displayPopup from '@utils/displayPopup';
 
 
@@ -18,23 +19,26 @@ class TournamentTable extends BaseTable {
         this.applyColumnStyles = this.applyColumnStyles.bind(this);
         this.setTournamentData = this.setTournamentData.bind(this);
         this.parseTournamentData = this.parseTournamentData.bind(this); 
-		this.createTournament = this.createTournament.bind(this);	
 		this.joinTournament = this.joinTournament.bind(this);
 		this.startTournament = this.startTournament.bind(this);
 		this.unjoinTournament = this.unjoinTournament.bind(this);
 		this.fetchTournamentData = this.fetchTournamentData.bind(this);
 		this.fetchUserAvatar = this.fetchUserAvatar.bind(this);
+        this.playTournament = this.playTournament.bind(this);
 
         this.processTournament = this.processTournament.bind(this);
         this.fetchTournamentParticipants = this.fetchTournamentParticipants.bind(this);
 
         this.startPeriodicUpdate = this.startPeriodicUpdate.bind(this);
 
-        // Set up event listeners
-        document.addEventListener('startTournament', this.handleStartTournament.bind(this));
-        document.addEventListener('joinTournament', this.handleJoinTournament.bind(this));
-        document.addEventListener('unjoinTournament', this.handleUnjoinTournament.bind(this));
-        document.addEventListener('updateTournamentRow', this.handleUpdateRow.bind(this));
+        // Bind event handlers
+        this.handleStartTournament = this.handleStartTournament.bind(this);
+        this.handleJoinTournament = this.handleJoinTournament.bind(this);
+        this.handleUnjoinTournament = this.handleUnjoinTournament.bind(this);
+        this.handleUpdateRow = this.handleUpdateRow.bind(this);
+        this.handlePlayTournament = this.handlePlayTournament.bind(this);
+
+        this.setupEventListeners();
 
     }
 
@@ -78,11 +82,12 @@ class TournamentTable extends BaseTable {
                 'align-items': 'center',
                 'vertical-align': 'middle',
                 'text-align': 'center',
-            },
+            },event
         };
     }
 
     async setTournamentData(tournamentData, userName) {
+        console.log('setTournamentData');
         this.tournamentData = tournamentData;
         this.userName = userName;
        
@@ -161,10 +166,6 @@ class TournamentTable extends BaseTable {
         });
     }
     
-	async createTournament() {
-		navigateTo('/create-tournament');
-	}
-
 	async joinTournament(tournamentID) {
 		let userID;
 	
@@ -292,13 +293,20 @@ class TournamentTable extends BaseTable {
     }
 
     createActionButtonElement(tournament) {
+        console.log('createActionButtonElement');
         let buttonText = '';
         let buttonEvent = null;
-    
         // Create the button
         const actionButton = this.createStyledHTMLObject('button', '', this.columnStyles.action);
         actionButton.header = 'Action';
     
+        // Remove existing listener if it exists
+        const existingHandler = actionButton.onclick;
+        if (existingHandler) {
+            console.log('Removing existing handler');
+            actionButton.removeEventListener('click', existingHandler);
+        }
+
         if (tournament.host_name === this.userName && tournament.state === 'waiting') {
             buttonText = 'Start';
             buttonEvent = async () => {
@@ -307,7 +315,10 @@ class TournamentTable extends BaseTable {
             };
         } else if (tournament.is_in_tournament && tournament.state === 'started') {
             buttonText = 'Play';
-            buttonEvent = () => navigateTo('/play?matchID=' + tournament.setting.id);
+			buttonEvent = async () => {
+                await this.performAction('playTournament', tournament.id);
+                //document.dispatchEvent(new CustomEvent('updateTournamentRow', { detail: { tournamentId: tournament.id } }));
+            };
         } else if (tournament.is_in_tournament && tournament.state === 'waiting') {
             buttonText = 'Unjoin';
             buttonEvent = async () => {
@@ -352,10 +363,15 @@ class TournamentTable extends BaseTable {
         this.unjoinTournament(tournamentName, tournamentId);
     }
 
+    handlePlayTournament(event) {
+        const { tournamentId } = event.detail;
+        this.playTournament(tournamentId);
+    }
+
     async performAction(actionType, tournamentId, tournamentName = '') {
         document.dispatchEvent(new CustomEvent(actionType, { detail: { tournamentId, tournamentName } }));
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 100)); // Mock API delay
+        
+        await new Promise(resolve => setTimeout(resolve, 100));
     }
 
     async handleUpdateRow(event) {
@@ -378,6 +394,35 @@ class TournamentTable extends BaseTable {
         } else {
             console.error('Failed to fetch updated tournament data.');
         }
+    }
+
+    async playTournament(tournamentID) {
+        // fetch tournament details
+		let matches = null;
+		try {
+			const res = await easyFetch(`/api/tournament/${tournamentID}/matches/`);
+            console.log("Playtournament: " + res);
+			if (res.response.ok) {
+				matches = res.body.matches
+			} else {
+				throw new Error(res.body.error || JSON.stringify(res.body));
+			}
+		} catch (error) {
+			displayPopup(`Request Failed: ${error}`, 'error');
+			return ;
+		}
+		// Find the first match that is playing and contains the specified username
+		const match = matches.find(match => 
+			match.state === "playing" && 
+			match.players.some(player => player.username === this.userName)
+		);
+		// Return the id of the found match, or null if no match is found
+		const matchID = match ? match.id : null;
+		if (matchID == null) {
+			displayPopup("No match for you!", "info");
+			return ;
+		}
+		window.location.href = '/play?matchID=' + matchID;
     }
 
     startPeriodicUpdate() {
@@ -408,7 +453,28 @@ class TournamentTable extends BaseTable {
 		updateRow();
 	}
 
+	setupEventListeners() {
+		document.addEventListener('startTournament', this.handleStartTournament);
+		document.addEventListener('joinTournament', this.handleJoinTournament);
+		document.addEventListener('unjoinTournament', this.handleUnjoinTournament);
+		document.addEventListener('updateTournamentRow', this.handleUpdateRow);
+		document.addEventListener('playTournament', this.handlePlayTournament);
+	}
 
+	cleanupEventListeners() {
+        console.log('TournamentTable cleanupEventListeners');
+        document.removeEventListener('startTournament', this.handleStartTournament);
+        document.removeEventListener('joinTournament', this.handleJoinTournament);
+        document.removeEventListener('unjoinTournament', this.handleUnjoinTournament);
+        document.removeEventListener('updateTournamentRow', this.handleUpdateRow);
+        document.removeEventListener('playTournament', this.handlePlayTournament);;
+	}
+
+	disconnectedCallback() {
+        console.log('TournamentTable disconnected');
+       // super.disconnectedCallback();
+		this.cleanupEventListeners();
+	}
 }
 
 customElements.define('tournament-table', TournamentTable);

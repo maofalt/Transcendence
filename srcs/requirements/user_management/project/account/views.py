@@ -631,10 +631,12 @@ def detail_view(request, username=None):
 def add_friend(request, username):
     try:
         friend = get_object_or_404(User, username=username)
-        request.user.add_friend(friend)
+        ret, message = request.user.add_friend(friend)
+        if not ret:
+            return JsonResponse({'error': message}, status=400)
         return JsonResponse({'message': 'Friend added successfully', 'added_friend': friend.username})
     except Http404:
-        return JsonResponse({'error': 'Friend not found'}, status=404)
+        return JsonResponse({'error': 'User not found'}, status=404)
     
 # @login_required
 @ensure_csrf_cookie
@@ -704,8 +706,8 @@ class ProfileUpdateView(APIView):
         user_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user)
         print ("avartar : ", user.avatar)
         print("POST data received:", request.POST)
-        print("request.FILES: ", request.FILES)
-        if user_form.is_valid():        
+        try:
+            user_form.is_valid()    
             if 'playername' in request.POST and request.POST['playername'] != '':
                 valid, error_message = validate_player_name(request.POST.get('playername'))
                 if not valid:
@@ -720,7 +722,6 @@ class ProfileUpdateView(APIView):
                     if submitted_email and verified_email != submitted_email:
                         # del request.session['verified_email']
                         return JsonResponse({'error': 'Submitted email does not match the verified email.'}, status=400)
-                    
                     del request.session['verified_email']
                 else:
                     return JsonResponse({'error': 'verify your email'}, status=400)
@@ -739,8 +740,12 @@ class ProfileUpdateView(APIView):
                     return JsonResponse({'error': 'verify your phone number'}, status=400)
             
             user_form.save()
+            print(">>  avatar: ", user.avatar)
             return JsonResponse({'success': 'Your profile has been updated.'})
-        else:
+        except ValidationError as e:
+            return JsonResponse({'error': str(e)}, status=400)
+        except Exception as e:
+            print("Error: ", e)
             return JsonResponse({'error': 'Form is not valid.'}, status=400)
 
 class PasswordUpdateView(generics.ListCreateAPIView):
