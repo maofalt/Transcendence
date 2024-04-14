@@ -17,6 +17,7 @@ export default class Tournament extends AbstractView {
 	constructor() {
 		super();
 		this.data = [];
+		this.createTournament = this.createTournament.bind(this);
 	}
 
 	getHtml() {
@@ -41,7 +42,6 @@ export default class Tournament extends AbstractView {
 		const tournamentDiv = document.querySelector('.tournament');
 		tournamentDiv.appendChild(this.tournamentTable);
 
-		//this.tournamentTable.startPeriodicUpdate();
 	}
 
 	async getTournamentList() { 
@@ -79,5 +79,9 @@ export default class Tournament extends AbstractView {
 		return tournamentTable;
 	}
 	
+	async createTournament() {
+		navigateTo('/create-tournament');
+	}
+
 
 }
