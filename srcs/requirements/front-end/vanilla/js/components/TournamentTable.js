@@ -41,12 +41,6 @@ class TournamentTable extends BaseTable {
         this.handlePlayTournament = this.handlePlayTournament.bind(this);
 
         this.setupEventListeners();
-
-        //initialize the overlay
-        this.overlay = document.createElement('custom-overlay');
-        this.shadowRoot.appendChild(this.overlay);
-
-
     }
 
  
@@ -302,6 +296,7 @@ class TournamentTable extends BaseTable {
     createActionButtonElement(tournament) {
         let buttonText = '';
         let buttonEvent = null;
+        let buttonColor = 'white';
         // Create the button
         const actionButton = this.createStyledHTMLObject('button', '', this.columnStyles.action);
         actionButton.header = 'Action';
@@ -315,24 +310,28 @@ class TournamentTable extends BaseTable {
 
         if (tournament.host_name === this.userName && tournament.state === 'waiting') {
             buttonText = 'Start';
+            buttonColor = 'deepskyblue';
             buttonEvent = async () => {
                 await this.performAction('startTournament', tournament.id);
                 document.dispatchEvent(new CustomEvent('updateTournamentRow', { detail: { tournamentId: tournament.id } }));
             };
         } else if (tournament.is_in_tournament && tournament.state === 'started') {
             buttonText = 'Play';
+            buttonColor = 'green';
 			buttonEvent = async () => {
                 await this.performAction('playTournament', tournament.id);
                 //document.dispatchEvent(new CustomEvent('updateTournamentRow', { detail: { tournamentId: tournament.id } }));
             };
         } else if (tournament.is_in_tournament && tournament.state === 'waiting') {
             buttonText = 'Unjoin';
+            buttonColor = 'red';
             buttonEvent = async () => {
                 await this.performAction('unjoinTournament', tournament.id, tournament.tournament_name);
                 document.dispatchEvent(new CustomEvent('updateTournamentRow', { detail: { tournamentId: tournament.id } }));
             };
         } else {
             buttonText = 'Join';
+            buttonColor = 'deepskyblue';
             buttonEvent = async () => {
                 await this.performAction('joinTournament', tournament.id);
                 document.dispatchEvent(new CustomEvent('updateTournamentRow', { detail: { tournamentId: tournament.id } }));
@@ -340,6 +339,7 @@ class TournamentTable extends BaseTable {
         }
     
         actionButton.textContent = buttonText;
+        actionButton.style.backgroundColor = buttonColor;
         if (buttonEvent) {
             actionButton.onclick = buttonEvent;
         }
@@ -349,10 +349,14 @@ class TournamentTable extends BaseTable {
 
     createTournamentDetailsElement(tournament) {
         const tournamentDetails = this.createStyledHTMLObject('button', '👁️', this.columnStyles.details);
+        tournamentDetails.style.width = "30%";
+        tournamentDetails.style.minWidth = "40px";
+        tournamentDetails.style.cursor = "pointer";
         tournamentDetails.addEventListener('click', () => {
-            this.overlay.show();
+            const overlay = document.getElementById("custom-overlay");
+            overlay.show();
 
-            const overlayContent = this.overlay.shadowRoot.querySelector('.overlay-content');
+            const overlayContent = overlay.shadowRoot.querySelector('.overlay-content');
             overlayContent.innerHTML = ``;
 
             const bracketsComponent = new Brackets(tournament.id);
