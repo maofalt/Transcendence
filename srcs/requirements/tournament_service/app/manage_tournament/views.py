@@ -286,7 +286,8 @@ class MatchResult(APIView):
 
         winners = [match.winner for match in finished_matches if match.winner is not None]
         sorted_winners = sorted(winners, key=lambda user: user.id)
-        print("sorted_winners: ", sorted_winners)
+        # print("sorted_winners: ", sorted_winners)
+        print("MATCH_UPDATE >>> round: ", round)
         next_matches = tournament.matches.filter(round_number=round).order_by('id')
         if not next_matches.exists():
             if len(sorted_winners) == 1:
@@ -307,6 +308,7 @@ class MatchResult(APIView):
             else:
                 return JsonResponse({'message': 'An Error occurred while updating the next round matches.'}, status=HTTP_500_INTERNAL_SERVER_ERROR)
         for winner in winners:
+            print("winner: ", winner.username)
             match = tournament.assign_player_to_match(winner, round)
             if match:
                 print(f"Player {winner.username} added to match {match.id}")
@@ -323,39 +325,41 @@ class MatchResult(APIView):
 
 
     def post(self, request, match_id, winner_username):
-        
-        print("match_id : ", match_id,  "winner_id: ", winner_username)
-        try:
-            match = get_object_or_404(TournamentMatch, id=match_id)
-        except Http404:
-            return JsonResponse({'error': 'Match not found'}, status=404)
-        
-        players = match.players.all()
-        if not players.filter(username=winner_username).exists():
-            return Response("Winner not found among participants", status=status.HTTP_404_NOT_FOUND)
+        with transaction.atomic(): 
+            print("match_id : ", match_id,  "winner_id: ", winner_username)
+            try:
+                match = TournamentMatch.objects.select_for_update().get(id=match_id)
+                # match = get_object_or_404(TournamentMatch, id=match_id)
+            except TournamentMatch.DoesNotExist:
+                return JsonResponse({'error': 'Match not found'}, status=404)
+            # except Http404:
+            #     return JsonResponse({'error': 'Match not found'}, status=404)
+            
+            players = match.players.all()
+            if not players.filter(username=winner_username).exists():
+                return Response("Winner not found among participants", status=status.HTTP_404_NOT_FOUND)
 
-        if match.state == "ended":
-            return Response(f"Match {match_id} has been ended before", status=status.HTTP_400_BAD_REQUEST)
-        
-        match.state = "ended"
-        match.save()
-        print("match ID: ", match.id, "match.state: ", match.state)
+            if match.state == "ended":
+                return Response(f"Match {match_id} has been ended before", status=status.HTTP_400_BAD_REQUEST)
+            
+            match.state = "ended"
+            match.save()
+            print("match ID: ", match.id, "match.state: ", match.state)
 
-        for player in players:
-            print("player: ", player.username, "winner: ", winner_username)
-            if player.username == winner_username:
-                player.total_played += 1
-                player.won_match.add(match)
-                player.save()
-                match.winner = player
-                match.save()
-            else:
-                player.total_played += 1
-                player.save()
+            for player in players:
+                print("player: ", player.username, "winner: ", winner_username)
+                if player.username == winner_username:
+                    player.total_played += 1
+                    player.won_match.add(match)
+                    player.save()
+                    match.winner = player
+                    match.save()
+                else:
+                    player.total_played += 1
+                    player.save()
 
-        cur_round = match.round_number
+            cur_round = match.round_number
 
-        with transaction.atomic():
             if MatchResult.round_state(request, match.tournament_id, cur_round) == False:
                 return Response(status=204)
                 # return JsonResponse({'message': "Winner found and updated successfully", })
