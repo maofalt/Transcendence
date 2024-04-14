@@ -279,7 +279,7 @@ export default class EditProfile extends AbstractComponent {
 			headers: {
 				'Content-Type': 'application/x-www-form-urlencoded',
 			},
-			body: new URLSearchParams({ 'email': email, 'one_time_code': verificationCode, 'context': "signup" })
+			body: new URLSearchParams({ 'email': email, 'one_time_code': verificationCode, 'context': "update" })
 		})
 		.then(res => {
 			let response = res.response;

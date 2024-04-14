@@ -84,17 +84,21 @@ export default class CreateTournament extends AbstractView {
 		// }
 		// this.game = null;
 		this.game = new Game(matchID, width, height);
-		let gameContainer = document.getElementById('gameContainer')
-		if (gameContainer) {
-			console.log("GAME CONTAINER", gameContainer);
-			gameContainer.replaceChildren(this.game);
+		let previewContainer = document.getElementById('preview-container')
+		// console.log(previewContainer);
+		if (previewContainer) {
+			console.log("GAME CONTAINER", previewContainer);
+			previewContainer.replaceChildren(this.game);
 		} else {
-			console.log("GAME CONTAINER NOT FOUND", gameContainer);
+			console.log("GAME CONTAINER NOT FOUND", previewContainer);
 		}
-		// }
-		// await this.game.init(); // Make sure this can be safely called multiple times or after updating settings
-		// document.getElementById('gameContainer').removeChild(document.getElementById('leave-button'));
-		// document.getElementById('count-down').style.display = "none";
+
+		// hiding some elements in the game view
+		// info : cannot simply remove them because then the game will not be able to update them and it will
+		// just break.
+		let gameContainer = document.querySelector("game-view").shadowRoot.getElementById("gameContainer");
+		gameContainer.querySelector("#count-down").style.display = "none"; // not displaying the count down
+		gameContainer.querySelector("#leave-button").style.display = "none"; // not displaying the leave button
 		console.log('Game initialized');
 	}
 

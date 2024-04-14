@@ -4,6 +4,8 @@ import AbstractComponent from "../components/AbstractComponent";
 import AbstractView from "@views/AbstractView";
 import profilePageStyles from '@css/ProfilePage.css?raw';
 import BigTitle from '@components/BigTitle';
+import Brackets from '@components/Brackets';
+import Overlay from '@components/Overlay';
 import Pannel from '@components/Pannel';
 import CustomButton from '@components/CustomButton';
 import InputAugmented from '@components/InputAugmented';
@@ -192,6 +194,10 @@ export default class ProfilePage extends AbstractComponent {
 		// fill in the values that need to be fetched
 		this.fillUserValues(this.userElemsToBeFilled);
 		this.fillGameStats(this.userElemsToBeFilled);
+
+		//initialize the overlay
+		this.overlay = document.createElement('custom-overlay');
+		this.shadowRoot.appendChild(this.overlay);
 	}
 
 	showFriendProfile = async (friendData) => {
@@ -253,7 +259,16 @@ export default class ProfilePage extends AbstractComponent {
 			`;
 			matchRow.onmouseover = () => matchRow.style.setProperty("background-color", "rgba(0, 0, 0, 0.3)");
 			matchRow.onmouseout = () => matchRow.style.setProperty("background-color", "rgba(0, 0, 0, 0)");
-			matchRow.onclick = () => navigateTo("/brackets?tournament=" + match.id);
+			//matchRow.onclick = () => navigateTo("/brackets?tournament=" + match.id);
+			matchRow.addEventListener('click', () => {
+				this.overlay.show();
+	
+				const overlayContent = this.overlay.shadowRoot.querySelector('.overlay-content');
+				overlayContent.innerHTML = ``;
+	
+				const bracketsComponent = new Brackets(match.id);
+				overlayContent.appendChild(bracketsComponent);
+			});
 			elemsToBeFilled.matchRows.appendChild(matchRow);
 		});
 	}
