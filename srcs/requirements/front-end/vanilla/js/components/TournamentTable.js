@@ -294,7 +294,6 @@ class TournamentTable extends BaseTable {
     }
 
     createActionButtonElement(tournament) {
-        console.log('createActionButtonElement');
         let buttonText = '';
         let buttonEvent = null;
         // Create the button
