@@ -612,7 +612,7 @@ function setupMatch(settings, res) {
 		return null;
 	}
 
-	let error = verifyMatchSettings(gameSettings);	
+	let error = verifyMatchSettings(gameSettings);
 	if (error) {
 		console.log(error);
 		res.status(400).json({ error });
@@ -633,7 +633,7 @@ function setupMatch(settings, res) {
 	
 	matches.set(matchID, { gameState: gameState, gameInterval: 0 });
 
-	// Emit the new match notification to all players
+	// Emit the new match notification to all players (if it isn't a preview match; < 0)
 	if (matchID >= 0) {
 		console.log("\n\nPLAYERS :\n\n", players);
 		players.forEach(player => {
