@@ -19,7 +19,6 @@ class TournamentTable extends BaseTable {
         this.applyColumnStyles = this.applyColumnStyles.bind(this);
         this.setTournamentData = this.setTournamentData.bind(this);
         this.parseTournamentData = this.parseTournamentData.bind(this); 
-		this.createTournament = this.createTournament.bind(this);	
 		this.joinTournament = this.joinTournament.bind(this);
 		this.startTournament = this.startTournament.bind(this);
 		this.unjoinTournament = this.unjoinTournament.bind(this);
@@ -164,10 +163,6 @@ class TournamentTable extends BaseTable {
         });
     }
     
-	async createTournament() {
-		navigateTo('/create-tournament');
-	}
-
 	async joinTournament(tournamentID) {
 		let userID;
 	
