@@ -41,6 +41,11 @@ class TournamentTable extends BaseTable {
 
         this.setupEventListeners();
 
+        //initialize the overlay
+        this.overlay = document.createElement('custom-overlay');
+        this.shadowRoot.appendChild(this.overlay);
+
+
     }
 
  
@@ -345,11 +350,9 @@ class TournamentTable extends BaseTable {
         const tournamentDetails = this.createStyledHTMLObject('button', '👁️', this.columnStyles.details);
         //tournamentDetails.addEventListener('click', () => navigateTo(`/brackets?tournament=${tournament.id}`));
         tournamentDetails.addEventListener('click', () => {
-            let overlay = document.querySelector('custom-overlay') || document.createElement('custom-overlay');
-            document.body.appendChild(overlay);
-            overlay.show();
+            this.overlay.show();
             // Optionally, load dynamic content into the overlay
-            overlay.shadowRoot.querySelector('.overlay-content').innerHTML = `<h1>Details for ${tournament.tournament_name}</h1>`;
+            this.overlay.shadowRoot.querySelector('.overlay-content').innerHTML = `<h1>Details for ${tournament.tournament_name}</h1>`;
         });
         tournamentDetails.header = 'Details';
         return tournamentDetails;
