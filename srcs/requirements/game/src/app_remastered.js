@@ -623,8 +623,8 @@ function setupMatch(settings, res) {
 	const players = gameSettings.playersData.map(player => player.accountID);
 
 	if (players.length == 1) {
-		postMatchResult(matchID, players[0]);
-		res.json({ matchID });
+		// postMatchResult(matchID, players[0]);
+		res.json({ "error": "Not enough players to start a match" });
 		return null;
 	}
 
