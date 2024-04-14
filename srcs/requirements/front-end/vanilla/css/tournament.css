@@ -1,8 +1,16 @@
 .tournament{
     display: block;
+    /* border: 1px greenyellow solid; */
     margin-left: auto;
     margin-right: auto;
-    
+}
+
+#tournament-page-title {
+    padding: 0px;
+    margin: 40px 0px 20px 0px;
+    font-family: "tk-421", sans-serif;
+    font-size: 60px;
+    text-align: center;
 }
 
 .help{
@@ -13,9 +21,13 @@
 
 #tournamentTable{
     display: block;
+    padding: 20px;
     margin-left: auto;
     margin-right: auto;
-    max-width: 80%;
+    width: 80%;
+    min-width: 670px;
+    border: solid 1px rgba(255, 255, 255, 0.3);
+    /* background-color: red; */
 }
 
 .action-button{

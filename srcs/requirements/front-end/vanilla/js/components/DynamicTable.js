@@ -53,7 +53,6 @@ class DynamicTable extends HTMLElement {
         }
         return cellValue;
     }
-    
 
     buildCaption(Title){
         const tableTitle = this.shadowRoot.getElementById('table-title');

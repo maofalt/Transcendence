@@ -1,5 +1,6 @@
 import Row from './Row.js';
 import Cell from './Cell.js';
+import CustomButton from "@components/CustomButton";
 
 class BaseTable extends HTMLElement {
 
@@ -10,9 +11,10 @@ class BaseTable extends HTMLElement {
             <link rel="stylesheet" href="../../css/DynamicTable.css">
             <meta name="viewport" content="width=device-width, initial-scale=1">
             <body>
+                <div id="buttons-bar">
+                </div>
                 <div class="table-responsive">
-                    <h1 id='table-title'></h1>
-                    <table class="table">                
+                    <table class="table">
                         <thead>
                             <tr id="table-headers"></tr>
                         </thead>
@@ -21,8 +23,9 @@ class BaseTable extends HTMLElement {
                     </table>
                 </div>
                 <div class="pagination-controls">
-                    <button id="prev-page">Previous</button>
-                    <button id="next-page">Next</button>
+                    <button id="prev-page"><</button>
+                    <button id="next-page">></button>
+                    <div id="mid-page-controls"></div>
                 </div>
             </body>
         `;
@@ -32,6 +35,25 @@ class BaseTable extends HTMLElement {
         this.itemsPerPage = 5;
         this.rowIndexByIdentifier = [];
         this.totalRows= [];
+        this.createButton = new CustomButton({content: "Create", action: true});
+        this.createButton.id = "create-button";
+        this.manageButton = new CustomButton({content: "Manage", action: false});
+        this.manageButton.id = "manage-button";
+        this.midSpace = document.createElement("div");
+        this.midSpace.id = "mid-space";
+        this.searchBar = document.createElement("input");
+        this.searchBar.id = "search-bar";
+        this.searchBar.placeholder = "Tournament name";
+        this.searchButton = new CustomButton({content: "Search", action: true});
+        this.searchButton.id = "search-button";
+        this.refreshButton = new CustomButton({content: "Refresh", action: false});
+        this.refreshButton.id = "refresh-button";
+        this.shadowRoot.querySelector("#buttons-bar").appendChild(this.createButton);
+        this.shadowRoot.querySelector("#buttons-bar").appendChild(this.manageButton);
+        this.shadowRoot.querySelector("#buttons-bar").appendChild(this.midSpace);
+        this.shadowRoot.querySelector("#buttons-bar").appendChild(this.searchBar);
+        this.shadowRoot.querySelector("#buttons-bar").appendChild(this.searchButton);
+        this.shadowRoot.querySelector(".pagination-controls").appendChild(this.refreshButton);
     }
 
     //Utility to set column styles
