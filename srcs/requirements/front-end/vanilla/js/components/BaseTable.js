@@ -99,21 +99,21 @@ class BaseTable extends HTMLElement {
         this.renderCurrentPage();
     }
 
-    // renderCurrentPage() {
-    //     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    //     const endIndex = startIndex + this.itemsPerPage;
-    //     const pageRows = this.dataRows.slice(startIndex, endIndex);
-    
-    //     const tbody = this.shadowRoot.querySelector('#table-body');
-        
-    //     while (tbody.firstChild) {
-    //         tbody.removeChild(tbody.firstChild);
-    //     }
-    
-    //     pageRows.forEach(row => {
-    //         tbody.appendChild(row.domElement);
+    // disconnectedCallback() {
+    //     console.log('disconnectedCallback for buttonq');
+    //     // This will be called when the custom element is removed from the document
+    //     this.dataRows.forEach(row => {
+    //         console.log('       row', row);
+    //         row.cells.forEach(cell => {
+    //             const button = cell.domElement.querySelector('button');
+    //             if (button && button.clickHandler) {
+    //                 console.log('       removing button event', button);
+    //                 button.removeEventListener('click', button.clickHandler);
+    //             }
+    //         });
     //     });
     // }
+
     
     renderCurrentPage() {
         const startIndex = (this.currentPage - 1) * this.itemsPerPage;
@@ -149,7 +149,7 @@ class BaseTable extends HTMLElement {
             console.error(`Row with identifier ${identifier} not found.`);
         }
     }
-    
+
 
 }
 
