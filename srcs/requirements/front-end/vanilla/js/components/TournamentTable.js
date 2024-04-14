@@ -32,12 +32,14 @@ class TournamentTable extends BaseTable {
 
         this.startPeriodicUpdate = this.startPeriodicUpdate.bind(this);
 
-        // Set up event listeners
-        document.addEventListener('startTournament', this.handleStartTournament.bind(this));
-        document.addEventListener('joinTournament', this.handleJoinTournament.bind(this));
-        document.addEventListener('unjoinTournament', this.handleUnjoinTournament.bind(this));
-        document.addEventListener('updateTournamentRow', this.handleUpdateRow.bind(this));
-        document.addEventListener('playTournament', this.handlePlayTournament.bind(this));
+        // Bind event handlers
+        this.handleStartTournament = this.handleStartTournament.bind(this);
+        this.handleJoinTournament = this.handleJoinTournament.bind(this);
+        this.handleUnjoinTournament = this.handleUnjoinTournament.bind(this);
+        this.handleUpdateRow = this.handleUpdateRow.bind(this);
+        this.handlePlayTournament = this.handlePlayTournament.bind(this);
+
+        this.setupEventListeners();
 
     }
 
@@ -86,6 +88,7 @@ class TournamentTable extends BaseTable {
     }
 
     async setTournamentData(tournamentData, userName) {
+        console.log('setTournamentData');
         this.tournamentData = tournamentData;
         this.userName = userName;
        
@@ -295,13 +298,20 @@ class TournamentTable extends BaseTable {
     }
 
     createActionButtonElement(tournament) {
+        console.log('createActionButtonElement');
         let buttonText = '';
         let buttonEvent = null;
-    
         // Create the button
         const actionButton = this.createStyledHTMLObject('button', '', this.columnStyles.action);
         actionButton.header = 'Action';
     
+        // Remove existing listener if it exists
+        const existingHandler = actionButton.onclick;
+        if (existingHandler) {
+            console.log('Removing existing handler');
+            actionButton.removeEventListener('click', existingHandler);
+        }
+
         if (tournament.host_name === this.userName && tournament.state === 'waiting') {
             buttonText = 'Start';
             buttonEvent = async () => {
@@ -448,7 +458,28 @@ class TournamentTable extends BaseTable {
 		updateRow();
 	}
 
+	setupEventListeners() {
+		document.addEventListener('startTournament', this.handleStartTournament);
+		document.addEventListener('joinTournament', this.handleJoinTournament);
+		document.addEventListener('unjoinTournament', this.handleUnjoinTournament);
+		document.addEventListener('updateTournamentRow', this.handleUpdateRow);
+		document.addEventListener('playTournament', this.handlePlayTournament);
+	}
 
+	cleanupEventListeners() {
+        console.log('TournamentTable cleanupEventListeners');
+        document.removeEventListener('startTournament', this.handleStartTournament);
+        document.removeEventListener('joinTournament', this.handleJoinTournament);
+        document.removeEventListener('unjoinTournament', this.handleUnjoinTournament);
+        document.removeEventListener('updateTournamentRow', this.handleUpdateRow);
+        document.removeEventListener('playTournament', this.handlePlayTournament);;
+	}
+
+	disconnectedCallback() {
+        console.log('TournamentTable disconnected');
+       // super.disconnectedCallback();
+		this.cleanupEventListeners();
+	}
 }
 
 customElements.define('tournament-table', TournamentTable);
