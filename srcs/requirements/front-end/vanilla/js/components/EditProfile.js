@@ -14,6 +14,7 @@ import updateUser from "@utils/updateUser";
 import fetchUserDetails from "@utils/fetchUserDetails";
 import easyFetch from "@utils/easyFetch";
 import displayPopup from "@utils/displayPopup";
+import twoFactorChoiceHtml from '@html/twoFactorChoice.html?raw';
 import { fadeIn, fadeOut, transition } from "@utils/animate";
 
 export default class EditProfile extends AbstractComponent {
@@ -148,6 +149,11 @@ export default class EditProfile extends AbstractComponent {
 			fadeIn(verifyCodeBlock);
 		};
 
+		let twoFactorBlock = document.createElement("div");
+		twoFactorBlock.innerHTML = twoFactorChoiceHtml;
+
+		console.log(twoFactorBlock);
+
 		let avatarBlock = new InputAugmented({
 			title: "Upload Avatar",
 			content: "Avatar",
@@ -175,7 +181,7 @@ export default class EditProfile extends AbstractComponent {
 				avatar: avatarFile || "",
 				email: emailBlock.input.getValue() || "",
 				phone: phoneBlock.input.getValue() || "",
-				two_factor_method: "",
+				two_factor_method: twoFactorBlock.querySelector("#input-tag").value || "",
 			});
 		}
 
@@ -185,6 +191,7 @@ export default class EditProfile extends AbstractComponent {
 		form.appendChild(playernameBlock);
 		form.appendChild(emailBlock);
 		form.appendChild(phoneBlock);
+		form.appendChild(twoFactorBlock);
 		form.appendChild(avatarBlock);
 		form.appendChild(resetPasswordButton);
 		form.appendChild(saveButton);
