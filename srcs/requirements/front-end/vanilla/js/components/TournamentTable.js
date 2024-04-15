@@ -88,7 +88,6 @@ class TournamentTable extends BaseTable {
     }
 
     async setTournamentData(tournamentData, userName) {
-        console.log('setTournamentData');
         this.tournamentData = tournamentData;
         this.userName = userName;
        
