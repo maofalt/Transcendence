@@ -228,8 +228,8 @@ class TournamentTable extends BaseTable {
 			displayPopup("No match for you!", "info");
 			return ;
 		}
-		window.location.href = '/play?matchID=' + matchID;
-		// navigateTo(`/play?matchID=${matchID}`);
+		// window.location.href = '/play?matchID=' + matchID;
+		navigateTo(`/play?matchID=${matchID}`);
     }
 	async startTournament(tournamentID) {
 		try {

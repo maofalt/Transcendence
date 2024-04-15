@@ -160,11 +160,12 @@ export default class LoginPage extends AbstractComponent {
 					Router.navigateTo("/2fa");
 				}
 
-				displayPopup('Login successful', 'success');
+				// displayPopup('Login successful', 'success');
 
 				refreshTokenLoop();
 
 				Router.navigateTo("/");
+				window.location.reload();
 			}
 		})
 		.catch(error => {
