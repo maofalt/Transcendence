@@ -83,7 +83,6 @@ export default class InfoPopup extends AbstractComponent {
 	}
 
 	attributeChangedCallback(name, oldValue, newValue) {
-		console.log("attributeChangedCallback: ", name, oldValue, newValue);
 		if (name === 'width' || name === 'height') {
 			this.style.setProperty(name, newValue);
 		}
