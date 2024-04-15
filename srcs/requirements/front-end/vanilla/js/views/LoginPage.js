@@ -165,7 +165,7 @@ export default class LoginPage extends AbstractComponent {
 				refreshTokenLoop();
 
 				Router.navigateTo("/");
-				window.location.reload();
+				// window.location.reload();
 			}
 		})
 		.catch(error => {
