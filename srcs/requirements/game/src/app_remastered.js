@@ -168,35 +168,6 @@ function waitingRoom(matchID) {
 	game.to(matchID).emit('render', match.gameState);
 }
 
-// gameInterval = setInterval(waitingLoop, 20);
-
-//====================================== SOCKET HANDLING ======================================//
-
-// function setPlayerStatus(client) {
-//     if (game.engine.clientsCount <= data.gamemode.nbrOfPlayers) {
-//         data.players[game.engine.clientsCount - 1].socketID = client.id;
-//         data.players[game.engine.clientsCount - 1].connected = true;
-//     }
-// }
-
-// function handleConnection(client) {
-
-//     // console.log("CLIENT CONNECTED");
-//     client.join("gameRoom");
-    
-//     if (game.engine.clientsCount == 1) {
-//         data = init.initLobby(lobbySettings.lobbyData);
-//     }
-//     setPlayerStatus(client);
-
-
-//     // console.log(`Client connected with ID: ${client.id}`);
-//     // console.log(`Number of connected clients: ${game.engine.clientsCount}`);
-
-//     client.emit('generate', data);
-//     debugDisp.displayData(data);
-// }
-
 function handleConnectionV2(client) {
 
 	// console.log("\nCLIENT CONNECTED\n");
@@ -245,10 +216,8 @@ function handleConnectionV2(client) {
 }
 
 function getMatch(client) {
-	client.matchID = parseInt(client.handshake.query.matchID);
+	client.matchID = parseInt(client.handshake.auth.matchID);
 	if (!client.matchID) {
-		// console.log("client.handshake.query: ", client.handshake.query);
-		// console.log("client.matchID: ", client.matchID);
 		console.error('Authentication error: Missing matchID');
 		throw new Error('Authentication error: Missing matchID.');
 	}
@@ -282,10 +251,8 @@ function verifyAuthentication(client) {
 }
 
 notify.use((client, next) => {
-	console.log("NOTIFY USE");
 	try {
 		verifyAuthentication(client).then(() => {
-			console.log("NOTIFY USE NEXT");
 			next();
 		}).catch(error => {
 			console.error('Error authenticating websocket: ', error);
@@ -299,18 +266,15 @@ notify.use((client, next) => {
 
 notify.on('connection', (client) => {
 	clients.set(client.playerID, client);
-	// // console.log("CLIENTS MAP:\n", clients);
 });
 
 // authenticate user before establishing websocket connection
 game.use((client, next) => {
-	console.log("GAME USE");
 	try {
 		getMatch(client); // get the matchID and match from the client handshake
 
 		// verify the token and set the playerID
 		verifyAuthentication(client).then(() => {
-			console.log("GAME USE NEXT");
 			next(); // proceed to game connection if authentication is successful
 		}).catch(error => {
 			console.error('Error authenticating websocket: ', error);

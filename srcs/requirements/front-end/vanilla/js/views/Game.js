@@ -55,11 +55,10 @@ class BoxObject {
 }
 
 export default class Game extends AbstractComponent {
-	constructor(query='', screenWidth, screenHeight) {
+	constructor(matchIdQuery='', screenWidth, screenHeight) {
 		super();
 		this.loader = new GLTFLoader();
-		this.query = 'matchID=' + query;
-		// console.log("Game View created with matchID: ", query);
+		this.matchIdQuery = matchIdQuery;
 		
         // controls
         this.controls = null;
@@ -229,22 +228,18 @@ export default class Game extends AbstractComponent {
 		// socket initialization and event handling logic
 		const hostname = window.location.hostname;
 		const protocol = 'wss';
-//		const query = window.location.search.replace('?', '');
-		const query = window.location.search.replace('?', '') || this.query;
-		// console.log("Query: ", query);
+
+		const matchID = window.location.search.replace('?matchID=', '') || this.matchIdQuery;
 		
 		let accessToken = sessionStorage.getItem('accessToken');
-		// console.log("Access Token: ", accessToken);
-		// accessTok = accessTok.replace("Bearer ", ""); // replace the "Bearer " at the beginning of the value;
 
 		const io_url = hostname.includes("github.dev") ? `${protocol}://${hostname}` : `${protocol}://${hostname}:9443`;
 		console.log(`Connecting to ${io_url}/game`)
 		
 		this.socket = io(`${io_url}/game`, {
 			path: '/game-logic/socket.io',
-			query: query,
 			secure: hostname !== 'localhost',
-			auth: { accessToken }
+			auth: { accessToken, matchID },
 		});
 
 		this.socket.on('error', (error) => {
