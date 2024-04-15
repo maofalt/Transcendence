@@ -35,29 +35,33 @@ class BaseTable extends HTMLElement {
         this.itemsPerPage = 5;
         this.rowIndexByIdentifier = [];
         this.totalRows= [];
+
+        //Design buttons
         this.createButton = new CustomButton({content: "Create", action: true});
         this.createButton.id = "create-button";
+        
         this.manageButton = new CustomButton({content: "Manage", action: false});
         this.manageButton.id = "manage-button";
+
         this.midSpace = document.createElement("div");
         this.midSpace.id = "mid-space";
+
         this.searchBar = document.createElement("input");
         this.searchBar.id = "search-bar";
         this.searchBar.placeholder = "Tournament name";
-        // this.searchButton = new CustomButton({content: "Search", action: true});
-        // this.searchButton.id = "search-button";
+
         this.refreshButton = new CustomButton({content: "Refresh", action: false});
         this.refreshButton.id = "refresh-button";
+
+        //Appending all new buttons
         this.shadowRoot.querySelector("#buttons-bar").appendChild(this.createButton);
         this.shadowRoot.querySelector("#buttons-bar").appendChild(this.manageButton);
-        this.shadowRoot.querySelector("#buttons-bar").appendChild(this.midSpace);
-        
+        this.shadowRoot.querySelector("#buttons-bar").appendChild(this.midSpace);        
         this.shadowRoot.querySelector("#buttons-bar").appendChild(this.searchBar);
-        //this.shadowRoot.querySelector("#buttons-bar").appendChild(this.searchButton);
-        this.searchBar.addEventListener('keyup', () => this.filterRows(this.searchBar.value));
-
-
         this.shadowRoot.querySelector(".pagination-controls").appendChild(this.refreshButton);
+        
+        //Attach searching fonction to the compoenent
+        this.searchBar.addEventListener('keyup', () => this.filterRows(this.searchBar.value));
     }
 
     //Utility to set column styles
