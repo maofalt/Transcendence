@@ -258,24 +258,33 @@ class MatchResult(APIView):
 
     @staticmethod
     def round_state(request, id, cur_round):
-        try:
-            tournament = get_object_or_404(Tournament, id=id)
-        except Http404:
-            return JsonResponse({'error': 'Tournament not found'}, status=404)
-        
-        matches = tournament.matches.filter(round_number=cur_round)
-        print("matches: ", matches)
-        
-        if matches.filter(state='playing').exists() or matches.filter(state='waiting').exists():
+        with transaction.atomic(): 
+            print("__________________________________________\n")
+            try:
+                tournament = Tournament.objects.select_for_update().get(id=id)
+                # tournament = get_object_or_404(Tournament, id=id)
+            except Tournament.DoesNotExist:
+                return JsonResponse({'error': 'Tournament not found'}, status=404)
+            # except Http404:
+            #     return JsonResponse({'error': 'Tournament not found'}, status=404)
+            
+            matches = tournament.matches.filter(round_number=cur_round)
+            print("matches: ", matches)
+            
+            if matches.filter(state='playing').exists() or matches.filter(state='waiting').exists():
+                return False
+            if matches.filter(state='ended').count() == matches.count():
+                return True
             return False
-        if matches.filter(state='ended').count() == matches.count():
-            return True
-        return False
 
     @staticmethod
     def match_update(request, tournament_id, round):
+        # with transaction.atomic(): 
         try:
+            # tournament = Tournament.objects.select_for_update().get(id=id)
             tournament = get_object_or_404(Tournament, id=tournament_id)
+        # except Tournament.DoesNotExist:
+        #     return JsonResponse({'error': 'Tournament not found'}, status=404)
         except Http404:
             return JsonResponse({'error': 'Tournament not found'}, status=404)
 
@@ -532,22 +541,22 @@ class TournamentStart(APIView):
     # permission_classes = [IsAuthenticated]
 
     def post(self, request, id):
-        try:
-            tournament = get_object_or_404(Tournament, id=id)
-        except Http404:
-            return JsonResponse({'error': 'Tournament not found'}, status=404)
-        user_info = request.user
-        if not isinstance(user_info, tuple) or len(user_info) != 2:
-            raise exceptions.AuthenticationFailed('User information is not in the expected format')
-
-        uid, username = user_info
-
-        if tournament.host.id != uid:
-            return Response({"message": "Only the tournament host can start the tournament."}, status=403)
-        if tournament.players.count() < 2:
-            return JsonResponse({'error': 'Not enough players to start the tournament'}, status=400)
         with transaction.atomic():
-            tournament = Tournament.objects.select_for_update().get(id=id)
+            try:
+                tournament = Tournament.objects.select_for_update().get(id=id)
+            except Http404:
+                return JsonResponse({'error': 'Tournament not found'}, status=404)
+            user_info = request.user
+            if not isinstance(user_info, tuple) or len(user_info) != 2:
+                raise exceptions.AuthenticationFailed('User information is not in the expected format')
+
+            uid, username = user_info
+
+            if tournament.host.id != uid:
+                return Response({"message": "Only the tournament host can start the tournament."}, status=403)
+            if tournament.players.count() < 2:
+                return JsonResponse({'error': 'Not enough players to start the tournament'}, status=400)
+            
             if tournament.matches.count() == 0:
                 response = self.match_generator(request, id)
                 if response.status_code != 201:
@@ -647,7 +656,6 @@ def auto_win_for_single_player(request, tournament_id, round_number):
                 match.save()
                 return JsonResponse({'message': 'Match ended with a single participant'}, status=200)
     return JsonResponse({'message': 'All matches have multiple participants'}, status=200)
-
 
 class TournamentEnd(APIView):
     authentication_classes = [CustomJWTAuthentication]
