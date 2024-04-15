@@ -1,4 +1,3 @@
-import AbstractView from "./AbstractView";
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import io from 'socket.io-client';
@@ -11,7 +10,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import CustomButton from '@components/CustomButton';
 import { navigateTo } from "@utils/Router";
-import AbstractComponent from "@components/AbstractComponent";
+import AbstractView from "@views/AbstractView";
 
 
 // function createCallTracker() {
@@ -21,14 +20,14 @@ import AbstractComponent from "@components/AbstractComponent";
 // 	return function trackCall() {
 // 	  const now = Date.now(); // Get current timestamp in milliseconds
 // 	  let elapsedTime = 0; // Initialize elapsed time
-  
+
 // 	  if (lastCallTime !== 0) { // Check if this is not the first call
 // 		elapsedTime = now - lastCallTime; // Calculate time since last call
 // 		// console.log(`Time since last call: ${elapsedTime} ms`);
 // 	  }
-  
+
 // 	  lastCallTime = now; // Update last call time to the current time for the next call
-  
+
 // 	  return elapsedTime; // Return the elapsed time between the last two calls
 // 	};
 //   }
@@ -39,43 +38,43 @@ import AbstractComponent from "@components/AbstractComponent";
 // let fps = 0;
 
 class SpObject {
-    constructor(objMesh, dirMesh) {
-        this.mesh = objMesh;
-        this.dirMesh = dirMesh;
-    }
+	constructor(objMesh, dirMesh) {
+		this.mesh = objMesh;
+		this.dirMesh = dirMesh;
+	}
 }
 
 class BoxObject {
-    constructor(objMesh, dir1Mesh, dir2Mesh) {
-        this.mesh = objMesh;
-        this.dir1Mesh = dir1Mesh;
-        this.dir2Mesh = dir2Mesh;
-    }
+	constructor(objMesh, dir1Mesh, dir2Mesh) {
+		this.mesh = objMesh;
+		this.dir1Mesh = dir1Mesh;
+		this.dir2Mesh = dir2Mesh;
+	}
 }
 
-export default class Game extends AbstractComponent {
+export default class Game extends AbstractView {
 	constructor(query='', screenWidth, screenHeight) {
 		super();
 		this.loader = new GLTFLoader();
 		this.query = 'matchID=' + query;
-		// console.log("Game View created with matchID: ", query);
+		console.log("Game View created with matchID: ", query);
 		
-        // controls
-        this.controls = null;
-        
-        // rendering
-        this.renderer = null;
-        this.scene = null;
-        this.camera = null;
+		// controls
+		this.controls = null;
+		
+		// rendering
+		this.renderer = null;
+		this.scene = null;
+		this.camera = null;
 
-        this.playerID = null;
+		this.playerID = null;
 		this.matchID = null;
 
-        // objects
-        this.ball = null;
+		// objects
+		this.ball = null;
 		this.ballModel = null;
-        this.paddles = [];
-        this.walls = [];
+		this.paddles = [];
+		this.walls = [];
 		this.goals = [];
 		this.scores = [];
 
@@ -84,9 +83,9 @@ export default class Game extends AbstractComponent {
 		this.starGeometry = null;
 		this.starMaterial = null;
 
-        // lights
-        this.ambientLight = null;
-        this.directionalLight = null;
+		// lights
+		this.ambientLight = null;
+		this.directionalLight = null;
 
 		// text
 		this.textSettings = {
@@ -96,23 +95,30 @@ export default class Game extends AbstractComponent {
 		}
 
 		this.prevScores = [];
-		this.direction = null;
+		this.dir = 0;
 
 		this.screenWidth = screenWidth || window.innerWidth;
 		this.screenHeight = screenHeight || window.innerHeight;
 		console.log("Screen size: ", this.screenWidth, this.screenHeight);
 	};
 
-	disconnectedCallback() {
+	async getHtml() {
+		return `
+			<div id="gameContainer"></div>
+		`;
+	};
+
+	destroy() {
 		this.cleanAll();
 	}
 
-	connectedCallback() {
+	init() {
 		console.log("init Game View...");
 		// Set up the game container
 		this.container = document.createElement('div');
 		this.container.id = 'gameContainer';
-		
+		// this.shadowRoot.appendChild(this.container);
+
 		// Create a new div
 		let countDown = document.createElement('div');
 		countDown.id = 'count-down';
@@ -154,8 +160,6 @@ export default class Game extends AbstractComponent {
 
 		this.container.appendChild(countDown);
 		this.container.appendChild(leaveButton);
-
-		this.shadowRoot.appendChild(this.container);
 		
 		// Your game setup logic here (init socket, create scene, etc.)
 		// this.generateScene();
@@ -177,16 +181,16 @@ export default class Game extends AbstractComponent {
 
 	handleKeyPress(event) {
 		console.log(event.key);
-		if (event.key == "w" || event.key == "d")
+		if (event.key == "w")
 			this.socket.emit('moveUp');
-		if (event.key == "s" || event.key == "a")
+		if (event.key == "s")
 			this.socket.emit('moveDown');
-		// if (event.key == "d")
-			// this.socket.emit('dash');
+		if (event.key == "d")
+			this.socket.emit('dash');
 	};
 
 	handleKeyRelease(event) {
-		if (event.key == "w" || event.key == "d" || event.key == "s" || event.key == "a")
+		if (event.key == "w" || event.key == "s")
 			this.socket.emit('stop');
 	};
 
@@ -196,7 +200,7 @@ export default class Game extends AbstractComponent {
 		const protocol = 'wss';
 //		const query = window.location.search.replace('?', '');
 		const query = window.location.search.replace('?', '') || this.query;
-		// console.log("Query: ", query);
+		console.log("Query: ", query);
 		
 		let accessToken = sessionStorage.getItem('accessToken');
 		// console.log("Access Token: ", accessToken);
@@ -204,7 +208,6 @@ export default class Game extends AbstractComponent {
 
 		const io_url = hostname.includes("github.dev") ? `${protocol}://${hostname}` : `${protocol}://${hostname}:9443`;
 		console.log(`Connecting to ${io_url}/game`)
-		
 		this.socket = io(`${io_url}/game`, {
 			path: '/game-logic/socket.io',
 			query: query,
@@ -230,7 +233,7 @@ export default class Game extends AbstractComponent {
 			// Generate scene and update it
 			// let parsedData = JSON.parse(data);
 			data.playersArray = Object.values(data.players);
-			// console.log("data : ", data);
+			console.log("data : ", data);
 			this.generateScene(data, this.socket);
 			this.updateScene(data, this.socket);
 			this.renderer.render(this.scene, this.camera);
@@ -380,7 +383,7 @@ export default class Game extends AbstractComponent {
 		uiLayer.style.background = `rgba(0, 0, 0, ${frame / (maxFrame * 1.8)})`;
 		uiLayer.style.opacity = frame / maxFrame;
 		uiLayer.style.backdropFilter = `blur(${frame / maxFrame * 16}px)`;
-		// console.log(`blur(${frame / maxFrame * 16}px)`);
+		console.log(`blur(${frame / maxFrame * 16}px)`);
 		if (frame == maxFrame) {
 			console.log("End of Game !!");
 			return ;
@@ -410,9 +413,7 @@ export default class Game extends AbstractComponent {
 		this.generateScores(data);
 		
 		// rotate the scene relative to the current client (so the paddle is at the bottom)
-		// console.log("THIS DIR: ",this.direction);
-		this.scene.rotateZ(-2 * Math.PI/data.gamemode.nbrOfPlayers * this.direction);
-
+		this.scene.rotateZ(-2 * Math.PI/data.gamemode.nbrOfPlayers * this.dir)
 
 		// this.drawAxes();
 	}
@@ -431,14 +432,11 @@ export default class Game extends AbstractComponent {
 		this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 		this.controls.target.set(0, 0, 0);
 
-		// console.log("PLAYERS ARRAY:",data.playersArray);
 		// get the direction to later rotate the scene relative to the current client
 		for (let i=0; i<data.playersArray.length; i++) {
 			if (data.playersArray[i].socketID == socket.id) {
 				console.log(`socket : ${data.playersArray[i].socketID}, client : ${socket.id}, ${i}, angle = ${data.playersArray[i].paddle.angle}`);
-				this.direction = i;
-				// console.log("I ON ASSIGN: ",i);
-				// console.log("THIS DIR ON ASSIGN: ",this.direction);
+				this.dir = i
 			}
 		}
 
@@ -447,8 +445,8 @@ export default class Game extends AbstractComponent {
 
 	displayTimer(data) {
 		// in here : formatting the timer interface;
-		let timer = this.shadowRoot.getElementById('timer');
-		let timerMessage = this.shadowRoot.getElementById('timer-message');
+		let timer = document.getElementById('timer');
+		let timerMessage = document.getElementById('timer-message');
 
 		timer.textContent = data.ongoing ? "" : data.countDownDisplay;
 		timerMessage.textContent = "";
@@ -465,7 +463,7 @@ export default class Game extends AbstractComponent {
 
 	// Other methods (generateScene, updateScene, etc.) here
 	updateScene(data, socket) {
-		this.displayTimer(data);
+		// this.displayTimer(data);
 
 		// console.log("Updating Scene...");
 		if (data.ball.model) {
@@ -518,7 +516,7 @@ export default class Game extends AbstractComponent {
 		// get the direction of the client to rotate the scores to face the client
 		for (let i = 0; i < data.playersArray.length; i++) {
 			if (data.playersArray[i].socketID === this.socket.id) {
-				this.direction = i;
+				this.dir = i;
 			}
 		}
 
@@ -561,7 +559,7 @@ export default class Game extends AbstractComponent {
 		const scoreText = player.score.toString();
 		const ppRadius = 2;
 
-		console.log("Creating score: " + scoreText + " for player " + i + " with dir: " + this.direction);
+		console.log("Creating score: " + scoreText + " for player " + i + " with dir: " + this.dir);
 		// this.textSettings.font = this.textSettings.fontNormal;
 		const profilePicGeo = new THREE.SphereGeometry(ppRadius, 12, 24);
 		const loginGeo = new TextGeometry(loginText, this.textSettings);
@@ -623,7 +621,7 @@ export default class Game extends AbstractComponent {
 		this.scene.add(this.scores[i]);
 
 		// rotate the score to face client
-		this.scores[i].rotation.set(0, 0, 2 * Math.PI/data.gamemode.nbrOfPlayers * this.direction);
+		this.scores[i].rotation.set(0, 0, 2 * Math.PI/data.gamemode.nbrOfPlayers * this.dir);
 	}
 
 	refreshScores(data) {
@@ -710,8 +708,8 @@ export default class Game extends AbstractComponent {
 							data.ball.dir.z,),
 				data.ball.pos, 10, 0xff0000);
 
-        this.ball = new SpObject(new THREE.Mesh(ballGeometry, ballMaterial), dir1);
-
+		this.ball = new SpObject(new THREE.Mesh(ballGeometry, ballMaterial), dir1);
+		
 		// add to scene
 		this.scene.add(this.ball.mesh);
 		// this.scene.add(this.ball.dirMesh);
@@ -779,7 +777,7 @@ export default class Game extends AbstractComponent {
 								data.playersArray[i].paddle.dirToTop.z,),
 					data.playersArray[i].paddle.pos, 10, 0x00ff00);
 
-            this.paddles[i] = new BoxObject(new THREE.Mesh(paddleGeometry, paddleMaterial), dir1, dir2);
+			this.paddles[i] = new BoxObject(new THREE.Mesh(paddleGeometry, paddleMaterial), dir1, dir2);
 			this.scene.add(this.paddles[i].mesh); // add mesh to the scene
 			// this.scene.add(this.paddles[i].dir1Mesh);
 			// this.scene.add(this.paddles[i].dir2Mesh);
@@ -870,5 +868,3 @@ export default class Game extends AbstractComponent {
 		this.scene.add(starSphereBase);
 	};
 }
-
-customElements.define('game-view', Game);

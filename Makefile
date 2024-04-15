@@ -41,7 +41,7 @@ fclean: clean
 .PHONY: all build up down logs
 
 set-ip:
-	export "LOCAL_IP=$(shell hostname -i)"
+	export "LOCAL_IP=$(shell hostname -i)"; export "HOST_IP=$(HOST_IP)"; export "HOST_NAME=$(HOST_NAME)"
 
 set-codeespace-url:
 	export "CODESPACE_URL=${CODESPACE_NAME}"
