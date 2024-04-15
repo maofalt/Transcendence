@@ -155,7 +155,7 @@ export default class LoginPage extends AbstractComponent {
 
 				if (body.requires_2fa) {
 					displayPopup('login successful, please enter your 2fa code', 'info');
-					Router.navigateTo("/2fa");
+					Router.redirectTo("/2fa");
 				}
 
 				// displayPopup('Login successful', 'success');
