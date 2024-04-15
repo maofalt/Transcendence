@@ -42,13 +42,6 @@ export const routes = {
 		buttonText: 'Play',
 		requiresLogin: true,
 	},
-	// '/play': {
-	// 	path: '/play',
-	// 	view: GameView,
-	// 	title: 'Game',
-	// 	buttonText: 'Play',
-	// 	requiresLogin: true,
-	// },
 	'/game': {
 		path: '/game',
 		view: PlayMenu,
@@ -197,4 +190,4 @@ window.addEventListener("popstate", router);
 // background.shadowRoot.style.setProperty("left", "0px");
 // background.shadowRoot.style.setProperty("border", "3px red solid");
 
-export default { routes, navigateTo, router };
+export default { routes, navigateTo, redirectTo, router };
