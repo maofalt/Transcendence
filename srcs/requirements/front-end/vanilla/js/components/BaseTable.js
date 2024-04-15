@@ -35,7 +35,7 @@ class BaseTable extends HTMLElement {
         this.itemsPerPage = 5;
         this.rowIndexByIdentifier = [];
         this.totalRows= [];
-
+        this.ascending = undefined;
         //Design buttons
         this.createButton = new CustomButton({content: "Create", action: true});
         this.createButton.id = "create-button";
@@ -69,13 +69,8 @@ class BaseTable extends HTMLElement {
         this.columnStyles = styles;
     }
 
-    //Utility method to set headers
-    // setHeaders(headers) {
-    //     let tableHeaders = this.shadowRoot.getElementById('table-headers');
-    //     tableHeaders.innerHTML = '';
-    //     tableHeaders.innerHTML = headers.map(header => `<th>${header}</th>`).join('');
-    // }
-    
+
+    //Utility to inject headers
     setHeaders(headers) {
         let tableHeaders = this.shadowRoot.getElementById('table-headers');
         tableHeaders.innerHTML = '';
@@ -100,6 +95,64 @@ class BaseTable extends HTMLElement {
             
             // Append the header cell to the table headers
             tableHeaders.appendChild(th);
+        });
+    }
+
+    sortColumn(header) {
+        // Toggle sort direction
+        if (this.ascending === undefined) this.ascending = true;
+        else this.ascending = !this.ascending;
+
+        // Get all rows as an array of objects containing the row and its sort key
+        const rowContent= [];
+        const rowData = this.dataRows.map(row => {
+            rowContent.push(row.cells.get(header)?.domElement.textContent || "");
+            return {
+                row: row,
+                key: (row.cells.get(header)?.domElement.textContent || "").trim()
+            };
+        });
+        console.log(rowContent);
+        // Apply natural sort algorithm
+        rowData.sort((a, b) => this.naturalSort(a.key, b.key));
+        console.log("sorted", rowData);
+        rowContent.sort((a,b) => this.naturalSort(a,b));
+        console.log("sorted", rowContent);
+        // If descending sort, reverse the array
+        if (!this.ascending) rowData.reverse();
+        console.log("sorted", rowData);
+        // Set sorted rows back to dataRows
+        this.dataRows = rowData.map(item => item.row);
+
+        // // Rebuild rowIndexByIdentifier and totalRows
+         this.updateRowsPostSort();
+
+        // Re-render the page to show the sorted rows
+        this.renderCurrentPage();
+    }
+
+    naturalSort(a, b) {
+        const ax = [], bx = [];
+
+        a.replace(/(\d+)|(\D+)/g, function(_, $1, $2) { ax.push([$1 || Infinity, $2 || ""]) });
+        b.replace(/(\d+)|(\D+)/g, function(_, $1, $2) { bx.push([$1 || Infinity, $2 || ""]) });
+
+        while (ax.length && bx.length) {
+            const an = ax.shift();
+            const bn = bx.shift();
+            const nn = (an[0] === bn[0] ? an[1].localeCompare(bn[1]) : (an[0] - bn[0]));
+            if (nn) return nn;
+        }
+
+        return ax.length - bx.length;
+    }
+
+    updateRowsPostSort() {
+        this.rowIndexByIdentifier = {};
+        this.totalRows = [];
+        this.dataRows.forEach((row, index) => {
+            this.rowIndexByIdentifier[row.identifier] = index;
+            this.totalRows.push(row.domElement);
         });
     }
 
