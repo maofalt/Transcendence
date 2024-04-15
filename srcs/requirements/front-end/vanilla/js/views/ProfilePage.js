@@ -128,7 +128,18 @@ export default class ProfilePage extends AbstractComponent {
 			button: {content: "+ Add Friend", action: false}
 		});
 		addFriend.button.onclick = async () => await addFriend.validate();
-		addFriend.shadowRoot.querySelector("#input-button").style.setProperty("font-size", "28px");
+		addFriend.button.onkeydown = (e) => {
+			if (e.key === "Enter") {
+				addFriend.button.click();
+			}
+		};
+		addFriend.button.tabIndex = 0;
+		addFriend.button.style.setProperty("font-size", "28px");
+		addFriend.input.input.onkeydown = (e) => {
+			if (e.key === "Enter") {
+				addFriend.button.click();
+			}
+		};
 
 		// friends list pannel
 		const friendsListPannel = new Pannel({dark: true, title: `Friends List  ()} )`, style: {"border-radius": "20px 20px 0px 20px"}});

@@ -90,9 +90,7 @@ export default class LoginPage extends AbstractComponent {
 
 		usernameBlock.input.onkeydown = (e) => {
 			usernameBlock.input.input.style.outline = "";
-			console.log("e.key", e.key)
 			if (e.key === "Enter") {
-				console.log('enter');
 				passwordBlock.input.input.focus();
 			}
 		}
