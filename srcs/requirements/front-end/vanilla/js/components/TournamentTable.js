@@ -83,12 +83,11 @@ class TournamentTable extends BaseTable {
                 'align-items': 'center',
                 'vertical-align': 'middle',
                 'text-align': 'center',
-            },event
+            },
         };
     }
 
     async setTournamentData(tournamentData, userName) {
-        console.log('setTournamentData');
         this.tournamentData = tournamentData;
         this.userName = userName;
        
@@ -194,8 +193,43 @@ class TournamentTable extends BaseTable {
 			console.error('Error joining tournament:', error);
 			displayPopup(error.message, 'error');
 		}
+        console.log('joinTournament before');
+        await this.handleUpdateRow({ detail: { tournamentId: tournamentID } });
+        console.log('joinTournament done');
 	}
 	
+
+    async playTournament(tournamentID) {
+        // fetch tournament details
+		let matches = null;
+		try {
+			const res = await easyFetch(`/api/tournament/${tournamentID}/matches/`);
+            console.log("Playtournament: " + res);
+			if (res.response.ok) {
+				matches = res.body.matches
+			} else {
+				throw new Error(res.body.error || JSON.stringify(res.body));
+			}
+		} catch (error) {
+			displayPopup(`Request Failed: ${error}`, 'error');
+			return ;
+		}
+        await this.handleUpdateRow({ detail: { tournamentId: tournamentID } });
+
+		// Find the first match that is playing and contains the specified username
+		const match = matches.find(match => 
+			match.state === "playing" && 
+			match.players.some(player => player.username === this.userName)
+		);
+		// Return the id of the found match, or null if no match is found
+		const matchID = match ? match.id : null;
+		if (matchID == null) {
+			displayPopup("No match for you!", "info");
+			return ;
+		}
+		// window.location.href = '/play?matchID=' + matchID;
+		navigateTo(`/play?matchID=${matchID}`);
+    }
 	async startTournament(tournamentID) {
 		try {
 			const apiEndpoint = `/api/tournament/${tournamentID}/start/`;
@@ -208,6 +242,8 @@ class TournamentTable extends BaseTable {
 			console.error('Error starting tournament:', error);
 			displayPopup(error.message, 'error');
 		}
+
+        await this.handleUpdateRow({ detail: { tournamentId: tournamentID } });
 
 	}
 
@@ -223,12 +259,13 @@ class TournamentTable extends BaseTable {
 			console.error('Error unjoining ' + tournamentName + ' tournament:', error);
 			displayPopup(error.message, 'error');
 		}
+
+        await this.handleUpdateRow({ detail: { tournamentId: tournamentID } });
 	}
 
 	async fetchTournamentData(tournamentID) {
 		try {
 			const response = await makeApiRequest(`/api/tournament/${tournamentID}/tournament`, 'GET');
-			console.log(response.body);
 			if (response.status >= 400) {
 				throw new Error('Failed to fetch tournament data: ' + response.errorMessage);
 			}
@@ -238,7 +275,8 @@ class TournamentTable extends BaseTable {
 			displayPopup(error.message, 'error');
 			return null;
 		}
-		
+       
+
 	}
 
 	async fetchUserAvatar(username) {
@@ -313,7 +351,7 @@ class TournamentTable extends BaseTable {
             buttonColor = 'deepskyblue';
             buttonEvent = async () => {
                 await this.performAction('startTournament', tournament.id);
-                document.dispatchEvent(new CustomEvent('updateTournamentRow', { detail: { tournamentId: tournament.id } }));
+                // document.dispatchEvent(new CustomEvent('updateTournamentRow', { detail: { tournamentId: tournament.id } }));
             };
         } else if (tournament.is_in_tournament && tournament.state === 'started') {
             buttonText = 'Play';
@@ -327,14 +365,21 @@ class TournamentTable extends BaseTable {
             buttonColor = 'red';
             buttonEvent = async () => {
                 await this.performAction('unjoinTournament', tournament.id, tournament.tournament_name);
-                document.dispatchEvent(new CustomEvent('updateTournamentRow', { detail: { tournamentId: tournament.id } }));
+                // document.dispatchEvent(new CustomEvent('updateTournamentRow', { detail: { tournamentId: tournament.id } }));
             };
+        }else if (tournament.state === 'ended') {
+            buttonText = 'Ended';
+            buttonColor = 'gray';
+            //desactivate button
+            actionButton.disabled = true;
+            //change the cursors to normal
+            actionButton.style.cursor = "default";
         } else {
             buttonText = 'Join';
             buttonColor = 'deepskyblue';
             buttonEvent = async () => {
                 await this.performAction('joinTournament', tournament.id);
-                document.dispatchEvent(new CustomEvent('updateTournamentRow', { detail: { tournamentId: tournament.id } }));
+                // document.dispatchEvent(new CustomEvent('updateTournamentRow', { detail: { tournamentId: tournament.id } }));
             };
         }
     
@@ -386,13 +431,12 @@ class TournamentTable extends BaseTable {
         this.playTournament(tournamentId);
     }
 
-    async performAction(actionType, tournamentId, tournamentName = '') {
-        document.dispatchEvent(new CustomEvent(actionType, { detail: { tournamentId, tournamentName } }));
-        
-        await new Promise(resolve => setTimeout(resolve, 100));
+    async performAction(actionType, tournamentId, tournamentName = '', callback) {
+        document.dispatchEvent(new CustomEvent(actionType, { detail: { tournamentId, tournamentName } }));        
     }
 
     async handleUpdateRow(event) {
+        console.log('handleUpdateRow');
         const { tournamentId } = event.detail;
         const tournament = await this.fetchTournamentData(tournamentId);
         if (tournament) {
@@ -414,34 +458,6 @@ class TournamentTable extends BaseTable {
         }
     }
 
-    async playTournament(tournamentID) {
-        // fetch tournament details
-		let matches = null;
-		try {
-			const res = await easyFetch(`/api/tournament/${tournamentID}/matches/`);
-            console.log("Playtournament: " + res);
-			if (res.response.ok) {
-				matches = res.body.matches
-			} else {
-				throw new Error(res.body.error || JSON.stringify(res.body));
-			}
-		} catch (error) {
-			displayPopup(`Request Failed: ${error}`, 'error');
-			return ;
-		}
-		// Find the first match that is playing and contains the specified username
-		const match = matches.find(match => 
-			match.state === "playing" && 
-			match.players.some(player => player.username === this.userName)
-		);
-		// Return the id of the found match, or null if no match is found
-		const matchID = match ? match.id : null;
-		if (matchID == null) {
-			displayPopup("No match for you!", "info");
-			return ;
-		}
-		window.location.href = '/play?matchID=' + matchID;
-    }
 
     startPeriodicUpdate() {
 		const tournamentIdentifiers = Object.keys(this.rowIndexByIdentifier);
@@ -475,16 +491,13 @@ class TournamentTable extends BaseTable {
 		document.addEventListener('startTournament', this.handleStartTournament);
 		document.addEventListener('joinTournament', this.handleJoinTournament);
 		document.addEventListener('unjoinTournament', this.handleUnjoinTournament);
-		document.addEventListener('updateTournamentRow', this.handleUpdateRow);
 		document.addEventListener('playTournament', this.handlePlayTournament);
 	}
 
 	cleanupEventListeners() {
-        console.log('TournamentTable cleanupEventListeners');
         document.removeEventListener('startTournament', this.handleStartTournament);
         document.removeEventListener('joinTournament', this.handleJoinTournament);
         document.removeEventListener('unjoinTournament', this.handleUnjoinTournament);
-        document.removeEventListener('updateTournamentRow', this.handleUpdateRow);
         document.removeEventListener('playTournament', this.handlePlayTournament);;
 	}
 

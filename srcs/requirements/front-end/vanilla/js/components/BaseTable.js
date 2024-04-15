@@ -44,15 +44,19 @@ class BaseTable extends HTMLElement {
         this.searchBar = document.createElement("input");
         this.searchBar.id = "search-bar";
         this.searchBar.placeholder = "Tournament name";
-        this.searchButton = new CustomButton({content: "Search", action: true});
-        this.searchButton.id = "search-button";
+        // this.searchButton = new CustomButton({content: "Search", action: true});
+        // this.searchButton.id = "search-button";
         this.refreshButton = new CustomButton({content: "Refresh", action: false});
         this.refreshButton.id = "refresh-button";
         this.shadowRoot.querySelector("#buttons-bar").appendChild(this.createButton);
         this.shadowRoot.querySelector("#buttons-bar").appendChild(this.manageButton);
         this.shadowRoot.querySelector("#buttons-bar").appendChild(this.midSpace);
+        
         this.shadowRoot.querySelector("#buttons-bar").appendChild(this.searchBar);
-        this.shadowRoot.querySelector("#buttons-bar").appendChild(this.searchButton);
+        //this.shadowRoot.querySelector("#buttons-bar").appendChild(this.searchButton);
+        this.searchBar.addEventListener('keyup', () => this.filterRows(this.searchBar.value));
+
+
         this.shadowRoot.querySelector(".pagination-controls").appendChild(this.refreshButton);
     }
 
@@ -68,21 +72,6 @@ class BaseTable extends HTMLElement {
         tableHeaders.innerHTML = headers.map(header => `<th>${header}</th>`).join('');
     }
     
-    // addRow(cells, identifier) {
-    //     const newRow = new Row(identifier);
-    //     const index = this.dataRows.length;
-
-    //     cells.forEach(cellContent => {
-    //         newRow.addCell(cellContent, cellContent.header);
-    //     });
-
-    //     this.dataRows.push(newRow);
-
-    //     if (identifier) {
-    //         this.rowIndexByIdentifier[identifier] = index;
-    //     }
-    //     this.renderCurrentPage();
-    // }
 
     addRow(cells, identifier) {
         const newRow = new Row(identifier);
@@ -118,39 +107,50 @@ class BaseTable extends HTMLElement {
         });
         this.renderCurrentPage();
     }
-
-    // disconnectedCallback() {
-    //     console.log('disconnectedCallback for buttonq');
-    //     // This will be called when the custom element is removed from the document
-    //     this.dataRows.forEach(row => {
-    //         console.log('       row', row);
-    //         row.cells.forEach(cell => {
-    //             const button = cell.domElement.querySelector('button');
-    //             if (button && button.clickHandler) {
-    //                 console.log('       removing button event', button);
-    //                 button.removeEventListener('click', button.clickHandler);
-    //             }
-    //         });
-    //     });
-    // }
-
     
+
     renderCurrentPage() {
         const startIndex = (this.currentPage - 1) * this.itemsPerPage;
         const endIndex = startIndex + this.itemsPerPage;
-
-        console.log('startIndex', startIndex);
-        console.log('endIndex', endIndex);
-        // Hide all rows
-        this.totalRows.forEach(row => row.style.display = 'none');
-
-        // Show only rows for the current page
-        for (let i = startIndex; i < endIndex && i < this.totalRows.length; i++) {
-            this.totalRows[i].style.display = '';
+        this.totalRows.forEach(row => {
+            if (row && row.style) {
+                row.style.display = 'none';
+            }
+        });
+    
+        let rowsToShow;
+        if (this.filteredRows) {
+            // We need to make sure we're dealing with DOM elements, not Row objects
+            rowsToShow = this.filteredRows.map(row => row.domElement).slice(startIndex, endIndex);
+        } else {
+            rowsToShow = this.totalRows.slice(startIndex, endIndex);
         }
+    
+        // Check if the row is defined before trying to change its display property
+        rowsToShow.forEach(row => {
+            if (row) {
+                row.style.display = '';
+            }
+        });
     }
+    
 
+    filterRows(searchTerm) {
+        const searchLower = searchTerm.replace(/\s+/g, '').toLowerCase();
+        this.filteredRows = this.dataRows.filter(row => {
+            const cell = row.cells.get('Tournament Name');
+            if (!cell) return false;
 
+            const cellText = cell.domElement.textContent.toLowerCase();
+    
+            // Now check if cellText includes the search term.
+            return cellText.includes(searchLower);
+        });
+    
+        this.currentPage = 1;
+        this.renderCurrentPage();
+    }
+    
     updateRowByIdentifier(identifier, newCells) {
         const rowIndex = this.rowIndexByIdentifier[identifier];
         if (rowIndex !== undefined && this.dataRows[rowIndex]) {
@@ -159,7 +159,6 @@ class BaseTable extends HTMLElement {
                 if (row.cells.has(newCell.header)) {
                     row.updateCell(newCell.header, newCell);
                 } else {
-                    // If the cell doesn't exist, add it
                     row.addCell(newCell, newCell.header);
                 }
             });
@@ -169,7 +168,6 @@ class BaseTable extends HTMLElement {
             console.error(`Row with identifier ${identifier} not found.`);
         }
     }
-
 
 }
 
