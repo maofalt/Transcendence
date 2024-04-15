@@ -66,12 +66,38 @@ class BaseTable extends HTMLElement {
     }
 
     //Utility method to set headers
+    // setHeaders(headers) {
+    //     let tableHeaders = this.shadowRoot.getElementById('table-headers');
+    //     tableHeaders.innerHTML = '';
+    //     tableHeaders.innerHTML = headers.map(header => `<th>${header}</th>`).join('');
+    // }
+    
     setHeaders(headers) {
         let tableHeaders = this.shadowRoot.getElementById('table-headers');
         tableHeaders.innerHTML = '';
-        tableHeaders.innerHTML = headers.map(header => `<th>${header}</th>`).join('');
+        
+        headers.forEach(header => {
+            // Create the header cell
+            let th = document.createElement('th');
+            let div = document.createElement('div');
+            div.textContent = header;
+            div.style.display = 'inline';
+            div.style.marginRight = '5px';
+
+            // Create the sort icon
+            let sortSpan = document.createElement('span');
+            sortSpan.textContent = '🔽';
+            sortSpan.style.cursor = 'pointer';
+            sortSpan.addEventListener('click', () => this.sortColumn(header));
+            
+            // Append the text div and sort span to the header cell
+            th.appendChild(div);
+            th.appendChild(sortSpan);
+            
+            // Append the header cell to the table headers
+            tableHeaders.appendChild(th);
+        });
     }
-    
 
     addRow(cells, identifier) {
         const newRow = new Row(identifier);
