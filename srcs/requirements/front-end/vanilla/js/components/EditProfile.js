@@ -154,10 +154,10 @@ export default class EditProfile extends AbstractComponent {
 			type: "file"
 		});
 		let avatarFile = "";
-		avatarBlock.input.onchange = (e) => {
+		avatarBlock.input.input.onchange = (e) => {
 			if (e.target.files.length > 0) {
 				avatarFile = e.target.files[0];
-				console.log(file);
+				// console.log(avatarFile);
 			}
 		}
 
