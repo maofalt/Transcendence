@@ -101,7 +101,7 @@ export default class EditProfile extends AbstractComponent {
 			fadeIn(verifyCodeBlock);
 		};
 
-		const verifyCodeBlock = new TwoFactorAuth(phoneBlock, emailBlock);
+		const verifyCodeBlock = new TwoFactorAuth(phoneBlock, emailBlock, "update");
 
 		let twoFactorBlock = document.createElement("div");
 		twoFactorBlock.innerHTML = twoFactorChoiceHtml;

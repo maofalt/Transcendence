@@ -7,12 +7,13 @@ import displayPopup from "@utils/displayPopup";
 import { fadeIn, fadeOut, transition } from "@utils/animate";
 
 export default class TwoFactorAuth extends AbstractComponent {
-	constructor(phoneBlock, emailBlock, options = {}) {
+	constructor(phoneBlock, emailBlock, context, options = {}) {
 		super();
 
 		this.method = options.method || "email";
 		this.email = options.email || "";
 		this.phone = options.phone || "";
+		this.context = context || "login";
 
 		this.style.display = "none";
 		this.style.position = "fixed";
@@ -76,17 +77,29 @@ export default class TwoFactorAuth extends AbstractComponent {
 	}
 
 	verifyEmail = async (emailBlock, verifyCodeInput) => {
-		var email = emailBlock.input.getValue();
-		var verificationCode = verifyCodeInput.input.getValue();
+		let email;
+		if (emailBlock) {
+			email = emailBlock.input.getValue();
+		}
+		const one_time_code = verifyCodeInput.input.getValue();
+		const context = this.context;
 
 		let valid = false;
+
+		let body;
+
+		if (context === "update") {
+			body = new URLSearchParams({ email, one_time_code, context });
+		} else {
+			body = new URLSearchParams({ one_time_code, context });
+		}
 
 		await easyFetch('/api/user_management/auth/verify_code', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/x-www-form-urlencoded',
 			},
-			body: new URLSearchParams({ 'email': email, 'one_time_code': verificationCode, 'context': "update" })
+			body
 		})
 		.then(res => {
 			let response = res.response;
@@ -115,10 +128,21 @@ export default class TwoFactorAuth extends AbstractComponent {
 	}
 
 	verifySms = async (phoneBlock, verifyCodeInput) => {
-		const phone_number = phoneBlock.input.getValue().replace(/\s/g, '');
-		var otp = verifyCodeInput.input.getValue();
+		let phone_number
+		if (phoneBlock) {
+			phone_number = phoneBlock.input.getValue().replace(/\s/g, '');
+		}
+		const otp = verifyCodeInput.input.getValue();
 
 		let valid = false;
+
+		let body;
+
+		if (context === "update") {
+			body = new URLSearchParams({ phone_number, otp, context});
+		} else {
+			body = new URLSearchParams({ phone_number, otp, context });
+		}
 
 		await easyFetch('api/user_management/auth/verifySandBox', {
 			method: 'POST',
