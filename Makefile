@@ -1,20 +1,21 @@
 BASE_FILE = -f srcs/docker-compose.yml
-OVERRIDE_FILE= -f srcs/docker-compose.override.yml
+OVERRIDE_FILE = -f srcs/docker-compose.prod.yml
 
 HOST_NAME ?= localhost
 HOST_IP ?= localhost
 
 ENV ?= dev
 
-ifeq ($(ENV), dev)
-COMPOSE_FILE = $(BASE_FILE) $(OVERRIDE_FILE)
-endif
+COMPOSE_FILE = -f srcs/docker-compose.yml
 
-ifeq ($(ENV), prod)
+ifeq ($(ENV), dev)
 COMPOSE_FILE = $(BASE_FILE)
 endif
 
-COMPOSE_FILE = -f srcs/docker-compose.yml
+ifeq ($(ENV), prod)
+COMPOSE_FILE = $(BASE_FILE) $(OVERRIDE_FILE)
+endif
+
 
 all: build up logs
 

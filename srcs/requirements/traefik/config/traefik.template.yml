@@ -42,19 +42,29 @@ tls:
 http:
   routers:
     #SWAGGER UI
-    swagger-ui:
-      rule: "Host(`HOST_IP`) && PathPrefix(`/api/docs`)"
-      entryPoints:
-        - "websecure"
-      service: "swagger-ui-service"
-      tls:
-        certResolver: "myresolver"
-    #GAMR FRONT END FOR DEVELOPMENT USING NODE.JS
+    # swagger-ui:
+    #   rule: "Host(`HOST_IP`) && PathPrefix(`/api/docs`)"
+    #   entryPoints:
+    #     - "websecure"
+    #   service: "swagger-ui-service"
+    #   tls:
+    #     certResolver: "myresolver"
+    #GAME FRONT END FOR DEVELOPMENT USING NODE.JS
     jsDev:
       rule: "Host(`HOST_IP`)"
       service: "jsDevService"
       entryPoints:
         - "websecure"
+      tls:
+        certResolver: "myresolver"
+    #FRONT END PRODUCTION
+    front-end:
+      rule: "Host(`front.HOST`)"
+      entryPoints:
+        - "websecure"
+      middlewares:
+        - "strip-front"
+      service: "frontEndService"
       tls:
         certResolver: "myresolver"
     #GAME LOGIC
@@ -108,22 +118,22 @@ http:
           servers:
             - url: "http://"
   
-    portainer-service:
-      loadBalancer:
-        servers:
-          - url: "http://portainer:9000"
+    # portainer-service:
+    #   loadBalancer:
+    #     servers:
+    #       - url: "http://portainer:9000"
 
     edge-service:
       loadBalancer:
         servers:
           - url: "http://edge:8000"
 
-    swagger-ui-service:
-      loadBalancer:
-        servers:
-          - url: "http://swagger-ui:8080"
+    # swagger-ui-service:
+    #   loadBalancer:
+    #     servers:
+    #       - url: "http://swagger-ui:8080"
 
-    frontEnd:
+    frontEndService:
       loadBalancer:
         servers:
           - url: "http://front-end:80"
@@ -168,6 +178,11 @@ http:
     strip-game-logic:
       stripPrefix:
         prefixes: ["/game-logic"]
+
+    strip-front:
+      stripPrefix:
+        prefixes:
+          - "/front"
 
     tournament-headers:
       headers:

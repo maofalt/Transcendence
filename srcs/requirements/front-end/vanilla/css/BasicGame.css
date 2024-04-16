@@ -1,7 +1,8 @@
 div {
 	margin: 0px;
 	padding: 0px;
-	background: url("../js/assets/images/blueSpace.jpg");
+	background: url("@images/blueSpace.jpg");
+	/* background: url("../js/assets/images/blueSpace.jpg"); */
 	/* background-color: red; */
 	width: 100%;
 	height: 100vh;

@@ -1,4 +1,6 @@
 //NormalButton.js
+import styles from '@css/NormalButton.css?raw';
+
 class NormalButton extends HTMLElement {
     static get observedAttributes() {
         return ['data-text'];
@@ -8,12 +10,14 @@ class NormalButton extends HTMLElement {
         super();
         this.attachShadow({ mode: 'open'});
         this.shadowRoot.innerHTML = `
-            <link rel="stylesheet" href="../../css/NormalButton.css">
             <meta name="viewport" content="width=device-width, initial-scale=1">
             <body>
                 <span class="start-btn"></span>
             </body>
         `;
+		const styleEl = document.createElement('style');
+		styleEl.textContent = styles;
+		this.shadowRoot.appendChild(styleEl);
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
