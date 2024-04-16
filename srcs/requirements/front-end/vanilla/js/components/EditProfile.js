@@ -16,6 +16,7 @@ import easyFetch from "@utils/easyFetch";
 import displayPopup from "@utils/displayPopup";
 import twoFactorChoiceHtml from '@html/twoFactorChoice.html?raw';
 import { fadeIn, fadeOut, transition } from "@utils/animate";
+import TwoFactorAuth from "@components/TwoFactorAuth";
 
 export default class EditProfile extends AbstractComponent {
 	constructor(options = {}) {
@@ -49,57 +50,6 @@ export default class EditProfile extends AbstractComponent {
 		const goBack = new CustomButton({content: "< Back", style: {padding: "0px 20px", position: "absolute", left: "50px", bottom: "30px"}});
 		goBack.onclick = () => window.history.back();
 
-		const verifyCodeBlock = document.createElement("div");
-		verifyCodeBlock.style.display = "none";
-		verifyCodeBlock.style.position = "fixed";
-		verifyCodeBlock.style.top = "0";
-		verifyCodeBlock.style.left = "0";
-		verifyCodeBlock.style.width = "100%";
-		verifyCodeBlock.style.height = "100%";
-		verifyCodeBlock.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
-		verifyCodeBlock.onclick = (e) => { // Close the pannel when clicking outside
-			if (e.target === verifyCodeBlock) {
-				fadeOut(verifyCodeBlock);
-			}
-		}
-		
-		const verifyCodePannel = new Pannel({dark: false, title: "Verify Code", style: {padding: "15px"}});
-		// verifyCodePannel.shadowRoot.querySelector("#button-container").shadowRoot.style.setProperty("display", "none");
-		verifyCodePannel.style.position = "fixed";
-		verifyCodePannel.style.top = "50%";
-		verifyCodePannel.style.left = "50%";
-		verifyCodePannel.style.transform = "translate(-50%, -50%)";
-		verifyCodePannel.style.setProperty("display", "block");
-
-		const verifyCodeInput = new InputAugmented({
-			title: "Code Code",
-			content: "Code Code",
-			type: "text",
-			button: {content: "Verify", action: true}
-		});
-		verifyCodeInput.button.onclick = async () => {
-			if (verifyCodePannel.name == "phone") {
-				if (!await this.verifySms(phoneBlock, verifyCodeInput)) {
-					phoneBlock.setAttribute("verified", false);
-				} else {
-					phoneBlock.input.input.style.setProperty("border", "2px solid green");
-					phoneBlock.setAttribute("verified", true);
-				}
-			} else if (verifyCodePannel.name == "email") {
-				if (!await this.verifyEmail(emailBlock, verifyCodeInput)) {
-					emailBlock.setAttribute("verified", false);
-				} else {
-					emailBlock.input.input.style.setProperty("border", "2px solid green");
-					emailBlock.setAttribute("verified", true);
-				}
-			}
-			fadeOut(verifyCodeBlock);
-		}
-
-		verifyCodePannel.shadowRoot.appendChild(verifyCodeInput);
-
-		verifyCodeBlock.appendChild(verifyCodePannel);
-
 		let playernameBlock = new InputAugmented({
 			title: "New Playername",
 			content: "Playername",
@@ -124,7 +74,8 @@ export default class EditProfile extends AbstractComponent {
 				return ;
 			}
 			emailBlock.input.input.style.setProperty("border", "");
-			verifyCodePannel.name = "email";
+			verifyCodeBlock.method = "email";
+			verifyCodeBlock.email = emailBlock.input.getValue();
 			fadeIn(verifyCodeBlock);
 		};
 
@@ -132,8 +83,8 @@ export default class EditProfile extends AbstractComponent {
 			title: "New Phone Number",
 			content: "+33 6 12 34 56 78",
 			indicators: {
-				unverifiedIndicator: ["Please verify your phone number", () => this.isVerified(emailBlock)],
-				emptyIndicator: ["Please enter your verified phone", () => this.emptyBlock(emailBlock)],
+				unverifiedIndicator: ["Please verify your phone number", () => this.isVerified(phoneBlock)],
+				emptyIndicator: ["Please enter your verified phone", () => this.emptyBlock(phoneBlock)],
 			},
 			type: "tel",
 			button: {content: "Verify", action: false}
@@ -145,9 +96,12 @@ export default class EditProfile extends AbstractComponent {
 				return ;
 			}
 			phoneBlock.input.input.style.setProperty("border", "");
-			verifyCodePannel.name = "phone";
+			verifyCodeBlock.method = "phone";
+			verifyCodeBlock.phone = phoneBlock.input.getValue();
 			fadeIn(verifyCodeBlock);
 		};
+
+		const verifyCodeBlock = new TwoFactorAuth(phoneBlock, emailBlock);
 
 		let twoFactorBlock = document.createElement("div");
 		twoFactorBlock.innerHTML = twoFactorChoiceHtml;
@@ -273,84 +227,6 @@ export default class EditProfile extends AbstractComponent {
 			displayPopup(`Request Failed: ${error}`, 'error');
 		});
 		return valid;
-	}
-
-	verifyEmail = async (emailBlock, verifyCodeBlock) => {
-		var email = emailBlock.input.getValue();
-		var verificationCode = verifyCodeBlock.input.getValue();
-
-		let valid = false;
-
-		await easyFetch('/api/user_management/auth/verify_code', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/x-www-form-urlencoded',
-			},
-			body: new URLSearchParams({ 'email': email, 'one_time_code': verificationCode, 'context': "update" })
-		})
-		.then(res => {
-			let response = res.response;
-			let body = res.body;
-
-			if (!response || !body) {
-				throw new Error('Empty Response');
-			} else if (response.status === 400) {
-				displayPopup(body.error || JSON.stringify(body), 'error');
-				valid = false;
-			} else if (!response.ok) {
-				displayPopup('Response Error: ' + (body.error || JSON.stringify(body)), 'error');
-				valid = false;
-			} else if (response.status === 200 && body.success === true) {
-				displayPopup(body.message || JSON.stringify(body), 'success');
-				valid = true;
-			} else {
-				displayPopup(body.error || JSON.stringify(body), 'error');
-			}
-		})
-		.catch(error => {
-			displayPopup(`Request Failed: ${error}`, 'error');
-			valid = false;
-		});
-		return valid
-	}
-
-	verifySms = async (phoneBlock, verifyCodeBlock) => {
-		var phone = phoneBlock.input.getValue();
-		var verificationCode = verifyCodeBlock.input.getValue();
-
-		let valid = false;
-
-		await easyFetch('api/user_management/auth/verifySandBox', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/x-www-form-urlencoded',
-			},
-			body: new URLSearchParams({ 'phone_number': phone, 'otp': verificationCode })
-		})
-		.then(res => {
-			let response = res.response;
-			let body = res.body;
-
-			if (!response || !body) {
-				throw new Error('Empty Response');
-			} else if (response.status === 400) {
-				displayPopup(body.error || JSON.stringify(body), 'error');
-				valid = false;
-			} else if (!response.ok) {
-				displayPopup('Response Error: ' + (body.error || JSON.stringify(body)), 'error');
-				valid = false;
-			} else if (response.status === 200 && body.success === true) {
-				displayPopup(body.message || JSON.stringify(body), 'success');
-				valid = true;
-			} else {
-				displayPopup(body.error || JSON.stringify(body), 'error');
-			}
-		})
-		.catch(error => {
-			displayPopup(`Request Failed: ${error}`, 'error');
-			valid = false;
-		});
-		return valid
 	}
 
 	isVerified = (block) => {

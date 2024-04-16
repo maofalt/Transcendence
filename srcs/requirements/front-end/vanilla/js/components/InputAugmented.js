@@ -74,6 +74,7 @@ export default class InputAugmented extends AbstractComponent {
 			this.shadowRoot.appendChild(this.button);
 			this.button.id = "input-button";
 			this.inputBox.appendChild(this.button);
+			// this.button.tabIndex = 0;
 		}
 		
 		// this.style.setProperty("height", "145px");
@@ -84,6 +85,14 @@ export default class InputAugmented extends AbstractComponent {
 				console.log(key);
 				console.log(value);
 				this.shadowRoot.host.style.setProperty(key, value);
+			}
+		}
+
+		this.input.input.onkeydown = (e) => {
+			this.input.input.style.outline = "";
+			if (e.key === "Enter") {
+				if (this.button)
+					this.button.click();
 			}
 		}
 

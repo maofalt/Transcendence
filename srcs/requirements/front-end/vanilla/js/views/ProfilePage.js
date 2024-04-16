@@ -133,7 +133,7 @@ export default class ProfilePage extends AbstractComponent {
 				addFriend.button.click();
 			}
 		};
-		addFriend.button.tabIndex = 0;
+		// addFriend.button.tabIndex = 0;
 		addFriend.button.style.setProperty("font-size", "28px");
 		addFriend.input.input.onkeydown = (e) => {
 			if (e.key === "Enter") {

@@ -7,7 +7,7 @@ import CreateTournament from '@views/CreateTournament.js';
 import ProfilePage from '@views/ProfilePage.js';
 import SpaceBackground from '@components/SpaceBackground';
 // import BasicGame from '@views/BasicGame.js';
-import TwoFactorAuth from '@views/2fa';
+import TwoFA from '@views/2fa';
 import Signup from '@views/Signup.js';
 import EditProfile from '@components/EditProfile';
 import HomePage from '@views/HomePage';
@@ -95,8 +95,8 @@ export const routes = {
 	},
 	'/2fa': {
 		path: '/2fa',
-		view: TwoFactorAuth,
-		component: 'two-factor-auth',
+		view: TwoFA,
+		component: 'two-fa',
 		title: 'Two Factor Authentication',
 		buttonText: '2FA'
 	},

@@ -47,10 +47,10 @@ export default class LoginPage extends AbstractComponent {
 		});
 		
 		let loginButton = new CustomButton({content: "Log In", action: true, style: {margin: "15px 0px 0px 0px", "border-radius": "20px"}});
-		loginButton.tabIndex = 0;
+		// loginButton.tabIndex = 0;
 
 		let signUpButton = new CustomButton({content: "Sign Up", action: false, style: {margin: "20px 0px 20px 0px"}});
-		signUpButton.tabIndex = 0;
+		// signUpButton.tabIndex = 0;
 
 		let buttons = document.createElement('div');
 		buttons.appendChild(loginButton);
@@ -156,6 +156,7 @@ export default class LoginPage extends AbstractComponent {
 				if (body.requires_2fa) {
 					displayPopup('login successful, please enter your 2fa code', 'info');
 					Router.redirectTo("/2fa");
+					return ;
 				}
 
 				// displayPopup('Login successful', 'success');

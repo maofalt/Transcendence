@@ -94,4 +94,4 @@ export default class TwoFactorAuth extends AbstractComponent {
 	}
 }
 
-customElements.define('two-factor-auth', TwoFactorAuth);
+customElements.define('two-fa', TwoFactorAuth);

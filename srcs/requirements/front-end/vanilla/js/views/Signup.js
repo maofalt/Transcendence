@@ -145,7 +145,7 @@ export default class Signup extends AbstractComponent {
 
 		let nextButton = new CustomButton({content: "Next", action: true});
 		nextButton.id = "nextButton";
-		nextButton.tabIndex = 0;
+		// nextButton.tabIndex = 0;
 		
 		let backButton = new CustomButton(
 			{
