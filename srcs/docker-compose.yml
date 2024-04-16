@@ -2,6 +2,7 @@
 version: '3.8'
 
 services:
+  # TRAEFIK
   traefik:
     build:
       context: ./requirements/traefik
@@ -29,50 +30,7 @@ services:
         max-size: "1m"
         max-file: "3"
 
-#SWAGGER
-  # swagger-ui:
-  #   image: swaggerapi/swagger-ui
-  #   container_name: swagger-ui
-  #   networks:
-  #     - transcendence
-  #   environment:
-  #     - SWAGGER_JSON=/usr/share/nginx/html/spec/swagger.yaml
-  #     - BASE_URL=/api/docs
-  #   restart: unless-stopped
-  #   volumes:
-  #     - ./api/:/usr/share/nginx/html/spec/
-  #   logging:
-  #     driver: json-file
-  #     options:
-  #       max-size: "1m"
-  #       max-file: "3"
-
-##CONTAINER MANAGER
-  # portainer:
-  #   env_file:
-  #     - .env
-  #   image: portainer
-  #   container_name: portainer
-  #   build:
-  #     context: ./requirements/portainer
-  #     dockerfile: Dockerfile
-  #     args:
-  #     - PORTAINER_ADMIN_PASSWORD=${PORTAINER_ADMIN_PASSWORD}
-  #   restart: unless-stopped
-  #   volumes:
-  #     - "${XDG_RUNTIME_DIR:-/var/run}/docker.sock:/var/run/docker.sock"
-  #     #- /var/run/docker.sock:/var/run/docker.sock
-  #     - portainer-data:/data
-  #   networks:
-  #     - transcendence
-  #   logging:
-  #     driver: json-file
-  #     options:
-  #       max-size: "1m"
-  #       max-file: "3"
-
-#FRONT END SERVICES
-  # production ready front-end served by nginx built with vite
+  # FRONT END
   front-end:
     container_name: front-end
     build:
@@ -108,7 +66,7 @@ services:
         max-file: "3"
 
 
-#BACKEND GAME SERVICES
+  #BACKEND GAME SERVICES
   game:
     container_name: game
     build: 
@@ -127,7 +85,7 @@ services:
         max-size: "1m"
         max-file: "3"
 
-
+  # USER MANAGEMENT DJANGO
   user_management:
     container_name: user_management
     restart: always
@@ -150,7 +108,7 @@ services:
         max-size: "1m"
         max-file: "3"
 
-
+  # USER MANAGEMENT DB
   user_management_db:
     container_name: user_management_db
     build:
@@ -172,7 +130,7 @@ services:
         max-size: "1m"
         max-file: "3"
 
-
+  # TOURNAMENT SERVICE DJANGO
   tournament:
     container_name: tournament
     build:
@@ -192,7 +150,7 @@ services:
         max-size: "1m"
         max-file: "3"
 
-
+  # TOURNAMENT DB
   tournament_db:
     container_name: tournament_db
     build:

@@ -1,9 +1,10 @@
+import styles from '@css/Overlay.css?raw';
+
 class Overlay extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
         this.shadowRoot.innerHTML = `
-            <link rel="stylesheet" href="../../css/Overlay.css">
             <div class="overlay">
                 <span class="closebtn">&times;</span>
                 <div class="overlay-content">
@@ -11,6 +12,9 @@ class Overlay extends HTMLElement {
                 </div>
             </div>
         `;
+		const styleEl = document.createElement('style');
+		styleEl.textContent = styles;
+		this.shadowRoot.appendChild(styleEl);
 
         this.overlay = this.shadowRoot.querySelector('.overlay');
         this.closeButton = this.shadowRoot.querySelector('.closebtn');
