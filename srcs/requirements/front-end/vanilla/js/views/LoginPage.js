@@ -12,6 +12,7 @@ import easyFetch from "@utils/easyFetch";
 import fetchUserDetails from "@utils/fetchUserDetails";
 import InputAugmented from "@components/InputAugmented";
 import displayPopup from "@utils/displayPopup";
+import { refreshTokenLoop } from "@utils/pollingFunctions";
 import { initSocketConnection } from "@utils/websocket";
 
 export default class LoginPage extends AbstractComponent {
@@ -45,8 +46,11 @@ export default class LoginPage extends AbstractComponent {
 			type: "password"
 		});
 		
-		let loginButton = new CustomButton({content: "Log In", action: true, style: {margin: "15px 0px 0px 0px"}});
+		let loginButton = new CustomButton({content: "Log In", action: true, style: {margin: "15px 0px 0px 0px", "border-radius": "20px"}});
+		loginButton.tabIndex = 0;
+
 		let signUpButton = new CustomButton({content: "Sign Up", action: false, style: {margin: "20px 0px 20px 0px"}});
+		signUpButton.tabIndex = 0;
 
 		let buttons = document.createElement('div');
 		buttons.appendChild(loginButton);
@@ -77,12 +81,18 @@ export default class LoginPage extends AbstractComponent {
 			this.submitLoginForm(e, usernameBlock, passwordBlock);
 		};
 
-		passwordBlock.input.oninput = () => {
-			passwordBlock.input.input.style.outline = "none";
+		passwordBlock.input.onkeydown = (e) => {
+			passwordBlock.input.input.style.outline = "";
+			if (e.key === "Enter") {
+				loginButton.click();
+			}
 		}
 
-		usernameBlock.input.oninput = () => {
-			usernameBlock.input.input.style.outline = "none";
+		usernameBlock.input.onkeydown = (e) => {
+			usernameBlock.input.input.style.outline = "";
+			if (e.key === "Enter") {
+				passwordBlock.input.input.focus();
+			}
 		}
 
 		p.onclick = () => Router.navigateTo("/forgot");
@@ -141,16 +151,19 @@ export default class LoginPage extends AbstractComponent {
 				initSocketConnection();
 
 				let details = await fetchUserDetails();
-				sessionStorage.setItem('userDetails', JSON.stringify(details));
+				// sessionStorage.setItem('userDetails', JSON.stringify(details));
 
 				if (body.requires_2fa) {
 					displayPopup('login successful, please enter your 2fa code', 'info');
-					Router.navigateTo("/2fa");
+					Router.redirectTo("/2fa");
 				}
 
-				displayPopup('Login successful', 'success');
+				// displayPopup('Login successful', 'success');
+
+				refreshTokenLoop();
 
 				Router.navigateTo("/");
+				// window.location.reload();
 			}
 		})
 		.catch(error => {

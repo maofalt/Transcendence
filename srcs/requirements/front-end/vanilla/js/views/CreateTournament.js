@@ -3,6 +3,7 @@ import AbstractView from "./AbstractView";
 import { makeApiRequest } from '@utils/makeApiRequest.js';
 import { navigateTo } from '@utils/Router.js';
 import Game from '@views/Game.js';
+import GameView from '@views/GameView.js';
 import { htmlToElement } from '@utils/htmlToElement';
 import CustomButton from '@components/CustomButton.js';
 import createTournamentHtml from '@html/createTournament.html?raw';
@@ -46,7 +47,7 @@ export default class CreateTournament extends AbstractView {
 			await this.initializeGame(basicGameSettings);
 
 			let gameSettingsForm = document.getElementById('game-settings-form');
-			gameSettingsForm.querySelectorAll('input').forEach(input => {
+			gameSettingsForm.querySelectorAll('.input-tag').forEach(input => {
 				input.addEventListener('change', async (event) => {
 				event.preventDefault();
 				console.log('Responding to form changes');
@@ -83,17 +84,24 @@ export default class CreateTournament extends AbstractView {
 		// }
 		// this.game = null;
 		this.game = new Game(matchID, width, height);
-		let gameContainer = document.getElementById('gameContainer')
-		if (gameContainer) {
-			console.log("GAME CONTAINER", gameContainer);
-			gameContainer.replaceChildren(this.game);
+		// this.game = new GameView(matchID, width, height);
+		// this.game.id = 'game-view';
+		let previewContainer = document.getElementById('preview-container')
+		// console.log(previewContainer);
+		if (previewContainer) {
+			console.log("GAME CONTAINER", previewContainer);
+			previewContainer.replaceChildren(this.game);
 		} else {
-			console.log("GAME CONTAINER NOT FOUND", gameContainer);
+			console.log("GAME CONTAINER NOT FOUND", previewContainer);
 		}
-		// }
-		// await this.game.init(); // Make sure this can be safely called multiple times or after updating settings
-		// document.getElementById('gameContainer').removeChild(document.getElementById('leave-button'));
-		// document.getElementById('count-down').style.display = "none";
+
+		// hiding some elements in the game view
+		// info : cannot simply remove them because then the game will not be able to update them and it will
+		// just break.
+		let gameContainer = document.querySelector("game-view").shadowRoot.getElementById("gameContainer");
+		// let gameContainer = this.game.getElementById("gameContainer");
+		gameContainer.querySelector("#count-down").style.display = "none"; // not displaying the count down
+		gameContainer.querySelector("#leave-button").style.display = "none"; // not displaying the leave button
 		console.log('Game initialized');
 	}
 
@@ -154,8 +162,8 @@ export default class CreateTournament extends AbstractView {
 					"speed": parseFloat(document.getElementById('ball_speed').value),
 					"radius": parseFloat(document.getElementById('ball_radius').value),
 					"color": document.getElementById('ball_color').value,
-					"model": document.getElementById('ball-model').value,
-					"texture": document.getElementById('ball-texture').value
+					"model": document.getElementById('ball_model').value,
+					"texture": document.getElementById('ball_texture').value
 				},
 				"playersData": []
 			}

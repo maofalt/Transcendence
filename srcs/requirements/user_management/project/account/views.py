@@ -287,6 +287,9 @@ def generate_one_time_code():
 def send_one_time_code(request, email=None):
     if email is None and request.method == 'POST':
         email = request.POST.get('email', None)
+    valid, error_message = is_email_valid(email)
+    if not valid:
+        return JsonResponse({'valid': False, 'error': error_message}, status=400)
     one_time_code = generate_one_time_code()
     request.session['one_time_code'] = one_time_code
 
@@ -306,11 +309,9 @@ def send_one_time_code(request, email=None):
 def verify_one_time_code(request):
     if request.method == 'POST':
         csrf_token = get_token(request)
-        print("\n\nCSRF Token from request:", request.headers.get('X-CSRFToken'))
         submitted_code = request.POST.get('one_time_code')
         stored_code = request.session.get('one_time_code')
         context = request.POST.get('context')
-        print("REQUEST CODE: ", request.POST)
         print("\n\ncode from Session : ", stored_code)
         print("code from User : ", submitted_code, '\n\n')
         pending_username = request.session.get('pending_username')
@@ -323,6 +324,12 @@ def verify_one_time_code(request):
                     user.is_online = True
                     print(f"Is Online: {user.is_online}")
                     user.save()
+                if context == 'update' or context == 'signup':
+                    if 'email' in request.POST:
+                        email = request.POST['email']
+                        request.session['verified_email'] = email
+                    else:
+                        return JsonResponse({'success': False, 'error': escape('missing email for verify_one_time_code'), 'csrf_token': csrf_token}, status=400)
                 return JsonResponse({'success': True, 'message': escape('One-time code verification successful'), 'csrf_token': csrf_token})
             else:
                 return JsonResponse({'success': False, 'error': escape('One-time code verification failed'), 'csrf_token': csrf_token}, status=400)
@@ -407,7 +414,7 @@ def validate_user_password(password, username=""):
 
 def validate_player_name(playername):
     # This regex allows alphanumeric characters, dashes, and underscores
-    if re.match(r'^[\w-]+$', playername):
+    if re.match(r'^[\w\s-]+$', playername):
         return True, None
     return False, "Player name contains invalid characters."
 
@@ -420,7 +427,7 @@ def validate_username_view(request):
         if valid:
             return JsonResponse({'valid': True})
         else:
-            return JsonResponse({'valid': False, 'error': error_message})
+            return JsonResponse({'valid': False, 'error': error_message}, status=400)
     return JsonResponse({'error': escape('Invalid request method')}, status=400)
 
 def validate_email_view(request):
@@ -430,7 +437,7 @@ def validate_email_view(request):
         if valid:
             return JsonResponse({'valid': True})
         else:
-            return JsonResponse({'valid': False, 'error': error_message})
+            return JsonResponse({'valid': False, 'error': error_message}, status=400)
     return JsonResponse({'error': escape('Invalid request method')}, status=400)
 
 def validate_password_view(request):
@@ -440,7 +447,7 @@ def validate_password_view(request):
         if valid:
             return JsonResponse({'valid': True})
         else:
-            return JsonResponse({'valid': False, 'error': error_message})
+            return JsonResponse({'valid': False, 'error': error_message}, status=400)
     return JsonResponse({'error': escape('Invalid request method')}, status=400)
 
 def validate_player_name_view(request):
@@ -450,7 +457,7 @@ def validate_player_name_view(request):
         if valid:
             return JsonResponse({'valid': True})
         else:
-            return JsonResponse({'valid': False, 'error': error_message})
+            return JsonResponse({'valid': False, 'error': error_message}, status=400)
     return JsonResponse({'error': escape('Invalid request method')}, status=400)
 
 @csrf_protect
@@ -468,22 +475,32 @@ def api_signup_view(request):
         # Validate each field using the utility functions
         valid, error_message = validate_username(username)
         if not valid:
-            return JsonResponse({'success': False, 'error': error_message})
+            return JsonResponse({'success': False, 'error': error_message}, status=400)
 
         valid, error_message = is_email_valid(email)
         if not valid:
-            return JsonResponse({'success': False, 'error': error_message})
+            return JsonResponse({'success': False, 'error': error_message}, status=400)
 
         valid, error_message = validate_user_password(password, username)
         if not valid:
-            return JsonResponse({'success': False, 'error': error_message})
+            return JsonResponse({'success': False, 'error': error_message}, status=400)
 
         valid, error_message = validate_player_name(playername)
         if not valid:
-            return JsonResponse({'success': False, 'error': error_message})
+            return JsonResponse({'success': False, 'error': error_message}, status=400)
 
         if not (username and password and playername and email):
-            return JsonResponse({'success': False, 'error': escape('All fields are required')})
+            return JsonResponse({'success': False, 'error': escape('All fields are required')}, status=400)
+
+        verified_email = request.session.get('verified_email')
+        print("verified_email: ", verified_email)
+        if verified_email:
+            if verified_email != email:
+                # del request.session['verified_email']
+                return JsonResponse({'error': 'Submitted email does not match the verified email.'})
+            del request.session['verified_email']
+        else:
+            return JsonResponse({'error': 'verify your email'}, status=400)
 
         # Create the user
         user = User(
@@ -497,7 +514,7 @@ def api_signup_view(request):
         try:
             user.save()
         except IntegrityError as e:
-            return JsonResponse({'success': False, 'error': escape('User creation failed.')})
+            return JsonResponse({'success': False, 'error': escape('User creation failed.')}, status=400)
 
         print(" >>  User created successfully.")
 
@@ -581,14 +598,20 @@ def friends_view(request):
 def detail_view(request, username=None):
     try:
         if username:
-            user = get_object_or_404(User, username=username)
+            try:
+                user = get_object_or_404(User, username=username)
+            except Http404:
+                return JsonResponse({'error': 'User not found'}, status=404)
         else:
             user = request.user
+        email = user.email if username is None else None
+        phone = user.phone if username is None else None
         print("user: ", user)
         data = {
             'username': user.username,
             'playername': user.playername,
-            # 'email': user.email,
+            'email': email,
+            'phone': phone,
             'avatar': user.avatar.url if user.avatar else None,
             'friends_count': user.friends.count(),
             'two_factor_method': user.two_factor_method,
@@ -608,10 +631,12 @@ def detail_view(request, username=None):
 def add_friend(request, username):
     try:
         friend = get_object_or_404(User, username=username)
-        request.user.add_friend(friend)
+        ret, message = request.user.add_friend(friend)
+        if not ret:
+            return JsonResponse({'error': message}, status=400)
         return JsonResponse({'message': 'Friend added successfully', 'added_friend': friend.username})
     except Http404:
-        return JsonResponse({'error': 'Friend not found'}, status=404)
+        return JsonResponse({'error': 'User not found'}, status=404)
     
 # @login_required
 @ensure_csrf_cookie
@@ -679,14 +704,48 @@ class ProfileUpdateView(APIView):
     def post(self, request):
         user = request.user
         user_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user)
-        print("\n\n---------------\nuser_form: ", user_form)
-        if user_form.is_valid():        
+        print ("avartar : ", user.avatar)
+        print("POST data received:", request.POST)
+        try:
+            user_form.is_valid()    
             if 'playername' in request.POST and request.POST['playername'] != '':
-                if user.playername != request.POST['playername'] and User.objects.filter(playername=request.POST['playername']).exists():
-                    return JsonResponse({'error': 'Playername already exists. Please choose a different one.'})
+                valid, error_message = validate_player_name(request.POST.get('playername'))
+                if not valid:
+                    return JsonResponse({'error': error_message}, status=400)
+            if 'email' in request.POST and request.POST['email'] != '':    
+                valid, error_message = is_email_valid(request.POST.get('email'))
+                if not valid:
+                    return JsonResponse({'error': error_message}, status=400)
+                verified_email = request.session.get('verified_email')
+                submitted_email = request.POST.get('email')
+                if verified_email:
+                    if submitted_email and verified_email != submitted_email:
+                        # del request.session['verified_email']
+                        return JsonResponse({'error': 'Submitted email does not match the verified email.'}, status=400)
+                    del request.session['verified_email']
+                else:
+                    return JsonResponse({'error': 'verify your email'}, status=400)
+
+            if 'phone' in request.POST and request.POST['phone'] != '':
+                if not is_valid_phone_number(request.POST.get('phone')):
+                    return JsonResponse({'error': 'Invalid phone number format'}, status=400)
+ 
+                verified_phone = request.session.get('verified_phone')
+                submitted_phone = request.POST.get('phone')
+                if verified_phone:
+                    if submitted_phone and verified_phone != submitted_phone:
+                        return JsonResponse({'error': 'Submitted phone number does not match the verified phone number'}, status=400)
+                    del request.session['verified_phone']
+                else:
+                    return JsonResponse({'error': 'verify your phone number'}, status=400)
+            
             user_form.save()
+            print(">>  avatar: ", user.avatar)
             return JsonResponse({'success': 'Your profile has been updated.'})
-        else:
+        except ValidationError as e:
+            return JsonResponse({'error': str(e)}, status=400)
+        except Exception as e:
+            print("Error: ", e)
             return JsonResponse({'error': 'Form is not valid.'}, status=400)
 
 class PasswordUpdateView(generics.ListCreateAPIView):
@@ -933,18 +992,21 @@ def update_sandbox(request, phone_number=None):
         if phone_number is None:
             phone_number = request.POST.get('phone_number', '')
             print("phone_number: ", phone_number)
-        if phone_number == request.user.phone:
-            return JsonResponse({'success': True, 'message': 'Your number is already verified', 'verified': True})
         if not is_valid_phone_number(phone_number):
             return JsonResponse({'success': False, 'error': 'Invalid phone number format'}, status=400)
-        if is_phone_number_verified(phone_number):
+        if phone_number == request.user.phone or is_phone_number_verified(phone_number):
+            request.session['verified_phone'] = phone_number
             return JsonResponse({'success': True, 'message': 'Your number is already verified', 'verified': True})
+
+        # if is_phone_number_verified(phone_number):
+        #     return JsonResponse({'success': True, 'message': 'Your number is already verified', 'verified': True})
         # Add phone number to 'Sandbox destination phone numbers andd send OTP'
         try:
             sns_client.create_sms_sandbox_phone_number(
                 PhoneNumber=phone_number,
                 LanguageCode='en-US'  # Adjust language code as needed
             )
+            
             print("Phone number added to Sandbox destination phone numbers and OTP sent successfully:")
             return JsonResponse({'success': True, 'message': 'SMS message sent successfully'})
         except Exception as e:
@@ -956,10 +1018,10 @@ def update_sandbox(request, phone_number=None):
 # @login_required
 @ensure_csrf_cookie
 @csrf_protect
-# @require_POST
-@authentication_classes([])
-@permission_classes([AllowAny])
-def verify_sandBox(request, otp=None, phone_number=None):
+@api_view(['POST'])
+@authentication_classes([CustomJWTAuthentication])
+@permission_classes([IsAuthenticated])
+def verify_sandBox(request, phone_number=None, otp=None):
     print("\n--Verify SandBox\n")
     if request.method == 'POST':
         if phone_number is None:
@@ -974,6 +1036,7 @@ def verify_sandBox(request, otp=None, phone_number=None):
                 PhoneNumber=phone_number,
                 OneTimePassword=otp
             )
+            request.session['verified_phone'] = phone_number
             print("Phone number verified in the SMS sandbox:", phone_number)
             return JsonResponse({'success': True, 'message': 'Phone number verified'})
         except Exception as e:

@@ -6,6 +6,8 @@ import CustomButton from "@components/CustomButton";
 import Router from "@utils/Router";
 import getCookie from "@utils/getCookie";
 import easyFetch from "@utils/easyFetch";
+import displayPopup from "@utils/displayPopup";
+import { refreshTokenLoop } from "@utils/pollingFunctions";
 
 export default class TwoFactorAuth extends AbstractComponent {
 	constructor(options = {}) {
@@ -37,15 +39,13 @@ export default class TwoFactorAuth extends AbstractComponent {
 
 		this.shadowRoot.appendChild(pannel);
 
-		submitButton.onclick = (e) => this.submitTwoFactorAuth(e,
-			{
+		submitButton.onclick = (e) => this.submitTwoFactorAuth(e, {
 				one_time_code: twoFactorAuthInput.getValue(),
 				context: 'login'
-			});
+		});
 		// this.shadowRoot.querySelector('#cancel').onclick = this.cancelTwoFactorAuth;
 	}
 
-	// submitLoginForm = (e, formData) => {
 	submitTwoFactorAuth = (e, formData) => {
 		if (e)
 			e.preventDefault();
@@ -63,27 +63,28 @@ export default class TwoFactorAuth extends AbstractComponent {
 			let body = res.body;
 
 			if (!response || !body) {
-				console.error('Request Failed');
-				return ;
+				throw new Error('Empty response');
 			}
 
 			if (response.status === 400) {
-				alert(body.error || 'Invalid code');
+				displayPopup(body.error || 'Invalid code', 'error');
 				return ;
 			}
 	
 			if (!response.ok) {
-				console.error('Request Failed:', body.error || JSON.stringify(body));
-				return ;
+				throw new Error(body.error || JSON.stringify(body));
 			}
 
 			if (response.status === 200 && body.success === true) {
-				alert('Login successful: ' + body.message);
-				Router.navigateTo("/");
+				displayPopup('Login successful: ' + body.message, 'success');
+
+				refreshTokenLoop();
+
+				Router.redirectTo("/");
 			}
 		})
 		.catch(error => {
-			console.error('Request Failed:', error);
+			displayPopup('Request Failed' + error, 'error');
 		});
 	}
 

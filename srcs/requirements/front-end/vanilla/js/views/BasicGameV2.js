@@ -399,7 +399,7 @@ export default class BasicGameV2 extends AbstractComponent {
 	generateScene(data, socket) {
 		console.log("Generating Scene...");
 
-		this.renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+		this.renderer = new THREE.WebGLRenderer({ alpha: true, antialias: false });
 
 		// set the camera and set it to look at the center of the match
 		this.camera = new THREE.PerspectiveCamera(45, this.screenWidth / this.screenHeight, 0.1, 1000);
@@ -545,9 +545,9 @@ export default class BasicGameV2 extends AbstractComponent {
 		const scoreGeo = new TextGeometry(scoreText, this.textSettings);
 		// const scoreGeo = new TextGeometry(scoreText, this.TKtext);
 		
-		const profilePicMaterial = new THREE.MeshPhongMaterial({ map:profilePic });
-		var scoreMaterial = new THREE.MeshPhongMaterial({ color: data.gamemode.gameType ? 0xff0000 : 0xffffff });
-		var loginMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
+		const profilePicMaterial = new THREE.MeshBasicMaterial({ map:profilePic });
+		var scoreMaterial = new THREE.MeshBasicMaterial({ color: data.gamemode.gameType ? 0xff0000 : 0xffffff });
+		var loginMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
 		
 		const loginMesh = new THREE.Mesh(loginGeo, loginMaterial);
 		const scoreMesh = new THREE.Mesh(scoreGeo, scoreMaterial);
@@ -700,7 +700,7 @@ export default class BasicGameV2 extends AbstractComponent {
 			return ;
 		}
 		const wallGeometry = new THREE.BoxGeometry(data.field.wallsSize, 1, 2);
-		const wallMaterial = new THREE.MeshPhongMaterial({ color: data.ball.col, transparent: true, opacity: 1, reflectivity: 0.5 });
+		const wallMaterial = new THREE.MeshBasicMaterial({ color: data.ball.col, transparent: true, opacity: 1, reflectivity: 0.5 });
 		// console.log("number of players : ", data.gamemode.nbrOfPlayers);
 		for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
 			this.walls[i] = new THREE.Mesh(wallGeometry, wallMaterial); // create Material
@@ -854,7 +854,7 @@ export default class BasicGameV2 extends AbstractComponent {
         this.localgenerate(this.match.gameState);
         console.log("handleconnection",this.match);
         
-        this.match.gameInterval = setInterval(this.waitingRoom.bind(this), 10);    
+        this.match.gameInterval = setInterval(this.waitingRoom.bind(this), 20);
 
         console.log(`Player connected with ID: `);
     
@@ -1026,7 +1026,7 @@ export default class BasicGameV2 extends AbstractComponent {
                 render.getBallDir(this.match.gameState);
                 this.match.gameState.ongoing = true;
                 this.match.gameState.imminent = false;
-                this.match.gameInterval = setInterval(this.gameLoop.bind(this), 10);
+                this.match.gameInterval = setInterval(this.gameLoop.bind(this), 20);
             }
         }
     

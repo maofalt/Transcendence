@@ -2,6 +2,8 @@ from django.core.validators import MinValueValidator, MaxValueValidator, Validat
 from django.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
+from decimal import Decimal
+
 
 class Tournament(models.Model):
     tournament_name = models.CharField(max_length=255)
@@ -24,7 +26,7 @@ class Tournament(models.Model):
     )
     
     host = models.ForeignKey('Player', on_delete=models.CASCADE, related_name='hosted_tournaments')
-    tournament_result = models.ForeignKey('Player', on_delete=models.SET_NULL, null=True, related_name='won_tournaments')
+    winner = models.CharField(max_length=20, default='TBD')
     players = models.ManyToManyField('Player', related_name='tournaments')  # Direct many-to-many relationship with Player
     matches = models.ManyToManyField('TournamentMatch', related_name='tournaments')
     nbr_of_match = models.IntegerField(default=0)
@@ -59,10 +61,11 @@ class Tournament(models.Model):
 
         for match in matches: 
             if match.players.count() < self.nbr_of_player_match:
-                match.players.add(player)
-                # match.nbr_of_player += 1
-                match.save()
-                return match 
+                if match.state == "waiting":
+                    match.players.add(player)
+                    # match.nbr_of_player += 1
+                    match.save()
+                    return match 
         return None
 
 class TournamentMatch(models.Model):
@@ -92,8 +95,8 @@ class MatchSetting(models.Model):
     )
     walls_factor = models.DecimalField(
         max_digits=3, decimal_places=2, default=0.7,
-        validators=[MinValueValidator(0, message="Walls factor must be at least 0."), 
-        MaxValueValidator(2, message="Walls factor cannot exceed 2.")
+        validators=[MinValueValidator(Decimal(0), message="Walls factor must be at least 0."), 
+        MaxValueValidator(Decimal(2), message="Walls factor cannot exceed 2.")
         ]
     )
     size_of_goals = models.IntegerField(default=15, 
@@ -108,24 +111,31 @@ class MatchSetting(models.Model):
     )
     paddle_speed = models.DecimalField(
         max_digits=3, decimal_places=2, default=0.01, 
-        validators=[MinValueValidator(0.01, message="Paddle speed must be at least 0.1."),
-        MaxValueValidator(2, message="Paddle speed cannot exceed 2.")
+        validators=[MinValueValidator(Decimal(0.01), message="Paddle speed must be at least 0.1."),
+        MaxValueValidator(Decimal(2), message="Paddle speed cannot exceed 2.")
         ]
     )
     ball_speed = models.DecimalField(
-        max_digits=3, decimal_places=2, default=0.7, 
-        validators=[MinValueValidator(0.1, message="Ball speed must be at least 0.1."),
-        MaxValueValidator(2, message="Ball speed cannot exceed 2.")
+        max_digits=3, decimal_places=2, default=0.1, 
+        validators=[MinValueValidator(Decimal(0.09), message="Ball speed must be at least 0.1."),
+        MaxValueValidator(Decimal(2), message="Ball speed cannot exceed 2.")
         ]
     )
     ball_radius = models.DecimalField(
-        max_digits=3, decimal_places=2, default=1, 
-        validators=[MinValueValidator(0.5, message="Ball radius must be at least 0.5."),
-        MaxValueValidator(7, message="Ball radius cannot exceed 7.")
+        max_digits=3, decimal_places=1, default=1, 
+        validators=[MinValueValidator(Decimal(0.5), message="Ball radius must be at least 0.5."),
+        MaxValueValidator(Decimal(7), message="Ball radius cannot exceed 7.")
         ]
     )
-    ball_color = models.CharField(max_length=7, default='#000000', 
+    ball_color = models.CharField(max_length=8, default='0x000000', 
     validators=[RegexValidator(r'^#(?:[0-9a-fA-F]{3}){1,2}$', message="Invalid color format.")])
+    ball_model = models.CharField(null=True, default='')
+    ball_texture = models.CharField(null=True, default='')
+    nbr_of_rounds = models.IntegerField(default=5, 
+        validators=[MinValueValidator(1), 
+        MaxValueValidator(10)
+        ]
+    )
     nbr_of_player = models.IntegerField(default=2, 
         validators=[MinValueValidator(2), 
         MaxValueValidator(8)

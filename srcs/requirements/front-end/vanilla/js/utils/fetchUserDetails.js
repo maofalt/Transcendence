@@ -8,11 +8,8 @@ export default async function fetchUserDetails() {
 		email: "Logged Out",
 		avatar: "../js/assets/images/default-avatar.webp",
 		status: "Offline",
+		is_online: false,
 		friends_count: 0,
-		wins: "-",
-		losses: "-",
-		total: 15,
-		winrate: "66%",
 	};
 	try {
 		const accessToken = sessionStorage.getItem("accessToken");
@@ -44,13 +41,11 @@ export default async function fetchUserDetails() {
 					username: body.username,
 					playername: body.playername,
 					email: body.email,
+					phone: body.phone,
 					avatar: "/api/user_management" + body.avatar,
 					status: "online",
+					is_online: true,
 					friends_count: body.friends_count,
-					wins: body.wins,
-					losses: body.losses,
-					total: body.total,
-					winrate: body.winrate,
 				}
 			}
 		}).catch(error => {
@@ -60,5 +55,6 @@ export default async function fetchUserDetails() {
 	} catch (error) {
 		console.error('Error fetching user details:', error);
 	}
+	sessionStorage.setItem('userDetails', JSON.stringify(details));
 	return details;
 }

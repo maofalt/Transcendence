@@ -6,42 +6,50 @@ from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth import password_validation
 from django.utils.translation import gettext as _
 
-def is_valid_phone_number(phone_number):
-    phone_number_pattern = r'^\+\d{1,15}$'
-    return bool(re.match(phone_number_pattern, phone_number))
+# def is_valid_phone_number(phone_number):
+#     phone_number_pattern = r'^\+\d{1,15}$'
+#     return bool(re.match(phone_number_pattern, phone_number))
 
 class ProfileUpdateForm(forms.ModelForm):
     two_factor_method = forms.ChoiceField(choices=User.TWO_FACTOR_OPTIONS, required=False)  # Include None value
 
     class Meta:
         model = User
-        fields = ['username', 'playername', 'avatar', 'email', 'phone', 'two_factor_method']
+        fields = ['playername', 'avatar', 'email', 'phone', 'two_factor_method']
 
     def clean_avatar(self):
         avatar = self.cleaned_data['avatar']
         if avatar:
             if not avatar.name.endswith(('.jpg', '.jpeg', '.png', '.gif')):
                 raise forms.ValidationError('Only image files are allowed.')
+            # try:
+            #     with open(avatar.path, "rb") as image_file:
+            #         avatar_data = base64.b64encode(image_file.read()).decode('utf-8')
+            # except Exception as e:
+            #     raise forms.ValidationError('Cannot open image file.')
             # if avatar.size > 2 * 1024 * 1024:
             #     raise forms.ValidationError('File size cannot exceed 2MB.')
         return avatar
-
-    def clean_phone(self):
-        phone = self.cleaned_data['phone']
-        if phone and not is_valid_phone_number(phone):
-            raise forms.ValidationError('Invalid phone number format.')
-        return phone
 
     def clean(self):
         cleaned_data = super().clean()
         two_factor_method = cleaned_data.get('two_factor_method')
         if two_factor_method == 'Off':
             cleaned_data['two_factor_method'] = '' 
-        for field in ['username', 'playername', 'avatar', 'email', 'phone', 'two_factor_method']:
+
+        for field in ['playername', 'avatar', 'email', 'phone', 'two_factor_method']:
             if not cleaned_data.get(field):
                 del cleaned_data[field]
         return cleaned_data
-
+    
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if commit:
+            instance.save()
+        if instance.pk is not None and 'phone' in self.changed_data and self.cleaned_data['phone'] != self.initial['phone']:
+            # Remove the old phone number from the sandbox
+            remove_phone_number_from_sandbox(self.initial['phone'])
+        return instance
 
 # class ProfileUpdateForm(forms.ModelForm):
 #     TWO_FACTOR_OPTIONS = [

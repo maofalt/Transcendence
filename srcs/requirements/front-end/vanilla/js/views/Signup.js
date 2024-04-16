@@ -48,6 +48,11 @@ export default class Signup extends AbstractComponent {
 			description: "Can be changed anytime.",
 			type: "text"
 		});
+		playernameBlock.onkeydown = (e) => {
+			if (e.key === "Enter") {
+				emailBlock.input.input.focus();
+			}
+		}
 
 		let emailBlock = new InputAugmented({
 			title: "Email",
@@ -60,6 +65,11 @@ export default class Signup extends AbstractComponent {
 			type: "email",
 			// button: {content: "Send Code", action: false}
 		});
+		emailBlock.onkeydown = (e) => {
+			if (e.key === "Enter") {
+				nextButton.click();
+			}
+		}
 
 		/* Username and Password */
 		let idBlock = new InputAugmented({
@@ -72,6 +82,11 @@ export default class Signup extends AbstractComponent {
 			type: "text",
 			description: "A unique Username. Will be displayed in Games and Tournaments. Cannot be changed."
 		});
+		idBlock.onkeydown = (e) => {
+			if (e.key === "Enter") {
+				passwordBlock.input.input.focus();
+			}
+		}
 
 		let passwordBlock = new InputAugmented({
 			title: "Password",
@@ -86,6 +101,11 @@ export default class Signup extends AbstractComponent {
 			},
 			type: "password"
 		});
+		passwordBlock.onkeydown = (e) => {
+			if (e.key === "Enter") {
+				confirmPasswordBlock.input.input.focus();
+			}
+		}
 
 		let confirmPasswordBlock = new InputAugmented({
 			title: "Confirm Password",
@@ -96,6 +116,11 @@ export default class Signup extends AbstractComponent {
 			},
 			type: "password"
 		});
+		confirmPasswordBlock.onkeydown = (e) => {
+			if (e.key === "Enter") {
+				nextButton.click();
+			}
+		}
 
 		/* Verify Code */
 		let verifyCodeBlock = new InputAugmented({
@@ -109,12 +134,19 @@ export default class Signup extends AbstractComponent {
 			type: "text",
 			// button: {content: "Verify Code", action: false}
 		});
+		verifyCodeBlock.onkeydown = (e) => {
+			if (e.key === "Enter") {
+				finalSignupButton.click();
+			}
+		}
 
 		/* Privacy Policy */
 			// put privacy policy block here
 
 		let nextButton = new CustomButton({content: "Next", action: true});
 		nextButton.id = "nextButton";
+		nextButton.tabIndex = 0;
+		
 		let backButton = new CustomButton(
 			{
 				content: "↩", // "⇦", // "↵", //"↶", //"↩", 
@@ -127,13 +159,16 @@ export default class Signup extends AbstractComponent {
 					'width': '40px',
 					'height': '40px',
 					'font-size': '25px',
+					// 'display': 'none',
 					// 'background-color': 'lightblue',
 				}
 			});
 		backButton.id = "backButton";
+	
 		let finalSignupButton = new CustomButton({content: "Sign Up", action: true});
 		finalSignupButton.style.display = "none";
 		finalSignupButton.id = "finalSignupButton";
+		
 		pannel.shadowRoot.appendChild(nextButton);
 		pannel.shadowRoot.appendChild(finalSignupButton);
 		pannel.shadowRoot.appendChild(backButton);
@@ -208,7 +243,6 @@ export default class Signup extends AbstractComponent {
 	/* FORM FLOW MANAGEMENT */
 	goNext = async (e, flow) => { // called when next button is pressed
 		e.preventDefault();
-		let canGoNext = 1;
 		if (this.flowIndex >= flow.length - 1)
 			return ;
 		console.log("before");
@@ -234,6 +268,8 @@ export default class Signup extends AbstractComponent {
 		
 		console.log("after");
 		this.flowIndex++;
+		// if (this.flowIndex > 0)
+		// 	document.getElementById("backButton").style.display = "block";
 		this.updateFormView(flow, this.flowIndex);
 	}
 
@@ -383,9 +419,10 @@ export default class Signup extends AbstractComponent {
 
 				// get user details for the profile page
 				let details = await fetchUserDetails();
-				sessionStorage.setItem('userDetails', JSON.stringify(details));
+				// sessionStorage.setItem('userDetails', JSON.stringify(details));
 
 				Router.navigateTo("/");
+				// window.location.reload();
 				valid = true;
 			} else {
 				displayPopup(body.error || JSON.stringify(body), 'error');

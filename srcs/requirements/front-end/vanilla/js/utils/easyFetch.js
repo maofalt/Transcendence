@@ -1,4 +1,5 @@
 import getCookie from "@utils/getCookie";
+import displayPopup from "@utils/displayPopup";
 
 export default async function easyFetch(url, options = { method: 'GET', body: null, headers: {} }) {
 
@@ -37,6 +38,11 @@ export default async function easyFetch(url, options = { method: 'GET', body: nu
 
 		if (!response) {
 			throw new Error('No response received');
+		}
+
+		if (response.status === 401) {
+			displayPopup('Your session has expired. Please login again.', 'error');
+			window.location.href = '/login';
 		}
 
 		if (response.headers.get("content-length") === "0") {

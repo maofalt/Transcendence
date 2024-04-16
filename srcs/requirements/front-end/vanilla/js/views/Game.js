@@ -12,6 +12,7 @@ import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import CustomButton from '@components/CustomButton';
 import { navigateTo } from "@utils/Router";
 import AbstractComponent from "@components/AbstractComponent";
+import { makeApiRequest } from '@utils/makeApiRequest.js';
 
 
 // function createCallTracker() {
@@ -54,11 +55,10 @@ class BoxObject {
 }
 
 export default class Game extends AbstractComponent {
-	constructor(query='', screenWidth, screenHeight) {
+	constructor(matchIdQuery='', screenWidth, screenHeight) {
 		super();
 		this.loader = new GLTFLoader();
-		this.query = 'matchID=' + query;
-		console.log("Game View created with matchID: ", query);
+		this.matchIdQuery = matchIdQuery;
 		
         // controls
         this.controls = null;
@@ -96,7 +96,9 @@ export default class Game extends AbstractComponent {
 		}
 
 		this.prevScores = [];
-		this.dir = 0;
+		this.direction = null;
+
+		this.avatars = null;
 
 		this.screenWidth = screenWidth || window.innerWidth;
 		this.screenHeight = screenHeight || window.innerHeight;
@@ -112,8 +114,7 @@ export default class Game extends AbstractComponent {
 		// Set up the game container
 		this.container = document.createElement('div');
 		this.container.id = 'gameContainer';
-		this.shadowRoot.appendChild(this.container);
-
+		
 		// Create a new div
 		let countDown = document.createElement('div');
 		countDown.id = 'count-down';
@@ -155,6 +156,8 @@ export default class Game extends AbstractComponent {
 
 		this.container.appendChild(countDown);
 		this.container.appendChild(leaveButton);
+
+		this.shadowRoot.appendChild(this.container);
 		
 		// Your game setup logic here (init socket, create scene, etc.)
 		// this.generateScene();
@@ -168,6 +171,38 @@ export default class Game extends AbstractComponent {
 		window.addEventListener("keyup", this.handleKeyRelease.bind(this));
 	};
 
+	async fetchStartingData(playersArray) {
+		try {
+			this.avatars = await this.fetchAvatars(playersArray);
+		} catch (error) {
+			console.error('Error fetching starting data:', error);
+			this.avatars = null;
+		}
+	}
+
+	async fetchAvatars(playersArray) {
+		let avatars = [];
+		for (let i = 0; i < playersArray.length; i++) {
+			avatars.push(await this.fetchUserAvatar(playersArray[i].accountID));
+		}
+		return avatars;
+	}
+
+	async fetchUserAvatar(username) {
+		try {
+			const response = await makeApiRequest(`/api/user_management/auth/detail/${username}`, 'GET');
+			if (response.status >= 400) { 
+				throw new Error('Failed to fetch user avatar.');
+			}
+			let avatar = response.body.avatar;
+			const src = "/api/user_management" + avatar;
+			return src;
+		} catch (error) {
+			console.log('no avatar for:' + username + ": ", error);
+			return null;
+		}
+	}
+
 	onWindowResize() {
 		this.camera.aspect = this.screenWidth / this.screenHeight;
 		this.camera.updateProjectionMatrix();
@@ -176,16 +211,16 @@ export default class Game extends AbstractComponent {
 
 	handleKeyPress(event) {
 		console.log(event.key);
-		if (event.key == "w")
+		if (event.key == "w" || event.key == "d")
 			this.socket.emit('moveUp');
-		if (event.key == "s")
+		if (event.key == "s" || event.key == "a")
 			this.socket.emit('moveDown');
-		if (event.key == "d")
-			this.socket.emit('dash');
+		// if (event.key == "d")
+			// this.socket.emit('dash');
 	};
 
 	handleKeyRelease(event) {
-		if (event.key == "w" || event.key == "s")
+		if (event.key == "w" || event.key == "d" || event.key == "s" || event.key == "a")
 			this.socket.emit('stop');
 	};
 
@@ -193,21 +228,18 @@ export default class Game extends AbstractComponent {
 		// socket initialization and event handling logic
 		const hostname = window.location.hostname;
 		const protocol = 'wss';
-//		const query = window.location.search.replace('?', '');
-		const query = window.location.search.replace('?', '') || this.query;
-		console.log("Query: ", query);
+
+		const matchID = window.location.search.replace('?matchID=', '') || this.matchIdQuery;
 		
 		let accessToken = sessionStorage.getItem('accessToken');
-		// console.log("Access Token: ", accessToken);
-		// accessTok = accessTok.replace("Bearer ", ""); // replace the "Bearer " at the beginning of the value;
 
 		const io_url = hostname.includes("github.dev") ? `${protocol}://${hostname}` : `${protocol}://${hostname}:9443`;
 		console.log(`Connecting to ${io_url}/game`)
+		
 		this.socket = io(`${io_url}/game`, {
 			path: '/game-logic/socket.io',
-			query: query,
 			secure: hostname !== 'localhost',
-			auth: { accessToken }
+			auth: { accessToken, matchID },
 		});
 
 		this.socket.on('error', (error) => {
@@ -226,11 +258,19 @@ export default class Game extends AbstractComponent {
 
 		this.socket.on('generate', data => {
 			// Generate scene and update it
+			// let parsedData = JSON.parse(data);
 			data.playersArray = Object.values(data.players);
-			console.log("data : ", data);
-			this.generateScene(data, this.socket);
-			this.updateScene(data, this.socket);
-			this.renderer.render(this.scene, this.camera);
+			// console.log("data : ", data);
+			this.fetchStartingData(data.playersArray).then(() => {
+				this.generateScene(data, this.socket);
+				this.updateScene(data, this.socket);
+				this.renderer.render(this.scene, this.camera);
+			})
+			.catch((error) => {
+				let msg = "Error generating scene: " + (error.message || error);
+				displayPopup(msg, "error");
+				this.socket.disconnect();
+			});
 		});
 		
 		this.socket.on('render', data => {
@@ -377,7 +417,7 @@ export default class Game extends AbstractComponent {
 		uiLayer.style.background = `rgba(0, 0, 0, ${frame / (maxFrame * 1.8)})`;
 		uiLayer.style.opacity = frame / maxFrame;
 		uiLayer.style.backdropFilter = `blur(${frame / maxFrame * 16}px)`;
-		console.log(`blur(${frame / maxFrame * 16}px)`);
+		// console.log(`blur(${frame / maxFrame * 16}px)`);
 		if (frame == maxFrame) {
 			console.log("End of Game !!");
 			return ;
@@ -407,7 +447,9 @@ export default class Game extends AbstractComponent {
 		this.generateScores(data);
 		
 		// rotate the scene relative to the current client (so the paddle is at the bottom)
-		this.scene.rotateZ(-2 * Math.PI/data.gamemode.nbrOfPlayers * this.dir)
+		// console.log("THIS DIR: ",this.direction);
+		this.scene.rotateZ(-2 * Math.PI/data.gamemode.nbrOfPlayers * this.direction);
+
 
 		// this.drawAxes();
 	}
@@ -415,7 +457,7 @@ export default class Game extends AbstractComponent {
 	generateScene(data, socket) {
 		console.log("Generating Scene...");
 
-		this.renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+		this.renderer = new THREE.WebGLRenderer({ alpha: true, antialias: false });
 
 		// set the camera and set it to look at the center of the match
 		this.camera = new THREE.PerspectiveCamera(45, this.screenWidth / this.screenHeight, 0.1, 1000);
@@ -426,11 +468,14 @@ export default class Game extends AbstractComponent {
 		this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 		this.controls.target.set(0, 0, 0);
 
+		// console.log("PLAYERS ARRAY:",data.playersArray);
 		// get the direction to later rotate the scene relative to the current client
 		for (let i=0; i<data.playersArray.length; i++) {
 			if (data.playersArray[i].socketID == socket.id) {
 				console.log(`socket : ${data.playersArray[i].socketID}, client : ${socket.id}, ${i}, angle = ${data.playersArray[i].paddle.angle}`);
-				this.dir = i
+				this.direction = i;
+				// console.log("I ON ASSIGN: ",i);
+				// console.log("THIS DIR ON ASSIGN: ",this.direction);
 			}
 		}
 
@@ -439,8 +484,8 @@ export default class Game extends AbstractComponent {
 
 	displayTimer(data) {
 		// in here : formatting the timer interface;
-		let timer = document.getElementById('timer');
-		let timerMessage = document.getElementById('timer-message');
+		let timer = this.shadowRoot.getElementById('timer');
+		let timerMessage = this.shadowRoot.getElementById('timer-message');
 
 		timer.textContent = data.ongoing ? "" : data.countDownDisplay;
 		timerMessage.textContent = "";
@@ -457,7 +502,7 @@ export default class Game extends AbstractComponent {
 
 	// Other methods (generateScene, updateScene, etc.) here
 	updateScene(data, socket) {
-		// this.displayTimer(data);
+		this.displayTimer(data);
 
 		// console.log("Updating Scene...");
 		if (data.ball.model) {
@@ -510,7 +555,7 @@ export default class Game extends AbstractComponent {
 		// get the direction of the client to rotate the scores to face the client
 		for (let i = 0; i < data.playersArray.length; i++) {
 			if (data.playersArray[i].socketID === this.socket.id) {
-				this.dir = i;
+				this.direction = i;
 			}
 		}
 
@@ -520,13 +565,10 @@ export default class Game extends AbstractComponent {
 		loader.load( 'https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', ( response ) => {
 
 			this.textSettings.font = response;
-
-			this.refreshScores(data);
-
 			console.log("Normal Font loaded");
-
-		} );
-
+	
+			this.refreshScores(data);
+		});
 	}
 
 		// font: font,
@@ -539,13 +581,16 @@ export default class Game extends AbstractComponent {
 		// bevelSize: bevelSize,
 		// bevelEnabled: bevelEnabled
 
-	
-	createScore(data, player, i) {
+	createScore(data, player, i, avatar) {
 
 		let dir = 0; // used to rotate scores to face client
 
 		// generate scores for each player
-		const profilePic = new THREE.TextureLoader().load(`./js/assets/images/default-avatar.webp`);
+		let profilePic = null;
+		if (avatar)
+			profilePic = new THREE.TextureLoader().load(avatar);
+		else
+			profilePic = new THREE.TextureLoader().load(`./js/assets/images/default-avatar.webp`);
 		profilePic.wrapS = profilePic.wrapT = THREE.RepeatWrapping;
 		profilePic.offset.set( 0, 0 );
 		profilePic.repeat.set( 2, 1 );
@@ -553,7 +598,7 @@ export default class Game extends AbstractComponent {
 		const scoreText = player.score.toString();
 		const ppRadius = 2;
 
-		console.log("Creating score: " + scoreText + " for player " + i + " with dir: " + this.dir);
+		console.log("Creating score: " + scoreText + " for player " + i + " with dir: " + this.direction);
 		// this.textSettings.font = this.textSettings.fontNormal;
 		const profilePicGeo = new THREE.SphereGeometry(ppRadius, 12, 24);
 		const loginGeo = new TextGeometry(loginText, this.textSettings);
@@ -561,9 +606,9 @@ export default class Game extends AbstractComponent {
 		const scoreGeo = new TextGeometry(scoreText, this.textSettings);
 		// const scoreGeo = new TextGeometry(scoreText, this.TKtext);
 		
-		const profilePicMaterial = new THREE.MeshPhongMaterial({ map:profilePic });
-		var scoreMaterial = new THREE.MeshPhongMaterial({ color: data.gamemode.gameType ? 0xff0000 : 0xffffff });
-		var loginMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
+		const profilePicMaterial = new THREE.MeshBasicMaterial({ map:profilePic });
+		var scoreMaterial = new THREE.MeshBasicMaterial({ color: data.gamemode.gameType ? 0xff0000 : 0xffffff });
+		var loginMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
 		
 		const loginMesh = new THREE.Mesh(loginGeo, loginMaterial);
 		const scoreMesh = new THREE.Mesh(scoreGeo, scoreMaterial);
@@ -615,7 +660,7 @@ export default class Game extends AbstractComponent {
 		this.scene.add(this.scores[i]);
 
 		// rotate the score to face client
-		this.scores[i].rotation.set(0, 0, 2 * Math.PI/data.gamemode.nbrOfPlayers * this.dir);
+		this.scores[i].rotation.set(0, 0, 2 * Math.PI/data.gamemode.nbrOfPlayers * this.direction);
 	}
 
 	refreshScores(data) {
@@ -628,9 +673,11 @@ export default class Game extends AbstractComponent {
 				console.log("Refreshing score: " + player.score + " for player " + index);
 				if (this.scores[index])
 					this.scene.remove(this.scores[index]);
-				this.createScore(data, player, index);
+				if (this.avatars && this.avatars[index])
+					this.createScore(data, player, index, this.avatars[index]);
+				else
+					this.createScore(data, player, index, null);
 			}
-		
 		});
 
 		this.prevScores = data.playersArray.map(player => player.score);
@@ -703,7 +750,7 @@ export default class Game extends AbstractComponent {
 				data.ball.pos, 10, 0xff0000);
 
         this.ball = new SpObject(new THREE.Mesh(ballGeometry, ballMaterial), dir1);
-		
+
 		// add to scene
 		this.scene.add(this.ball.mesh);
 		// this.scene.add(this.ball.dirMesh);
@@ -716,7 +763,7 @@ export default class Game extends AbstractComponent {
 			return ;
 		}
 		const wallGeometry = new THREE.BoxGeometry(data.field.wallsSize, 1, 2);
-		const wallMaterial = new THREE.MeshPhongMaterial({ color: data.ball.col, transparent: true, opacity: 1, reflectivity: 0.5 });
+		const wallMaterial = new THREE.MeshBasicMaterial({ color: data.ball.col, transparent: true, opacity: 1, reflectivity: 0.5 });
 		// console.log("number of players : ", data.gamemode.nbrOfPlayers);
 		for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
 			this.walls[i] = new THREE.Mesh(wallGeometry, wallMaterial); // create Material
