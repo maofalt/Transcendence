@@ -100,6 +100,7 @@ class BaseTable extends HTMLElement {
 
     sortColumn(header) {
         // Toggle sort direction
+        console.log("Sorting by:", header);
         if (this.ascending === undefined) this.ascending = true;
         else this.ascending = !this.ascending;
 
@@ -115,17 +116,19 @@ class BaseTable extends HTMLElement {
         console.log(rowContent);
         // Apply natural sort algorithm
         rowData.sort((a, b) => this.naturalSort(a.key, b.key));
-        console.log("sorted", rowData);
+        //console.log("sorted", rowData);
         rowContent.sort((a,b) => this.naturalSort(a,b));
         console.log("sorted", rowContent);
         // If descending sort, reverse the array
         if (!this.ascending) rowData.reverse();
-        console.log("sorted", rowData);
+        //console.log("sorted", rowData);
         // Set sorted rows back to dataRows
         this.dataRows = rowData.map(item => item.row);
+        //console.log("sorted", this.dataRows);
 
         // // Rebuild rowIndexByIdentifier and totalRows
-         this.updateRowsPostSort();
+        this.updateRowsPostSort();
+        console.log("Final sorted rows:", this.dataRows.map(row => row.cells.get(header)?.domElement.textContent.trim()));
 
         // Re-render the page to show the sorted rows
         this.renderCurrentPage();
@@ -154,6 +157,7 @@ class BaseTable extends HTMLElement {
             this.rowIndexByIdentifier[row.identifier] = index;
             this.totalRows.push(row.domElement);
         });
+        //console.log("Updated rowIndexByIdentifier:", this.rowIndexByIdentifier);  // Debug: Check identifiers
     }
 
     addRow(cells, identifier) {
@@ -204,11 +208,17 @@ class BaseTable extends HTMLElement {
         let rowsToShow;
         if (this.filteredRows) {
             // We need to make sure we're dealing with DOM elements, not Row objects
+            console.log("filtered rows");
             rowsToShow = this.filteredRows.map(row => row.domElement).slice(startIndex, endIndex);
         } else {
+            console.log("total rows");
             rowsToShow = this.totalRows.slice(startIndex, endIndex);
         }
-    
+        console.log("Rows to Show:", rowsToShow.map(row => {
+            // Extract text from cells under the "Tournament Name" header
+            const cell = row.querySelector('td'); // Assuming the "Tournament Name" is the first cell if no specific class or attribute identifies it
+            return cell ? cell.textContent.trim() : "No data for header";
+        }));
         // Check if the row is defined before trying to change its display property
         rowsToShow.forEach(row => {
             if (row) {
@@ -235,6 +245,7 @@ class BaseTable extends HTMLElement {
     }
     
     updateRowByIdentifier(identifier, newCells) {
+        console.log('Updating row with identifier:', identifier);
         const rowIndex = this.rowIndexByIdentifier[identifier];
         if (rowIndex !== undefined && this.dataRows[rowIndex]) {
             const row = this.dataRows[rowIndex];
