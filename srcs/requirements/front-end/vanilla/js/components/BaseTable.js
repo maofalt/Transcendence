@@ -113,12 +113,12 @@ class BaseTable extends HTMLElement {
                 key: (row.cells.get(header)?.domElement.textContent || "").trim()
             };
         });
-        console.log(rowContent);
+        //console.log(rowContent);
         // Apply natural sort algorithm
         rowData.sort((a, b) => this.naturalSort(a.key, b.key));
         //console.log("sorted", rowData);
         rowContent.sort((a,b) => this.naturalSort(a,b));
-        console.log("sorted", rowContent);
+        //console.log("sorted", rowContent);
         // If descending sort, reverse the array
         if (!this.ascending) rowData.reverse();
         //console.log("sorted", rowData);
@@ -128,7 +128,7 @@ class BaseTable extends HTMLElement {
 
         // // Rebuild rowIndexByIdentifier and totalRows
         this.updateRowsPostSort();
-        console.log("Final sorted rows:", this.dataRows.map(row => row.cells.get(header)?.domElement.textContent.trim()));
+        //console.log("Final sorted rows:", this.dataRows.map(row => row.cells.get(header)?.domElement.textContent.trim()));
 
         // Re-render the page to show the sorted rows
         this.renderCurrentPage();
@@ -151,14 +151,24 @@ class BaseTable extends HTMLElement {
     }
 
     updateRowsPostSort() {
+        // Clear the table body to reorder the elements
+        const tableBody = this.shadowRoot.querySelector('#table-body');
+        tableBody.innerHTML = '';  // Remove all child nodes
+    
+        this.totalRows = this.dataRows.map(row => row.domElement);
+    
+        // Re-append each row element in the new order to the DOM
+        this.totalRows.forEach(rowElement => {
+            tableBody.appendChild(rowElement);
+        });
+    
+        // Update rowIndexByIdentifier based on the new order
         this.rowIndexByIdentifier = {};
-        this.totalRows = [];
         this.dataRows.forEach((row, index) => {
             this.rowIndexByIdentifier[row.identifier] = index;
-            this.totalRows.push(row.domElement);
         });
-        //console.log("Updated rowIndexByIdentifier:", this.rowIndexByIdentifier);  // Debug: Check identifiers
     }
+    
 
     addRow(cells, identifier) {
         const newRow = new Row(identifier);
@@ -167,8 +177,8 @@ class BaseTable extends HTMLElement {
         });
         this.dataRows.push(newRow);
         this.totalRows.push(newRow.domElement);
-        this.shadowRoot.querySelector('#table-body').appendChild(newRow.domElement);
         newRow.domElement.style.display = 'none';
+        this.shadowRoot.querySelector('#table-body').appendChild(newRow.domElement);
 
         if (identifier) {
             this.rowIndexByIdentifier[identifier] = this.totalRows.length - 1;
@@ -177,16 +187,13 @@ class BaseTable extends HTMLElement {
 
     connectedCallback() {
         this.shadowRoot.getElementById('prev-page').addEventListener('click', () => {
-            console.log('prev-page clicked');
             if (this.currentPage > 1) {
                 this.currentPage--;
                 this.renderCurrentPage();
             }
         });
         this.shadowRoot.getElementById('next-page').addEventListener('click', () => {
-            console.log('next-page clicked');
             const maxPage = Math.ceil(this.dataRows.length / this.itemsPerPage);
-            console.log('maxPage', maxPage);
             if (this.currentPage < maxPage) {
                 this.currentPage++;
                 this.renderCurrentPage();
@@ -208,20 +215,22 @@ class BaseTable extends HTMLElement {
         let rowsToShow;
         if (this.filteredRows) {
             // We need to make sure we're dealing with DOM elements, not Row objects
-            console.log("filtered rows");
+            //console.log("filtered rows");
             rowsToShow = this.filteredRows.map(row => row.domElement).slice(startIndex, endIndex);
         } else {
-            console.log("total rows");
+            //console.log("total rows");
             rowsToShow = this.totalRows.slice(startIndex, endIndex);
         }
-        console.log("Rows to Show:", rowsToShow.map(row => {
-            // Extract text from cells under the "Tournament Name" header
-            const cell = row.querySelector('td'); // Assuming the "Tournament Name" is the first cell if no specific class or attribute identifies it
-            return cell ? cell.textContent.trim() : "No data for header";
-        }));
+        // console.log("Rows to Show:", rowsToShow.map(row => {
+        //     // Extract text from cells under the "Tournament Name" header
+        //     const cell = row.querySelector('td'); // Assuming the "Tournament Name" is the first cell if no specific class or attribute identifies it
+        //     return cell ? cell.textContent.trim() : "No data for header";
+        // }));
         // Check if the row is defined before trying to change its display property
         rowsToShow.forEach(row => {
             if (row) {
+                const cell = row.querySelector('td');
+                //console.log("Row to show:", cell ? cell.textContent.trim() : "No data for header");
                 row.style.display = '';
             }
         });
@@ -245,7 +254,7 @@ class BaseTable extends HTMLElement {
     }
     
     updateRowByIdentifier(identifier, newCells) {
-        console.log('Updating row with identifier:', identifier);
+        //console.log('Updating row with identifier:', identifier);
         const rowIndex = this.rowIndexByIdentifier[identifier];
         if (rowIndex !== undefined && this.dataRows[rowIndex]) {
             const row = this.dataRows[rowIndex];
@@ -258,7 +267,7 @@ class BaseTable extends HTMLElement {
             });
             this.renderCurrentPage();
         } else {
-            console.log(`Row with identifier ${identifier} not found.`);
+           // console.log(`Row with identifier ${identifier} not found.`);
             console.error(`Row with identifier ${identifier} not found.`);
         }
     }
