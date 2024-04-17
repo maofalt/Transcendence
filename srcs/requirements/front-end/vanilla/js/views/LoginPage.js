@@ -14,6 +14,8 @@ import InputAugmented from "@components/InputAugmented";
 import displayPopup from "@utils/displayPopup";
 import { refreshTokenLoop } from "@utils/pollingFunctions";
 import { initSocketConnection } from "@utils/websocket";
+import TwoFactorAuth from "@components/TwoFactorAuth";
+import { fadeIn } from "@utils/animate";
 
 export default class LoginPage extends AbstractComponent {
 	constructor(options = {}) {
@@ -47,10 +49,10 @@ export default class LoginPage extends AbstractComponent {
 		});
 		
 		let loginButton = new CustomButton({content: "Log In", action: true, style: {margin: "15px 0px 0px 0px", "border-radius": "20px"}});
-		loginButton.tabIndex = 0;
+		// loginButton.tabIndex = 0;
 
 		let signUpButton = new CustomButton({content: "Sign Up", action: false, style: {margin: "20px 0px 20px 0px"}});
-		signUpButton.tabIndex = 0;
+		// signUpButton.tabIndex = 0;
 
 		let buttons = document.createElement('div');
 		buttons.appendChild(loginButton);
@@ -102,9 +104,12 @@ export default class LoginPage extends AbstractComponent {
 		const goBack = new CustomButton({content: "< Back", style: {padding: "0px 20px", position: "absolute", left: "50px", bottom: "30px"}});
 		goBack.onclick = () => window.history.back();
 
+		this.verifyCode = new TwoFactorAuth();
+
 		this.shadowRoot.appendChild(goBack);
 		this.shadowRoot.appendChild(bigTitle);
 		this.shadowRoot.appendChild(pannel);
+		this.shadowRoot.appendChild(this.verifyCode);
 	}
 	
 	buttonOnClick = (e, arg) => {
@@ -155,7 +160,9 @@ export default class LoginPage extends AbstractComponent {
 
 				if (body.requires_2fa) {
 					displayPopup('login successful, please enter your 2fa code', 'info');
-					Router.redirectTo("/2fa");
+					// Router.redirectTo("/2fa");
+					fadeIn(this.verifyCode);
+					return ;
 				}
 
 				// displayPopup('Login successful', 'success');
