@@ -316,9 +316,22 @@ class MatchResult(APIView):
                 return JsonResponse(serializer.data, status=status.HTTP_200_OK, safe=False)
             else:
                 return JsonResponse({'message': 'An Error occurred while updating the next round matches.'}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+        elif next_matches.exists() and len(sorted_winners) == 1:
+            sorted_winners[0].won_tournament.add(tournament)
+            sorted_winners[0].save()
+            for match in next_matches:
+                match.delete()
+                tournament.save()
+            tournament.state = "ended"
+            tournament.winner = sorted_winners[0].username
+            print("tournament.tournament_result: ", tournament.winner)
+            tournament.save()
+            serializer = TournamentMatchSerializer(finished_matches, many=True)
+            return JsonResponse(serializer.data, status=status.HTTP_200_OK, safe=False)
+       
         for winner in winners:
             print("winner: ", winner.username)
-            if winner.username == 'Unkonwn':
+            if winner.username == 'Unknown':
                 print("Skipped assigning unknown player to the match")
                 continue
             match = tournament.assign_player_to_match(winner, round)
@@ -338,7 +351,7 @@ class MatchResult(APIView):
 
     def post(self, request, match_id, winner_username):
         with transaction.atomic(): 
-            print("match_id : ", match_id,  "winner_id: ", winner_username)
+            print("match_id : ", match_id,  "winner: ", winner_username)
             try:
                 match = TournamentMatch.objects.select_for_update().get(id=match_id)
                 # match = get_object_or_404(TournamentMatch, id=match_id)
@@ -348,7 +361,7 @@ class MatchResult(APIView):
             #     return JsonResponse({'error': 'Match not found'}, status=404)
             
             players = match.players.all()
-            if not players.filter(username=winner_username).exists():
+            if not players.filter(username=winner_username).exists() and not players.filter(username=winner_username+'*').exists():
                 return Response("Winner not found among participants", status=status.HTTP_404_NOT_FOUND)
 
             if match.state == "ended":
@@ -360,13 +373,23 @@ class MatchResult(APIView):
 
             for player in players:
                 print("player: ", player.username, "winner: ", winner_username)
-                if player.username == winner_username:
+                if player.username == winner_username or player.username == winner_username+'*':
+                    if player.username == (winner_username+"*"):
+                        player.username = 'Unknown'
+                        player.save()
+                        print("After username modification:", player.username)
                     player.total_played += 1
                     player.won_match.add(match)
                     player.save()
                     match.winner = player
                     match.save()
                 else:
+                    print("non winner----")
+                    if player.username.endswith('*'):
+                        print('player: ', player.username)
+                        player.username = 'Unknown'
+                        player.save()
+                        print("After username modification:", player.username)
                     player.total_played += 1
                     player.save()
 
@@ -653,6 +676,11 @@ def auto_win_for_single_player(request, tournament_id, round_number):
     matches = tournament.matches.filter(round_number=round_number).order_by('id')
     for match in matches:
         if match.state != "ended":
+            if match.players.count() == 0:
+                print("Match without player")
+                match.delete()
+                tournament.save()
+                print("Match deleted")
             if match.players.count() == 1:
                 player = match.players.first()
                 player.won_match.add(match)
@@ -660,7 +688,8 @@ def auto_win_for_single_player(request, tournament_id, round_number):
                 match.state = "ended"
                 match.winner = player
                 match.save()
-                return JsonResponse({'message': 'Match ended with a single participant'}, status=200)
+                tournament.save()
+            # return JsonResponse({'message': 'Match ended with a single participant'}, status=200)
     return JsonResponse({'message': 'All matches have multiple participants'}, status=200)
 
 class TournamentEnd(APIView):
@@ -853,7 +882,7 @@ def generate_round(request, id, round):
     except Http404:
         return JsonResponse({'error': 'Tournament not found'}, status=404)
     try:
-        matches = tournament.matches.filter(round_number=round).exclude(state='ended').order_by('id')
+        matches = tournament.matches.filter(round_number=round).exclude(state='ended').exclude(players=None).order_by('id')
         # matches = tournament.matches.filter(round_number=round).order_by('id')
     except AttributeError:
         return JsonResponse({'error': 'Matches not found or cannot be filtered.'}, status=404)
@@ -937,8 +966,13 @@ class DeletePlayer(APIView):
             matches = tournament.matches.filter(players=player)
             for match in matches:
                 match.players.remove(player)
-                if match.state != 'waiting':
+                if match.state == 'ended':
                     match.players.add(player)
+                if match.state == 'playing':
+                    player.username = playername + '*'
+                    player.save()
+                    match.players.add(player)
+                    print('playername: ', player.username)
                 match.save()
 
             if tournament.winner != 'TBD':
