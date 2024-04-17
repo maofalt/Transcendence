@@ -64,17 +64,10 @@ export default class ProfilePage extends AbstractComponent {
 		const gameStats = this.createGameStatsPannel(this.userElemsToBeFilled);
 		const matchHistory = this.createMatchHistoryPannel(this.userElemsToBeFilled);
 
-		// create the delete account button
-		const deleteButton = new CustomButton({content: "Delete Account", delete: true, style: {margin: "10px 10px"}});
-		deleteButton.onclick = () => {
-			fadeIn(areYouSure);
-		};
-
 		profile.shadowRoot.appendChild(userInfo);
 		profile.shadowRoot.appendChild(personalInfo);
 		profile.shadowRoot.appendChild(gameStats);
 		profile.shadowRoot.appendChild(matchHistory);
-		profile.shadowRoot.appendChild(deleteButton);
 
 
 		/* FRIEND PROFILE PANNEL */
@@ -152,51 +145,12 @@ export default class ProfilePage extends AbstractComponent {
 		friendPannel.shadowRoot.appendChild(addFriend);
 		friendPannel.shadowRoot.appendChild(friendsListPannel);
 
-		/* DELETION CONFIRMATION PANNEL */
-		const areYouSure = document.createElement("div"); // dark background overlay
-		areYouSure.style.display = "none";
-		areYouSure.style.position = "fixed";
-		areYouSure.style.top = "0";
-		areYouSure.style.left = "0";
-		areYouSure.style.width = "100%";
-		areYouSure.style.height = "100%";
-		areYouSure.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
-		areYouSure.style.zIndex = "9999";
-
-		// pannel with delete account confirmation / cancel
-		const areYouSurePannel = new Pannel({dark: true, title: "Are you sure you want to delete your account?\nThis can't be undone!", style: {padding: "20px 20px 20px 20px"}});
-		areYouSurePannel.style.position = "fixed";
-		areYouSurePannel.style.top = "50%";
-		areYouSurePannel.style.left = "50%";
-		areYouSurePannel.style.transform = "translate(-50%, -50%)";
-
-		const confirmDeleteButton = new CustomButton({content: "Yes, delete my account", delete: true, style: {margin: "10px"}});
-		confirmDeleteButton.onclick = () => { // send delete request when clicking confirm
-			this.deleteAccount();
-		};
-		const cancelDeleteButton = new CustomButton({content: "No, keep my account", action: true, style: {margin: "10px"}});
-		cancelDeleteButton.onclick = () => { // fade out when clicking cancel
-			fadeOut(areYouSure);
-		};
-		areYouSure.onclick = (e) => { // fade out when clicking away from pannel
-			if (e.target === areYouSure) {
-				fadeOut(areYouSure);
-			}
-		}
-
-		areYouSurePannel.shadowRoot.appendChild(confirmDeleteButton);
-		areYouSurePannel.shadowRoot.appendChild(cancelDeleteButton);
-
-		areYouSure.appendChild(areYouSurePannel);
-	
-
 		/* OTHER CONSTRUCTION */
 		// create go back button
 		const goBack = new CustomButton({content: "< Back", style: {padding: "0px 20px", position: "absolute", left: "50px", bottom: "30px"}});
 		goBack.onclick = () => window.history.back();
 
 		// append all elements to the shadowRoot
-		this.shadowRoot.appendChild(areYouSure); // delete account confirmation pannel
 		this.shadowRoot.appendChild(goBack); // go back button
 		this.shadowRoot.appendChild(profile); // profile section with stats and info
 		this.shadowRoot.appendChild(friendPannel); // friends section with add friend input and friends list
@@ -303,32 +257,6 @@ export default class ProfilePage extends AbstractComponent {
 			displayPopup(error.message || error, "error");
 		});
 		return gameStats;
-	}
-
-	deleteAccount = async () => {
-		await easyFetch(`/api/user_management/auth/delete_account`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/x-www-form-urlencoded',
-			},
-		})
-		.then(res => {
-			let response = res.response;
-			let body = res.body;
-
-			if (!response || !body) {
-				throw new Error("Response is null");
-			} else if (response.status === 200) {
-				displayPopup("Account Deleted!", "info");
-				sessionStorage.clear();
-				navigateTo("/");
-			} else {
-				throw new Error(body.error || JSON.stringify(body));
-			}
-		})
-		.catch(error => {
-			displayPopup(error.message || error, "error");
-		});
 	}
 
 	postAddFriend = async (username) => {
