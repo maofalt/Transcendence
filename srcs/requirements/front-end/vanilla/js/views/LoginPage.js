@@ -15,6 +15,7 @@ import displayPopup from "@utils/displayPopup";
 import { refreshTokenLoop } from "@utils/pollingFunctions";
 import { initSocketConnection } from "@utils/websocket";
 import TwoFactorAuth from "@components/TwoFactorAuth";
+import { fadeIn } from "@utils/animate";
 
 export default class LoginPage extends AbstractComponent {
 	constructor(options = {}) {
