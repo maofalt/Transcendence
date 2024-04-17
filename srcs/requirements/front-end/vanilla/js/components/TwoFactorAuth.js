@@ -5,9 +5,10 @@ import InputAugmented from '@components/InputAugmented';
 import easyFetch from "@utils/easyFetch";
 import displayPopup from "@utils/displayPopup";
 import { fadeIn, fadeOut, transition } from "@utils/animate";
+import { redirectTo } from "@utils/Router";
 
 export default class TwoFactorAuth extends AbstractComponent {
-	constructor(phoneBlock, emailBlock, context, options = {}) {
+	constructor(emailBlock, context, options = {}) {
 		super();
 
 		this.method = options.method || "email";
@@ -31,13 +32,11 @@ export default class TwoFactorAuth extends AbstractComponent {
 		container.style.height = "100%";
 		container.onclick = (e) => { // Close the pannel when clicking outside
 			if (e.target === container) {
-				console.log("HEllo")
 				fadeOut(this);
 			}
 		}
 		
 		const verifyCodePannel = new Pannel({dark: false, title: "Verify Code", style: {padding: "15px"}});
-		// verifyCodePannel.shadowRoot.querySelector("#button-container").shadowRoot.style.setProperty("display", "none");
 		verifyCodePannel.style.position = "fixed";
 		verifyCodePannel.style.top = "50%";
 		verifyCodePannel.style.left = "50%";
@@ -51,21 +50,15 @@ export default class TwoFactorAuth extends AbstractComponent {
 			button: {content: "Verify", action: true}
 		});
 		verifyCodeInput.button.onclick = async () => {
-			if (this.method == "phone") {
-				if (!await this.verifySms(phoneBlock, verifyCodeInput)) {
-					phoneBlock.setAttribute("verified", false);
-				} else {
-					phoneBlock.input.input.style.setProperty("border", "2px solid green");
-					phoneBlock.setAttribute("verified", true);
-				}
-			} else if (this.method == "email") {
-				if (!await this.verifyEmail(emailBlock, verifyCodeInput)) {
-					emailBlock.setAttribute("verified", false);
-				} else {
-					emailBlock.input.input.style.setProperty("border", "2px solid green");
-					emailBlock.setAttribute("verified", true);
-				}
+			let valid = await this.verifyEmail(emailBlock, verifyCodeInput);
+			if (!valid && emailBlock) {
+				emailBlock.setAttribute("verified", false);
+			} else if (emailBlock) {
+				emailBlock.input.input.style.setProperty("border", "2px solid green");
+				emailBlock.setAttribute("verified", true);
 			}
+			if (!emailBlock && valid)
+				redirectTo('/');
 			fadeOut(this);
 		}
 
@@ -101,7 +94,7 @@ export default class TwoFactorAuth extends AbstractComponent {
 			},
 			body
 		})
-		.then(res => {
+		.then(async res => {
 			let response = res.response;
 			let body = res.body;
 
@@ -114,6 +107,7 @@ export default class TwoFactorAuth extends AbstractComponent {
 				displayPopup('Response Error: ' + (body.error || JSON.stringify(body)), 'error');
 				valid = false;
 			} else if (response.status === 200 && body.success === true) {
+				await fetchUserDetails();
 				displayPopup(body.message || JSON.stringify(body), 'success');
 				valid = true;
 			} else {

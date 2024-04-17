@@ -155,8 +155,6 @@ export default class LoginPage extends AbstractComponent {
 				// connect to the socket
 				initSocketConnection();
 
-				let details = await fetchUserDetails();
-				// sessionStorage.setItem('userDetails', JSON.stringify(details));
 
 				if (body.requires_2fa) {
 					displayPopup('login successful, please enter your 2fa code', 'info');
@@ -165,12 +163,13 @@ export default class LoginPage extends AbstractComponent {
 					return ;
 				}
 
-				// displayPopup('Login successful', 'success');
+				await fetchUserDetails();
+
+				displayPopup('Login successful', 'success');
 
 				refreshTokenLoop();
 
-				Router.navigateTo("/");
-				// window.location.reload();
+				Router.redirectTo("/");
 			}
 		})
 		.catch(error => {
