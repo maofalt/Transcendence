@@ -2,6 +2,7 @@
 version: '3.8'
 
 services:
+  # TRAEFIK
   traefik:
     build:
       context: ./requirements/traefik
@@ -17,7 +18,6 @@ services:
       - ./requirements/traefik/config/ssl/:/ssl-certs
       - "${XDG_RUNTIME_DIR:-/var/run}/docker.sock:/var/run/docker.sock"
       #- /var/run/docker.sock:/var/run/docker.sock
-
     networks:
       - transcendence
     restart: unless-stopped
@@ -29,56 +29,14 @@ services:
         max-size: "1m"
         max-file: "3"
 
-#SWAGGER
-  swagger-ui:
-    image: swaggerapi/swagger-ui
-    container_name: swagger-ui
-    networks:
-      - transcendence
-    environment:
-      - SWAGGER_JSON=/usr/share/nginx/html/spec/swagger.yaml
-      - BASE_URL=/api/docs
-    restart: unless-stopped
-    volumes:
-      - ./api/:/usr/share/nginx/html/spec/
-    logging:
-      driver: json-file
-      options:
-        max-size: "1m"
-        max-file: "3"
-
-##CONTAINER MANAGER
-  portainer:
-    env_file:
-      - .env
-    image: portainer
-    container_name: portainer
-    build:
-      context: ./requirements/portainer
-      dockerfile: Dockerfile
-      args:
-      - PORTAINER_ADMIN_PASSWORD=${PORTAINER_ADMIN_PASSWORD}
-    restart: unless-stopped
-    volumes:
-      - "${XDG_RUNTIME_DIR:-/var/run}/docker.sock:/var/run/docker.sock"
-      #- /var/run/docker.sock:/var/run/docker.sock
-      - portainer-data:/data
-    networks:
-      - transcendence
-    logging:
-      driver: json-file
-      options:
-        max-size: "1m"
-        max-file: "3"
-
-
-#FRONT END SERVICES
-  # production ready front-end served by nginx built with vite
+  # FRONT END
   front-end:
     container_name: front-end
     build:
       context: ./requirements/front-end/
       dockerfile: Dockerfile
+    env_file:
+      - .env
     networks:
       - transcendence
     logging:
@@ -107,17 +65,12 @@ services:
         max-file: "3"
 
 
-#BACKEND GAME SERVICES
+  #BACKEND GAME SERVICES
   game:
     container_name: game
     build: 
       context: ./requirements/game/
       dockerfile: Dockerfile
-    # IMPORTANT - this is insecure. Use .env file instead
-    environment:
-      - DATABASE_URL=postgresql://user42:password@db:5432/mydatabase # <-- use value from .env
-    depends_on:
-      - game-db
     env_file:
       - .env
     networks:
@@ -131,28 +84,7 @@ services:
         max-size: "1m"
         max-file: "3"
 
-
-  game-db:
-    container_name: game-db
-    build:
-      context: ./requirements/game/postgreSQL/
-      dockerfile: Dockerfile
-    # IMPORTANT - this is insecure. Use .env file instead
-    environment:
-      POSTGRES_DB: mydatabase # <-- use value from .env
-      POSTGRES_USER: user42 # <-- use value from .env
-      POSTGRES_PASSWORD: password # <-- use value from .env
-    volumes:
-      - game_db:/var/lib/postgresql/data
-    networks:
-      - transcendence
-    logging:
-      driver: json-file
-      options:
-        max-size: "1m"
-        max-file: "3"
-
-
+  # USER MANAGEMENT DJANGO
   user_management:
     container_name: user_management
     restart: always
@@ -175,7 +107,7 @@ services:
         max-size: "1m"
         max-file: "3"
 
-
+  # USER MANAGEMENT DB
   user_management_db:
     container_name: user_management_db
     build:
@@ -197,7 +129,15 @@ services:
         max-size: "1m"
         max-file: "3"
 
+  adminer:
+    container_name: adminer
+    image: adminer:latest
+    networks:
+      - transcendence
+    ports:
+      - "1029:8080"
 
+  # TOURNAMENT SERVICE DJANGO
   tournament:
     container_name: tournament
     build:
@@ -217,7 +157,7 @@ services:
         max-size: "1m"
         max-file: "3"
 
-
+  # TOURNAMENT DB
   tournament_db:
     container_name: tournament_db
     build:
@@ -243,16 +183,11 @@ services:
 
 #VOLUMES
 volumes:
-  portainer-data:
-    driver: local
-  game_db:
-    driver: local
   user-management-db:
     driver: local
   tournament-db:
     driver: local
-  postgres-data:
-    driver: local
+
 
 #NETWORKS
 networks:

@@ -13,6 +13,8 @@ import CustomButton from '@components/CustomButton';
 import { navigateTo } from "@utils/Router";
 import AbstractComponent from "@components/AbstractComponent";
 import { makeApiRequest } from '@utils/makeApiRequest.js';
+import purpleSpaceImg from '@images/purpleSpace.jpg';
+import deepSpaceImg from '@assets/images/deepspace.jpg';
 
 
 // function createCallTracker() {
@@ -429,7 +431,7 @@ export default class Game extends AbstractComponent {
 
 	refreshScene(data) {
 		this.scene = new THREE.Scene();
-		const back = new THREE.TextureLoader().load('./js/assets/3D_Models/deepspace.jpg');
+		const back = new THREE.TextureLoader().load(deepSpaceImg);
 		back.colorSpace = THREE.SRGBColorSpace;
 		this.scene.background = back;
 		
@@ -590,7 +592,7 @@ export default class Game extends AbstractComponent {
 		if (avatar)
 			profilePic = new THREE.TextureLoader().load(avatar);
 		else
-			profilePic = new THREE.TextureLoader().load(`./js/assets/images/default-avatar.webp`);
+			profilePic = new THREE.TextureLoader().load(`public/assets/images/default-avatar.webp`);
 		profilePic.wrapS = profilePic.wrapT = THREE.RepeatWrapping;
 		profilePic.offset.set( 0, 0 );
 		profilePic.repeat.set( 2, 1 );
@@ -702,7 +704,7 @@ export default class Game extends AbstractComponent {
 
 	async loadBallModel(data) {
 		// Load the model
-		this.loadModel(`./js/assets/3D_Models/${data.ball.model}/scene.gltf`).then((model) => {
+		this.loadModel(`public/assets/3D_Models/${data.ball.model}/scene.gltf`).then((model) => {
 			console.log("MODEL LOADED", model);
 
 			// Assign the loaded model to this.ballModel
@@ -734,7 +736,7 @@ export default class Game extends AbstractComponent {
 		}
 		console.log("DIDNT LOADGE");
 		if (data.ball.texture != "") {
-			ballTexture = new THREE.TextureLoader().load(`./js/assets/images/${data.ball.texture}`);
+			ballTexture = new THREE.TextureLoader().load(`public/assets/images/${data.ball.texture}`);
 			ballMaterial = new THREE.MeshPhongMaterial({ map: ballTexture, transparent: false, opacity: 0.7 });
 			// ballTexture.wrapS = ballTexture.wrapT = THREE.RepeatWrapping;
 			// ballTexture.offset.set( 0, 0 );
@@ -854,13 +856,8 @@ export default class Game extends AbstractComponent {
 
 	generateSkyBox(data) {
 		// Charger la texture de ciel étoilé
-		// this.starTexture = new THREE.TextureLoader().load('./js/assets/images/blueSpace.jpg');
-		// const starTexture1 = new THREE.TextureLoader().load('./js/assets/images/PurpleLayer1.png');
-		// const starTexture2 = new THREE.TextureLoader().load('./js/assets/images/PurpleLayer2.png');
-		// const starTexture3 = new THREE.TextureLoader().load('./js/assets/images/PurpleLayer3.png');
-		const starTextureBase = new THREE.TextureLoader().load('./js/assets/images/purpleSpace.jpg');
+		const starTextureBase = new THREE.TextureLoader().load(purpleSpaceImg);
 		starTextureBase.colorSpace = THREE.SRGBColorSpace;
-		// this.starTexture = new THREE.TextureLoader().load('./js/assets/images/redSpace.jpg');
 
 		// Créer la géométrie de la sphère
 		// starTexture.colorSpace = THREE.SRGBColorSpace;

@@ -1,11 +1,11 @@
 @font-face {
 	font-family: "tk-421";
-	src: url('js/assets/fonts/Tk421-K7mv7.otf') format('opentype');
+	src: url('@assets/fonts/Tk421-K7mv7.otf') format('opentype');
 }
 
 @font-face {
 	font-family: 'Space Grotesk';
-	src: url('../js/assets/fonts/Space_Grotesk/static/SpaceGrotesk-Bold.ttf') format('truetype');
+	src: url('@assets/fonts/Space_Grotesk/static/SpaceGrotesk-Bold.ttf') format('truetype');
 }
 
 :root {
@@ -15,7 +15,7 @@
 	line-height: 1.5;
 	font-weight: 400;
 
-	background: url("../js/assets/images/purpleSpace.jpg");
+	/* background: url("@images/purpleSpace.jpg"); */
 	background-size: cover;
     /* background-position: center; */
 	background-attachment: fixed;

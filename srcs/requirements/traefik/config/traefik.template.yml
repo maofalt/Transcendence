@@ -42,14 +42,14 @@ tls:
 http:
   routers:
     #SWAGGER UI
-    swagger-ui:
-      rule: "Host(`HOST_IP`) && PathPrefix(`/api/docs`)"
-      entryPoints:
-        - "websecure"
-      service: "swagger-ui-service"
-      tls:
-        certResolver: "myresolver"
-    #GAMR FRONT END FOR DEVELOPMENT USING NODE.JS
+    # swagger-ui:
+    #   rule: "Host(`HOST_IP`) && PathPrefix(`/api/docs`)"
+    #   entryPoints:
+    #     - "websecure"
+    #   service: "swagger-ui-service"
+    #   tls:
+    #     certResolver: "myresolver"
+    #GAME FRONT END FOR DEVELOPMENT USING NODE.JS
     jsDev:
       rule: "Host(`HOST_IP`)"
       service: "jsDevService"
@@ -81,6 +81,13 @@ http:
       service: "tournament"
       tls:
         certResolver: "myresolver"
+    #ADMINER
+    adminer:
+      rule: "Host(`HOST_IP`) && PathPrefix(`/adminer`)"
+      entryPoints: ["websecure"]
+      service: "adminer"
+      tls:
+        certResolver: "myresolver"
     #catch all for http requests and redirect to https
     http-catchall:
       rule: "HostRegexp(`{host:.+}`)"
@@ -107,23 +114,13 @@ http:
         loadBalancer:
           servers:
             - url: "http://"
-  
-    portainer-service:
-      loadBalancer:
-        servers:
-          - url: "http://portainer:9000"
 
     edge-service:
       loadBalancer:
         servers:
           - url: "http://edge:8000"
 
-    swagger-ui-service:
-      loadBalancer:
-        servers:
-          - url: "http://swagger-ui:8080"
-
-    frontEnd:
+    frontEndService:
       loadBalancer:
         servers:
           - url: "http://front-end:80"
@@ -147,6 +144,11 @@ http:
       loadBalancer:
         servers:
           - url: "http://tournament:8001"
+
+    adminer:
+      loadBalancer:
+        servers:
+          - url: "http://adminer:8080"
 #midlewares used to modify the request before it is sent to the container 
 #e.g.: stripPrefix is used to remove the /game-logic from the request
   middlewares:
