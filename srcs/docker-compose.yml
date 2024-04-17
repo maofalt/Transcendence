@@ -101,10 +101,10 @@ services:
     env_file:
       - .env
     environment:
-      - POSTGRES_DB=${USER_MANAGEMENT_DB_NAME}
-      - POSTGRES_USER=${USER_MANAGEMENT_DB_USER}
-      - POSTGRES_PASSWORD=${USER_MANAGEMENT_DB_PASSWORD}
-      - POSTGRES_UNIX_SOCKET_DIRECTORIES=${USER_MANAGEMENT_DB_SOCKET}
+      POSTGRES_DB: ${USER_MANAGEMENT_DB_NAME}
+      POSTGRES_USER: ${USER_MANAGEMENT_DB_USER}
+      POSTGRES_PASSWORD: ${USER_MANAGEMENT_DB_PASSWORD}
+      POSTGRES_UNIX_SOCKET_DIRECTORIES: ${USER_MANAGEMENT_DB_SOCKET}
     networks:
       - transcendence
     logging:
@@ -121,10 +121,10 @@ services:
       dockerfile: Dockerfile
     restart: always
     environment:
-      - POSTGRES_DB=${USER_MANAGEMENT_DB_NAME}
-      - POSTGRES_USER=${USER_MANAGEMENT_DB_USER}
-      - POSTGRES_PASSWORD=${USER_MANAGEMENT_DB_PASSWORD}
-      - POSTGRES_UNIX_SOCKET_DIRECTORIES=${USER_MANAGEMENT_DB_SOCKET}
+      POSTGRES_DB: ${USER_MANAGEMENT_DB_NAME}
+      POSTGRES_USER: ${USER_MANAGEMENT_DB_USER}
+      POSTGRES_PASSWORD: ${USER_MANAGEMENT_DB_PASSWORD}
+      POSTGRES_UNIX_SOCKET_DIRECTORIES: ${USER_MANAGEMENT_DB_SOCKET}
     volumes:
       - user-management-db:/var/lib/postgresql/data
     networks:
@@ -146,10 +146,10 @@ services:
     env_file:
       - .env
     environment:
-      - POSTGRES_DB=${USER_MANAGEMENT_DB_NAME}
-      - POSTGRES_USER=${USER_MANAGEMENT_DB_USER}
-      - POSTGRES_PASSWORD=${USER_MANAGEMENT_DB_PASSWORD}
-      - POSTGRES_UNIX_SOCKET_DIRECTORIES=${USER_MANAGEMENT_DB_SOCKET}
+      POSTGRES_DB: ${TOURNAMENT_DB_NAME}
+      POSTGRES_USER: ${TOURNAMENT_DB_USER}
+      POSTGRES_PASSWORD: ${TOURNAMENT_DB_PASSWORD}
+      POSTGRES_UNIX_SOCKET_DIRECTORIES: ${USER_MANAGEMENT_DB_SOCKET}
     volumes:
       - ./requirements/tournament_service/app:/app
     #ports:
@@ -168,9 +168,9 @@ services:
       dockerfile: Dockerfile
     restart: always
     environment:
-      -POSTGRES_DB=${TOURNAMENT_DB_NAME}
-      -POSTGRES_USER=${TOURNAMENT_DB_USER}
-      -POSTGRES_PASSWORD=${TOURNAMENT_DB_PASSWORD}
+      POSTGRES_DB: ${TOURNAMENT_DB_NAME}
+      POSTGRES_USER: ${TOURNAMENT_DB_USER}
+      POSTGRES_PASSWORD: ${TOURNAMENT_DB_PASSWORD}
     volumes:
       - tournament-db:/var/lib/postgresql/data
     # ports:
