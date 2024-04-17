@@ -344,6 +344,7 @@ class MatchResult(APIView):
         ret = auto_win_for_single_player(request, tournament_id, round)
         if ret.status_code != 200:
             return ret
+        next_matches = tournament.matches.filter(round_number=round).order_by('id')
         serializer = TournamentMatchSerializer(next_matches, many=True)
         # print("serializer.data\n", serializer.data)
         return JsonResponse(serializer.data, status=status.HTTP_201_CREATED, safe=False)
@@ -359,7 +360,10 @@ class MatchResult(APIView):
                 return JsonResponse({'error': 'Match not found'}, status=404)
             # except Http404:
             #     return JsonResponse({'error': 'Match not found'}, status=404)
-            
+            try:
+                tournament = get_object_or_404(Tournament, id=match.tournament_id)
+            except Http404:
+                return JsonResponse({'error': 'Tournament not found'}, status=404)
             players = match.players.all()
             if not players.filter(username=winner_username).exists() and not players.filter(username=winner_username+'*').exists():
                 return Response("Winner not found among participants", status=status.HTTP_404_NOT_FOUND)
@@ -374,15 +378,19 @@ class MatchResult(APIView):
             for player in players:
                 print("player: ", player.username, "winner: ", winner_username)
                 if player.username == winner_username or player.username == winner_username+'*':
-                    if player.username == (winner_username+"*"):
-                        player.username = 'Unknown'
-                        player.save()
-                        print("After username modification:", player.username)
                     player.total_played += 1
                     player.won_match.add(match)
                     player.save()
+                    if player.username == (winner_username+"*"):
+                        match.players.remove(player)
+                        player.username = 'Unknown'
+                        player.save()
+                        match.players.add(player)
+                        match.save()
+                        print("After username modification:", player.username)
                     match.winner = player
                     match.save()
+                    tournament.save()
                 else:
                     print("non winner----")
                     if player.username.endswith('*'):
@@ -674,13 +682,15 @@ def auto_win_for_single_player(request, tournament_id, round_number):
     except Http404:
         return JsonResponse({'error': 'Tournament not found'}, status=404)
     matches = tournament.matches.filter(round_number=round_number).order_by('id')
+    
+    matches_to_delete = []
     for match in matches:
         if match.state != "ended":
+            print(".....MATCH: ", match)
             if match.players.count() == 0:
                 print("Match without player")
-                match.delete()
-                tournament.save()
-                print("Match deleted")
+                matches_to_delete.append(match)
+                print("Match save to be deleted: ")
             if match.players.count() == 1:
                 player = match.players.first()
                 player.won_match.add(match)
@@ -690,7 +700,11 @@ def auto_win_for_single_player(request, tournament_id, round_number):
                 match.save()
                 tournament.save()
             # return JsonResponse({'message': 'Match ended with a single participant'}, status=200)
-    return JsonResponse({'message': 'All matches have multiple participants'}, status=200)
+    for match in matches_to_delete:
+        match.delete()
+        tournament.save()
+        print("Match deleted")
+    return JsonResponse({'message': '-'}, status=200)
 
 class TournamentEnd(APIView):
     authentication_classes = [CustomJWTAuthentication]
@@ -957,34 +971,47 @@ class DeletePlayer(APIView):
             player = get_object_or_404(Player, username=username)
         except Http404:
             return JsonResponse({'message': f'User {username} hasn\'t started any tournamet. Nothing to clear from Tournament Database'}, status=204)
-        player.username = 'Unkown'
-        player.save()
+        # player.username = 'Unknown'
+        # player.save()
     
         tournaments = Tournament.objects.filter(players=player)
         for tournament in tournaments:
             print("tournament: ", tournament.tournament_name)
-            matches = tournament.matches.filter(players=player)
-            for match in matches:
-                match.players.remove(player)
-                if match.state == 'ended':
-                    match.players.add(player)
-                if match.state == 'playing':
-                    player.username = playername + '*'
-                    player.save()
-                    match.players.add(player)
-                    print('playername: ', player.username)
-                match.save()
-
+            
             if tournament.winner != 'TBD':
-                tournament.winner = 'Unkown'
+                tournament.winner = 'Unknown'
                 tournament.save()
+            is_host = False
             if tournament.host == player:
-                if tournament.state == 'ended' or tournament.state == 'started':
-                    tournament.host = player
-                    tournament.players.remove(player)
-                    tournament.save()
-                else:
+                is_host = True
+            if tournament.state == 'waiting':
+                tournament.players.remove(player)
+                tournament.save()
+                if is_host == True:                    
                     tournament.delete()
+            else:
+                matches = tournament.matches.filter(players=player)
+                for match in matches:
+                    print(f"player {player.username} deleted from match {match.id}")
+                    match.players.remove(player)
+                    if match.state == 'ended':
+                        player.username = 'Unknown'
+                        player.save()
+                        match.players.add(player)
+                        print(f"For ENDED match : player {player.username} added to match {match.id}")
+                    if match.state == 'playing':
+                        player.username = playername + '*'
+                        player.save()
+                        match.players.add(player)
+                        print(f"For PLAYING match : player {player.username} added to match {match.id}")
+                    match.save()
+                    tournament.save()
+                    
+                if is_host == True:
+                    tournament.host = player
+                    # tournament.players.remove(player)
+                    tournament.save()
+            
         return JsonResponse({'message': f'Username for user {username} has been deleted in related tournaments.'})
 
 class UnjoinTournament(APIView):
