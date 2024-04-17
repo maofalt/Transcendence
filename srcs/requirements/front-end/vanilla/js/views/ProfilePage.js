@@ -47,10 +47,10 @@ export default class ProfilePage extends AbstractComponent {
 		this.userElemsToBeFilled = {};
 		this.friendElemsToBeFilled = {};
 
-		this.user = JSON.parse(sessionStorage.getItem("userDetails"));
-		// console.log("USER:", this.user);
-		if (!this.user)
-			this.user = fetchUserDetails();
+		// this.user = JSON.parse(sessionStorage.getItem("userDetails"));
+		// // console.log("USER:", this.user);
+		// if (!this.user)
+		// 	this.user = fetchUserDetails();
 
 		/* PROFILE PANNEL */
 		const profile = new Pannel({dark: false, title: "Profile"});
@@ -214,7 +214,7 @@ export default class ProfilePage extends AbstractComponent {
 		// this.friendElemsToBeFilled.friendProfile.style.setProperty("display", "block");
 		fadeIn(this.friendElemsToBeFilled.friendProfile);
 		this.friendElemsToBeFilled.friendUserInfo.fetchAndFillElems(friendData);
-		let gameStats = await this.fetchGameStats(username);
+		let gameStats = await this.fetchGameStats(friendData.username);
 		this.fillGameStats(this.friendElemsToBeFilled, friendData.username, gameStats);
 		this.friendElemsToBeFilled.friendProfile.onclick = (e) => {
 			if (e.target === this.friendElemsToBeFilled.friendProfile) {
@@ -247,7 +247,7 @@ export default class ProfilePage extends AbstractComponent {
 		elemsToBeFilled.tournamentsWon.textContent = gameStats.nbr_of_won_tournaments;
 		elemsToBeFilled.matchWins.textContent = gameStats.nbr_of_won_matches;
 		elemsToBeFilled.matchLosses.textContent = gameStats.nbr_of_lost_matches;
-		elemsToBeFilled.matchWinrate.textContent = (gameStats.nbr_of_won_matches / gameStats.total_played * 100).toFixed(1).toString() + "%" || "N/A";
+		elemsToBeFilled.matchWinrate.textContent = !gameStats.total_played ? "N/A" : (gameStats.nbr_of_won_matches / gameStats.total_played * 100).toFixed(1).toString() + "%";
 		let matchHistory = gameStats.played_tournaments;
 		console.log("Match History:", matchHistory);
 		elemsToBeFilled.matchRows.innerHTML = "";
