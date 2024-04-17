@@ -216,6 +216,9 @@ export default class EditProfile extends AbstractComponent {
 	}
 
 	deleteAccount = async () => {
+		easyFetch(`/api/tournament/delete/${this.user.username}/`, { method: 'POST' }).catch(error => {
+			console.error("Error deleting user from Tournament backend: ", error);
+		});
 		await easyFetch(`/api/user_management/auth/delete_account`, {
 			method: 'POST',
 			headers: {
