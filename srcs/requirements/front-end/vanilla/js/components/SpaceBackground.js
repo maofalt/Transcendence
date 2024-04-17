@@ -6,6 +6,9 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { Texture } from 'three';
 import AbstractComponent from "./AbstractComponent";
 import spaceBackgroundStyle from '@css/SpaceBackground.css?raw';
+import purpleSpaceImg from '@images/purpleSpace.jpg';
+import venusImg from '@images/1.8kVenus.jpg';
+import cloudsImg from '@images/1.8kClouds_A.png';
 
 export default class SpaceBackground extends AbstractComponent {
 	constructor(options = {}) {
@@ -42,7 +45,7 @@ export default class SpaceBackground extends AbstractComponent {
 		const textureLoader = new THREE.TextureLoader();
 		// Background setup
 		// const loader = new THREE.TextureLoader();
-		textureLoader.load('../js/assets/images/purpleSpace.jpg', function(texture) {
+		textureLoader.load(purpleSpaceImg, function(texture) {
 			texture.colorSpace = THREE.SRGBColorSpace;
 			scene.background = texture;
 		});
@@ -51,7 +54,7 @@ export default class SpaceBackground extends AbstractComponent {
 		const sphereGeometry = new THREE.SphereGeometry(1, 64, 64);
 
 		// Material for sphere 1
-		const venus = textureLoader.load('../js/assets/images/1.8kVenus.jpg');
+		const venus = textureLoader.load(venusImg);
 		venus.colorSpace = THREE.SRGBColorSpace;
 		const material1 = new THREE.MeshStandardMaterial({
 			map: venus,
@@ -65,7 +68,7 @@ export default class SpaceBackground extends AbstractComponent {
 		sphere1.position.z = 3.7;
 		sphere1.position.y = -0.6;
 
-		const atm = textureLoader.load('../js/assets/images/1.8kClouds_A.png');
+		const atm = textureLoader.load(cloudsImg);
 		atm.colorSpace = THREE.SRGBColorSpace;
 		const atmMaterial = new THREE.MeshStandardMaterial({
 			// color: 0xbbffff, // Set color to white

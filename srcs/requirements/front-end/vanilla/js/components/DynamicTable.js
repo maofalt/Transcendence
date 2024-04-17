@@ -1,3 +1,5 @@
+import styles from '@css/DynamicTable.css?raw';
+
 class DynamicTable extends HTMLElement {
     static get observedAttributes() {
         return ['data-title','data-headers', 'data-rows', 'data-style'];
@@ -7,7 +9,6 @@ class DynamicTable extends HTMLElement {
         super();
         this.attachShadow({ mode: 'open'});
         this.shadowRoot.innerHTML = `
-            <link rel="stylesheet" href="../../css/DynamicTable.css">
             <meta name="viewport" content="width=device-width, initial-scale=1">
             <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
             <body>
@@ -22,6 +23,9 @@ class DynamicTable extends HTMLElement {
             </body>
         `;
         this.columnStyles = {};
+		const styleEl = document.createElement('style');
+		styleEl.textContent = styles;
+		this.shadowRoot.appendChild(styleEl);
     }
     
     styleToString(styleObj){

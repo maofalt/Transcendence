@@ -795,7 +795,7 @@ export default class BasicGameV2 extends AbstractComponent {
 		// const starTexture1 = new THREE.TextureLoader().load('./js/assets/images/PurpleLayer1.png');
 		// const starTexture2 = new THREE.TextureLoader().load('./js/assets/images/PurpleLayer2.png');
 		// const starTexture3 = new THREE.TextureLoader().load('./js/assets/images/PurpleLayer3.png');
-		const starTextureBase = new THREE.TextureLoader().load('./js/assets/images/purpleSpace.jpg');
+		const starTextureBase = new THREE.TextureLoader().load('../js/assets/images/purpleSpace.jpg');
 		starTextureBase.colorSpace = THREE.SRGBColorSpace;
 		// this.starTexture = new THREE.TextureLoader().load('./js/assets/images/redSpace.jpg');
 

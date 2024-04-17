@@ -1,6 +1,7 @@
 import Row from './Row.js';
 import Cell from './Cell.js';
 import CustomButton from "@components/CustomButton";
+import styles from '@css/DynamicTable.css?raw';
 
 class BaseTable extends HTMLElement {
 
@@ -8,7 +9,6 @@ class BaseTable extends HTMLElement {
         super();
         this.attachShadow({ mode: 'open'});
         this.shadowRoot.innerHTML = `
-            <link rel="stylesheet" href="../../css/DynamicTable.css">
             <meta name="viewport" content="width=device-width, initial-scale=1">
             <body>
                 <div id="buttons-bar">
@@ -29,6 +29,10 @@ class BaseTable extends HTMLElement {
                 </div>
             </body>
         `;
+		const styleEl = document.createElement('style');
+		styleEl.textContent = styles;
+		this.shadowRoot.appendChild(styleEl);
+
         this.columnStyles = {};
         this.dataRows = [];
         this.currentPage = 1;
