@@ -100,6 +100,11 @@ services:
       - user_management_db
     env_file:
       - .env
+    environment:
+      - POSTGRES_DB=${USER_MANAGEMENT_DB_NAME}
+      - POSTGRES_USER=${USER_MANAGEMENT_DB_USER}
+      - POSTGRES_PASSWORD=${USER_MANAGEMENT_DB_PASSWORD}
+      - POSTGRES_UNIX_SOCKET_DIRECTORIES=${USER_MANAGEMENT_DB_SOCKET}
     networks:
       - transcendence
     logging:
@@ -116,10 +121,10 @@ services:
       dockerfile: Dockerfile
     restart: always
     environment:
-      POSTGRES_DB: userdb
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 1234
-      POSTGRES_UNIX_SOCKET_DIRECTORIES: /var/run/postgresql
+      - POSTGRES_DB=${USER_MANAGEMENT_DB_NAME}
+      - POSTGRES_USER=${USER_MANAGEMENT_DB_USER}
+      - POSTGRES_PASSWORD=${USER_MANAGEMENT_DB_PASSWORD}
+      - POSTGRES_UNIX_SOCKET_DIRECTORIES=${USER_MANAGEMENT_DB_SOCKET}
     volumes:
       - user-management-db:/var/lib/postgresql/data
     networks:
@@ -140,6 +145,11 @@ services:
       - transcendence
     env_file:
       - .env
+    environment:
+      - POSTGRES_DB=${USER_MANAGEMENT_DB_NAME}
+      - POSTGRES_USER=${USER_MANAGEMENT_DB_USER}
+      - POSTGRES_PASSWORD=${USER_MANAGEMENT_DB_PASSWORD}
+      - POSTGRES_UNIX_SOCKET_DIRECTORIES=${USER_MANAGEMENT_DB_SOCKET}
     volumes:
       - ./requirements/tournament_service/app:/app
     #ports:
@@ -158,9 +168,9 @@ services:
       dockerfile: Dockerfile
     restart: always
     environment:
-      POSTGRES_DB: tournament_db
-      POSTGRES_USER: tournament_master
-      POSTGRES_PASSWORD: 'i love miguel'
+      -POSTGRES_DB=${TOURNAMENT_DB_NAME}
+      -POSTGRES_USER=${TOURNAMENT_DB_USER}
+      -POSTGRES_PASSWORD=${TOURNAMENT_DB_PASSWORD}
     volumes:
       - tournament-db:/var/lib/postgresql/data
     # ports:
