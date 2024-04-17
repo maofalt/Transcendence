@@ -5,7 +5,7 @@ while ! nc -z tournament_db 5432; do
 done
 
 # Apply database migrations
-python manage.py flush --no-input
+# python manage.py flush --no-input
 python manage.py migrate --fake sessions zero
 python manage.py makemigrations
 python manage.py migrate --fake-initial

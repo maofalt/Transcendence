@@ -6,7 +6,7 @@ export default async function fetchUserDetails() {
 		username: "Logged Out",
 		playername: "Logged Out",
 		email: "Logged Out",
-		avatar: "../js/assets/images/default-avatar.webp",
+		avatar: "public/assets/images/default-avatar.webp",
 		status: "Offline",
 		is_online: false,
 		friends_count: 0,

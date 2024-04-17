@@ -39,29 +39,33 @@ class BaseTable extends HTMLElement {
         this.itemsPerPage = 5;
         this.rowIndexByIdentifier = [];
         this.totalRows= [];
+        this.ascending = [];
+        //Design buttons
         this.createButton = new CustomButton({content: "Create", action: true});
         this.createButton.id = "create-button";
+        
         this.manageButton = new CustomButton({content: "Manage", action: false});
         this.manageButton.id = "manage-button";
+
         this.midSpace = document.createElement("div");
         this.midSpace.id = "mid-space";
+
         this.searchBar = document.createElement("input");
         this.searchBar.id = "search-bar";
         this.searchBar.placeholder = "Tournament name";
-        // this.searchButton = new CustomButton({content: "Search", action: true});
-        // this.searchButton.id = "search-button";
+
         this.refreshButton = new CustomButton({content: "Refresh", action: false});
         this.refreshButton.id = "refresh-button";
+
+        //Appending all new buttons
         this.shadowRoot.querySelector("#buttons-bar").appendChild(this.createButton);
         this.shadowRoot.querySelector("#buttons-bar").appendChild(this.manageButton);
-        this.shadowRoot.querySelector("#buttons-bar").appendChild(this.midSpace);
-        
+        this.shadowRoot.querySelector("#buttons-bar").appendChild(this.midSpace);        
         this.shadowRoot.querySelector("#buttons-bar").appendChild(this.searchBar);
-        //this.shadowRoot.querySelector("#buttons-bar").appendChild(this.searchButton);
-        this.searchBar.addEventListener('keyup', () => this.filterRows(this.searchBar.value));
-
-
         this.shadowRoot.querySelector(".pagination-controls").appendChild(this.refreshButton);
+        
+        //Attach searching fonction to the compoenent
+        this.searchBar.addEventListener('keyup', () => this.filterRows(this.searchBar.value));
     }
 
     //Utility to set column styles
@@ -69,11 +73,133 @@ class BaseTable extends HTMLElement {
         this.columnStyles = styles;
     }
 
-    //Utility method to set headers
+
+    //Utility to inject headers
     setHeaders(headers) {
         let tableHeaders = this.shadowRoot.getElementById('table-headers');
         tableHeaders.innerHTML = '';
-        tableHeaders.innerHTML = headers.map(header => `<th>${header}</th>`).join('');
+        
+        headers.forEach(header => {
+            // Create the header cell
+            let th = document.createElement('th');
+            let div = document.createElement('div');
+            div.textContent = header;
+            div.style.display = 'inline';
+            div.style.marginRight = '5px';
+            th.appendChild(div);
+
+            // Create the sort icon
+            if (header !== "Details") {
+                let sortSpan = document.createElement('span');
+                sortSpan.textContent = this.ascending[header] ? '🔼' : '🔽';
+                sortSpan.style.cursor = 'pointer';
+                sortSpan.addEventListener('click', () => this.sortColumn(header));
+                
+                // Append the text div and sort span to the header cell
+                th.appendChild(sortSpan);
+            }
+            // Append the header cell to the table headers
+            tableHeaders.appendChild(th);
+        });
+    }
+
+    sortColumn(header) {
+        // Toggle sort direction
+        //console.log("Sorting by:", header);
+        if (this.ascending[header] === undefined)
+            this.ascending[header] = true;
+        else {
+            this.ascending[header] = !this.ascending[header];
+        }
+                    //selec tthe right header and change the icon for only that header
+                    const headerCells = this.shadowRoot.getElementById('table-headers').querySelectorAll('th');
+                    headerCells.forEach(cell => {
+                        const cellText = cell.querySelector('div').textContent;
+                        if (cellText === header) {
+                            cell.querySelector('span').textContent = this.ascending[header] ? '🔼' : '🔽';
+                        }
+                    });
+
+        // Get all rows as an array of objects containing the row and its sort key
+        const rowContent= [];
+        // const rowData = this.dataRows.map(row => {
+        //     rowContent.push(row.cells.get(header)?.domElement.textContent || "");
+        //     return {
+        //         row: row,
+        //         key: (row.cells.get(header)?.domElement.textContent || "").trim()
+        //     };
+        // });
+
+        const rowData = this.dataRows.map(row => {
+            let key = "";
+            if (header === "Host") {
+                key = row.cells.get(header)?.domElement.querySelector('host-avatar').getAttribute('name') || "";
+            } else if (header === "Players Per Match") {
+                key = row.cells.get(header)?.domElement.querySelector('number-of-players').getAttribute('nbrOfPlayers') || "";
+                console.log("Players per match:", key);
+            } else {
+                key = row.cells.get(header)?.domElement.textContent || "";
+            }
+            return {
+                row: row,
+                key: key.trim()
+            };
+        });
+    
+        //console.log(rowContent);
+        // Apply natural sort algorithm
+        rowData.sort((a, b) => this.naturalSort(a.key, b.key));
+        //console.log("sorted", rowData);
+        rowContent.sort((a,b) => this.naturalSort(a,b));
+        //console.log("sorted", rowContent);
+        // If descending sort, reverse the array
+        if (!this.ascending[header]) rowData.reverse();
+        //console.log("sorted", rowData);
+        // Set sorted rows back to dataRows
+        this.dataRows = rowData.map(item => item.row);
+        //console.log("sorted", this.dataRows);
+
+        // // Rebuild rowIndexByIdentifier and totalRows
+        this.updateRowsPostSort();
+        //console.log("Final sorted rows:", this.dataRows.map(row => row.cells.get(header)?.domElement.textContent.trim()));
+
+        // Re-render the page to show the sorted rows
+        this.renderCurrentPage();
+    }
+
+    naturalSort(a, b) {
+        const ax = [], bx = [];
+
+        a.replace(/(\d+)|(\D+)/g, function(_, $1, $2) { ax.push([$1 || Infinity, $2 || ""]) });
+        b.replace(/(\d+)|(\D+)/g, function(_, $1, $2) { bx.push([$1 || Infinity, $2 || ""]) });
+
+        while (ax.length && bx.length) {
+            const an = ax.shift();
+            const bn = bx.shift();
+            const nn = (an[0] === bn[0] ? an[1].localeCompare(bn[1]) : (an[0] - bn[0]));
+            if (nn) return nn;
+        }
+
+        return ax.length - bx.length;
+    }
+
+    updateRowsPostSort() {
+        // Clear the table body to reorder the elements
+        const tableBody = this.shadowRoot.querySelector('#table-body');
+        tableBody.innerHTML = '';  // Remove all child nodes
+    
+        this.totalRows = this.dataRows.map(row => row.domElement);
+    
+        // Re-append each row element in the new order to the DOM
+        this.totalRows.forEach(rowElement => {
+            tableBody.appendChild(rowElement);
+        });
+    
+        // Update rowIndexByIdentifier based on the new order
+        this.rowIndexByIdentifier = {};
+        this.dataRows.forEach((row, index) => {
+            this.rowIndexByIdentifier[row.identifier] = index;
+        });
     }
     
 
@@ -84,8 +210,8 @@ class BaseTable extends HTMLElement {
         });
         this.dataRows.push(newRow);
         this.totalRows.push(newRow.domElement);
-        this.shadowRoot.querySelector('#table-body').appendChild(newRow.domElement);
         newRow.domElement.style.display = 'none';
+        this.shadowRoot.querySelector('#table-body').appendChild(newRow.domElement);
 
         if (identifier) {
             this.rowIndexByIdentifier[identifier] = this.totalRows.length - 1;
@@ -94,16 +220,13 @@ class BaseTable extends HTMLElement {
 
     connectedCallback() {
         this.shadowRoot.getElementById('prev-page').addEventListener('click', () => {
-            console.log('prev-page clicked');
             if (this.currentPage > 1) {
                 this.currentPage--;
                 this.renderCurrentPage();
             }
         });
         this.shadowRoot.getElementById('next-page').addEventListener('click', () => {
-            console.log('next-page clicked');
             const maxPage = Math.ceil(this.dataRows.length / this.itemsPerPage);
-            console.log('maxPage', maxPage);
             if (this.currentPage < maxPage) {
                 this.currentPage++;
                 this.renderCurrentPage();
@@ -125,14 +248,22 @@ class BaseTable extends HTMLElement {
         let rowsToShow;
         if (this.filteredRows) {
             // We need to make sure we're dealing with DOM elements, not Row objects
+            //console.log("filtered rows");
             rowsToShow = this.filteredRows.map(row => row.domElement).slice(startIndex, endIndex);
         } else {
+            //console.log("total rows");
             rowsToShow = this.totalRows.slice(startIndex, endIndex);
         }
-    
+        // console.log("Rows to Show:", rowsToShow.map(row => {
+        //     // Extract text from cells under the "Tournament Name" header
+        //     const cell = row.querySelector('td'); // Assuming the "Tournament Name" is the first cell if no specific class or attribute identifies it
+        //     return cell ? cell.textContent.trim() : "No data for header";
+        // }));
         // Check if the row is defined before trying to change its display property
         rowsToShow.forEach(row => {
             if (row) {
+                const cell = row.querySelector('td');
+                //console.log("Row to show:", cell ? cell.textContent.trim() : "No data for header");
                 row.style.display = '';
             }
         });
@@ -156,6 +287,7 @@ class BaseTable extends HTMLElement {
     }
     
     updateRowByIdentifier(identifier, newCells) {
+        //console.log('Updating row with identifier:', identifier);
         const rowIndex = this.rowIndexByIdentifier[identifier];
         if (rowIndex !== undefined && this.dataRows[rowIndex]) {
             const row = this.dataRows[rowIndex];
@@ -168,7 +300,7 @@ class BaseTable extends HTMLElement {
             });
             this.renderCurrentPage();
         } else {
-            console.log(`Row with identifier ${identifier} not found.`);
+           // console.log(`Row with identifier ${identifier} not found.`);
             console.error(`Row with identifier ${identifier} not found.`);
         }
     }
