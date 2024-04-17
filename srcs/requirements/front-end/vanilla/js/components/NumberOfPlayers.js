@@ -32,7 +32,7 @@ class NumberOfPlayers extends HTMLElement {
             this.shadowRoot.querySelector('.players-icon').src = "";
             return;
         }
-        const url = `../js/assets/images/${nbrOfPlayers}_players.svg`;
+        const url = `public/assets/images/${nbrOfPlayers}_players.svg`;
         this.shadowRoot.querySelector('.players-icon').src = url;
     }
 }

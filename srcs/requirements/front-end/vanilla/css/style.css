@@ -15,7 +15,7 @@
 	line-height: 1.5;
 	font-weight: 400;
 
-	background: url("@images/purpleSpace.jpg");
+	/* background: url("@images/purpleSpace.jpg"); */
 	background-size: cover;
     /* background-position: center; */
 	background-attachment: fixed;
