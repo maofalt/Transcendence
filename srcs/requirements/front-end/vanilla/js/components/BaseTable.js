@@ -88,15 +88,16 @@ class BaseTable extends HTMLElement {
             div.style.marginRight = '5px';
 
             // Create the sort icon
-            let sortSpan = document.createElement('span');
-            sortSpan.textContent = this.ascending[header] ? '🔼' : '🔽';
-            sortSpan.style.cursor = 'pointer';
-            sortSpan.addEventListener('click', () => this.sortColumn(header));
-            
-            // Append the text div and sort span to the header cell
-            th.appendChild(div);
-            th.appendChild(sortSpan);
-            
+            if (header !== "Details" ){
+                let sortSpan = document.createElement('span');
+                sortSpan.textContent = this.ascending[header] ? '🔼' : '🔽';
+                sortSpan.style.cursor = 'pointer';
+                sortSpan.addEventListener('click', () => this.sortColumn(header));
+                
+                // Append the text div and sort span to the header cell
+                th.appendChild(div);
+                th.appendChild(sortSpan);
+            }    
             // Append the header cell to the table headers
             tableHeaders.appendChild(th);
         });
