@@ -41,6 +41,7 @@ class TournamentTable extends BaseTable {
         this.handlePlayTournament = this.handlePlayTournament.bind(this);
 
         this.setupEventListeners();
+
     }
 
  
