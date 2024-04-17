@@ -1,6 +1,7 @@
 import easyFetch from "@utils/easyFetch";
 import fetchUserDetails from "@utils/fetchUserDetails";
-import { refreshSocketConnection } from "@utils/websocket";
+import { refreshSocketConnection } from "@utils/websocket"; 
+import { initSocketConnection } from "@utils/websocket";
 
 export async function renewToken() {
 	const accessToken = sessionStorage.getItem("accessToken");
@@ -91,5 +92,7 @@ export function refreshTokenLoop() {
 export function pollingFunctions() {
 	
 	refreshTokenLoop();
+
+	initSocketConnection();
 
 }

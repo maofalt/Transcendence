@@ -68,7 +68,8 @@ export default class FriendsList extends AbstractComponent {
 			// container.style.setProperty("transition", "background-color 0.1s ease-in-out");
 			friendBlock.onmouseover = () => container.style.setProperty("background-color", "rgba(0, 0, 0, 0.3)");
 			friendBlock.onmouseout = () => container.style.setProperty("background-color", "rgba(0, 0, 0, 0)");
-			friendBlock.onclick = () => profileClick(friend);
+			if (profileClick)
+				friendBlock.onclick = () => profileClick(friend);
 			image.onmouseover = () => image.src = deleteIcon;
 			image.onmouseout = () => image.src = friend.avatar;
 			image.onclick = () => this.removeFriend(friend.username);

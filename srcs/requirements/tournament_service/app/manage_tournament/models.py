@@ -61,10 +61,11 @@ class Tournament(models.Model):
 
         for match in matches: 
             if match.players.count() < self.nbr_of_player_match:
-                match.players.add(player)
-                # match.nbr_of_player += 1
-                match.save()
-                return match 
+                if match.state == "waiting":
+                    match.players.add(player)
+                    # match.nbr_of_player += 1
+                    match.save()
+                    return match 
         return None
 
 class TournamentMatch(models.Model):

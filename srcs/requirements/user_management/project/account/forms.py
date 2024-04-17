@@ -22,11 +22,11 @@ class ProfileUpdateForm(forms.ModelForm):
         if avatar:
             if not avatar.name.endswith(('.jpg', '.jpeg', '.png', '.gif')):
                 raise forms.ValidationError('Only image files are allowed.')
-            try:
-                with open(avatar.path, "rb") as image_file:
-                    avatar_data = base64.b64encode(image_file.read()).decode('utf-8')
-            except Exception as e:
-                raise forms.ValidationError('Cannot open image file.')
+            # try:
+            #     with open(avatar.path, "rb") as image_file:
+            #         avatar_data = base64.b64encode(image_file.read()).decode('utf-8')
+            # except Exception as e:
+            #     raise forms.ValidationError('Cannot open image file.')
             # if avatar.size > 2 * 1024 * 1024:
             #     raise forms.ValidationError('File size cannot exceed 2MB.')
         return avatar

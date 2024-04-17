@@ -98,6 +98,7 @@ DATABASES = {
         'PASSWORD': 'i love miguel',
         'HOST': 'tournament_db',  # This should match the service name in docker-compose.yml for the database
         'PORT': '5432',
+        'ATOMIC_REQUESTS': True,
     }
 }
 
