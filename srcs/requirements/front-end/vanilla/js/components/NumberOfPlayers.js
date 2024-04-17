@@ -34,6 +34,7 @@ class NumberOfPlayers extends HTMLElement {
         }
         const url = `public/assets/images/${nbrOfPlayers}_players.svg`;
         this.shadowRoot.querySelector('.players-icon').src = url;
+        this.shadowRoot.querySelector('.players-icon').alt = `${nbrOfPlayers} players`;
     }
 }
 
