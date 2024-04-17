@@ -41,14 +41,6 @@ tls:
 #if dynamic configuration doesnt work probably the filepath in providers is wrong
 http:
   routers:
-    #SWAGGER UI
-    # swagger-ui:
-    #   rule: "Host(`HOST_IP`) && PathPrefix(`/api/docs`)"
-    #   entryPoints:
-    #     - "websecure"
-    #   service: "swagger-ui-service"
-    #   tls:
-    #     certResolver: "myresolver"
     #GAME FRONT END FOR DEVELOPMENT USING NODE.JS
     jsDev:
       rule: "Host(`HOST_IP`)"
@@ -149,6 +141,7 @@ http:
       loadBalancer:
         servers:
           - url: "http://adminer:8080"
+
 #midlewares used to modify the request before it is sent to the container 
 #e.g.: stripPrefix is used to remove the /game-logic from the request
   middlewares:
