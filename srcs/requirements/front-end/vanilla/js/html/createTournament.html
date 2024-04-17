@@ -19,7 +19,7 @@
 				placeholder="Enter tournament name">
 
 			<div style="display: flex; flex-direction: row; align-items : top;">
-				<label for="nbr_of_player_total" style="flex: 1;">Number of Players :&nbsp;</label>
+				<label for="nbr_of_player_total" style="flex: 1;">Max. Participants :&nbsp;</label>
 				<p id="total_players_value" style="color:deepskyblue; margin: 0; padding: 0;">2</p>
 			</div>
 			<input
@@ -34,7 +34,7 @@
 				required
 				oninput="document.querySelector('#total_players_value').textContent = this.value">
 
-			<label for="registration_period_min">Registration Period (in minutes):</label>
+			<!-- <label for="registration_period_min">Registration Period (in minutes):</label>
 			<input
 				class="input-tag"
 				type="number"
@@ -53,7 +53,7 @@
 				id="host_id"
 				name="host_id"
 				value="1"
-				required>
+				required> -->
 
 			</form>
 		</div>
@@ -83,7 +83,7 @@
 
 				<div class="setting-input">
 				<div style="display: flex; flex-direction: row; align-items : top;">
-					<label for="nbr_of_rounds" style="flex: 1;">Number of Rounds (1-10) :&nbsp;</label>
+					<label for="nbr_of_rounds" style="flex: 1;">Number of Lives (1-10) :&nbsp;</label>
 					<p id="nbr_rounds_value" style="color:deepskyblue; margin: 0; padding: 0;">10</p>
 				</div>
 				<input class="input-tag" type="range" id="nbr_of_rounds" name="nbr_of_rounds" min="1" max="10" step="1" value="10"

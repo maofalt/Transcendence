@@ -261,6 +261,7 @@ export default class CreateTournament extends AbstractView {
 		// Combine data from both forms
 		const tournamentAndGameSettings = {
 		...tournamentSettings,
+		registration_period_min: 15,
 		nbr_of_player_match: nbr_of_player_match,
 		setting:{  ...gameSettings }
 		};
