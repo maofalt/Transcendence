@@ -25,11 +25,11 @@ export default class PlayMenu extends AbstractComponent {
 
 		this.setupPannel(classicPong, 
 			"Play a game of classic Pong with a friend, on the same keyboard.",
-			"../js/assets/images/screenShot_normalGameBetter.png",
+			"public/assets/images/screenShot_normalGameBetter.png",
 			() => navigateTo("/basic"));
 		this.setupPannel(customGame, 
 			"Create your own Tournaments and personalize your gaming experience.",
-			"../js/assets/images/screenShot_customGame.png",
+			"public/assets/images/screenShot_customGame.png",
 			() => navigateTo("/tournament"));
 
 		menu.appendChild(classicPong);

@@ -30,7 +30,7 @@ class HostAvatar extends HTMLElement {
     }
 
     render() {
-        const avatar = this.getAttribute('avatar') || "../js/assets/images/default-avatar.webp"; // Fallback to default avatar
+        const avatar = this.getAttribute('avatar') || "public/assets/images/default-avatar.webp"; // Fallback to default avatar
         const name = this.getAttribute('name') || 'Unknown Host'; // Fallback to a default name
 
         this.shadowRoot.querySelector('.host-avatar').src = avatar;

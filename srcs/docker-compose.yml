@@ -18,7 +18,6 @@ services:
       - ./requirements/traefik/config/ssl/:/ssl-certs
       - "${XDG_RUNTIME_DIR:-/var/run}/docker.sock:/var/run/docker.sock"
       #- /var/run/docker.sock:/var/run/docker.sock
-
     networks:
       - transcendence
     restart: unless-stopped
@@ -135,6 +134,14 @@ services:
         max-size: "1m"
         max-file: "3"
 
+  adminer:
+    container_name: adminer
+    image: adminer:latest
+    networks:
+      - transcendence
+    ports:
+      - "1029:8080"
+
   # TOURNAMENT SERVICE DJANGO
   tournament:
     container_name: tournament
@@ -186,16 +193,11 @@ services:
 
 #VOLUMES
 volumes:
-  portainer-data:
-    driver: local
-  game_db:
-    driver: local
   user-management-db:
     driver: local
   tournament-db:
     driver: local
-  postgres-data:
-    driver: local
+
 
 #NETWORKS
 networks:

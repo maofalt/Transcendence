@@ -57,16 +57,6 @@ http:
         - "websecure"
       tls:
         certResolver: "myresolver"
-    #FRONT END PRODUCTION
-    front-end:
-      rule: "Host(`front.HOST`)"
-      entryPoints:
-        - "websecure"
-      middlewares:
-        - "strip-front"
-      service: "frontEndService"
-      tls:
-        certResolver: "myresolver"
     #GAME LOGIC
     game:
       rule: "Host(`HOST_IP`) && PathPrefix(`/game-logic`)"
@@ -89,6 +79,13 @@ http:
       entryPoints: ["websecure"]
       middlewares: ["tournament-headers"]
       service: "tournament"
+      tls:
+        certResolver: "myresolver"
+    #ADMINER
+    adminer:
+      rule: "Host(`HOST_IP`) && PathPrefix(`/adminer`)"
+      entryPoints: ["websecure"]
+      service: "adminer"
       tls:
         certResolver: "myresolver"
     #catch all for http requests and redirect to https
@@ -117,21 +114,11 @@ http:
         loadBalancer:
           servers:
             - url: "http://"
-  
-    # portainer-service:
-    #   loadBalancer:
-    #     servers:
-    #       - url: "http://portainer:9000"
 
     edge-service:
       loadBalancer:
         servers:
           - url: "http://edge:8000"
-
-    # swagger-ui-service:
-    #   loadBalancer:
-    #     servers:
-    #       - url: "http://swagger-ui:8080"
 
     frontEndService:
       loadBalancer:
@@ -157,6 +144,11 @@ http:
       loadBalancer:
         servers:
           - url: "http://tournament:8001"
+
+    adminer:
+      loadBalancer:
+        servers:
+          - url: "http://adminer:8080"
 #midlewares used to modify the request before it is sent to the container 
 #e.g.: stripPrefix is used to remove the /game-logic from the request
   middlewares:
@@ -178,11 +170,6 @@ http:
     strip-game-logic:
       stripPrefix:
         prefixes: ["/game-logic"]
-
-    strip-front:
-      stripPrefix:
-        prefixes:
-          - "/front"
 
     tournament-headers:
       headers:
