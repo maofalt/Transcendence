@@ -122,13 +122,30 @@ class BaseTable extends HTMLElement {
 
         // Get all rows as an array of objects containing the row and its sort key
         const rowContent= [];
+        // const rowData = this.dataRows.map(row => {
+        //     rowContent.push(row.cells.get(header)?.domElement.textContent || "");
+        //     return {
+        //         row: row,
+        //         key: (row.cells.get(header)?.domElement.textContent || "").trim()
+        //     };
+        // });
+
         const rowData = this.dataRows.map(row => {
-            rowContent.push(row.cells.get(header)?.domElement.textContent || "");
+            let key = "";
+            if (header === "Host") {
+                key = row.cells.get(header)?.domElement.querySelector('host-avatar').getAttribute('name') || "";
+            } else if (header === "Players Per Match") {
+                key = row.cells.get(header)?.domElement.querySelector('number-of-players').getAttribute('nbrOfPlayers') || "";
+                console.log("Players per match:", key);
+            } else {
+                key = row.cells.get(header)?.domElement.textContent || "";
+            }
             return {
                 row: row,
-                key: (row.cells.get(header)?.domElement.textContent || "").trim()
+                key: key.trim()
             };
         });
+    
         //console.log(rowContent);
         // Apply natural sort algorithm
         rowData.sort((a, b) => this.naturalSort(a.key, b.key));
