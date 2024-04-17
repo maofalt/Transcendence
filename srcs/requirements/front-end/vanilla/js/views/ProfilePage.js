@@ -204,7 +204,6 @@ export default class ProfilePage extends AbstractComponent {
 
 		// fill in the values that need to be fetched
 		this.fillUserValues(this.userElemsToBeFilled);
-		this.fillGameStats(this.userElemsToBeFilled);
 
 		//initialize the overlay
 		this.overlay = document.createElement('custom-overlay');
@@ -215,7 +214,8 @@ export default class ProfilePage extends AbstractComponent {
 		// this.friendElemsToBeFilled.friendProfile.style.setProperty("display", "block");
 		fadeIn(this.friendElemsToBeFilled.friendProfile);
 		this.friendElemsToBeFilled.friendUserInfo.fetchAndFillElems(friendData);
-		this.fillGameStats(this.friendElemsToBeFilled, friendData.username);
+		let gameStats = await this.fetchGameStats(friendData.username);
+		this.fillGameStats(this.friendElemsToBeFilled, friendData.username, gameStats);
 		this.friendElemsToBeFilled.friendProfile.onclick = (e) => {
 			if (e.target === this.friendElemsToBeFilled.friendProfile) {
 				// this.friendElemsToBeFilled.friendProfile.style.setProperty("display", "none");
@@ -225,7 +225,8 @@ export default class ProfilePage extends AbstractComponent {
 	}
 
 	fillUserValues = async (elemsToBeFilled) => {
-		let user = JSON.parse(sessionStorage.getItem("userDetails"));
+		// let user = JSON.parse(sessionStorage.getItem("userDetails"));
+		let user = this.user;
 		if (!user)
 			user = await fetchUserDetails();
 		let gameStats = await this.fetchGameStats(user.username);
@@ -237,24 +238,16 @@ export default class ProfilePage extends AbstractComponent {
 		elemsToBeFilled.userPhone.textContent = user.phone || "N/A";
 		console.log("user", user);
 		elemsToBeFilled.pannelTitle.textContent = `Friends List  ( ${user.friends_count} )`;
+		this.fillGameStats(this.userElemsToBeFilled, user.username, gameStats);
 	}
 
-	fillGameStats = async (elemsToBeFilled, username) => {
-		if (!username) {
-			let details = JSON.parse(sessionStorage.getItem("userDetails"));
-			if (!details) {
-				details = await fetchUserDetails();
-				// sessionStorage.setItem("userDetails", JSON.stringify(details));
-			}
-			username = details.username;
-		}
-		let gameStats = await this.fetchGameStats(username);
+	fillGameStats = async (elemsToBeFilled, username, gameStats) => {
 
 		elemsToBeFilled.matchTotal.textContent = gameStats.total_played;
 		elemsToBeFilled.tournamentsWon.textContent = gameStats.nbr_of_won_tournaments;
 		elemsToBeFilled.matchWins.textContent = gameStats.nbr_of_won_matches;
 		elemsToBeFilled.matchLosses.textContent = gameStats.nbr_of_lost_matches;
-		elemsToBeFilled.matchWinrate.textContent = (gameStats.nbr_of_won_matches / gameStats.total_played * 100).toFixed(1).toString() + "%" || "N/A";
+		elemsToBeFilled.matchWinrate.textContent = !gameStats.total_played ? "N/A" : (gameStats.nbr_of_won_matches / gameStats.total_played * 100).toFixed(1).toString() + "%";
 		let matchHistory = gameStats.played_tournaments;
 		console.log("Match History:", matchHistory);
 		elemsToBeFilled.matchRows.innerHTML = "";
@@ -286,7 +279,7 @@ export default class ProfilePage extends AbstractComponent {
 
 	fetchGameStats = async (username) => {
 		let gameStats = [];
-		await easyFetch(`/api/tournament/stats/${username}`)
+		await easyFetch(`/api/tournament/stats/${username}/`)
 		.then(res => {
 			let response = res.response;
 			let body = res.body;
@@ -306,6 +299,9 @@ export default class ProfilePage extends AbstractComponent {
 	}
 
 	deleteAccount = async () => {
+		easyFetch(`/api/tournament/delete/${this.user.username}/`, { method: 'POST' }).catch(error => {
+			console.error("Error deleting user from Tournament backend: ", error);
+		});
 		await easyFetch(`/api/user_management/auth/delete_account`, {
 			method: 'POST',
 			headers: {
