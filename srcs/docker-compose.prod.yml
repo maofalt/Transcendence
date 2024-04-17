@@ -1,0 +1,19 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  js-dev:
+    container_name: js-dev
+    build:
+      context: ./requirements/front-end/
+      dockerfile: Dockerfile
+    volumes: []
+    env_file:
+      - .env
+    networks:
+      - transcendence
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+        max-file: "3"

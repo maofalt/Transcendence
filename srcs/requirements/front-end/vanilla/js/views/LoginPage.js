@@ -90,9 +90,7 @@ export default class LoginPage extends AbstractComponent {
 
 		usernameBlock.input.onkeydown = (e) => {
 			usernameBlock.input.input.style.outline = "";
-			console.log("e.key", e.key)
 			if (e.key === "Enter") {
-				console.log('enter');
 				passwordBlock.input.input.focus();
 			}
 		}
@@ -157,14 +155,15 @@ export default class LoginPage extends AbstractComponent {
 
 				if (body.requires_2fa) {
 					displayPopup('login successful, please enter your 2fa code', 'info');
-					Router.navigateTo("/2fa");
+					Router.redirectTo("/2fa");
 				}
 
-				displayPopup('Login successful', 'success');
+				// displayPopup('Login successful', 'success');
 
 				refreshTokenLoop();
 
 				Router.navigateTo("/");
+				// window.location.reload();
 			}
 		})
 		.catch(error => {

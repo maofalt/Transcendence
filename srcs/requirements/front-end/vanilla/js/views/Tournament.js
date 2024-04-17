@@ -68,11 +68,32 @@ export default class Tournament extends AbstractView {
 		}});
 		leaveButton.onclick = () => navigateTo("/");
 		tournamentDiv.appendChild(leaveButton);
+
+		const refreshTournamentButton = this.tournamentTable.shadowRoot.getElementById('refresh-button');
+		refreshTournamentButton.addEventListener('click', async () => {
+			// Remove the existing tournament table from the DOM.
+			const tournamentDiv = document.querySelector('.tournament');
+			tournamentDiv.removeChild(this.tournamentTable);
+			
+			// Call the function to create a new tournament table.
+			this.tournamentTable = await this.getTournamentList();
+			this.tournamentTable.setAttribute('id', 'tournamentTable');
+			
+			// Re-append the new tournament table to the DOM.
+			tournamentDiv.appendChild(this.tournamentTable);
+		
+			// Re-attach the event listener to the create button on the new table.
+			const createTournamentButton = this.tournamentTable.shadowRoot.getElementById('create-button');
+			createTournamentButton.removeEventListener('click', this.createTournament);
+			createTournamentButton.addEventListener('click', this.createTournament);
+		
+		});
+
 	}
 
 	async getTournamentList() { 
 		//Create new table
-		let tournamentTable = document.createElement('tournament-table');
+		let tournamentTable = document.getElementById('tournament-table') || document.createElement('tournament-table');
 		let tournaments = {};
 		try {
 			const response = await makeApiRequest('/api/tournament/create-and-list/','GET');

@@ -39,15 +39,13 @@ export default class TwoFactorAuth extends AbstractComponent {
 
 		this.shadowRoot.appendChild(pannel);
 
-		submitButton.onclick = (e) => this.submitTwoFactorAuth(e,
-			{
+		submitButton.onclick = (e) => this.submitTwoFactorAuth(e, {
 				one_time_code: twoFactorAuthInput.getValue(),
 				context: 'login'
-			});
+		});
 		// this.shadowRoot.querySelector('#cancel').onclick = this.cancelTwoFactorAuth;
 	}
 
-	// submitLoginForm = (e, formData) => {
 	submitTwoFactorAuth = (e, formData) => {
 		if (e)
 			e.preventDefault();
@@ -82,7 +80,7 @@ export default class TwoFactorAuth extends AbstractComponent {
 
 				refreshTokenLoop();
 
-				Router.navigateTo("/");
+				Router.redirectTo("/");
 			}
 		})
 		.catch(error => {

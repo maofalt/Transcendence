@@ -1,5 +1,3 @@
-import AbstractView from "./AbstractView";
-import AbstractComponent from "@components/AbstractComponent";
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import io from 'socket.io-client';
@@ -12,85 +10,71 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import CustomButton from '@components/CustomButton';
 import { navigateTo } from "@utils/Router";
-import purpleSpaceImg from '@images/purpleSpace.jpg';
+import AbstractView from "@views/AbstractView";
 
-import gameSettings from '@gameLogic/gameSettings.json';
 
-// importing game logic code :
-import lobbySettings from '@gameLogic/lobbySettings.js';
-import { initLobby, initFieldShape } from '@gameLogic/init.js';
-import debugDisp from '@gameLogic/debugDisplay.js';
-import render from '@gameLogic/rendering.js';
-// import { initFieldShape } from "../gameLogic/init";
+// function createCallTracker() {
+// 	let lastCallTime = 0; // Timestamp of the last call
 
-function createCallTracker() {
-	let lastCallTime = 0; // Timestamp of the last call
+// 	// This function is called every time you want to track a call
+// 	return function trackCall() {
+// 	  const now = Date.now(); // Get current timestamp in milliseconds
+// 	  let elapsedTime = 0; // Initialize elapsed time
 
-	// This function is called every time you want to track a call
-	return function trackCall() {
-	  const now = Date.now(); // Get current timestamp in milliseconds
-	  let elapsedTime = 0; // Initialize elapsed time
-  
-	  if (lastCallTime !== 0) { // Check if this is not the first call
-		elapsedTime = now - lastCallTime; // Calculate time since last call
-		// console.log(`Time since last call: ${elapsedTime} ms`);
-	  }
-  
-	  lastCallTime = now; // Update last call time to the current time for the next call
-  
-	  return elapsedTime; // Return the elapsed time between the last two calls
-	};
-  }
+// 	  if (lastCallTime !== 0) { // Check if this is not the first call
+// 		elapsedTime = now - lastCallTime; // Calculate time since last call
+// 		// console.log(`Time since last call: ${elapsedTime} ms`);
+// 	  }
 
-// instance of the call tracker
-const callTracker = createCallTracker();
+// 	  lastCallTime = now; // Update last call time to the current time for the next call
 
-let fps = 0;
+// 	  return elapsedTime; // Return the elapsed time between the last two calls
+// 	};
+//   }
+
+// // instance of the call tracker
+// const callTracker = createCallTracker();
+
+// let fps = 0;
 
 class SpObject {
-    constructor(objMesh, dirMesh) {
-        this.mesh = objMesh;
-        this.dirMesh = dirMesh;
-    }
+	constructor(objMesh, dirMesh) {
+		this.mesh = objMesh;
+		this.dirMesh = dirMesh;
+	}
 }
 
 class BoxObject {
-    constructor(objMesh, dir1Mesh, dir2Mesh) {
-        this.mesh = objMesh;
-        this.dir1Mesh = dir1Mesh;
-        this.dir2Mesh = dir2Mesh;
-    }
+	constructor(objMesh, dir1Mesh, dir2Mesh) {
+		this.mesh = objMesh;
+		this.dir1Mesh = dir1Mesh;
+		this.dir2Mesh = dir2Mesh;
+	}
 }
 
-export default class BasicGameV2 extends AbstractComponent {
-	constructor(screenWidth, screenHeight) {
+export default class Game extends AbstractView {
+	constructor(query='', screenWidth, screenHeight) {
 		super();
 		this.loader = new GLTFLoader();
-		// console.log("Game View created with matchID: ", query);
-		// this.query = 'matchID=' + query;
+		this.query = 'matchID=' + query;
+		console.log("Game View created with matchID: ", query);
 		
-        this.match = {};
+		// controls
+		this.controls = null;
+		
+		// rendering
+		this.renderer = null;
+		this.scene = null;
+		this.camera = null;
 
-		this.data;
-
-		this.latency = 0;
-
-        // controls
-        this.controls = null;
-        
-        // rendering
-        this.renderer = null;
-        this.scene = null;
-        this.camera = null;
-
-        this.playerID = null;
+		this.playerID = null;
 		this.matchID = null;
 
-        // objects
-        this.ball = null;
+		// objects
+		this.ball = null;
 		this.ballModel = null;
-        this.paddles = [];
-        this.walls = [];
+		this.paddles = [];
+		this.walls = [];
 		this.goals = [];
 		this.scores = [];
 
@@ -99,9 +83,9 @@ export default class BasicGameV2 extends AbstractComponent {
 		this.starGeometry = null;
 		this.starMaterial = null;
 
-        // lights
-        this.ambientLight = null;
-        this.directionalLight = null;
+		// lights
+		this.ambientLight = null;
+		this.directionalLight = null;
 
 		// text
 		this.textSettings = {
@@ -111,24 +95,29 @@ export default class BasicGameV2 extends AbstractComponent {
 		}
 
 		this.prevScores = [];
-		this.facing = 0.5;
+		this.dir = 0;
 
 		this.screenWidth = screenWidth || window.innerWidth;
 		this.screenHeight = screenHeight || window.innerHeight;
 		console.log("Screen size: ", this.screenWidth, this.screenHeight);
 	};
 
-	disconnectedCallback() {
-        // clearInterval(this.match.gameInterval);
+	async getHtml() {
+		return `
+			<div id="gameContainer"></div>
+		`;
+	};
+
+	destroy() {
 		this.cleanAll();
 	}
 
-	connectedCallback() {
+	init() {
 		console.log("init Game View...");
 		// Set up the game container
 		this.container = document.createElement('div');
-        this.container.id = 'game-container';
-        this.shadowRoot.appendChild(this.container);
+		this.container.id = 'gameContainer';
+		// this.shadowRoot.appendChild(this.container);
 
 		// Create a new div
 		let countDown = document.createElement('div');
@@ -143,7 +132,7 @@ export default class BasicGameV2 extends AbstractComponent {
 			<style>			
 				#timer {
 					margin-bottom: 0;
-				}
+				}	
 				#timer-message {
 					font-size: 20px;
 					margin: 0;
@@ -167,6 +156,8 @@ export default class BasicGameV2 extends AbstractComponent {
 			window.history.back();
 		}
 
+		leaveButton.id = "leave-button";
+
 		this.container.appendChild(countDown);
 		this.container.appendChild(leaveButton);
 		
@@ -174,16 +165,12 @@ export default class BasicGameV2 extends AbstractComponent {
 		// this.generateScene();
 
 		// Initialize socket connection
-		// this.initSocket();
+		this.initSocket();
 
 		// Add event listeners (resize, key events, etc.)
 		window.addEventListener('resize', this.onWindowResize.bind(this), false);
 		window.addEventListener("keydown", this.handleKeyPress.bind(this));
 		window.addEventListener("keyup", this.handleKeyRelease.bind(this));
-        console.log("Game View initialized");
-
-        console.log(this.match);
-        this.localconnection();
 	};
 
 	onWindowResize() {
@@ -193,88 +180,121 @@ export default class BasicGameV2 extends AbstractComponent {
 	};
 
 	handleKeyPress(event) {
-		// console.log(event.key);
-		if (event.key == "s")
-			this.localmoveUp(0);
+		console.log(event.key);
 		if (event.key == "w")
-			this.localmoveDown(0);
-		// console.log("KEYYYYYY: ", event.key);
-		if (event.key == "ArrowUp")
-			this.localmoveUp(1);
-		if (event.key == "ArrowDown")
-			this.localmoveDown(1);
-    }
+			this.socket.emit('moveUp');
+		if (event.key == "s")
+			this.socket.emit('moveDown');
+		if (event.key == "d")
+			this.socket.emit('dash');
+	};
+
 	handleKeyRelease(event) {
 		if (event.key == "w" || event.key == "s")
-			this.localstop(0);
-		if (event.key == "ArrowUp" || event.key == "ArrowDown")
-			this.localstop(1);
+			this.socket.emit('stop');
 	};
 
-    localerror = (error) => {
-		console.error("Socket error: ", error);
-		alert("Socket error: " + error);
-	}
+	initSocket() {
+		// socket initialization and event handling logic
+		const hostname = window.location.hostname;
+		const protocol = 'wss';
+//		const query = window.location.search.replace('?', '');
+		const query = window.location.search.replace('?', '') || this.query;
+		console.log("Query: ", query);
+		
+		let accessToken = sessionStorage.getItem('accessToken');
+		// console.log("Access Token: ", accessToken);
+		// accessTok = accessTok.replace("Bearer ", ""); // replace the "Bearer " at the beginning of the value;
 
-	localconnect_error = (error) => {
-		console.error("Socket connection error we are here: ", error);
-		alert("Socket connection error: " + error);
-	}
+		const io_url = hostname.includes("github.dev") ? `${protocol}://${hostname}` : `${protocol}://${hostname}:9443`;
+		console.log(`Connecting to ${io_url}/game`)
+		this.socket = io(`${io_url}/game`, {
+			path: '/game-logic/socket.io',
+			query: query,
+			secure: hostname !== 'localhost',
+			auth: { accessToken }
+		});
 
-	localwhoareyou = () => {
-		this.socket.emit('ID', this.playerID, this.matchID);
-	}
+		this.socket.on('error', (error) => {
+			console.error("Socket error: ", error);
+			alert("Socket error: " + error);
+		});
 
-	localgenerate = (data) => {
-		// Generate scene and update it
-		data.playersArray = Object.values(data.players);
-		// console.log("data : ", data);
-		this.generateScene(data, this.socket);
-		this.updateScene(data, this.socket);
-		this.renderer.render(this.scene, this.camera);
+		this.socket.on('connect_error', (error) => {
+			console.error("Socket connection error: ", error);
+			alert("Socket connection error: " + error);
+		});
+
+		this.socket.on('whoareyou', () => {
+			this.socket.emit('ID', this.playerID, this.matchID);
+		});
+
+		this.socket.on('generate', data => {
+			// Generate scene and update it
+			// let parsedData = JSON.parse(data);
+			data.playersArray = Object.values(data.players);
+			console.log("data : ", data);
+			this.generateScene(data, this.socket);
+			this.updateScene(data, this.socket);
+			this.renderer.render(this.scene, this.camera);
+		});
+		
+		this.socket.on('render', data => {
+			data.playersArray = Object.values(data.players);
+			// if (data.ball.model && this.ballModel) {
+				//console.log("Rendering Frame...");
+				this.updateScene(data);
+			// }
+			// console.log("FPS: " + 1000 / callTracker() + "fps");
+			// fps = 1000 / callTracker();
+			this.renderer.render(this.scene, this.camera);
+		});
+
+		this.socket.on('destroy', data => {
+			this.scene.clear();
+			console.log("DESTROY SCENE");
+		});
+
+		this.socket.on('refresh', data => {
+			console.log("REFRESH SCENE");
+			data.playersArray = Object.values(data.players);
+			this.refreshScene(data);
+		});
+
+		this.socket.on('end-game', data => {
+			// this.launchEndGameAnimation();
+			this.controls.enabled = false;
+
+			this.launchEndGameAnimation(data.winner);
+
+			// this.scene.clear();
+			console.log("END OF GAME");
+		});
+
+		// this.socket.on('ping', ([timestamp, latency]) => {
+		// 	this.socket.emit('pong', timestamp);
+		// 	let str = `Ping: ${latency}ms - FPS: ${fps.toFixed(1)}`;
+		// 	document.title = str;
+		// 	//console.log(str);
+		// });
+
+		this.socket.on("clean-all", () => {
+			this.cleanAll();
+		});
 	};
-	
-	localrender = (data) => {
-		data.playersArray = Object.values(data.players);
-		// if (data.ball.model && this.ballModel) {
-			//console.log("Rendering Frame...");
-			this.updateScene(data);
-		// }
-		// console.log("FPS: " + 1000 / callTracker() + "fps");
-		// fps = 1000 / callTracker();
-		this.renderer.render(this.scene, this.camera);
-	};
 
-	localdestroy = (data) => {
-		this.scene.clear();
-		console.log("DESTROY SCENE");
-	}
-
-	localrefresh = (data) => {
-		// console.log("REFRESH SCENE");
-		data.playersArray = Object.values(data.players);
-		this.refreshScene(data);
-	}
-
-	localping = ([timestamp, latency]) => {
-		this.socket.emit('pong', timestamp);
-		let str = `Ping: ${latency}ms - FPS: ${fps.toFixed(1)}`;
-		document.title = str;
-		//console.log(str);
-	};
-
-	cleanAll() {
+	cleanAll(matchID) {
 		console.log("CLEANING CLIENT !!");
 		// Cleanup logic here (remove event listeners, etc.)
 		window.removeEventListener('resize', this.onWindowResize.bind(this));
 		window.removeEventListener("keydown", this.handleKeyPress.bind(this));
 		window.removeEventListener("keyup", this.handleKeyRelease.bind(this));
 
-        if(this.match.gameInterval)
-            clearInterval(this.match.gameInterval);
-
-		if (this.socket)
+		if (this.socket) {
+			// console.log("FROM CLIENT : DELETE MATCH");
+			// this.socket.emit("delete-match", matchID);
 			this.socket.disconnect();
+		}
 
 		if (this.scene)
 			this.scene.clear();
@@ -347,6 +367,7 @@ export default class BasicGameV2 extends AbstractComponent {
 
 			window.history.back();
 		}
+		leaveButton.id = "leave-button";
 		
 		uiLayer.appendChild(leaveButton);
 
@@ -362,7 +383,7 @@ export default class BasicGameV2 extends AbstractComponent {
 		uiLayer.style.background = `rgba(0, 0, 0, ${frame / (maxFrame * 1.8)})`;
 		uiLayer.style.opacity = frame / maxFrame;
 		uiLayer.style.backdropFilter = `blur(${frame / maxFrame * 16}px)`;
-		// console.log(`blur(${frame / maxFrame * 16}px)`);
+		console.log(`blur(${frame / maxFrame * 16}px)`);
 		if (frame == maxFrame) {
 			console.log("End of Game !!");
 			return ;
@@ -392,7 +413,7 @@ export default class BasicGameV2 extends AbstractComponent {
 		this.generateScores(data);
 		
 		// rotate the scene relative to the current client (so the paddle is at the bottom)
-		this.scene.rotateZ(-2 * Math.PI/data.gamemode.nbrOfPlayers * this.facing)
+		this.scene.rotateZ(-2 * Math.PI/data.gamemode.nbrOfPlayers * this.dir)
 
 		// this.drawAxes();
 	}
@@ -412,20 +433,20 @@ export default class BasicGameV2 extends AbstractComponent {
 		this.controls.target.set(0, 0, 0);
 
 		// get the direction to later rotate the scene relative to the current client
-		// for (let i=0; i<data.playersArray.length; i++) {
-		// 	if (data.playersArray[i].socketID == socket.id) {
-		// 		console.log(`socket : ${data.playersArray[i].socketID}, client : ${socket.id}, ${i}, angle = ${data.playersArray[i].paddle.angle}`);
-		// 		this.dir = i
-		// 	}
-		// }
+		for (let i=0; i<data.playersArray.length; i++) {
+			if (data.playersArray[i].socketID == socket.id) {
+				console.log(`socket : ${data.playersArray[i].socketID}, client : ${socket.id}, ${i}, angle = ${data.playersArray[i].paddle.angle}`);
+				this.dir = i
+			}
+		}
 
 		this.refreshScene(data);
 	};
 
 	displayTimer(data) {
 		// in here : formatting the timer interface;
-		let timer = this.shadowRoot.getElementById('timer');
-		let timerMessage = this.shadowRoot.getElementById('timer-message');
+		let timer = document.getElementById('timer');
+		let timerMessage = document.getElementById('timer-message');
 
 		timer.textContent = data.ongoing ? "" : data.countDownDisplay;
 		timerMessage.textContent = "";
@@ -442,27 +463,27 @@ export default class BasicGameV2 extends AbstractComponent {
 
 	// Other methods (generateScene, updateScene, etc.) here
 	updateScene(data, socket) {
-		this.displayTimer(data);
+		// this.displayTimer(data);
 
 		// console.log("Updating Scene...");
-		// if (data.ball.model) {
-		// 	this.ballModel.position.set(data.ball.pos.x, data.ball.pos.y, 0);
-		// 	this.ballModel.rotateX((-Math.PI / 20) * data.ball.sp);
-		// 	this.ballModel.rotateZ((Math.PI / 24) * data.ball.sp);
-		// } else {
-		// 	if (data.ball.texture) {
-		// 		// this.ball.mesh.rotateX(-Math.PI / 42 * data.ball.sp);
-		// 		// this.ball.mesh.rotateX((-Math.PI / 20) * data.ball.sp);
-		// 		// this.ball.mesh.rotateZ((Math.PI / 24) * data.ball.sp);
-		// 		this.ball.mesh.rotateY(Math.PI / 42 * data.ball.sp);
-		// 		this.ball.mesh.rotateZ(Math.PI / 36 * data.ball.sp);
-		// 	}
+		if (data.ball.model) {
+			this.ballModel.position.set(data.ball.pos.x, data.ball.pos.y, 0);
+			this.ballModel.rotateX((-Math.PI / 20) * data.ball.sp);
+			this.ballModel.rotateZ((Math.PI / 24) * data.ball.sp);
+		} else {
+			if (data.ball.texture) {
+				// this.ball.mesh.rotateX(-Math.PI / 42 * data.ball.sp);
+				// this.ball.mesh.rotateX((-Math.PI / 20) * data.ball.sp);
+				// this.ball.mesh.rotateZ((Math.PI / 24) * data.ball.sp);
+				this.ball.mesh.rotateY(Math.PI / 42 * data.ball.sp);
+				this.ball.mesh.rotateZ(Math.PI / 36 * data.ball.sp);
+			}
 			this.ball.mesh.position.set(data.ball.pos.x, data.ball.pos.y, 0);
-		// }
+		}
 
 		for (let i=0; i<data.playersArray.length; i++) {
 			this.paddles[i].mesh.position.set(data.playersArray[i].paddle.pos.x, data.playersArray[i].paddle.pos.y, data.playersArray[i].paddle.pos.z);
-			this.paddles[i].mesh.material.opacity = 1;
+			this.paddles[i].mesh.material.opacity = data.playersArray[i].connected ? 1.0 : 0.3;
 		}
 				
 		// update scores
@@ -493,11 +514,11 @@ export default class BasicGameV2 extends AbstractComponent {
 		this.prevScores = data.playersArray.map(player => -1);
 
 		// get the direction of the client to rotate the scores to face the client
-		// for (let i = 0; i < data.playersArray.length; i++) {
-		// 	if (data.playersArray[i].socketID === this.socket.id) {
-		// 		this.dir = i;
-		// 	}
-		// }
+		for (let i = 0; i < data.playersArray.length; i++) {
+			if (data.playersArray[i].socketID === this.socket.id) {
+				this.dir = i;
+			}
+		}
 
 		if (!loader)
 			return console.error("FontLoader not found");
@@ -600,7 +621,7 @@ export default class BasicGameV2 extends AbstractComponent {
 		this.scene.add(this.scores[i]);
 
 		// rotate the score to face client
-		this.scores[i].rotation.set(0, 0, 2 * Math.PI/data.gamemode.nbrOfPlayers * this.facing);
+		this.scores[i].rotation.set(0, 0, 2 * Math.PI/data.gamemode.nbrOfPlayers * this.dir);
 	}
 
 	refreshScores(data) {
@@ -610,7 +631,7 @@ export default class BasicGameV2 extends AbstractComponent {
 		data.playersArray.forEach((player, index) => {
 
 			if (this.prevScores[index] != player.score) {
-				// console.log("Refreshing score: " + player.score + " for player " + index);
+				console.log("Refreshing score: " + player.score + " for player " + index);
 				if (this.scores[index])
 					this.scene.remove(this.scores[index]);
 				this.createScore(data, player, index);
@@ -665,21 +686,21 @@ export default class BasicGameV2 extends AbstractComponent {
 		let ballTexture;
 		let ballMaterial;
 
-		// if (data.ball.model) {
-		// 	console.log("LOAD STUFF");
-		// 	this.loadBallModel(data);
-		// 	return ;
-		// }
-		// console.log("DIDNT LOADGE");
-		// if (data.ball.texture != "") {
-		// 	ballTexture = new THREE.TextureLoader().load(`public/assets/images/${data.ball.texture}`);
-		// 	ballMaterial = new THREE.MeshPhongMaterial({ map: ballTexture, transparent: false, opacity: 0.7 });
-		// 	// ballTexture.wrapS = ballTexture.wrapT = THREE.RepeatWrapping;
-		// 	// ballTexture.offset.set( 0, 0 );
-		// 	// ballTexture.repeat.set( 2, 1 );
-		// } else {
+		if (data.ball.model) {
+			console.log("LOAD STUFF");
+			this.loadBallModel(data);
+			return ;
+		}
+		console.log("DIDNT LOADGE");
+		if (data.ball.texture != "") {
+			ballTexture = new THREE.TextureLoader().load(`public/assets/images/${data.ball.texture}`);
+			ballMaterial = new THREE.MeshPhongMaterial({ map: ballTexture, transparent: false, opacity: 0.7 });
+			// ballTexture.wrapS = ballTexture.wrapT = THREE.RepeatWrapping;
+			// ballTexture.offset.set( 0, 0 );
+			// ballTexture.repeat.set( 2, 1 );
+		} else {
 			ballMaterial = new THREE.MeshPhongMaterial({ color: data.ball.col, transparent: false, opacity: 0.7 });
-		// }
+		}
 		const ballGeometry = new THREE.SphereGeometry(data.ball.r, 24, 12);
 		const dir1 = new THREE.ArrowHelper(
 			new THREE.Vector3(data.ball.dir.x,
@@ -687,7 +708,7 @@ export default class BasicGameV2 extends AbstractComponent {
 							data.ball.dir.z,),
 				data.ball.pos, 10, 0xff0000);
 
-        this.ball = new SpObject(new THREE.Mesh(ballGeometry, ballMaterial), dir1);
+		this.ball = new SpObject(new THREE.Mesh(ballGeometry, ballMaterial), dir1);
 		
 		// add to scene
 		this.scene.add(this.ball.mesh);
@@ -756,7 +777,7 @@ export default class BasicGameV2 extends AbstractComponent {
 								data.playersArray[i].paddle.dirToTop.z,),
 					data.playersArray[i].paddle.pos, 10, 0x00ff00);
 
-            this.paddles[i] = new BoxObject(new THREE.Mesh(paddleGeometry, paddleMaterial), dir1, dir2);
+			this.paddles[i] = new BoxObject(new THREE.Mesh(paddleGeometry, paddleMaterial), dir1, dir2);
 			this.scene.add(this.paddles[i].mesh); // add mesh to the scene
 			// this.scene.add(this.paddles[i].dir1Mesh);
 			// this.scene.add(this.paddles[i].dir2Mesh);
@@ -796,7 +817,7 @@ export default class BasicGameV2 extends AbstractComponent {
 		// const starTexture1 = new THREE.TextureLoader().load('public/assets/images/PurpleLayer1.png');
 		// const starTexture2 = new THREE.TextureLoader().load('public/assets/images/PurpleLayer2.png');
 		// const starTexture3 = new THREE.TextureLoader().load('public/assets/images/PurpleLayer3.png');
-		const starTextureBase = new THREE.TextureLoader().load(purpleSpaceImg);
+		const starTextureBase = new THREE.TextureLoader().load('public/assets/images/purpleSpace.jpg');
 		starTextureBase.colorSpace = THREE.SRGBColorSpace;
 		// this.starTexture = new THREE.TextureLoader().load('public/assets/images/redSpace.jpg');
 
@@ -846,194 +867,4 @@ export default class BasicGameV2 extends AbstractComponent {
 		// this.scene.add(starSphere3);
 		this.scene.add(starSphereBase);
 	};
-
-    handleConnectionV2() {
-
-        console.log("\nCLIENT CONNECTED\n");
-    
-        // console.log('---DATA---\n', this.match.gameState, '\n---END---\n');
-        this.localgenerate(this.match.gameState);
-        console.log("handleconnection",this.match);
-        
-        this.match.gameInterval = setInterval(this.waitingRoom.bind(this), 20);
-
-        console.log(`Player connected with ID: `);
-    
-        // client.emit('generate', data);
-        // debugDisp.displayData(this.match.gameState);
-    }
-    
-    // Set up Socket.IO event handlers
-    localconnection = () => {
-        // console.log("Socket connected");
-        this.initMatch();
-        // console.log("localconnection",this.match);
-        //handle client connection and match init + players status
-        // console.log("\nclient:\n", client.decoded);
-        this.data = this.match.gameState;
-        this.handleConnectionV2();
-    }
-    
-    // player controls
-    localmoveUp = (playerindex) => {
-        // console.log(`client moving up`);
-        let player = this.data.playersArray[playerindex];
-        // console.log("player: ", player);
-        // console.log("data: ", this.data);
-        if (player && player.paddle && !player.paddle.dashSp) {
-            player.paddle.currSp = player.paddle.sp;
-        }
-    }
-    
-    localmoveDown = (playerindex) => {
-        // console.log(`client moving down`);
-        let player = this.data.playersArray[playerindex];
-        if (player && player.paddle && !player.paddle.dashSp) {
-            player.paddle.currSp = -player.paddle.sp;
-        }
-    }
-    
-    localdash = (playerindex) => {
-        // console.log(`client dashing`);
-        let player = this.data.playersArray[playerindex];
-        if (player && player.paddle && !player.paddle.dashSp) {
-            if (player.paddle.currSp == 0) {
-                // do something for this err case
-                return ;
-            }
-            player.paddle.dashSp = player.paddle.currSp > 0 ? player.paddle.w * 1.5 : player.paddle.w * -1.5;
-            // player.paddle.dashSp = player.paddle.w * 1.5 * (player.paddle.currSp > 0);
-        }
-    }
-    
-    localstop = (playerindex) => {
-        // console.log(`client stopping`);
-        let player = this.data.playersArray[playerindex];
-        if (player && player.paddle && !player.paddle.dashing) {
-            player.paddle.currSp = 0;
-        }
-    }
-    
-    // disconnect event
-    localdisconnect = (playerindex) => {
-        client.leave("gameRoom");
-        this.data.connectedPlayers--;
-        let player = this.data.playersArray[playerindex];
-        if (player)
-            player.connected = false;
-        if (this.data.connectedPlayers < 1) {
-            console.log("CLEARING INTERVAL");
-            clearInterval(this.match.gameInterval);
-            this.cleanAll();
-            // matches.delete(client.matchID);
-            // delete data;
-        }
-        console.log(`Client disconnected with ID: ${client.id})`);
-    }
-    
-    // generateMatchID = (gameSettings) => {
-    // 	// Convert request content to a string representation
-    // 	const string = JSON.stringify(gameSettings);
-    // 	// Use SHA-256 to hash the string
-    // 	return crypto.createHash('sha256').update(string).digest('hex');
-    // }
-    
-    // app.use(express.static('./public/remote/'));
-    initMatch = () => {
-        // Convert game settings to game state
-        const gameState = initLobby(gameSettings);
-        gameState.imminent = true;
-        console.log("\nMATCH CREATED\n");
-        this.match = { gameState: gameState, gameInterval: 0 };
-    }
-
-    localEndgame = (data) => {
-        this.controls.enabled = false;
-
-		this.launchEndGameAnimation(data.winner);
-
-        // this.scene.clear();
-        console.log("END OF GAME");
-    }
-
-    gameLoop() {
-        let gameState = render.updateData(this.match.gameState);
-        this.data = this.match.gameState;
-        if (gameState == 1) {
-            this.localdestroy(this.match.gameState);
-			this.localrefresh(this.match.gameState);
-        } else if (gameState == -1) {
-            clearInterval(this.match.gameInterval); // stop the loop
-            this.localdestroy(this.match.gameState);
-            this.localEndgame(this.match.gameState);
-            return ;
-        }
-        // else if (gameState == 0) {
-        this.localrender(this.match.gameState);
-    }
-    
-    countDown(match, mins, secs) {
-        if (!match.gameState.timeLimit) {
-            match.gameState.timeLimit = Date.now() + ((mins * 60) + secs) * 1000;
-            console.log(`TIMER ENDS IN ${mins}:${secs}`);
-        }
-    
-        // calculate the remaining time
-        match.gameState.waitingRemainingTime = match.gameState.timeLimit - Date.now();
-        let minutes = Math.floor(match.gameState.waitingRemainingTime / 60000);
-        let seconds = Math.floor((match.gameState.waitingRemainingTime % 60000) / 1000);
-        match.gameState.countDownDisplay = `${minutes < 10 ? "0" + minutes : minutes}:${seconds < 10 ? "0" + seconds : seconds}`;
-        // console.log(match.gameState.waitingRemainingTime);
-        // console.log(`MATCH ${matchID} STARTS IN ${minutes}:${seconds}`);
-    
-        // if the countdown has finished, reset
-        if (match.gameState.waitingRemainingTime <= 0) {
-            // console.log("Countdown finished");
-            match.gameState.timeLimit = null;
-            match.gameState.waitingRemainingTime = null;
-            return 1;
-        }
-        return 0;
-    }
-    
-    waitingRoom() {
-        // console.log("waitingroom",this.match);
-
-        if (!this.match.gameState.imminent && !this.match.gameState.ongoing) {
-            // this is called during the waiting of other players
-            // if the game is still waiting for players we count down from a chosen amount
-            // game status = !ongoing && !imminent;
-            if (this.countDown(this.match, 0, 10) || this.match.gameState.connectedPlayers == this.match.gameState.gamemode.nbrOfPlayers) {
-                // in here = timer has run out or enough players have joined
-                // we set the ball at the center and keep it there
-                // and put the game status to imminent;
-                this.match.gameState.ball.pos.x = 0;
-                this.match.gameState.ball.pos.y = 0;
-                this.match.gameState.ball.dir.x = 0;
-                this.match.gameState.ball.dir.y = 0;
-                this.match.gameState.imminent = true;
-            }
-        }
-        else if (this.match.gameState.imminent) {
-            // this is called when the game status is imminent;
-            // it is just going to count down 3 seconds for players to get ready.
-            // game status = imminent but !ongoing;
-            if (this.countDown(this.match, 0, 3)) {
-                // in here = game is starting
-                // we get rid of the timer, send the ball and put the
-                // game status to ongoing, !imminent;
-                // and we call the loop for the game physics and scoring;
-                clearInterval(this.match.gameInterval);
-                render.getBallDir(this.match.gameState);
-                this.match.gameState.ongoing = true;
-                this.match.gameState.imminent = false;
-                this.match.gameInterval = setInterval(this.gameLoop.bind(this), 20);
-            }
-        }
-    
-        render.updateData(this.match.gameState);
-        this.localrender(this.match.gameState);
-    }
 }
-
-customElements.define('basic-game-v2', BasicGameV2);

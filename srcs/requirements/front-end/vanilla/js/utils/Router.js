@@ -1,6 +1,7 @@
 // Router.js
 import Tournament from '@views/Tournament.js';
 import Game from '@views/Game.js';
+import GameView from '@views/GameView';
 import NotFound from '@views/NotFound.js';
 import CreateTournament from '@views/CreateTournament.js';
 import ProfilePage from '@views/ProfilePage.js';
@@ -189,4 +190,4 @@ window.addEventListener("popstate", router);
 // background.shadowRoot.style.setProperty("left", "0px");
 // background.shadowRoot.style.setProperty("border", "3px red solid");
 
-export default { routes, navigateTo, router };
+export default { routes, navigateTo, redirectTo, router };

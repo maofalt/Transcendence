@@ -12,6 +12,9 @@ import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import CustomButton from '@components/CustomButton';
 import { navigateTo } from "@utils/Router";
 import AbstractComponent from "@components/AbstractComponent";
+import { makeApiRequest } from '@utils/makeApiRequest.js';
+import purpleSpaceImg from '@images/purpleSpace.jpg';
+import deepSpaceImg from '@assets/images/deepspace.jpg';
 
 
 // function createCallTracker() {
@@ -54,11 +57,10 @@ class BoxObject {
 }
 
 export default class Game extends AbstractComponent {
-	constructor(query='', screenWidth, screenHeight) {
+	constructor(matchIdQuery='', screenWidth, screenHeight) {
 		super();
 		this.loader = new GLTFLoader();
-		this.query = 'matchID=' + query;
-		// console.log("Game View created with matchID: ", query);
+		this.matchIdQuery = matchIdQuery;
 		
         // controls
         this.controls = null;
@@ -97,6 +99,8 @@ export default class Game extends AbstractComponent {
 
 		this.prevScores = [];
 		this.direction = null;
+
+		this.avatars = null;
 
 		this.screenWidth = screenWidth || window.innerWidth;
 		this.screenHeight = screenHeight || window.innerHeight;
@@ -169,6 +173,38 @@ export default class Game extends AbstractComponent {
 		window.addEventListener("keyup", this.handleKeyRelease.bind(this));
 	};
 
+	async fetchStartingData(playersArray) {
+		try {
+			this.avatars = await this.fetchAvatars(playersArray);
+		} catch (error) {
+			console.error('Error fetching starting data:', error);
+			this.avatars = null;
+		}
+	}
+
+	async fetchAvatars(playersArray) {
+		let avatars = [];
+		for (let i = 0; i < playersArray.length; i++) {
+			avatars.push(await this.fetchUserAvatar(playersArray[i].accountID));
+		}
+		return avatars;
+	}
+
+	async fetchUserAvatar(username) {
+		try {
+			const response = await makeApiRequest(`/api/user_management/auth/detail/${username}`, 'GET');
+			if (response.status >= 400) { 
+				throw new Error('Failed to fetch user avatar.');
+			}
+			let avatar = response.body.avatar;
+			const src = "/api/user_management" + avatar;
+			return src;
+		} catch (error) {
+			console.log('no avatar for:' + username + ": ", error);
+			return null;
+		}
+	}
+
 	onWindowResize() {
 		this.camera.aspect = this.screenWidth / this.screenHeight;
 		this.camera.updateProjectionMatrix();
@@ -194,21 +230,18 @@ export default class Game extends AbstractComponent {
 		// socket initialization and event handling logic
 		const hostname = window.location.hostname;
 		const protocol = 'wss';
-//		const query = window.location.search.replace('?', '');
-		const query = window.location.search.replace('?', '') || this.query;
-		// console.log("Query: ", query);
+
+		const matchID = window.location.search.replace('?matchID=', '') || this.matchIdQuery;
 		
 		let accessToken = sessionStorage.getItem('accessToken');
-		// console.log("Access Token: ", accessToken);
-		// accessTok = accessTok.replace("Bearer ", ""); // replace the "Bearer " at the beginning of the value;
 
 		const io_url = hostname.includes("github.dev") ? `${protocol}://${hostname}` : `${protocol}://${hostname}:9443`;
 		console.log(`Connecting to ${io_url}/game`)
+		
 		this.socket = io(`${io_url}/game`, {
 			path: '/game-logic/socket.io',
-			query: query,
 			secure: hostname !== 'localhost',
-			auth: { accessToken }
+			auth: { accessToken, matchID },
 		});
 
 		this.socket.on('error', (error) => {
@@ -230,9 +263,16 @@ export default class Game extends AbstractComponent {
 			// let parsedData = JSON.parse(data);
 			data.playersArray = Object.values(data.players);
 			// console.log("data : ", data);
-			this.generateScene(data, this.socket);
-			this.updateScene(data, this.socket);
-			this.renderer.render(this.scene, this.camera);
+			this.fetchStartingData(data.playersArray).then(() => {
+				this.generateScene(data, this.socket);
+				this.updateScene(data, this.socket);
+				this.renderer.render(this.scene, this.camera);
+			})
+			.catch((error) => {
+				let msg = "Error generating scene: " + (error.message || error);
+				displayPopup(msg, "error");
+				this.socket.disconnect();
+			});
 		});
 		
 		this.socket.on('render', data => {
@@ -391,7 +431,7 @@ export default class Game extends AbstractComponent {
 
 	refreshScene(data) {
 		this.scene = new THREE.Scene();
-		const back = new THREE.TextureLoader().load('./js/assets/3D_Models/deepspace.jpg');
+		const back = new THREE.TextureLoader().load(deepSpaceImg);
 		back.colorSpace = THREE.SRGBColorSpace;
 		this.scene.background = back;
 		
@@ -527,13 +567,10 @@ export default class Game extends AbstractComponent {
 		loader.load( 'https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', ( response ) => {
 
 			this.textSettings.font = response;
-
-			this.refreshScores(data);
-
 			console.log("Normal Font loaded");
-
-		} );
-
+	
+			this.refreshScores(data);
+		});
 	}
 
 		// font: font,
@@ -546,13 +583,16 @@ export default class Game extends AbstractComponent {
 		// bevelSize: bevelSize,
 		// bevelEnabled: bevelEnabled
 
-	
-	createScore(data, player, i) {
+	createScore(data, player, i, avatar) {
 
 		let dir = 0; // used to rotate scores to face client
 
 		// generate scores for each player
-		const profilePic = new THREE.TextureLoader().load(`./js/assets/images/default-avatar.webp`);
+		let profilePic = null;
+		if (avatar)
+			profilePic = new THREE.TextureLoader().load(avatar);
+		else
+			profilePic = new THREE.TextureLoader().load(`public/assets/images/default-avatar.webp`);
 		profilePic.wrapS = profilePic.wrapT = THREE.RepeatWrapping;
 		profilePic.offset.set( 0, 0 );
 		profilePic.repeat.set( 2, 1 );
@@ -635,9 +675,11 @@ export default class Game extends AbstractComponent {
 				console.log("Refreshing score: " + player.score + " for player " + index);
 				if (this.scores[index])
 					this.scene.remove(this.scores[index]);
-				this.createScore(data, player, index);
+				if (this.avatars && this.avatars[index])
+					this.createScore(data, player, index, this.avatars[index]);
+				else
+					this.createScore(data, player, index, null);
 			}
-		
 		});
 
 		this.prevScores = data.playersArray.map(player => player.score);
@@ -662,7 +704,7 @@ export default class Game extends AbstractComponent {
 
 	async loadBallModel(data) {
 		// Load the model
-		this.loadModel(`./js/assets/3D_Models/${data.ball.model}/scene.gltf`).then((model) => {
+		this.loadModel(`public/assets/3D_Models/${data.ball.model}/scene.gltf`).then((model) => {
 			console.log("MODEL LOADED", model);
 
 			// Assign the loaded model to this.ballModel
@@ -694,7 +736,7 @@ export default class Game extends AbstractComponent {
 		}
 		console.log("DIDNT LOADGE");
 		if (data.ball.texture != "") {
-			ballTexture = new THREE.TextureLoader().load(`./js/assets/images/${data.ball.texture}`);
+			ballTexture = new THREE.TextureLoader().load(`public/assets/images/${data.ball.texture}`);
 			ballMaterial = new THREE.MeshPhongMaterial({ map: ballTexture, transparent: false, opacity: 0.7 });
 			// ballTexture.wrapS = ballTexture.wrapT = THREE.RepeatWrapping;
 			// ballTexture.offset.set( 0, 0 );
@@ -814,13 +856,8 @@ export default class Game extends AbstractComponent {
 
 	generateSkyBox(data) {
 		// Charger la texture de ciel étoilé
-		// this.starTexture = new THREE.TextureLoader().load('./js/assets/images/blueSpace.jpg');
-		// const starTexture1 = new THREE.TextureLoader().load('./js/assets/images/PurpleLayer1.png');
-		// const starTexture2 = new THREE.TextureLoader().load('./js/assets/images/PurpleLayer2.png');
-		// const starTexture3 = new THREE.TextureLoader().load('./js/assets/images/PurpleLayer3.png');
-		const starTextureBase = new THREE.TextureLoader().load('./js/assets/images/purpleSpace.jpg');
+		const starTextureBase = new THREE.TextureLoader().load(purpleSpaceImg);
 		starTextureBase.colorSpace = THREE.SRGBColorSpace;
-		// this.starTexture = new THREE.TextureLoader().load('./js/assets/images/redSpace.jpg');
 
 		// Créer la géométrie de la sphère
 		// starTexture.colorSpace = THREE.SRGBColorSpace;

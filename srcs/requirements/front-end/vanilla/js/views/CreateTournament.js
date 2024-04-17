@@ -3,6 +3,7 @@ import AbstractView from "./AbstractView";
 import { makeApiRequest } from '@utils/makeApiRequest.js';
 import { navigateTo } from '@utils/Router.js';
 import Game from '@views/Game.js';
+import GameView from '@views/GameView.js';
 import { htmlToElement } from '@utils/htmlToElement';
 import CustomButton from '@components/CustomButton.js';
 import createTournamentHtml from '@html/createTournament.html?raw';
@@ -83,6 +84,8 @@ export default class CreateTournament extends AbstractView {
 		// }
 		// this.game = null;
 		this.game = new Game(matchID, width, height);
+		// this.game = new GameView(matchID, width, height);
+		// this.game.id = 'game-view';
 		let previewContainer = document.getElementById('preview-container')
 		// console.log(previewContainer);
 		if (previewContainer) {
@@ -96,6 +99,7 @@ export default class CreateTournament extends AbstractView {
 		// info : cannot simply remove them because then the game will not be able to update them and it will
 		// just break.
 		let gameContainer = document.querySelector("game-view").shadowRoot.getElementById("gameContainer");
+		// let gameContainer = this.game.getElementById("gameContainer");
 		gameContainer.querySelector("#count-down").style.display = "none"; // not displaying the count down
 		gameContainer.querySelector("#leave-button").style.display = "none"; // not displaying the leave button
 		console.log('Game initialized');
@@ -257,6 +261,7 @@ export default class CreateTournament extends AbstractView {
 		// Combine data from both forms
 		const tournamentAndGameSettings = {
 		...tournamentSettings,
+		registration_period_min: 15,
 		nbr_of_player_match: nbr_of_player_match,
 		setting:{  ...gameSettings }
 		};

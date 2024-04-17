@@ -93,11 +93,12 @@ WSGI_APPLICATION = 'tournament.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'tournament_db',
-        'USER': 'tournament_master',
-        'PASSWORD': 'i love miguel',
+        'NAME': os.environ.get('POSTGRES_DB', 'default_db_name'),
+        'USER': os.environ.get('POSTGRES_USER', 'default_user'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'default_password'),
         'HOST': 'tournament_db',  # This should match the service name in docker-compose.yml for the database
         'PORT': '5432',
+        'ATOMIC_REQUESTS': True,
     }
 }
 

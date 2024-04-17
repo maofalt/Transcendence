@@ -422,6 +422,7 @@ export default class Signup extends AbstractComponent {
 				// sessionStorage.setItem('userDetails', JSON.stringify(details));
 
 				Router.navigateTo("/");
+				// window.location.reload();
 				valid = true;
 			} else {
 				displayPopup(body.error || JSON.stringify(body), 'error');

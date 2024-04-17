@@ -1,17 +1,17 @@
 /* DynamicTable.css - Comprehensive Styles */
 /* @font-face{
     font-family: 'DS-Digital';
-    src: url('../js/assets/fonts/DS_Digital/DS-DIGI.TTF') format('truetype');
+    src: url('public/assets/fonts/DS_Digital/DS-DIGI.TTF') format('truetype');
 } */
 
 /* @font-face{
     font-family: 'DS-DigitalB';
-    src: url('../js/assets/fonts/DS_Digital/DS-DIGIB.TTF') format('truetype');
+    src: url('public/assets/fonts/DS_Digital/DS-DIGIB.TTF') format('truetype');
 } */
 
 @font-face {
 	font-family: 'Space Grotesk';
-	src: url('../js/assets/fonts/Space_Grotesk/static/SpaceGrotesk-Bold.ttf') format('truetype');
+	src: url('public/assets/fonts/Space_Grotesk/static/SpaceGrotesk-Bold.ttf') format('truetype');
 }
 
 :host{

@@ -1,20 +1,21 @@
 BASE_FILE = -f srcs/docker-compose.yml
-OVERRIDE_FILE= -f srcs/docker-compose.override.yml
+OVERRIDE_FILE = -f srcs/docker-compose.prod.yml
 
 HOST_NAME ?= localhost
 HOST_IP ?= localhost
 
 ENV ?= dev
 
-ifeq ($(ENV), dev)
-COMPOSE_FILE = $(BASE_FILE) $(OVERRIDE_FILE)
-endif
+COMPOSE_FILE = -f srcs/docker-compose.yml
 
-ifeq ($(ENV), prod)
+ifeq ($(ENV), dev)
 COMPOSE_FILE = $(BASE_FILE)
 endif
 
-COMPOSE_FILE = -f srcs/docker-compose.yml
+ifeq ($(ENV), prod)
+COMPOSE_FILE = $(BASE_FILE) $(OVERRIDE_FILE)
+endif
+
 
 all: build up logs
 
@@ -41,7 +42,7 @@ fclean: clean
 .PHONY: all build up down logs
 
 set-ip:
-	export "LOCAL_IP=$(shell hostname -i)"
+	export "LOCAL_IP=$(shell hostname -i)"; export "HOST_IP=$(HOST_IP)"; export "HOST_NAME=$(HOST_NAME)"
 
 set-codeespace-url:
 	export "CODESPACE_URL=${CODESPACE_NAME}"
