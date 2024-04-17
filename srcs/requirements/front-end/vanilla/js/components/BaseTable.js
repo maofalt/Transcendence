@@ -86,18 +86,18 @@ class BaseTable extends HTMLElement {
             div.textContent = header;
             div.style.display = 'inline';
             div.style.marginRight = '5px';
+            th.appendChild(div);
 
             // Create the sort icon
-            if (header !== "Details" ){
+            if (header !== "Details") {
                 let sortSpan = document.createElement('span');
                 sortSpan.textContent = this.ascending[header] ? '🔼' : '🔽';
                 sortSpan.style.cursor = 'pointer';
                 sortSpan.addEventListener('click', () => this.sortColumn(header));
                 
                 // Append the text div and sort span to the header cell
-                th.appendChild(div);
                 th.appendChild(sortSpan);
-            }    
+            }
             // Append the header cell to the table headers
             tableHeaders.appendChild(th);
         });
@@ -111,14 +111,14 @@ class BaseTable extends HTMLElement {
         else {
             this.ascending[header] = !this.ascending[header];
         }
-        //selec tthe right header and change the icon for only that header
-        const headerCells = this.shadowRoot.getElementById('table-headers').querySelectorAll('th');
-        headerCells.forEach(cell => {
-            const cellText = cell.querySelector('div').textContent;
-            if (cellText === header) {
-                cell.querySelector('span').textContent = this.ascending[header] ? '🔼' : '🔽';
-            }
-        });
+                    //selec tthe right header and change the icon for only that header
+                    const headerCells = this.shadowRoot.getElementById('table-headers').querySelectorAll('th');
+                    headerCells.forEach(cell => {
+                        const cellText = cell.querySelector('div').textContent;
+                        if (cellText === header) {
+                            cell.querySelector('span').textContent = this.ascending[header] ? '🔼' : '🔽';
+                        }
+                    });
 
         // Get all rows as an array of objects containing the row and its sort key
         const rowContent= [];
