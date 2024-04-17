@@ -44,7 +44,7 @@ export async function renewToken() {
 		// Reconnect the socket with the new token
 		refreshSocketConnection();
 
-		let details = await fetchUserDetails();
+		await fetchUserDetails();
 		// sessionStorage.setItem('userDetails', JSON.stringify(details));
 
 		console.log('Updated accessToken on Storage');
