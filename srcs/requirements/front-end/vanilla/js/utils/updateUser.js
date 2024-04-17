@@ -8,7 +8,6 @@ export default async function updateUser(data) {
 	formData.append('playername', data.playername);
 	formData.append('avatar', data.avatar);
 	formData.append('email', data.email);
-	formData.append('phone', data.phone.replace(/\s/g, ''));
 	formData.append('two_factor_method', data.two_factor_method);
 
 	await easyFetch('/api/user_management/auth/profile_update', {

@@ -14,9 +14,8 @@ import updateUser from "@utils/updateUser";
 import fetchUserDetails from "@utils/fetchUserDetails";
 import easyFetch from "@utils/easyFetch";
 import displayPopup from "@utils/displayPopup";
-import twoFactorChoiceHtml from '@html/twoFactorChoice.html?raw';
+import toggleHtml from '@html/toggle.html?raw';
 import { fadeIn, fadeOut, transition } from "@utils/animate";
-import TwoFactorAuth from "@components/TwoFactorAuth";
 
 export default class EditProfile extends AbstractComponent {
 	constructor(options = {}) {
@@ -50,6 +49,48 @@ export default class EditProfile extends AbstractComponent {
 		const goBack = new CustomButton({content: "< Back", style: {padding: "0px 20px", position: "absolute", left: "50px", bottom: "30px"}});
 		goBack.onclick = () => window.history.back();
 
+		const verifyCodeBlock = document.createElement("div");
+		verifyCodeBlock.style.display = "none";
+		verifyCodeBlock.style.position = "fixed";
+		verifyCodeBlock.style.top = "0";
+		verifyCodeBlock.style.left = "0";
+		verifyCodeBlock.style.width = "100%";
+		verifyCodeBlock.style.height = "100%";
+		verifyCodeBlock.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+		verifyCodeBlock.onclick = (e) => { // Close the pannel when clicking outside
+			if (e.target === verifyCodeBlock) {
+				fadeOut(verifyCodeBlock);
+			}
+		}
+		
+		const verifyCodePannel = new Pannel({dark: false, title: "Verify Code", style: {padding: "15px"}});
+		// verifyCodePannel.shadowRoot.querySelector("#button-container").shadowRoot.style.setProperty("display", "none");
+		verifyCodePannel.style.position = "fixed";
+		verifyCodePannel.style.top = "50%";
+		verifyCodePannel.style.left = "50%";
+		verifyCodePannel.style.transform = "translate(-50%, -50%)";
+		verifyCodePannel.style.setProperty("display", "block");
+
+		const verifyCodeInput = new InputAugmented({
+			title: "Code Code",
+			content: "Code Code",
+			type: "text",
+			button: {content: "Verify", action: true}
+		});
+		verifyCodeInput.button.onclick = async () => {
+			if (!await this.verifyEmail(emailBlock, verifyCodeInput)) {
+					emailBlock.setAttribute("verified", false);
+			} else {
+				emailBlock.input.input.style.setProperty("border", "2px solid green");
+				emailBlock.setAttribute("verified", true);
+			}
+			fadeOut(verifyCodeBlock);
+		}
+
+		verifyCodePannel.shadowRoot.appendChild(verifyCodeInput);
+
+		verifyCodeBlock.appendChild(verifyCodePannel);
+
 		let playernameBlock = new InputAugmented({
 			title: "New Playername",
 			content: "Playername",
@@ -74,39 +115,12 @@ export default class EditProfile extends AbstractComponent {
 				return ;
 			}
 			emailBlock.input.input.style.setProperty("border", "");
-			verifyCodeBlock.method = "email";
-			verifyCodeBlock.email = emailBlock.input.getValue();
+			verifyCodePannel.name = "email";
 			fadeIn(verifyCodeBlock);
 		};
-
-		let phoneBlock = new InputAugmented({
-			title: "New Phone Number",
-			content: "+33 6 12 34 56 78",
-			indicators: {
-				unverifiedIndicator: ["Please verify your phone number", () => this.isVerified(phoneBlock)],
-				emptyIndicator: ["Please enter your verified phone", () => this.emptyBlock(phoneBlock)],
-			},
-			type: "tel",
-			button: {content: "Verify", action: false}
-		});
-		phoneBlock.button.onclick = async () => {
-			let shouldContinue = await this.sendSMS(phoneBlock);
-			if (!shouldContinue) {
-				phoneBlock.input.input.style.setProperty("border", "2px solid red");
-				return ;
-			}
-			phoneBlock.input.input.style.setProperty("border", "");
-			verifyCodeBlock.method = "phone";
-			verifyCodeBlock.phone = phoneBlock.input.getValue();
-			fadeIn(verifyCodeBlock);
-		};
-
-		const verifyCodeBlock = new TwoFactorAuth(phoneBlock, emailBlock, "update");
 
 		let twoFactorBlock = document.createElement("div");
-		twoFactorBlock.innerHTML = twoFactorChoiceHtml;
-
-		console.log(twoFactorBlock);
+		twoFactorBlock.innerHTML = toggleHtml;
 
 		let avatarBlock = new InputAugmented({
 			title: "Upload Avatar",
@@ -126,16 +140,16 @@ export default class EditProfile extends AbstractComponent {
 		saveButton.onclick = async () => {
 			if (!await playernameBlock.validate() 
 				|| !await emailBlock.validate() 
-				|| !await avatarBlock.validate()
-				|| !await phoneBlock.validate()) {
+				|| !await avatarBlock.validate()) {
 				return ;
 			}
+			let checked = twoFactorBlock.querySelector(".toggle-input").checked;
+			console.log("checked: ", checked);
 			updateUser({
 				playername: playernameBlock.input.getValue() || "",
 				avatar: avatarFile || "",
 				email: emailBlock.input.getValue() || "",
-				phone: phoneBlock.input.getValue() || "",
-				two_factor_method: twoFactorBlock.querySelector("#input-tag").value || "",
+				two_factor_method: checked ? "email" : "off",
 			});
 		}
 
@@ -144,7 +158,6 @@ export default class EditProfile extends AbstractComponent {
 
 		form.appendChild(playernameBlock);
 		form.appendChild(emailBlock);
-		form.appendChild(phoneBlock);
 		form.appendChild(twoFactorBlock);
 		form.appendChild(avatarBlock);
 		form.appendChild(resetPasswordButton);
@@ -194,17 +207,18 @@ export default class EditProfile extends AbstractComponent {
 		return valid;
 	}
 
-	sendSMS = async (phoneBlock) => {
-		let valid = false;
-		console.log("SENDING")
-		const phone_number = phoneBlock.input.getValue().replace(/\s/g, '');
+	verifyEmail = async (emailBlock, verifyCodeBlock) => {
+		var email = emailBlock.input.getValue();
+		var verificationCode = verifyCodeBlock.input.getValue();
 
-		await easyFetch('/api/user_management/auth/updateSandbox', {
+		let valid = false;
+
+		await easyFetch('/api/user_management/auth/verify_code', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/x-www-form-urlencoded',
 			},
-			body: new URLSearchParams({ phone_number })
+			body: new URLSearchParams({ 'email': email, 'one_time_code': verificationCode, 'context': "update" })
 		})
 		.then(res => {
 			let response = res.response;
@@ -213,11 +227,13 @@ export default class EditProfile extends AbstractComponent {
 			if (!response || !body) {
 				throw new Error('Empty Response');
 			} else if (response.status === 400) {
-				displayPopup(body.error || 'Invalid number', 'error');
+				displayPopup(body.error || JSON.stringify(body), 'error');
+				valid = false;
 			} else if (!response.ok) {
-				displayPopup('Request Failed:', body.error || JSON.stringify(body), 'error');
+				displayPopup('Response Error: ' + (body.error || JSON.stringify(body)), 'error');
+				valid = false;
 			} else if (response.status === 200 && body.success === true) {
-				displayPopup('SMS code sent to \'' + phone_number + '\'', 'success');
+				displayPopup(body.message || JSON.stringify(body), 'success');
 				valid = true;
 			} else {
 				displayPopup(body.error || JSON.stringify(body), 'error');
@@ -225,8 +241,9 @@ export default class EditProfile extends AbstractComponent {
 		})
 		.catch(error => {
 			displayPopup(`Request Failed: ${error}`, 'error');
+			valid = false;
 		});
-		return valid;
+		return valid
 	}
 
 	isVerified = (block) => {
@@ -254,15 +271,6 @@ export default class EditProfile extends AbstractComponent {
 			return true;
 		// let value = emailBlock.input.getValue();
 		// let valid = value.includes('@');
-		// return valid;
-		return false;
-	}
-
-	phoneIsValid = (phoneBlock) => {
-		if (!phoneBlock.input.getValue())
-			return true;
-		// let value = phoneBlock.input.getValue();
-		// let valid = value.includes('+') && value.length > 10;
 		// return valid;
 		return false;
 	}

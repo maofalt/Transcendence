@@ -1,12 +1,10 @@
 // Router.js
 import Tournament from '@views/Tournament.js';
 import Game from '@views/Game.js';
-import GameView from '@views/GameView';
 import NotFound from '@views/NotFound.js';
 import CreateTournament from '@views/CreateTournament.js';
 import ProfilePage from '@views/ProfilePage.js';
 import SpaceBackground from '@components/SpaceBackground';
-// import BasicGame from '@views/BasicGame.js';
 import TwoFA from '@views/2fa';
 import Signup from '@views/Signup.js';
 import EditProfile from '@components/EditProfile';
@@ -14,7 +12,6 @@ import HomePage from '@views/HomePage';
 import LoginPage from '@views/LoginPage';
 import PlayMenu from '@views/PlayMenu';
 import displayPopup from "@utils/displayPopup";
-import isLoggedIn from '@utils/isLoggedIn';
 import ForgotPassword from '@views/ForgotPassword';
 import ResetPassword from '@views/ResetPassword';
 import BasicGameV2 from '@views/BasicGameV2';
