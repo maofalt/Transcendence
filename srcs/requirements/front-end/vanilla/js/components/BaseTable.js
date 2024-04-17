@@ -39,7 +39,7 @@ class BaseTable extends HTMLElement {
         this.itemsPerPage = 5;
         this.rowIndexByIdentifier = [];
         this.totalRows= [];
-        this.ascending = undefined;
+        this.ascending = [];
         //Design buttons
         this.createButton = new CustomButton({content: "Create", action: true});
         this.createButton.id = "create-button";
@@ -89,7 +89,7 @@ class BaseTable extends HTMLElement {
 
             // Create the sort icon
             let sortSpan = document.createElement('span');
-            sortSpan.textContent = '🔽';
+            sortSpan.textContent = this.ascending[header] ? '🔼' : '🔽';
             sortSpan.style.cursor = 'pointer';
             sortSpan.addEventListener('click', () => this.sortColumn(header));
             
@@ -104,9 +104,20 @@ class BaseTable extends HTMLElement {
 
     sortColumn(header) {
         // Toggle sort direction
-        console.log("Sorting by:", header);
-        if (this.ascending === undefined) this.ascending = true;
-        else this.ascending = !this.ascending;
+        //console.log("Sorting by:", header);
+        if (this.ascending[header] === undefined)
+            this.ascending[header] = true;
+        else {
+            this.ascending[header] = !this.ascending[header];
+        }
+        //selec tthe right header and change the icon for only that header
+        const headerCells = this.shadowRoot.getElementById('table-headers').querySelectorAll('th');
+        headerCells.forEach(cell => {
+            const cellText = cell.querySelector('div').textContent;
+            if (cellText === header) {
+                cell.querySelector('span').textContent = this.ascending[header] ? '🔼' : '🔽';
+            }
+        });
 
         // Get all rows as an array of objects containing the row and its sort key
         const rowContent= [];
@@ -124,7 +135,7 @@ class BaseTable extends HTMLElement {
         rowContent.sort((a,b) => this.naturalSort(a,b));
         //console.log("sorted", rowContent);
         // If descending sort, reverse the array
-        if (!this.ascending) rowData.reverse();
+        if (!this.ascending[header]) rowData.reverse();
         //console.log("sorted", rowData);
         // Set sorted rows back to dataRows
         this.dataRows = rowData.map(item => item.row);
