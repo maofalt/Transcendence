@@ -39,6 +39,7 @@ export default class CustomButton extends AbstractComponent {
 		}
 
 		this.shadowRoot.appendChild(p);
+		this.tabIndex = 0;
 	}
 }
 

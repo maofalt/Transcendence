@@ -135,6 +135,7 @@ DATABASES = {
         'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'default_password'),
         'HOST': 'user_management_db',
         'PORT': '5432',  
+        'ATOMIC_REQUESTS': True,
     }
 }
 

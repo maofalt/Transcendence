@@ -58,7 +58,7 @@ export default class TwoFactorAuth extends AbstractComponent {
 			},
 			body: new URLSearchParams(formData)
 		})
-		.then(res => {
+		.then(async res => {
 			let response = res.response;
 			let body = res.body;
 
@@ -78,6 +78,8 @@ export default class TwoFactorAuth extends AbstractComponent {
 			if (response.status === 200 && body.success === true) {
 				displayPopup('Login successful: ' + body.message, 'success');
 
+				await fetchUserDetails();
+
 				refreshTokenLoop();
 
 				Router.redirectTo("/");
@@ -94,4 +96,4 @@ export default class TwoFactorAuth extends AbstractComponent {
 	}
 }
 
-customElements.define('two-factor-auth', TwoFactorAuth);
+customElements.define('two-fa', TwoFactorAuth);

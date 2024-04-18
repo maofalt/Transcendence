@@ -216,12 +216,20 @@ def api_login_view(request):
             print(f"Date Joined: {user.date_joined}")
             serializer = UserSerializer(user)
             redirect_url = '/api/user_management/'
+            print("2FA : ", user.two_factor_method)
             if (user.two_factor_method != 'off'):
                 if (user.two_factor_method == 'email'):
-                    send_one_time_code(request, user.email)
+                    response = send_one_time_code(request, user.email)
+                    print("RESPONSE: ", response)
+                    if response.status_code == 200:
+                        return JsonResponse({'success': True, 'requires_2fa': True})
                 elif(user.two_factor_method == 'sms'):
-                    send_sms_code(request, user.phone)
-            return generate_tokens_and_response(request, user)
+                    response = send_sms_code(request, user.phone)
+                    if response.status_code == 200:
+                        return JsonResponse({'success': True, 'requires_2fa': True})
+                return JsonResponse({'success': False, 'requires_2fa': True}, status=400)
+            else:
+                return generate_tokens_and_response(request, user)
         else:
             print("Authentication failed")
             return JsonResponse({'error': escape('Authentication failed: Wrong user data')}, status=400)
@@ -264,6 +272,7 @@ def generate_tokens_and_response(request, user):
     expires_in = (expiration_time - current_time).total_seconds()
     response_data = {
         'success': True,
+        'message': 'User authenticated successfully',
         'requires_2fa': twoFA,
         'access_token': str(accessToken),
         'token_type': 'Bearer',
@@ -272,7 +281,7 @@ def generate_tokens_and_response(request, user):
     }
     
     print("expires_in: ", expires_in,  "exp_datetime : ", exp_accessToken)
-    response = JsonResponse(response_data)
+    response = JsonResponse(response_data, status=200)
     response.set_cookie('refreshToken', refreshToken, httponly=True, secure=True, samesite='Strict')
     
     return response
@@ -285,11 +294,9 @@ def generate_one_time_code():
 @authentication_classes([])
 @permission_classes([AllowAny])
 def send_one_time_code(request, email=None):
+    print("\n\nEMAIL SENDING")
     if email is None and request.method == 'POST':
         email = request.POST.get('email', None)
-    valid, error_message = is_email_valid(email)
-    if not valid:
-        return JsonResponse({'valid': False, 'error': error_message}, status=400)
     one_time_code = generate_one_time_code()
     request.session['one_time_code'] = one_time_code
 
@@ -308,7 +315,7 @@ def send_one_time_code(request, email=None):
 @permission_classes([AllowAny])
 def verify_one_time_code(request):
     if request.method == 'POST':
-        csrf_token = get_token(request)
+        # csrf_token = get_token(request)
         submitted_code = request.POST.get('one_time_code')
         stored_code = request.session.get('one_time_code')
         context = request.POST.get('context')
@@ -324,15 +331,16 @@ def verify_one_time_code(request):
                     user.is_online = True
                     print(f"Is Online: {user.is_online}")
                     user.save()
+                    return generate_tokens_and_response(request, user)
                 if context == 'update' or context == 'signup':
                     if 'email' in request.POST:
                         email = request.POST['email']
                         request.session['verified_email'] = email
                     else:
-                        return JsonResponse({'success': False, 'error': escape('missing email for verify_one_time_code'), 'csrf_token': csrf_token}, status=400)
-                return JsonResponse({'success': True, 'message': escape('One-time code verification successful'), 'csrf_token': csrf_token})
+                        return JsonResponse({'success': False, 'error': escape('missing email for verify_one_time_code')}, status=400)
+                    return JsonResponse({'success': True, 'message': escape('One-time code verification successful')}, status=200)
             else:
-                return JsonResponse({'success': False, 'error': escape('One-time code verification failed'), 'csrf_token': csrf_token}, status=400)
+                return JsonResponse({'success': False, 'error': escape('One-time code verification failed')}, status=400)
         else:
             return JsonResponse({'success': False, 'error': escape('User authentication not found')}, status=400)
 
