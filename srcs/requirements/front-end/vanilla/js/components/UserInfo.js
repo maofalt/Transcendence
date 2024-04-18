@@ -85,7 +85,6 @@ export default class UserInfo extends AbstractComponent {
 			// console.log("DETAILS:", details);
 			if (!details) {
 				details = await fetchUserDetails();
-				// sessionStorage.setItem("userDetails", JSON.stringify(details));
 			}
 		}
 		if (!details)

@@ -159,6 +159,9 @@ export default class EditProfile extends AbstractComponent {
 		let twoFactorBlock = document.createElement("div");
 		twoFactorBlock.innerHTML = toggleHtml;
 
+		let toggle = twoFactorBlock.querySelector(".toggle-input");
+		toggle.checked = this.user.two_factor_auth;
+
 		let avatarBlock = new InputAugmented({
 			title: "Upload Avatar",
 			content: "Avatar",
