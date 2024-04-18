@@ -2,13 +2,24 @@
 
 from django.db import migrations
 from django.contrib.auth import get_user_model
+from django.conf import settings
+import jwt
+
 
 def create_users(apps, schema_editor):
     User = get_user_model()
     usernames = ['motero', 'jisu', 'znogueira', 'amanda', 'yoel']
     for username in usernames:
-        User.objects.create_user(username=username, email='maofalt@gmail.com', password=f'{username}123456!')
-        User.objects.create_user(username=f'{username}2', email='maofalt@gmail.com', password=f'{username}123456!')
+        
+        playername ='default user'
+        if playername:
+            encoded_playername = jwt.encode({'playername': playername}, settings.SECRET_KEY, algorithm='HS256')
+        email = 'maofalt@gmail.com'
+        if email:
+            encoded_email = jwt.encode({'email': email}, settings.SECRET_KEY, algorithm='HS256')
+            
+        User.objects.create_user(username=username, playername=encoded_playername, email=encoded_email, password=f'{username}123456!')
+        User.objects.create_user(username=f'{username}2', playername=encoded_playername, email=encoded_email, password=f'{username}123456!')
         
 class Migration(migrations.Migration):
 
