@@ -367,19 +367,22 @@ game.on('connection', (client) => {
 			let player = data.players[client.playerID];
 			if (player)
 				player.connected = false;
-			if (data.connectedPlayers < 1) {
-				// // console.log("CLEARING INTERVAL");
+			if (data.connectedPlayers < 1 && client.matchID < 0) {
+				// console.log("CLEARING INTERVAL");
 				// clearInterval(match.gameInterval);
-				if (data.ongoing) {
-					data.winner = player;
-					if (data.matchID >= 0) {
-						postMatchResult(client.matchID, match.gameState.winner.accountID);
-					}
-					// matches.delete(client.matchID);
-				}
-				// // console.log("SENDING CLEAN MSG");
+				let match = matches.get(client.matchID);
+				// if (data.ongoing) {
+				// 	data.winner = player;
+				// 	if (client.matchID >= 0) {
+				// 		postMatchResult(client.matchID, match.gameState.winner.accountID);
+				// 	}
+				// }
+				data = null;
+				match.gameState = null;
+				clearInterval(match.gameInterval);
+				matches.delete(client.matchID);
+				// console.log("SENDING CLEAN MSG");
 				// client.emit("clean-all");
-				delete data;
 			}
 			// // console.log(`Client disconnected with ID: ${client.id} (num clients: ${game.engine.clientsCount})`);
 		});

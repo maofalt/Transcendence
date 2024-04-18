@@ -71,6 +71,7 @@ tournament-table {
 
 .table {
     width: 100%;
+    font-size: 14px;
     display: table;
     color: rgba(255, 255, 255, 1);
     border-radius: 15px;
@@ -87,7 +88,7 @@ tournament-table {
     color: rgba(255, 255, 255, 0.9);
     vertical-align: middle;
 
-    font-size: 20px;
+    font-size: 16px;
     line-height: 1.5rem;
     font-weight: 500;
     text-align: center;
