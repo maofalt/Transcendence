@@ -630,18 +630,17 @@ def detail_view(request, username=None):
                 return JsonResponse({'error': 'User not found'}, status=404)
         else:
             user = request.user
-        email = user.email if username is None else None
-        phone = user.phone if username is None else None
-        
+            
         secret_key = settings.SECRET_KEY
-        original_email = jwt.decode(email, secret_key, algorithms=['HS256'])['email']
+        email = jwt.decode(user.email, secret_key, algorithms=['HS256'])['email'] if username is None else None
+        phone = user.phone if username is None else None
         original_playername = jwt.decode(user.playername, secret_key, algorithms=['HS256'])['playername']
 
         print("user: ", user)
         data = {
             'username': user.username,
             'playername': original_playername,
-            'email': original_email,
+            'email': email,
             'phone': phone,
             'avatar': user.avatar.url if user.avatar else None,
             'friends_count': user.friends.count(),

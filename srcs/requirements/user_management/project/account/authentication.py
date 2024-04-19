@@ -13,7 +13,7 @@ User = get_user_model()
 class CustomJWTAuthentication(authentication.BaseAuthentication):
     def authenticate(self, request):
         accessToken = request.headers.get('Authorization', None)
-        print(">>   accessToken: ", accessToken)
+        # print(">>   accessToken: ", accessToken)
         if not accessToken:
             return None
         
