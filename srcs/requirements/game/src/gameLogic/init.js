@@ -107,6 +107,7 @@ function initFieldShape(data) {
     data.field.goalDist = goalDist;
 
     data.camera.pos.z = wallDist < (goalDist + 20) ? ((goalDist + 20) * 3) : (wallDist * 3);
+    data.consecutiveWallHits = 0;
 
     initLoop(data, wallDist, goalDist, angle); // looping through the players array and the walls array to init their pos and dir;
     initWalls(data);
