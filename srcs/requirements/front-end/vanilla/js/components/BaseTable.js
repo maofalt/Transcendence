@@ -91,7 +91,7 @@ class BaseTable extends HTMLElement {
             // Create the sort icon
             if (header !== "Details") {
                 let sortSpan = document.createElement('span');
-                sortSpan.textContent = this.ascending[header] ? '🔼' : '🔽';
+                sortSpan.textContent = this.ascending[header] ? '▲' : '▼';
                 sortSpan.style.cursor = 'pointer';
                 sortSpan.addEventListener('click', () => this.sortColumn(header));
                 
@@ -116,7 +116,7 @@ class BaseTable extends HTMLElement {
                     headerCells.forEach(cell => {
                         const cellText = cell.querySelector('div').textContent;
                         if (cellText === header) {
-                            cell.querySelector('span').textContent = this.ascending[header] ? '🔼' : '🔽';
+                            cell.querySelector('span').textContent = this.ascending[header] ? '▲' : '▼';
                         }
                     });
 
