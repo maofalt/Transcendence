@@ -394,7 +394,7 @@ class TournamentTable extends BaseTable {
     }
 
     createTournamentDetailsElement(tournament) {
-        const tournamentDetails = this.createStyledHTMLObject('button', '👁️', this.columnStyles.details);
+        const tournamentDetails = this.createStyledHTMLObject('button', '👀', this.columnStyles.details);
         tournamentDetails.style.width = "30%";
         tournamentDetails.style.minWidth = "40px";
         tournamentDetails.style.cursor = "pointer";
