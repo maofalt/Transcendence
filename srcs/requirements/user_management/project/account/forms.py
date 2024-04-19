@@ -5,6 +5,9 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth import password_validation
 from django.utils.translation import gettext as _
+from django.conf import settings
+import jwt
+
 
 # def is_valid_phone_number(phone_number):
 #     phone_number_pattern = r'^\+\d{1,15}$'
@@ -22,13 +25,6 @@ class ProfileUpdateForm(forms.ModelForm):
         if avatar:
             if not avatar.name.endswith(('.jpg', '.jpeg', '.png', '.gif')):
                 raise forms.ValidationError('Only image files are allowed.')
-            # try:
-            #     with open(avatar.path, "rb") as image_file:
-            #         avatar_data = base64.b64encode(image_file.read()).decode('utf-8')
-            # except Exception as e:
-            #     raise forms.ValidationError('Cannot open image file.')
-            # if avatar.size > 2 * 1024 * 1024:
-            #     raise forms.ValidationError('File size cannot exceed 2MB.')
         return avatar
 
     def clean(self):
@@ -36,10 +32,11 @@ class ProfileUpdateForm(forms.ModelForm):
         two_factor_method = cleaned_data.get('two_factor_method')
         if two_factor_method == 'Off':
             cleaned_data['two_factor_method'] = '' 
-
+        
         for field in ['playername', 'avatar', 'email', 'phone', 'two_factor_method']:
             if not cleaned_data.get(field):
                 del cleaned_data[field]
+        print("Cleaned data:", cleaned_data)
         return cleaned_data
     
     def save(self, commit=True):

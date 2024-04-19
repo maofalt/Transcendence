@@ -29,6 +29,7 @@ import requests
 import logging
 import base64
 import re
+import hashlib
 from urllib.parse import urlencode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.forms.models import model_to_dict
@@ -99,12 +100,15 @@ def get_user(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
+    secret_key = settings.SECRET_KEY
+    original_playername = jwt.decode(user.playername, secret_key, algorithms=['HS256'])['playername']
+
     user_data = {
         'user_id': user.id,
         'username': user.username,
         'last_valid_time': user.last_valid_time,
         'avatar': avatar_data,
-        'playername': user.playername
+        'playername': original_playername
     }
     return JsonResponse(user_data)
 
@@ -166,8 +170,10 @@ def refresh_accessToken(request, accessToken, refreshToken):
         # user.last_valid_time = timezone.now().replace(microsecond=0)
         user.save()
         refresh = RefreshToken(refreshToken)
+        access_token_lifetime = timezone.now() + timedelta(minutes=7)  
         access = refresh.access_token
         access['username'] = user.username
+        access['exp'] = int(access_token_lifetime.replace(tzinfo=pytz.UTC).timestamp())
         new_accessToken = str(access)
 
         current_time = timezone.now()
@@ -219,7 +225,8 @@ def api_login_view(request):
             print("2FA : ", user.two_factor_method)
             if (user.two_factor_method != 'off'):
                 if (user.two_factor_method == 'email'):
-                    response = send_one_time_code(request, user.email)
+                    original_email = jwt.decode(user.email, settings.SECRET_KEY, algorithms=['HS256'])['email']
+                    response = send_one_time_code(request, original_email)
                     print("RESPONSE: ", response)
                     if response.status_code == 200:
                         return JsonResponse({'success': True, 'requires_2fa': True})
@@ -240,8 +247,10 @@ def api_login_view(request):
 @authentication_classes([])
 @permission_classes([AllowAny])
 def generate_tokens_and_response(request, user):
+    access_token_lifetime = timezone.now() + timedelta(minutes=7)  
     accessToken = AccessToken.for_user(user)
     accessToken['username'] = user.username
+    accessToken['exp'] = int(access_token_lifetime.replace(tzinfo=pytz.UTC).timestamp())
     print("---> ACCESS TOKEN: ", str(accessToken))
     if user.two_factor_method == 'off':
         twoFA = False
@@ -250,7 +259,10 @@ def generate_tokens_and_response(request, user):
         user.save()
     else:
         twoFA = True
+    refresh_token_lifetime = timezone.now() + timedelta(days=14)
     refreshToken = RefreshToken.for_user(user)
+    refreshToken['exp'] = int(refresh_token_lifetime.replace(tzinfo=pytz.UTC).timestamp())
+
     exp_accessToken = None
     try:
         secret_key = settings.SECRET_KEY
@@ -297,6 +309,7 @@ def send_one_time_code(request, email=None):
     print("\n\nEMAIL SENDING")
     if email is None and request.method == 'POST':
         email = request.POST.get('email', None)
+    
     one_time_code = generate_one_time_code()
     request.session['one_time_code'] = one_time_code
 
@@ -404,7 +417,8 @@ def is_email_valid(email):
     except ValidationError:
         return False, "Invalid email format."
 
-    if User.objects.filter(email=email).exists():
+    encoded_email = jwt.encode({'email': email}, settings.SECRET_KEY, algorithm='HS256')
+    if User.objects.filter(email=encoded_email).exists():
         return False, "Email already in use."
 
     return True, None  # No error message needed on success
@@ -510,14 +524,17 @@ def api_signup_view(request):
         else:
             return JsonResponse({'error': 'verify your email'}, status=400)
 
+        secret_key = settings.SECRET_KEY
+        tokenized_playername = jwt.encode({'playername': playername}, secret_key, algorithm='HS256')
+        tokenized_email = jwt.encode({'email': email}, secret_key, algorithm='HS256')
+
         # Create the user
         user = User(
             username=username,
-            email=email,
+            email=tokenized_email,
             password=make_password(password),
-            playername=playername,
+            playername=tokenized_playername,
         )
-        print("PASSWORD : ", password)
 
         try:
             user.save()
@@ -525,6 +542,7 @@ def api_signup_view(request):
             return JsonResponse({'success': False, 'error': escape('User creation failed.')}, status=400)
 
         print(" >>  User created successfully.")
+        print("User: ", user)
 
         login(request, user)
         user.is_online = True
@@ -614,11 +632,16 @@ def detail_view(request, username=None):
             user = request.user
         email = user.email if username is None else None
         phone = user.phone if username is None else None
+        
+        secret_key = settings.SECRET_KEY
+        original_email = jwt.decode(email, secret_key, algorithms=['HS256'])['email']
+        original_playername = jwt.decode(user.playername, secret_key, algorithms=['HS256'])['playername']
+
         print("user: ", user)
         data = {
             'username': user.username,
-            'playername': user.playername,
-            'email': email,
+            'playername': original_playername,
+            'email': original_email,
             'phone': phone,
             'avatar': user.avatar.url if user.avatar else None,
             'friends_count': user.friends.count(),
@@ -709,52 +732,122 @@ class ProfileUpdateView(APIView):
         print("serialized_form: \n", serialized_form)
         return Response(serialized_form)
 
+    # def post(self, request):
+    #     user = request.user
+    #     user_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user)
+    #     print ("avartar : ", user.avatar)
+    #     print("POST data received:", request.POST)
+    #     try:
+    #         print("-----------------------------------------------------")
+    #         print("user_form: ", user_form)
+    #         user_form.is_valid()
+    #         print("-----------------------------------------------------")
+    #         if 'playername' in request.POST and request.POST['playername'] != '':
+    #             valid, error_message = validate_player_name(request.POST.get('playername'))
+    #             if not valid:
+    #                 return JsonResponse({'error': error_message}, status=400)
+    #         if 'email' in request.POST and request.POST['email'] != '':    
+    #             valid, error_message = is_email_valid(request.POST.get('email'))
+    #             if not valid:
+    #                 return JsonResponse({'error': error_message}, status=400)
+    #             verified_email = request.session.get('verified_email')
+    #             submitted_email = request.POST.get('email')
+    #             if verified_email:
+    #                 if submitted_email and verified_email != submitted_email:
+    #                     # del request.session['verified_email']
+    #                     return JsonResponse({'error': 'Submitted email does not match the verified email.'}, status=400)
+    #                 del request.session['verified_email']
+    #             else:
+    #                 return JsonResponse({'error': 'verify your email'}, status=400)
+
+    #         if 'phone' in request.POST and request.POST['phone'] != '':
+    #             if not is_valid_phone_number(request.POST.get('phone')):
+    #                 return JsonResponse({'error': 'Invalid phone number format'}, status=400)
+ 
+    #             verified_phone = request.session.get('verified_phone')
+    #             submitted_phone = request.POST.get('phone')
+    #             if verified_phone:
+    #                 if submitted_phone and verified_phone != submitted_phone:
+    #                     return JsonResponse({'error': 'Submitted phone number does not match the verified phone number'}, status=400)
+    #                 del request.session['verified_phone']
+    #             else:
+    #                 return JsonResponse({'error': 'verify your phone number'}, status=400)
+    #         print("-----------------------------------------------------")
+    #         user_form.save()
+    #         return JsonResponse({'success': 'Your profile has been updated.'})
+    #     except ValidationError as e:
+    #         return JsonResponse({'error': str(e)}, status=400)
+    #     except Exception as e:
+    #         print("Error: ", e)
+    #         return JsonResponse({'error': 'Form is not valid.'}, status=400)
+
     def post(self, request):
         user = request.user
-        user_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user)
-        print ("avartar : ", user.avatar)
-        print("POST data received:", request.POST)
-        try:
-            user_form.is_valid()    
-            if 'playername' in request.POST and request.POST['playername'] != '':
-                valid, error_message = validate_player_name(request.POST.get('playername'))
-                if not valid:
-                    return JsonResponse({'error': error_message}, status=400)
-            if 'email' in request.POST and request.POST['email'] != '':    
-                valid, error_message = is_email_valid(request.POST.get('email'))
-                if not valid:
-                    return JsonResponse({'error': error_message}, status=400)
-                verified_email = request.session.get('verified_email')
-                submitted_email = request.POST.get('email')
-                if verified_email:
-                    if submitted_email and verified_email != submitted_email:
-                        # del request.session['verified_email']
-                        return JsonResponse({'error': 'Submitted email does not match the verified email.'}, status=400)
-                    del request.session['verified_email']
-                else:
-                    return JsonResponse({'error': 'verify your email'}, status=400)
-
-            if 'phone' in request.POST and request.POST['phone'] != '':
-                if not is_valid_phone_number(request.POST.get('phone')):
-                    return JsonResponse({'error': 'Invalid phone number format'}, status=400)
- 
-                verified_phone = request.session.get('verified_phone')
-                submitted_phone = request.POST.get('phone')
-                if verified_phone:
-                    if submitted_phone and verified_phone != submitted_phone:
-                        return JsonResponse({'error': 'Submitted phone number does not match the verified phone number'}, status=400)
-                    del request.session['verified_phone']
-                else:
-                    return JsonResponse({'error': 'verify your phone number'}, status=400)
+        
+        # Validate playername
+        if 'playername' in request.POST and request.POST['playername'] != '':
+            valid, error_message = validate_player_name(request.POST.get('playername'))
+            if not valid:
+                return JsonResponse({'error': error_message}, status=400)
+        
+        # Validate email
+        if 'email' in request.POST and request.POST['email'] != '':
+            valid, error_message = is_email_valid(request.POST.get('email'))
+            if not valid:
+                return JsonResponse({'error': error_message}, status=400)
             
-            user_form.save()
-            print(">>  avatar: ", user.avatar)
-            return JsonResponse({'success': 'Your profile has been updated.'})
+            verified_email = request.session.get('verified_email')
+            submitted_email = request.POST.get('email')
+            if verified_email:
+                if submitted_email and verified_email != submitted_email:
+                    # del request.session['verified_email']
+                    return JsonResponse({'error': 'Submitted email does not match the verified email.'}, status=400)
+                del request.session['verified_email']
+            else:
+                return JsonResponse({'error': 'verify your email'}, status=400)
+
+        # Validate phone
+        if 'phone' in request.POST and request.POST['phone'] != '':
+            if not is_valid_phone_number(request.POST.get('phone')):
+                return JsonResponse({'error': 'Invalid phone number format'}, status=400)
+
+            verified_phone = request.session.get('verified_phone')
+            submitted_phone = request.POST.get('phone')
+            if verified_phone:
+                if submitted_phone and verified_phone != submitted_phone:
+                    return JsonResponse({'error': 'Submitted phone number does not match the verified phone number'}, status=400)
+                del request.session['verified_phone']
+            else:
+                return JsonResponse({'error': 'verify your phone number'}, status=400)
+        
+        mutable_post = request.POST.copy()
+        playername = request.POST.get('playername')
+        email = request.POST.get('email')
+        print("POST data received:", request.POST)
+        # Encode the playername and email
+        if playername and playername != '':
+            encoded_playername = jwt.encode({'playername': playername}, settings.SECRET_KEY, algorithm='HS256')
+            mutable_post['playername'] = encoded_playername
+        if email and email != '':
+            encoded_email = jwt.encode({'email': email}, settings.SECRET_KEY, algorithm='HS256')
+            mutable_post['email'] = encoded_email
+        
+        user_form = ProfileUpdateForm(mutable_post, request.FILES, instance=request.user)
+
+        try:
+            if user_form.is_valid():
+                user_form.save()
+                return JsonResponse({'success': 'Your profile has been updated.'})
+            else:
+                print("Form errors:", user_form.errors)
+                return JsonResponse({'errors': user_form.errors}, status=400)
         except ValidationError as e:
+            print("Validation Error:", e)
             return JsonResponse({'error': str(e)}, status=400)
         except Exception as e:
-            print("Error: ", e)
-            return JsonResponse({'error': 'Form is not valid.'}, status=400)
+            print("Save Error:", e)
+            return JsonResponse({'error': 'An error occurred while updating your profile.'}, status=500)
+
 
 class PasswordUpdateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
