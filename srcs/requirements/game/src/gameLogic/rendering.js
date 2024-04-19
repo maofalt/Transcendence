@@ -74,8 +74,8 @@ function ballHitsWallSide (ball, segP1, segP2, perpVec, scaledNormalVec) {
         ball.pos = ball.pos.add(ballPath.scale(hitScaler));
         let dot = ball.dir.dotProduct(perpVec);
         let a = Math.acos(dot / ball.dir.mag * perpVec.mag);
-        let randomFact = Math.random() * 0.01 - 0.005; // number between -0.005 and 0.005;
-        ball.dir = ball.dir.rotateAroundZ((2 + randomFact)* a);
+        let randomFact = Math.random() * 0.01 - 0.005; // number between -0.005 and 0.005 (arbitrary)
+        ball.dir = ball.dir.rotateAroundZ((2 + randomFact) * a); // adding the random arbitrary factor to the angle for variability
         return true;
     }
 }
