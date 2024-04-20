@@ -170,7 +170,7 @@ def refresh_accessToken(request, accessToken, refreshToken):
         # user.last_valid_time = timezone.now().replace(microsecond=0)
         user.save()
         refresh = RefreshToken(refreshToken)
-        access_token_lifetime = timezone.now() + timedelta(minutes=7)  
+        access_token_lifetime = timezone.now() + timedelta(hours=2)  
         access = refresh.access_token
         access['username'] = user.username
         access['exp'] = int(access_token_lifetime.replace(tzinfo=pytz.UTC).timestamp())
@@ -247,7 +247,7 @@ def api_login_view(request):
 @authentication_classes([])
 @permission_classes([AllowAny])
 def generate_tokens_and_response(request, user):
-    access_token_lifetime = timezone.now() + timedelta(minutes=7)  
+    access_token_lifetime = timezone.now() + timedelta(hours=2)  
     accessToken = AccessToken.for_user(user)
     accessToken['username'] = user.username
     accessToken['exp'] = int(access_token_lifetime.replace(tzinfo=pytz.UTC).timestamp())
@@ -922,12 +922,15 @@ class SendResetLinkView(generics.ListCreateAPIView):
             # reset_url = request.build_absolute_uri(reverse_lazy('account:password_reset', kwargs={'uidb64': uid, 'token': token}))
             reset_url = request.build_absolute_uri('/forgot?{}'.format(urlencode({'token': token, 'uidb': uid})))
             print("reset_link: ", reset_url)
+            
+            secret_key = settings.SECRET_KEY
+            original_email = jwt.decode(user.email, secret_key, algorithms=['HS256'])['email']
 
             print("\n\nCHECK UNIQUE TOKEN: ", token)
             subject = 'Pong Password Reset'
             email_content = render_to_string('password_reset_email.html', {'reset_url': reset_url, 'user': user})
             from_email = 'no-reply@student.42.fr' 
-            to_email = user.email
+            to_email = original_email
             send_mail(subject, email_content, from_email, [to_email], fail_silently=False)
 
             return JsonResponse({'success': True, 'message': escape('Password reset link sent successfully')})
