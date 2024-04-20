@@ -4,9 +4,10 @@ from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 
 class User(AbstractUser):
-    playername = models.CharField(max_length=30, blank=True, null=True)
+    playername = models.CharField(max_length=250, blank=True, null=True)
+    email = models.CharField(max_length=250, blank=True, null=True)
     is_online = models.BooleanField(default=False)
-    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True, default='default_avatar.jpeg')
+    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True, default='default_avatar2.jpeg')
     friends = models.ManyToManyField('self', symmetrical=False, blank=True)
     phone = models.CharField(max_length=15, blank=True, null=True)
     last_valid_time = models.DateTimeField(default=timezone.now)
@@ -37,3 +38,5 @@ class User(AbstractUser):
     def remove_friend(self, friend):
         self.friends.remove(friend)
 
+    def __str__(self):
+        return f"Username: {self.username}, Playername: {self.playername}, Email: {self.email}"

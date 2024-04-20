@@ -65,14 +65,13 @@ class BaseTable extends HTMLElement {
         this.shadowRoot.querySelector(".pagination-controls").appendChild(this.refreshButton);
         
         //Attach searching fonction to the compoenent
-        this.searchBar.addEventListener('keyup', () => this.filterRows(this.searchBar.value));
+        this.searchBar.addEventListener('keyup', () => this.filterRows(this.searchBar.value, 'Tournament Name'));
     }
 
     //Utility to set column styles
     setColumnStyles(styles) {
         this.columnStyles = styles;
     }
-
 
     //Utility to inject headers
     setHeaders(headers) {
@@ -91,7 +90,7 @@ class BaseTable extends HTMLElement {
             // Create the sort icon
             if (header !== "Details") {
                 let sortSpan = document.createElement('span');
-                sortSpan.textContent = this.ascending[header] ? '🔼' : '🔽';
+                sortSpan.textContent = this.ascending[header] ? '▲' : '▼';
                 sortSpan.style.cursor = 'pointer';
                 sortSpan.addEventListener('click', () => this.sortColumn(header));
                 
@@ -116,19 +115,12 @@ class BaseTable extends HTMLElement {
                     headerCells.forEach(cell => {
                         const cellText = cell.querySelector('div').textContent;
                         if (cellText === header) {
-                            cell.querySelector('span').textContent = this.ascending[header] ? '🔼' : '🔽';
+                            cell.querySelector('span').textContent = this.ascending[header] ? '▲' : '▼';
                         }
                     });
 
         // Get all rows as an array of objects containing the row and its sort key
         const rowContent= [];
-        // const rowData = this.dataRows.map(row => {
-        //     rowContent.push(row.cells.get(header)?.domElement.textContent || "");
-        //     return {
-        //         row: row,
-        //         key: (row.cells.get(header)?.domElement.textContent || "").trim()
-        //     };
-        // });
 
         const rowData = this.dataRows.map(row => {
             let key = "";
@@ -146,23 +138,16 @@ class BaseTable extends HTMLElement {
             };
         });
     
-        //console.log(rowContent);
         // Apply natural sort algorithm
         rowData.sort((a, b) => this.naturalSort(a.key, b.key));
         //console.log("sorted", rowData);
         rowContent.sort((a,b) => this.naturalSort(a,b));
-        //console.log("sorted", rowContent);
         // If descending sort, reverse the array
         if (!this.ascending[header]) rowData.reverse();
-        //console.log("sorted", rowData);
         // Set sorted rows back to dataRows
         this.dataRows = rowData.map(item => item.row);
-        //console.log("sorted", this.dataRows);
-
         // // Rebuild rowIndexByIdentifier and totalRows
         this.updateRowsPostSort();
-        //console.log("Final sorted rows:", this.dataRows.map(row => row.cells.get(header)?.domElement.textContent.trim()));
-
         // Re-render the page to show the sorted rows
         this.renderCurrentPage();
     }
@@ -202,7 +187,6 @@ class BaseTable extends HTMLElement {
         });
     }
     
-
     addRow(cells, identifier) {
         const newRow = new Row(identifier);
         cells.forEach(cellContent => {
@@ -248,43 +232,49 @@ class BaseTable extends HTMLElement {
         let rowsToShow;
         if (this.filteredRows) {
             // We need to make sure we're dealing with DOM elements, not Row objects
-            //console.log("filtered rows");
             rowsToShow = this.filteredRows.map(row => row.domElement).slice(startIndex, endIndex);
         } else {
             //console.log("total rows");
             rowsToShow = this.totalRows.slice(startIndex, endIndex);
         }
-        // console.log("Rows to Show:", rowsToShow.map(row => {
-        //     // Extract text from cells under the "Tournament Name" header
-        //     const cell = row.querySelector('td'); // Assuming the "Tournament Name" is the first cell if no specific class or attribute identifies it
-        //     return cell ? cell.textContent.trim() : "No data for header";
-        // }));
         // Check if the row is defined before trying to change its display property
         rowsToShow.forEach(row => {
             if (row) {
                 const cell = row.querySelector('td');
-                //console.log("Row to show:", cell ? cell.textContent.trim() : "No data for header");
                 row.style.display = '';
             }
         });
     }
     
 
-    filterRows(searchTerm) {
+    filterRows(searchTerm, header, exactMatch = false) {
         const searchLower = searchTerm.replace(/\s+/g, '').toLowerCase();
         this.filteredRows = this.dataRows.filter(row => {
-            const cell = row.cells.get('Tournament Name');
+            const cell = row.cells.get(header);
             if (!cell) return false;
-
-            const cellText = cell.domElement.textContent.toLowerCase();
     
-            // Now check if cellText includes the search term.
-            return cellText.includes(searchLower);
+            let cellText;
+            // Handle special case where the header is 'Host' and we need to look at an attribute
+            if (header === "Host") {
+                // If header is 'Host', extract text from an attribute of a nested element
+                cellText = cell.domElement.querySelector('host-avatar').getAttribute('name') || "";
+            } else {
+                // For all other headers, use the text content of the cell
+                cellText = cell.domElement.textContent.toLowerCase();
+            }
+    
+            // Now check if cellText matches the search term based on exactMatch flag
+            if (exactMatch) {
+                return cellText === searchLower;  // Exact match
+            } else {
+                return cellText.includes(searchLower);  // Inclusive match
+            }
         });
     
         this.currentPage = 1;
         this.renderCurrentPage();
     }
+    
     
     updateRowByIdentifier(identifier, newCells) {
         //console.log('Updating row with identifier:', identifier);

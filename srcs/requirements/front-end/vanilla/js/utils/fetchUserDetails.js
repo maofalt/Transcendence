@@ -6,10 +6,12 @@ export default async function fetchUserDetails() {
 		username: "Logged Out",
 		playername: "Logged Out",
 		email: "Logged Out",
+		phone: "Logged Out",
 		avatar: "public/assets/images/default-avatar.webp",
 		status: "Offline",
 		is_online: false,
 		friends_count: 0,
+		two_factor_auth: false,
 	};
 	try {
 		const accessToken = sessionStorage.getItem("accessToken");
@@ -46,6 +48,7 @@ export default async function fetchUserDetails() {
 					status: "online",
 					is_online: true,
 					friends_count: body.friends_count,
+					two_factor_auth: body.two_factor_method === "email",
 				}
 			}
 		}).catch(error => {

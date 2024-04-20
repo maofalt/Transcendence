@@ -1,11 +1,11 @@
 import AbstractComponent from "@components/AbstractComponent";
 import Pannel from '@components/Pannel';
-import CustomButton from '@components/CustomButton';
 import InputAugmented from '@components/InputAugmented';
 import easyFetch from "@utils/easyFetch";
 import displayPopup from "@utils/displayPopup";
 import { fadeIn, fadeOut, transition } from "@utils/animate";
 import { redirectTo } from "@utils/Router";
+import setupLogin from "@utils/setupLogin";
 
 export default class TwoFactorAuth extends AbstractComponent {
 	constructor(emailBlock, context, options = {}) {
@@ -107,7 +107,9 @@ export default class TwoFactorAuth extends AbstractComponent {
 				displayPopup('Response Error: ' + (body.error || JSON.stringify(body)), 'error');
 				valid = false;
 			} else if (response.status === 200 && body.success === true) {
-				await fetchUserDetails();
+				// get user details for the profile page and start the socket connection
+				await setupLogin(body);
+
 				displayPopup(body.message || JSON.stringify(body), 'success');
 				valid = true;
 			} else {

@@ -37,15 +37,8 @@ export async function renewToken() {
 
 		console.log('Check refresh successful:', response);
 		
-		sessionStorage.setItem('expiryTimestamp', new Date().getTime() + body.expires_in * 1000);
-		sessionStorage.setItem('accessToken', body.access_token);
-		sessionStorage.setItem('tokenType', body.token_type);
-
-		// Reconnect the socket with the new token
-		refreshSocketConnection();
-
-		await fetchUserDetails();
-		// sessionStorage.setItem('userDetails', JSON.stringify(details));
+		// get user details for the profile page and start the socket connection
+		await setupLogin(body);
 
 		console.log('Updated accessToken on Storage');
 	}).catch(error => {

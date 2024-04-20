@@ -16,6 +16,7 @@ import { refreshTokenLoop } from "@utils/pollingFunctions";
 import { initSocketConnection } from "@utils/websocket";
 import TwoFactorAuth from "@components/TwoFactorAuth";
 import { fadeIn } from "@utils/animate";
+import setupLogin from "@utils/setupLogin";
 
 export default class LoginPage extends AbstractComponent {
 	constructor(options = {}) {
@@ -146,16 +147,7 @@ export default class LoginPage extends AbstractComponent {
 			} else if (!response.ok) {
 				throw new Error(body.error || JSON.stringify(body));
 			} else if (response.status === 200 && body.success === true) {
-
-				// Store the access token and details in memory
-				sessionStorage.setItem('expiryTimestamp', new Date().getTime() + body.expires_in * 1000);
-				sessionStorage.setItem('accessToken', body.access_token);
-				sessionStorage.setItem('tokenType', body.token_type);
 				
-				// connect to the socket
-				initSocketConnection();
-
-
 				if (body.requires_2fa) {
 					displayPopup('login successful, please enter your 2fa code', 'info');
 					// Router.redirectTo("/2fa");
@@ -163,7 +155,8 @@ export default class LoginPage extends AbstractComponent {
 					return ;
 				}
 
-				await fetchUserDetails();
+				// get user details for the profile page and start the socket connection
+				await setupLogin(body);
 
 				displayPopup('Login successful', 'success');
 
