@@ -17,23 +17,13 @@ export default async function logOut() {
 		let body = res.body;
 
 		if (!response || !body) {
-			console.error('Request Failed');
-			return ;
+			throw new Error('empty response');
 		}
 
-		if (response.status === 400) {
-			alert('Wrong username or password');
-			return ;
+		if (response.ok) {
+			throw new Error(body.error || body.message || body);
 		}
 
-		if (!response.ok) {
-			console.error('Request Failed:', body.error || JSON.stringify(body));
-			return ;
-		}
-
-		if (response.status === 200 && body.success === true) {
-			alert('Logout successful: ' + body.message);
-		}
 	}).catch(error => {
 		console.error('Request Failed:', error);
 	});
