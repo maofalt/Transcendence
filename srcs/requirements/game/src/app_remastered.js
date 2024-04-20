@@ -131,6 +131,7 @@ function waitingRoom(matchID) {
 		// client.disconnect();
 		return ;
 	}
+	match.gameState.imminent = matchID < 0;
 
 	if (!match.gameState.imminent && !match.gameState.ongoing) {
 		// this is called during the waiting of other players
@@ -377,10 +378,12 @@ game.on('connection', (client) => {
 				// 		postMatchResult(client.matchID, match.gameState.winner.accountID);
 				// 	}
 				// }
-				data = null;
-				match.gameState = null;
-				clearInterval(match.gameInterval);
-				matches.delete(client.matchID);
+				// data = null;
+				// match.gameState = null;
+				if (match) {
+					clearInterval(match.gameInterval);
+					matches.delete(client.matchID);
+				}
 				// console.log("SENDING CLEAN MSG");
 				// client.emit("clean-all");
 			}
@@ -602,7 +605,8 @@ function setupMatch(settings, res) {
 
 	// Convert game settings to game state
 	const gameState = init.initLobby(gameSettings);
-	
+	gameState.matchID = matchID;
+
 	matches.set(matchID, { gameState: gameState, gameInterval: 0 });
 
 	// Emit the new match notification to all players (if it isn't a preview match; < 0)

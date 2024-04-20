@@ -1,5 +1,4 @@
 # docker-compose.yml
-version: '3.8'
 
 services:
   # TRAEFIK
@@ -45,7 +44,6 @@ services:
         max-size: "1m"
         max-file: "3"
 
-
   # react with vite and HMR for development
   js-dev:
     container_name: js-dev
@@ -64,13 +62,12 @@ services:
         max-size: "1m"
         max-file: "3"
 
-
   #BACKEND GAME SERVICES
   game:
     container_name: game
     build: 
       context: ./requirements/game/
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     env_file:
       - .env
     networks:
