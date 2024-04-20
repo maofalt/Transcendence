@@ -175,6 +175,8 @@ class JoinTournament(generics.ListCreateAPIView):
             return JsonResponse({'error': 'Tournament not found'}, status=404)
         if tournament.is_full():
             return JsonResponse({'message': 'Tournament is full'}, status=status.HTTP_400_BAD_REQUEST)
+        if tournament.state != 'waiting':
+            return JsonResponse({'message': 'Tournament is not in registration state'}, status=status.HTTP_400_BAD_REQUEST)
 
         player, created = Player.objects.get_or_create(id=uid, username=username) # created wiil return False if the player already exists
         if tournament.players.filter(id=player.id).exists():
