@@ -5,6 +5,7 @@ from django.db import migrations, models
 from django.utils import timezone
 from manage_tournament.models import Tournament, MatchSetting
 
+
 def create_random_game_setting(account_id):
     game_setting = {
         "nbr_of_player": random.randint(2, 8),
@@ -56,7 +57,7 @@ def create_tournament(apps, schema_editor):
         print(f'Nbr of players total: {nbr_of_players_total}  /  len(players): {len(players)}')
         print(f'Nbr of players assigned: {nbr_of_players_assigned}')
         for j, player_username in enumerate(players):
-            if player_username != host_player.username and j < nbr_of_players_assigned:
+            if player_username != host_player.username and j < nbr_of_players_assigned - 1:
                 player, _ = Player.objects.get_or_create(id=j+1, username=player_username, defaults={'total_played': 0})
                 tournament.players.add(player)
                 tournament.save()
@@ -65,7 +66,7 @@ def create_tournament(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('manage_tournament', '0006_matchsetting_ball_model_matchsetting_ball_texture_and_more'),
+        ('manage_tournament', '0001_initial'),
     ]
 
     operations = [

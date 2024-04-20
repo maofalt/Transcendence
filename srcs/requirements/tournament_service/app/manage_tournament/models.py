@@ -3,11 +3,14 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
 from decimal import Decimal
+from django.utils import timezone
 
+def get_current_timestamp():
+    return int(timezone.now().timestamp())
 
 class Tournament(models.Model):
     tournament_name = models.CharField(max_length=255)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.IntegerField(default=get_current_timestamp)
     nbr_of_player_total = models.IntegerField(default=2, 
         validators=[MinValueValidator(2), 
         MaxValueValidator(100)
