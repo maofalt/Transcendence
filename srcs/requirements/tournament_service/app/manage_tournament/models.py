@@ -9,7 +9,7 @@ def get_current_timestamp():
     return int(timezone.now().timestamp())
 
 class Tournament(models.Model):
-    tournament_name = models.CharField(max_length=255)
+    tournament_name = models.CharField(max_length=30)
     created_at = models.IntegerField(default=get_current_timestamp)
     nbr_of_player_total = models.IntegerField(default=2, 
         validators=[MinValueValidator(2), 

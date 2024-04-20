@@ -56,11 +56,13 @@ def create_tournament(apps, schema_editor):
         nbr_of_players_assigned = min(len(players), nbr_of_players_total)
         print(f'Nbr of players total: {nbr_of_players_total}  /  len(players): {len(players)}')
         print(f'Nbr of players assigned: {nbr_of_players_assigned}')
-        for j, player_username in enumerate(players):
-            if player_username != host_player.username and j < nbr_of_players_assigned - 1:
-                player, _ = Player.objects.get_or_create(id=j+1, username=player_username, defaults={'total_played': 0})
-                tournament.players.add(player)
-                tournament.save()
+        for i, player_username in enumerate(players):
+            if player_username != host_player.username:
+                print(f"host: {host_player.id} : {host_player.username}  player: {player_username}")
+                player, _ = Player.objects.get_or_create(id=i+1, username=player_username, defaults={'total_played': 0})
+                if tournament.players.count() < nbr_of_players_assigned:
+                    tournament.players.add(player)
+                    tournament.save()
         print(f'Tournament {tournament.tournament_name} created with host player {host_player.username}')
 
 class Migration(migrations.Migration):
