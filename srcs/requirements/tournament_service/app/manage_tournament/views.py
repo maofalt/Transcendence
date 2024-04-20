@@ -868,7 +868,7 @@ class PlayerStatsView(APIView):
         try:
             player = get_object_or_404(Player, username=username)
         except Http404:
-            return JsonResponse({'error': 'Nothing to show'}, status=404)
+            return JsonResponse({'message': 'Nothing to show'}, status=204)
 
         played_tournaments = Tournament.objects.filter(players__username=username).exclude(state='waiting')
         played_matches = TournamentMatch.objects.filter(players__username=username)

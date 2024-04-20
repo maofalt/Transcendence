@@ -189,7 +189,7 @@ export default class ProfilePage extends AbstractComponent {
 		await elemsToBeFilled.userInfo.fetchAndFillElems(user);
 		elemsToBeFilled.userPlayername.textContent = user.playername || "N/A";
 		elemsToBeFilled.userEmail.textContent = user.email || "N/A";
-		elemsToBeFilled.userPhone.textContent = user.phone || "N/A";
+		// elemsToBeFilled.userPhone.textContent = user.phone || "N/A";
 		console.log("user", user);
 		elemsToBeFilled.pannelTitle.textContent = `Friends List  ( ${user.friends_count} )`;
 		this.fillGameStats(this.userElemsToBeFilled, user.username, gameStats);
@@ -296,7 +296,7 @@ export default class ProfilePage extends AbstractComponent {
 		infos.innerHTML = profileInfoHtml;
 		elemsToBeFilled.userPlayername = infos.querySelector("#user-playername");
 		elemsToBeFilled.userEmail = infos.querySelector("#user-email");
-		elemsToBeFilled.userPhone = infos.querySelector("#user-phone");
+		// elemsToBeFilled.userPhone = infos.querySelector("#user-phone");
 		personalInfo.shadowRoot.appendChild(infos);
 		return personalInfo;
 	}
