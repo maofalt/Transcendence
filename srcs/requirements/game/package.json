@@ -4,7 +4,8 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon src/app_remastered.js"
+    "start": "nodemon src/app_remastered.js",
+	"prod": "node src/app_remastered.js"
   },
   "author": "",
   "license": "ISC",
