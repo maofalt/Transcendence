@@ -11,6 +11,7 @@ import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import CustomButton from '@components/CustomButton';
 import { navigateTo } from "@utils/Router";
 import AbstractView from "@views/AbstractView";
+import displayPopup from '@utils/displayPopup';
 
 
 // function createCallTracker() {
@@ -217,12 +218,12 @@ export default class Game extends AbstractView {
 
 		this.socket.on('error', (error) => {
 			console.error("Socket error: ", error);
-			alert("Socket error: " + error);
+			displayPopup("Socket error: " + error, "error");
 		});
 
 		this.socket.on('connect_error', (error) => {
 			console.error("Socket connection error: ", error);
-			alert("Socket connection error: " + error);
+			displayPopup("Socket connection error: " + error, "error");
 		});
 
 		this.socket.on('whoareyou', () => {
