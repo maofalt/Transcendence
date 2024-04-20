@@ -74,7 +74,8 @@ function ballHitsWallSide (ball, segP1, segP2, perpVec, scaledNormalVec) {
         ball.pos = ball.pos.add(ballPath.scale(hitScaler));
         let dot = ball.dir.dotProduct(perpVec);
         let a = Math.acos(dot / ball.dir.mag * perpVec.mag);
-        ball.dir = ball.dir.rotateAroundZ(2 * a);
+        let randomFact = Math.random() * 0.01 - 0.005; // number between -0.005 and 0.005 (arbitrary)
+        ball.dir = ball.dir.rotateAroundZ((2 + randomFact) * a); // adding the random arbitrary factor to the angle for variability
         return true;
     }
 }
@@ -216,17 +217,15 @@ function updatePaddles(data) {
 function updateBall(data) {
     paddleHit = ballHitsPaddle(data);
     wallHit = ((data.field.wallsSize || data.gamemode.nbrOfPlayers == 2) ? ballHitsWallV2(data) : 0);
-    /* if (paddleHit) {
-        console.log("paddle hit");
-    }
     if (wallHit) {
-        console.log("wall hit");
-    }*/
+        data.consecutiveWallHits++;
+    }
     if (!paddleHit && !wallHit) {
         data.ball.pos = data.ball.pos.add(data.ball.dir.scale(data.ball.sp));
     } else if (paddleHit) {
-        data.ball.sp *= 1.01;
-		data.ball.currStartingSp = data.ball.sp;
+        data.consecutiveWallHits = 0;
+        data.ball.sp *= 1.01; // accelerating ball when hitting paddle
+		data.ball.currStartingSp = data.ball.sp; // setting the new starting speed of the ball
     }
     if (data.ball.pos.getDistFrom(new Vector(0, 0, 0)) > 
         (data.field.wallDist < data.field.goalDist ? data.field.goalDist: data.field.wallDist) + 20) {
@@ -235,8 +234,14 @@ function updateBall(data) {
 		data.ball.currStartingSp = data.ball.sp;
     }
 	if (data.ball.sp > data.ball.currStartingSp) {
-		data.ball.sp *= 0.994;
+		data.ball.sp *= 0.994; // arbitrary value to slow down ball
 	}
+    if (data.consecutiveWallHits > 10) { // if the ball hits a wall 10 times in a row
+        let randomIndex = Math.floor(Math.random() * data.gamemode.nbrOfPlayers); // get a random player index
+        let randomPlayer = Object.values(data.players)[randomIndex]; // get the player corresponding to the index
+        data.ball.dir = randomPlayer.paddle.pos.getDirFrom(data.ball.pos); // make the ball go towards the random player
+        data.consecutiveWallHits = 0; // set back the number of consecutive wall hits
+    }
 }
 
 // function endGame(data) {
@@ -274,7 +279,7 @@ function getBallDir(data) {
 }
 
 function handleScoring(data, player) {
-    if (data.ongoing) {
+    if (data.ongoing && data.matchID >= 0) {
         if (data.gamemode.gameType == 0) {
             for (let otherPlayer of Object.values(data.players)) {
                 if (otherPlayer === player)

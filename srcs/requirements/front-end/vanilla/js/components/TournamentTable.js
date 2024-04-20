@@ -507,6 +507,12 @@ class TournamentTable extends BaseTable {
        // super.disconnectedCallback();
 		this.cleanupEventListeners();
 	}
+
+    filterByHost() {
+        const userName = this.userName;
+        console.log('filterByHost', userName);
+        this.filterRows(userName, "Host", true);
+    }
 }
 
 customElements.define('tournament-table', TournamentTable);
