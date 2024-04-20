@@ -91,7 +91,7 @@ def home(request):
 def get_user(request):
 
     user = request.user
-    print("User: ", user.username)
+    # print("User: ", user.username)
     avatar_data = None
     try:
         if user.avatar:
@@ -106,7 +106,7 @@ def get_user(request):
     user_data = {
         'user_id': user.id,
         'username': user.username,
-        'last_valid_time': user.last_valid_time,
+        'last_valid_time': user.last_valid_time.timestamp(),
         'avatar': avatar_data,
         'playername': original_playername
     }
@@ -166,11 +166,14 @@ def refresh_accessToken(request, accessToken, refreshToken):
         uid = decoded_refresh_token['user_id']
         user = get_object_or_404(User, pk=uid)
         local_tz = pytz.timezone('Europe/Paris')
-        user.last_valid_time = timezone.now().astimezone(local_tz).replace(microsecond=0)
+        user.last_valid_time = timezone.now()
+        last_valid_time = user.last_valid_time.timestamp()
+        print_time = datetime.datetime.fromtimestamp(last_valid_time, tz=pytz.utc).astimezone(local_tz).strftime('%Y-%m-%d %H:%M:%S')
+        print("User last_valid_time updated: ", print_time)
         # user.last_valid_time = timezone.now().replace(microsecond=0)
         user.save()
         refresh = RefreshToken(refreshToken)
-        access_token_lifetime = timezone.now() + timedelta(hours=2)  
+        access_token_lifetime = timezone.now() + timedelta(minutes=6)  
         access = refresh.access_token
         access['username'] = user.username
         access['exp'] = int(access_token_lifetime.replace(tzinfo=pytz.UTC).timestamp())
@@ -247,7 +250,7 @@ def api_login_view(request):
 @authentication_classes([])
 @permission_classes([AllowAny])
 def generate_tokens_and_response(request, user):
-    access_token_lifetime = timezone.now() + timedelta(hours=2)  
+    access_token_lifetime = timezone.now() + timedelta(minutes=6)  
     accessToken = AccessToken.for_user(user)
     accessToken['username'] = user.username
     accessToken['exp'] = int(access_token_lifetime.replace(tzinfo=pytz.UTC).timestamp())
@@ -271,7 +274,11 @@ def generate_tokens_and_response(request, user):
         exp_timestamp_accessToken = decodedToken['exp']
         exp_accessToken = datetime.datetime.fromtimestamp(exp_timestamp_accessToken, tz=pytz.utc).astimezone(local_tz).strftime('%Y-%m-%d %H:%M:%S')
         print("Expiration time of ACCESS token:", exp_accessToken)
-        user.last_valid_time = timezone.now().replace(microsecond=0)
+        # user.last_valid_time = timezone.now().replace(microsecond=0)
+        user.last_valid_time = timezone.now()
+        last_valid_time = user.last_valid_time.timestamp()
+        print_time = datetime.datetime.fromtimestamp(last_valid_time, tz=pytz.utc).astimezone(local_tz).strftime('%Y-%m-%d %H:%M:%S')
+        print("User last_valid_time updated: ", print_time)
         user.save()
 
     except jwt.ExpiredSignatureError:
@@ -593,9 +600,13 @@ def friends_view(request):
     for friend_info in friend_data:
         friend = friends.get(username=friend_info['username'])
         last_valid_time = friend.last_valid_time.timestamp()
-        if friend.is_online == True and (current_time - last_valid_time) > 300:
+        local_tz = pytz.timezone('Europe/Paris')
+        print_time = datetime.datetime.fromtimestamp(last_valid_time, tz=pytz.utc).astimezone(local_tz).strftime('%Y-%m-%d %H:%M:%S')
+        print("Freinds : last_valid_time: ", print_time)
+        if friend.is_online == True and (current_time - last_valid_time) > 360:
             friend_info['is_online'] = False
             friend.is_online = False
+            friend.save()
 
         if friend_info['avatar']:
             friend_info['avatar'] = urljoin(settings.MEDIA_URL, friend_info['avatar'])
@@ -636,7 +647,7 @@ def detail_view(request, username=None):
         phone = user.phone if username is None else None
         original_playername = jwt.decode(user.playername, secret_key, algorithms=['HS256'])['playername']
 
-        print("user: ", user)
+        # print("user: ", user)
         data = {
             'username': user.username,
             'playername': original_playername,
@@ -969,9 +980,9 @@ class PasswordResetView(generics.ListCreateAPIView):
         # token = request.query_params.get('token')
         try:
             uid = urlsafe_base64_decode(uidb64).decode()
-            print("uid:::: ", uid)
+            # print("uid:::: ", uid)
             user = User.objects.get(id=uid)
-            print("user: ", user)
+            # print("user: ", user)
         except (TypeError, ValueError, OverflowError, User.DoesNotExist):
             user = None
 
