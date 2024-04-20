@@ -4,7 +4,7 @@ OVERRIDE_FILE = -f srcs/docker-compose.prod.yml
 HOST_NAME ?= localhost
 HOST_IP ?= localhost
 
-ENV ?= dev
+ENV ?= prod
 
 COMPOSE_FILE = -f srcs/docker-compose.yml
 
@@ -16,8 +16,28 @@ ifeq ($(ENV), prod)
 COMPOSE_FILE = $(BASE_FILE) $(OVERRIDE_FILE)
 endif
 
-
+all: HOST_NAME := $(shell hostname)
+all: HOST_IP := $(shell hostname)
 all: build up logs
+
+localhost: HOST_NAME := localhost
+localhost: HOST_IP := localhost
+localhost: ENV := dev
+localhost: build up logs
+
+localnetwork: HOST_NAME := $(shell hostname)
+localnetwork: HOST_IP := $(shell hostname)
+localnetwork: build up logs
+
+dev: HOST_NAME := $(shell hostname)
+dev: HOST_IP := $(shell hostname)
+dev: ENV := dev
+dev: build up logs
+
+prod: HOST_NAME := $(shell hostname)
+prod: HOST_IP := $(shell hostname)
+prod: ENV := prod
+prod: build up logs
 
 build: set-ip set-codeespace-url set-permissions decrypt-mama replace
 	docker-compose $(COMPOSE_FILE) build

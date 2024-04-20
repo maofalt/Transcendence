@@ -9,4 +9,4 @@ COPY ./startup-game.sh ./
 
 EXPOSE 3000
 
-CMD ["bash", "startup-game.sh", "start"]
+CMD ["bash", "startup-game.sh", "dev"]

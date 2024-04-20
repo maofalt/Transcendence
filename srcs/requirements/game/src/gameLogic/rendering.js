@@ -279,7 +279,7 @@ function getBallDir(data) {
 }
 
 function handleScoring(data, player) {
-    if (data.ongoing) {
+    if (data.ongoing && data.matchID >= 0) {
         if (data.gamemode.gameType == 0) {
             for (let otherPlayer of Object.values(data.players)) {
                 if (otherPlayer === player)
