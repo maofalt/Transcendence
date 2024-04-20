@@ -30,66 +30,44 @@ export default class Tournament extends AbstractView {
 		`;
 	}
 
-	async init() {
-		const tournamentDiv = document.querySelector('.tournament');
+    async init() {
+        const tournamentDiv = document.querySelector('.tournament');
         this.overlay = new Overlay({});
-		this.overlay.id = "custom-overlay";
+        this.overlay.id = "custom-overlay";
         tournamentDiv.appendChild(this.overlay);
-		
-		this.tournamentTable = await this.getTournamentList();
-		this.tournamentTable.setAttribute('id', 'tournamentTable');
-		tournamentDiv.appendChild(this.tournamentTable);
 
-		const createTournamentButton = this.tournamentTable.shadowRoot.getElementById('create-button');
-		createTournamentButton.addEventListener('click', this.createTournament);
-		/*
-		For Miguel :
-		you can get any button by doing the following :
-		this.tournamentTable.shadowRoot.getElementById('<button id>');
-		
-		IDs for each element:
-		create : "create-button";
-		manage : "manage-button";
-		search : "search-button";
-		search bar : "search-bar";
-		refresh : "refresh-button";
-		
-		I left the event listener instead of doing
-		button.onclick = () => functionToCall;
-		because for some reason it didnt work. the event listener works fine, so...
-		*/
-		
-		const leaveButton = new CustomButton({content: "< Back", action : false,
-		style: {
-			position: "absolute",
-			bottom: "30px",
-			left: "50px",
-			padding: "0px 15px"
-		}});
-		leaveButton.onclick = () => navigateTo("/");
-		tournamentDiv.appendChild(leaveButton);
+        // Initial setup of the tournament table
+        await this.setupTournamentTable(tournamentDiv);
 
-		const refreshTournamentButton = this.tournamentTable.shadowRoot.getElementById('refresh-button');
-		refreshTournamentButton.addEventListener('click', async () => {
-			// Remove the existing tournament table from the DOM.
-			const tournamentDiv = document.querySelector('.tournament');
-			tournamentDiv.removeChild(this.tournamentTable);
-			
-			// Call the function to create a new tournament table.
-			this.tournamentTable = await this.getTournamentList();
-			this.tournamentTable.setAttribute('id', 'tournamentTable');
-			
-			// Re-append the new tournament table to the DOM.
-			tournamentDiv.appendChild(this.tournamentTable);
-		
-			// Re-attach the event listener to the create button on the new table.
-			const createTournamentButton = this.tournamentTable.shadowRoot.getElementById('create-button');
-			createTournamentButton.removeEventListener('click', this.createTournament);
-			createTournamentButton.addEventListener('click', this.createTournament);
-		
-		});
+        const leaveButton = new CustomButton({
+            content: "< Back", action: false,
+            style: {
+                position: "absolute",
+                bottom: "30px",
+                left: "50px",
+                padding: "0px 15px"
+            }
+        });
+        leaveButton.onclick = () => navigateTo("/");
+        tournamentDiv.appendChild(leaveButton);
+    }
 
-	}
+    async setupTournamentTable(tournamentDiv) {
+        if (this.tournamentTable) {
+            tournamentDiv.removeChild(this.tournamentTable);
+        }
+
+        this.tournamentTable = await this.getTournamentList();
+        this.tournamentTable.setAttribute('id', 'tournamentTable');
+        tournamentDiv.appendChild(this.tournamentTable);
+
+        const createTournamentButton = this.tournamentTable.shadowRoot.getElementById('create-button');
+        createTournamentButton.removeEventListener('click', this.createTournament);
+        createTournamentButton.addEventListener('click', this.createTournament);
+
+        const refreshTournamentButton = this.tournamentTable.shadowRoot.getElementById('refresh-button');
+        refreshTournamentButton.addEventListener('click', () => this.setupTournamentTable(tournamentDiv));
+    }
 
 	async getTournamentList() { 
 		//Create new table
