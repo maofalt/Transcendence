@@ -123,7 +123,7 @@ class TournamentListCreate(generics.ListCreateAPIView):
             nbr_of_player_match=input_data['nbr_of_player_match'],
             host=host,
             setting=match_setting,
-            created_at=timezone.now(),
+            created_at=timezone.now().timestamp()
         )
         
         tournament.players.add(host)
@@ -759,7 +759,7 @@ class TournamentMatchList(APIView):
             final_winner = matches.last().winner.username if matches.last().winner else None
             serializer = TournamentMatchListSerializer(data={
                 'tournament_name': tournament_name,
-                'date': tournament.created_at.timestamp(),
+                'date': tournament.created_at,
                 'round': matches.last().round_number + 1,
                 'winner': final_winner,
                 'nbr_player_setting': tournament.setting.nbr_of_player,
@@ -770,7 +770,7 @@ class TournamentMatchList(APIView):
         else:
             serializer = TournamentMatchListSerializer(data={
                 'tournament_name': tournament.tournament_name,
-                'date': tournament.created_at.timestamp(),
+                'date': tournament.created_at,
                 'winner': None,
                 'matches': []
             })
