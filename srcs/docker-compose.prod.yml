@@ -1,5 +1,4 @@
 # docker-compose.yml
-version: '3.8'
 
 services:
   js-dev:
@@ -17,3 +16,8 @@ services:
       options:
         max-size: "1m"
         max-file: "3"
+
+  game:
+    build:
+      context: ./requirements/game/
+      dockerfile: Dockerfile

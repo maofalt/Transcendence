@@ -118,48 +118,21 @@ def get_user(request):
 @permission_classes([AllowAny])
 # call this function from frontend everytime user calls any API
 def check_refresh(request):
-    accessToken = request.headers.get('Authorization', None)
     refreshToken = request.COOKIES.get('refreshToken', None)
-    # print("accessToken print: ", str(accessToken))
 
-    if not accessToken:
-        return JsonResponse({'error': 'Authorization header is missing'}, status=400)
     if not refreshToken:
         return JsonResponse({'error': 'Refresh token is missing'}, status=400)
     
     exp_datetime = None
-    try:
-        decoded_token = jwt.decode(accessToken.split()[1], settings.SECRET_KEY, algorithms=["HS256"])
-        # print("decoded_token: ", decoded_token)
-        local_tz = pytz.timezone('Europe/Paris')
-        exp_timestamp = decoded_token['exp']
-        exp_datetime = datetime.datetime.fromtimestamp(exp_timestamp, tz=pytz.utc).astimezone(local_tz).strftime('%Y-%m-%d %H:%M:%S')
-        print("exp_datetime: ", exp_datetime)
+    response = refresh_accessToken(request, refreshToken)
+    return response
 
-        response = refresh_accessToken(request, accessToken, refreshToken)
-        return response
-        # return JsonResponse({'message': 'Access token is still valid'})
-
-    except jwt.ExpiredSignatureError:
-        print("Access token has expired")
-        response_data = refresh_accessToken(request, accessToken, refreshToken)
-        response = JsonResponse(response_data)
-        return response        
-
-    except jwt.InvalidTokenError:
-        print("from here>>??")
-        print("Invalid token")
-        return JsonResponse({'error': 'Invalid token'}, status=401)
-
-    except Exception as e:
-        print("An error occurred:", e)
-        return JsonResponse({'error': 'An error occurred while processing the request'}, status=500)
 
 @ensure_csrf_cookie
 @csrf_protect
 @authentication_classes([])
 @permission_classes([AllowAny])
-def refresh_accessToken(request, accessToken, refreshToken):
+def refresh_accessToken(request, refreshToken):
     try:
         decoded_refresh_token = jwt.decode(refreshToken, settings.SECRET_KEY, algorithms=["HS256"])
         # print("DECODED REFRESHTOKEN: ", decoded_refresh_token)
@@ -167,13 +140,14 @@ def refresh_accessToken(request, accessToken, refreshToken):
         user = get_object_or_404(User, pk=uid)
         local_tz = pytz.timezone('Europe/Paris')
         user.last_valid_time = timezone.now()
+        user.save()
         last_valid_time = user.last_valid_time.timestamp()
         print_time = datetime.datetime.fromtimestamp(last_valid_time, tz=pytz.utc).astimezone(local_tz).strftime('%Y-%m-%d %H:%M:%S')
         print("User last_valid_time updated: ", print_time)
         # user.last_valid_time = timezone.now().replace(microsecond=0)
-        user.save()
+        
         refresh = RefreshToken(refreshToken)
-        access_token_lifetime = timezone.now() + timedelta(minutes=6)  
+        access_token_lifetime = timezone.now() + timedelta(minutes=3)  
         access = refresh.access_token
         access['username'] = user.username
         access['exp'] = int(access_token_lifetime.replace(tzinfo=pytz.UTC).timestamp())
@@ -250,7 +224,7 @@ def api_login_view(request):
 @authentication_classes([])
 @permission_classes([AllowAny])
 def generate_tokens_and_response(request, user):
-    access_token_lifetime = timezone.now() + timedelta(minutes=6)  
+    access_token_lifetime = timezone.now() + timedelta(minutes=3)  
     accessToken = AccessToken.for_user(user)
     accessToken['username'] = user.username
     accessToken['exp'] = int(access_token_lifetime.replace(tzinfo=pytz.UTC).timestamp())
@@ -603,7 +577,8 @@ def friends_view(request):
         local_tz = pytz.timezone('Europe/Paris')
         print_time = datetime.datetime.fromtimestamp(last_valid_time, tz=pytz.utc).astimezone(local_tz).strftime('%Y-%m-%d %H:%M:%S')
         print("Freinds : last_valid_time: ", print_time)
-        if friend.is_online == True and (current_time - last_valid_time) > 360:
+        print("difference: ", (current_time - last_valid_time))
+        if friend.is_online == True and (current_time - last_valid_time) > 185:
             friend_info['is_online'] = False
             friend.is_online = False
             friend.save()

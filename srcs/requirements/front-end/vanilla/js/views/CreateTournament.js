@@ -19,6 +19,23 @@ export default class CreateTournament extends AbstractView {
 		this.addPlayerDataToGameSettings = this.addPlayerDataToGameSettings.bind(this);
 		this.getGameSettingsFromForm = this.getGameSettingsFromForm.bind(this);
 		this.handleSubmit = this.handleSubmit.bind(this);
+
+		this.scifiCharacters = [
+			"Luke", "Leia", "Han", "Spock", "Kirk", "Picard",
+			"Darth Vader", "Ripley", "Neo", "Trinity", "Morpheus", 
+			"Terminator", "Mulder", "Scully", "HAL", "R2-D2",
+			"C-3PO", "Gandalf", "Frodo", "Harry Potter"
+		];
+		
+		this.funnyAdjectives = [
+			"The Slow", "The Clumsy", "The Quirky", "The Silly", 
+			"The Confused", "The Mysterious", "The Sassy",
+			"The Geeky", "The Sleepy", "The Jumpy", "The Snarky",
+			"The Curious", "The Grumpy", "The Shiny", "The Cosmic",
+			"The Witty", "The Quaint", "The Zany", "The Unruly", 
+			"The Cheerful"
+		];
+		
 		// this.game = new Game();
 		// document.getElementById('gameContainer').removeChild(this.game.shadowRoot.querySelector("#leave-button"));
 	}
@@ -169,7 +186,6 @@ export default class CreateTournament extends AbstractView {
 			}
 			await this.addPlayerDataToGameSettings(gameSettings, [], gameSettings.gamemodeData.nbrOfPlayers);
 			console.log('Game settings from form:', gameSettings);
-			// gameSettings.match_id = await this.generateMatchID(gameSettings);
 			return gameSettings;
 		} catch (error) {
 			console.log('ball color from form:', document.getElementById('ball_color').value);
@@ -178,37 +194,34 @@ export default class CreateTournament extends AbstractView {
 		
 	}
 
-	// Add dummy players data in gameSetting depending on the number of players
 	async addPlayerDataToGameSettings(gameSettings, playerNames=[], nbrOfPlayers=3) {
-
-		let colorList = ['0x0000ff', '0xff0000', '0x00ff00', '0x00ffff', '0xff00ff', '0xffff00', '0xff00a0', '0xffa000']
-		try {
-				const responseUser = await makeApiRequest(`/api/user_management/auth/getUser`,'GET');
-				console.log('User  tata:', responseUser.body);
-				
-		const userName = responseUser.body.username;
-		playerNames.push(userName);
-		let dummyPlayeName = 'playerdesd';
-		let dummyPlayerColor = '0x00ff00';
+		let colorList = ['0x0000ff', '0xff0000', '0x00ff00', '0x00ffff', '0xff00ff', '0xffff00', '0xff00a0', '0xffa000'];
 	
-		while (playerNames.length < nbrOfPlayers){
-			playerNames.push(dummyPlayeName + playerNames.length);
+		try {
+			const responseUser = await makeApiRequest(`/api/user_management/auth/getUser`, 'GET');
+			const userName = responseUser.body.username;
+			playerNames.push(userName);
+	
+			// Ensure there are enough player names according to the number of players needed
+			while (playerNames.length < nbrOfPlayers) {
+				const randomChar = this.scifiCharacters[Math.floor(Math.random() * this.scifiCharacters.length)];
+				const randomAdj = this.funnyAdjectives[Math.floor(Math.random() * this.funnyAdjectives.length)];
+				playerNames.push(`${randomChar} ${randomAdj}`);
+			}
+	
+			playerNames.forEach((playerName, i) => {
+				let dummyPlayer = {
+					"accountID": playerName,
+					"color": colorList[i % colorList.length],
+				};
+				gameSettings.playersData.push(dummyPlayer);
+			});
+			console.log('Game settings with sci-fi character names:', gameSettings);
+		} catch (error) {
+			console.error('Failed to add player data to game settings:', error);
 		}
-		let i = 0;
-		playerNames.forEach((playerName) => {
-			let dummyPlayer = {
-			"accountID": playerName,
-			"color": colorList[i % colorList.length - 1],
-			}
-			console.log(colorList[i % colorList.length - 1]);
-			gameSettings.playersData.push(dummyPlayer);
-			i++;
-		});
-		console.log('Game settings automaticallysadadasdadad:', gameSettings);
-			} catch (error) {
-				console.error('Failed to join tournament:', error);
-			}
 	}
+	
 
 	async getBasicGameSettings() {
 		let gameSettings = {
