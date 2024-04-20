@@ -5,6 +5,7 @@ from django.db import migrations, models
 from django.utils import timezone
 from manage_tournament.models import Tournament, MatchSetting
 
+
 def create_random_game_setting(account_id):
     game_setting = {
         "nbr_of_player": random.randint(2, 8),
@@ -30,7 +31,7 @@ def create_tournament(apps, schema_editor):
     MatchSetting = apps.get_model('manage_tournament', 'MatchSetting')
     Tournament = apps.get_model('manage_tournament', 'Tournament')
 
-    players = ['motero', 'motero2', 'jisu', 'jisu2', 'znogueira', 'znogueira2', 'amanda', 'amanda2', 'yoel', 'yoel2']
+    players = ['motero', 'jisu', 'znogueira', 'amanda', 'yoel', 'motero2', 'jisu2', 'znogueira2', 'amanda2', 'yoel2']
     for i, player_username in enumerate(players):
         #create player or get it if it already exists
         host_player, _ = Player.objects.get_or_create(id=i+1, username=player_username, defaults={'total_played': 0})
@@ -40,9 +41,10 @@ def create_tournament(apps, schema_editor):
         match_setting = MatchSetting.objects.create(**game_setting)
 
         #create tournament
+        nbr_of_players_total = random.randint(game_setting['nbr_of_player'], 20)
         tournament = Tournament.objects.create(
             tournament_name=f'TEST_{i+1}',
-            nbr_of_player_total=random.randint(game_setting['nbr_of_player'], 100),
+            nbr_of_player_total=nbr_of_players_total,
             nbr_of_player_match=game_setting['nbr_of_player'],
             setting=match_setting,
             registration_period_min=random.randint(5, 60),
@@ -51,17 +53,22 @@ def create_tournament(apps, schema_editor):
 
         #add host player to the tournament
         tournament.players.add(host_player)
+        nbr_of_players_assigned = min(len(players), nbr_of_players_total)
+        print(f'Nbr of players total: {nbr_of_players_total}  /  len(players): {len(players)}')
+        print(f'Nbr of players assigned: {nbr_of_players_assigned}')
         for i, player_username in enumerate(players):
             if player_username != host_player.username:
+                print(f"host: {host_player.id} : {host_player.username}  player: {player_username}")
                 player, _ = Player.objects.get_or_create(id=i+1, username=player_username, defaults={'total_played': 0})
-                tournament.players.add(player)
-                tournament.save()
+                if tournament.players.count() < nbr_of_players_assigned:
+                    tournament.players.add(player)
+                    tournament.save()
         print(f'Tournament {tournament.tournament_name} created with host player {host_player.username}')
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('manage_tournament', '0006_matchsetting_ball_model_matchsetting_ball_texture_and_more'),
+        ('manage_tournament', '0001_initial'),
     ]
 
     operations = [

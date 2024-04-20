@@ -123,7 +123,7 @@ class TournamentListCreate(generics.ListCreateAPIView):
             nbr_of_player_match=input_data['nbr_of_player_match'],
             host=host,
             setting=match_setting,
-            created_at=timezone.now(),
+            created_at=timezone.now().timestamp()
         )
         
         tournament.players.add(host)
