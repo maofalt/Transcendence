@@ -67,7 +67,7 @@ services:
     container_name: game
     build: 
       context: ./requirements/game/
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     env_file:
       - .env
     networks:

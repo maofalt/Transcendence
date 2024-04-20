@@ -20,4 +20,4 @@ services:
   game:
     build:
       context: ./requirements/game/
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
