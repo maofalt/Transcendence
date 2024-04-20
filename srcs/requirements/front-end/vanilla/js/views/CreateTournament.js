@@ -186,7 +186,9 @@ export default class CreateTournament extends AbstractView {
 				const responseUser = await makeApiRequest(`/api/user_management/auth/getUser`,'GET');
 				console.log('User  tata:', responseUser.body);
 				
-		const userName = responseUser.body.username;
+		this.user = JSON.parse(sessionStorage.getItem("userDetails"));
+		// const userName = responseUser.body.username;
+		const userName = this.user.username;
 		playerNames.push(userName);
 		let dummyPlayeName = 'playerdesd';
 		let dummyPlayerColor = '0x00ff00';
