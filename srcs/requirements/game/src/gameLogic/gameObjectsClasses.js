@@ -140,6 +140,7 @@ class Data {
         this.timeLimit = null;
         this.gameCountDown = null;
         this.countDownDisplay = null;
+        this.consecutiveWallHits = 0;
 
         // get the gamemode info from the lobby data;
         this.gamemode = new GameMode(lobbyData.gamemodeData);
