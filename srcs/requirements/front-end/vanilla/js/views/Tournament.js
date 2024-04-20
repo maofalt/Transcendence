@@ -67,7 +67,10 @@ export default class Tournament extends AbstractView {
 
         const refreshTournamentButton = this.tournamentTable.shadowRoot.getElementById('refresh-button');
         refreshTournamentButton.addEventListener('click', () => this.setupTournamentTable(tournamentDiv));
-    }
+
+		const manageTournamentButton = this.tournamentTable.shadowRoot.getElementById('manage-button');
+		manageTournamentButton.addEventListener('click', () => { this.tournamentTable.filterByHost(); });
+    } 
 
 	async getTournamentList() { 
 		//Create new table
