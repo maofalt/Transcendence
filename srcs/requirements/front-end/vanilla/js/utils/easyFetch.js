@@ -45,10 +45,12 @@ export default async function easyFetch(url, options = { method: 'GET', body: nu
 			window.location.href = '/login';
 		}
 
-		if (response.headers.get("content-length") === "0") {
+		if (response.status === 204 || response.headers.get("content-length") === "0") {
 			return {
 				response,
-				body: null
+				body: {
+					message: "success",
+				}
 			};
 		}
 
