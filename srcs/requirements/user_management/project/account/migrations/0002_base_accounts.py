@@ -8,7 +8,7 @@ import jwt
 
 def create_users(apps, schema_editor):
     User = get_user_model()
-    usernames = ['motero', 'jisu', 'znogueira', 'amanda', 'yoel']
+    usernames = ['motero', 'jisu', 'znogueira', 'amanda', 'yoel', 'motero2', 'jisu2', 'znogueira2', 'amanda2', 'yoel2']
     for username in usernames:
         
         playername ='default user'
@@ -17,9 +17,12 @@ def create_users(apps, schema_editor):
         email = 'maofalt@gmail.com'
         if email:
             encoded_email = jwt.encode({'email': email}, settings.SECRET_KEY, algorithm='HS256')
-            
-        User.objects.create_user(username=username, playername=encoded_playername, email=encoded_email, password=f'{username}123456!')
-        User.objects.create_user(username=f'{username}2', playername=encoded_playername, email=encoded_email, password=f'{username}123456!')
+        
+        if username.endswith('2'):
+            username_without_suffix = username[:-1]
+        else:
+            username_without_suffix = username
+        User.objects.create_user(username=username, playername=encoded_playername, email=encoded_email, password=f'{username_without_suffix}123456!')
         
 class Migration(migrations.Migration):
 
