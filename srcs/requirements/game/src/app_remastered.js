@@ -377,10 +377,12 @@ game.on('connection', (client) => {
 				// 		postMatchResult(client.matchID, match.gameState.winner.accountID);
 				// 	}
 				// }
-				data = null;
-				match.gameState = null;
-				clearInterval(match.gameInterval);
-				matches.delete(client.matchID);
+				// data = null;
+				// match.gameState = null;
+				if (match) {
+					clearInterval(match.gameInterval);
+					matches.delete(client.matchID);
+				}
 				// console.log("SENDING CLEAN MSG");
 				// client.emit("clean-all");
 			}
