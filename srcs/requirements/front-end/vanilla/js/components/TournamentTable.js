@@ -125,7 +125,7 @@ class TournamentTable extends BaseTable {
     async processTournament(tournament) {
         const participants = await this.fetchTournamentParticipants(tournament.id);
         tournament.is_in_tournament = participants.players_username.includes(this.userName);
-        console.log('Tournament name: ', tournament.tournament_name);
+        //console.log('Tournament name: ', tournament.tournament_name);
         const tournamentNameElement = this.createTournamentNameElement(tournament);
         const hostElement = await this.createHostElement(tournament.host_name);
         const numberOfPlayersElement = this.createNumberOfPlayersElement(tournament);
