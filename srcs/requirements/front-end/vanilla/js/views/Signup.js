@@ -119,11 +119,12 @@ export default class Signup extends AbstractComponent {
 		let privacyPolicyBlock = this.createPrivacyBlock({
 			title: "Terms and Conditions",
 			content: privacyPolicyHtml,
-			// indicators: {
-			//   emptyIndicator: ["Please agree to the Privacy Policy", () => privacyPolicyBlock.input.getValue() != ""],
-			// },
+			// content: "hello",
+			indicators: {
+				acceptIndicator: ["Please agree to the Privacy Policy", () => privacyPolicyBlock.input.getValue() != ""],
+			},
 			type: "checkbox"
-		  });
+		});
 
 		/* Verify Code */
 		let verifyCodeBlock = new InputAugmented({
@@ -472,7 +473,12 @@ export default class Signup extends AbstractComponent {
 	createPrivacyBlock(options) {
 		const privacyBlock = document.createElement("div");
 		privacyBlock.style.setProperty("width", "100%");
-		privacyBlock.style.setProperty("height", "200px");
+		privacyBlock.style.setProperty("display", "flex");
+		privacyBlock.style.setProperty("margin-bottom", "20px");
+		privacyBlock.style.setProperty("margin-top", "0px");
+		privacyBlock.style.setProperty("flex-direction", "column");
+		privacyBlock.style.setProperty("align-items", "center");
+		privacyBlock.style.setProperty("justify-content", "space-between");
 
 		const privacyTitle = document.createElement("p");
 		privacyTitle.id = "privacy-title";
@@ -480,6 +486,14 @@ export default class Signup extends AbstractComponent {
 		privacyTitle.style.setProperty("font-size", "32px");
 		privacyTitle.style.setProperty("margin", "15px 0px 10px 0px");
 		
+		const privacyDesc = document.createElement("p");
+		privacyDesc.id = "privacy-desc";
+		privacyDesc.innerHTML = options.content;
+		privacyDesc.style.setProperty("width", "100%");
+		privacyDesc.style.setProperty("font-size", "14px");
+		privacyDesc.style.setProperty("overflow-y", "auto");
+		privacyDesc.style.setProperty("height", "200px");
+
 		const checkBox = document.createElement("input");
 		checkBox.type = options.type || "checkbox";
 		checkBox.id = "privacy-checkbox";
@@ -487,28 +501,34 @@ export default class Signup extends AbstractComponent {
 		checkBox.style.setProperty("height", "24px");
 		checkBox.style.setProperty("margin-right", "15px");
 
-		const privacyDesc = document.createElement("p");
-		privacyDesc.id = "privacy-desc";
-		privacyDesc.textContent = options.content;
-		privacyDesc.style.setProperty("width", "100%");
-		privacyDesc.style.setProperty("font-size", "14px");
+		const checkLable = document.createElement("label");
+		checkLable.textContent = "I agree to the Terms and Conditions";
+		checkLable.for = "privacy-checkbox";
 
 		const acceptPrivacyBlock = document.createElement("div");
 		acceptPrivacyBlock.style.setProperty("width", "100%");
-		acceptPrivacyBlock.style.setProperty("height", "50px");
-		acceptPrivacyBlock.style.setProperty("margin", "10px 0px 10px 0px");
 		acceptPrivacyBlock.style.setProperty("display", "flex");
 		acceptPrivacyBlock.style.setProperty("flex-direction", "row");
 		acceptPrivacyBlock.style.setProperty("justify-content", "center");
 		acceptPrivacyBlock.style.setProperty("align-items", "center");
+		acceptPrivacyBlock.style.setProperty("margin", "10px 0px");
 		
-		const privacyPolicy = new CustomButton({ content: options.content || "Privacy Policy", action: false });
+		// const privacyPolicy = new CustomButton({ content: "Privacy Policy", action: false });
 
-		acceptPrivacyBlock.appendChild(checkBox);
-		acceptPrivacyBlock.appendChild(privacyDesc);
 		privacyBlock.appendChild(privacyTitle);
-		privacyBlock.appendChild(privacyPolicy);
+		privacyBlock.appendChild(privacyDesc);
+		acceptPrivacyBlock.appendChild(checkBox);
+		acceptPrivacyBlock.appendChild(checkLable);
+
 		privacyBlock.appendChild(acceptPrivacyBlock);
+
+		privacyBlock.validate = async () => {
+			if (!checkBox.checked) {
+				displayPopup("Please agree to the Privacy Policy", "error");
+				return false;
+			}
+			return true;
+		}
 
 		return privacyBlock;
 	}
