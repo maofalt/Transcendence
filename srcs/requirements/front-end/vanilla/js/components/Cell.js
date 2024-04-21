@@ -6,7 +6,7 @@ class Cell {
     }
   
     updateValue(newValue) {
-      //console.log('Cell updateValue', newValue);
+      //// console.log('Cell updateValue', newValue);
       this.domElement.innerHTML = '';
       if (newValue instanceof HTMLElement) {
         this.domElement.appendChild(newValue);

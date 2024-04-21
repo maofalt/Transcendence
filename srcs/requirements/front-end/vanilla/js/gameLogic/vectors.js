@@ -94,7 +94,7 @@ export class Vector {
 export function segmentsIntersect(p1, p2, p3, p4) {
 	let a, b, c;
 
-	// console.log(`${p1.x} ${p1.y},
+	// // console.log(`${p1.x} ${p1.y},
 	// ${p2.x} ${p2.y},
 	// ${p3.x} ${p3.y},
 	// ${p4.x} ${p4.y}
@@ -108,7 +108,7 @@ export function segmentsIntersect(p1, p2, p3, p4) {
 	c = Math.fround((p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x));
 	c = (c < 0.000001 && c > -0.000001) ? 0 : c;
 	
-	// console.log(`a = ${a}, b = ${b}, c = ${c}\n`);
+	// // console.log(`a = ${a}, b = ${b}, c = ${c}\n`);
 
 	if (a == 0 || b == 0) {
 		return (-1);
@@ -118,7 +118,7 @@ export function segmentsIntersect(p1, p2, p3, p4) {
 	let alpha = Math.fround(b / a);
 	let beta = Math.fround(c / a);
 
-	// console.log(`alpha = ${alpha}, beta = ${beta}\n`);
+	// // console.log(`alpha = ${alpha}, beta = ${beta}\n`);
 
 	if (alpha <= 1 && alpha >= 0 && beta <= 1 && beta >= 0) {
 		return (alpha);

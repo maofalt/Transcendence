@@ -9,7 +9,6 @@ export default function displayPopup(message, infoType, sticky=false, onClick=nu
 	container.appendChild(info);
 	// anim.transition(info, [['transform', 'scale(0.5)', 'scale(1)'], ['opacity', 0, 1]]);
 	anim.slideIn(info, 500, 'block');
-	console.log('click:', onClick);
 	if (onClick) {
 		info.onclick = () => {
 			onClick(info);

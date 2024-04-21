@@ -19,7 +19,6 @@ import gameSettings from '@gameLogic/gameSettings.json';
 // importing game logic code :
 import lobbySettings from '@gameLogic/lobbySettings.js';
 import { initLobby, initFieldShape } from '@gameLogic/init.js';
-import debugDisp from '@gameLogic/debugDisplay.js';
 import render from '@gameLogic/rendering.js';
 // import { initFieldShape } from "../gameLogic/init";
 
@@ -33,7 +32,7 @@ function createCallTracker() {
   
 	  if (lastCallTime !== 0) { // Check if this is not the first call
 		elapsedTime = now - lastCallTime; // Calculate time since last call
-		// console.log(`Time since last call: ${elapsedTime} ms`);
+		// // console.log(`Time since last call: ${elapsedTime} ms`);
 	  }
   
 	  lastCallTime = now; // Update last call time to the current time for the next call
@@ -66,7 +65,7 @@ export default class BasicGameV2 extends AbstractComponent {
 	constructor(screenWidth, screenHeight) {
 		super();
 		this.loader = new GLTFLoader();
-		// console.log("Game View created with matchID: ", query);
+		// // console.log("Game View created with matchID: ", query);
 		// this.query = 'matchID=' + query;
 		
         this.match = {};
@@ -115,7 +114,6 @@ export default class BasicGameV2 extends AbstractComponent {
 
 		this.screenWidth = screenWidth || window.innerWidth;
 		this.screenHeight = screenHeight || window.innerHeight;
-		console.log("Screen size: ", this.screenWidth, this.screenHeight);
 	};
 
 	disconnectedCallback() {
@@ -124,7 +122,6 @@ export default class BasicGameV2 extends AbstractComponent {
 	}
 
 	connectedCallback() {
-		console.log("init Game View...");
 		// Set up the game container
 		this.container = document.createElement('div');
         this.container.id = 'game-container';
@@ -180,9 +177,7 @@ export default class BasicGameV2 extends AbstractComponent {
 		window.addEventListener('resize', this.onWindowResize.bind(this), false);
 		window.addEventListener("keydown", this.handleKeyPress.bind(this));
 		window.addEventListener("keyup", this.handleKeyRelease.bind(this));
-        console.log("Game View initialized");
 
-        console.log(this.match);
         this.localconnection();
 	};
 
@@ -193,12 +188,12 @@ export default class BasicGameV2 extends AbstractComponent {
 	};
 
 	handleKeyPress(event) {
-		// console.log(event.key);
+		// // console.log(event.key);
 		if (event.key == "s")
 			this.localmoveUp(0);
 		if (event.key == "w")
 			this.localmoveDown(0);
-		// console.log("KEYYYYYY: ", event.key);
+		// // console.log("KEYYYYYY: ", event.key);
 		if (event.key == "ArrowUp")
 			this.localmoveUp(1);
 		if (event.key == "ArrowDown")
@@ -228,7 +223,7 @@ export default class BasicGameV2 extends AbstractComponent {
 	localgenerate = (data) => {
 		// Generate scene and update it
 		data.playersArray = Object.values(data.players);
-		// console.log("data : ", data);
+		// // console.log("data : ", data);
 		this.generateScene(data, this.socket);
 		this.updateScene(data, this.socket);
 		this.renderer.render(this.scene, this.camera);
@@ -237,21 +232,21 @@ export default class BasicGameV2 extends AbstractComponent {
 	localrender = (data) => {
 		data.playersArray = Object.values(data.players);
 		// if (data.ball.model && this.ballModel) {
-			//console.log("Rendering Frame...");
+			//// console.log("Rendering Frame...");
 			this.updateScene(data);
 		// }
-		// console.log("FPS: " + 1000 / callTracker() + "fps");
+		// // console.log("FPS: " + 1000 / callTracker() + "fps");
 		// fps = 1000 / callTracker();
 		this.renderer.render(this.scene, this.camera);
 	};
 
 	localdestroy = (data) => {
 		this.scene.clear();
-		console.log("DESTROY SCENE");
+		// console.log("DESTROY SCENE");
 	}
 
 	localrefresh = (data) => {
-		// console.log("REFRESH SCENE");
+		// // console.log("REFRESH SCENE");
 		data.playersArray = Object.values(data.players);
 		this.refreshScene(data);
 	}
@@ -260,11 +255,11 @@ export default class BasicGameV2 extends AbstractComponent {
 		this.socket.emit('pong', timestamp);
 		let str = `Ping: ${latency}ms - FPS: ${fps.toFixed(1)}`;
 		document.title = str;
-		//console.log(str);
+		//// console.log(str);
 	};
 
 	cleanAll() {
-		console.log("CLEANING CLIENT !!");
+		// console.log("CLEANING CLIENT !!");
 		// Cleanup logic here (remove event listeners, etc.)
 		window.removeEventListener('resize', this.onWindowResize.bind(this));
 		window.removeEventListener("keydown", this.handleKeyPress.bind(this));
@@ -362,9 +357,9 @@ export default class BasicGameV2 extends AbstractComponent {
 		uiLayer.style.background = `rgba(0, 0, 0, ${frame / (maxFrame * 1.8)})`;
 		uiLayer.style.opacity = frame / maxFrame;
 		uiLayer.style.backdropFilter = `blur(${frame / maxFrame * 16}px)`;
-		// console.log(`blur(${frame / maxFrame * 16}px)`);
+		// // console.log(`blur(${frame / maxFrame * 16}px)`);
 		if (frame == maxFrame) {
-			console.log("End of Game !!");
+			// console.log("End of Game !!");
 			return ;
 		}
 
@@ -398,7 +393,6 @@ export default class BasicGameV2 extends AbstractComponent {
 	}
 
 	generateScene(data, socket) {
-		console.log("Generating Scene...");
 
 		this.renderer = new THREE.WebGLRenderer({ alpha: true, antialias: false });
 
@@ -414,7 +408,7 @@ export default class BasicGameV2 extends AbstractComponent {
 		// get the direction to later rotate the scene relative to the current client
 		// for (let i=0; i<data.playersArray.length; i++) {
 		// 	if (data.playersArray[i].socketID == socket.id) {
-		// 		console.log(`socket : ${data.playersArray[i].socketID}, client : ${socket.id}, ${i}, angle = ${data.playersArray[i].paddle.angle}`);
+		// 		// console.log(`socket : ${data.playersArray[i].socketID}, client : ${socket.id}, ${i}, angle = ${data.playersArray[i].paddle.angle}`);
 		// 		this.dir = i
 		// 	}
 		// }
@@ -444,7 +438,7 @@ export default class BasicGameV2 extends AbstractComponent {
 	updateScene(data, socket) {
 		this.displayTimer(data);
 
-		// console.log("Updating Scene...");
+		// // console.log("Updating Scene...");
 		// if (data.ball.model) {
 		// 	this.ballModel.position.set(data.ball.pos.x, data.ball.pos.y, 0);
 		// 	this.ballModel.rotateX((-Math.PI / 20) * data.ball.sp);
@@ -508,7 +502,6 @@ export default class BasicGameV2 extends AbstractComponent {
 
 			this.refreshScores(data);
 
-			console.log("Normal Font loaded");
 
 		} );
 
@@ -538,7 +531,6 @@ export default class BasicGameV2 extends AbstractComponent {
 		const scoreText = player.score.toString();
 		const ppRadius = 2;
 
-		console.log("Creating score: " + scoreText + " for player " + i + " with dir: " + this.dir);
 		// this.textSettings.font = this.textSettings.fontNormal;
 		const profilePicGeo = new THREE.SphereGeometry(ppRadius, 12, 24);
 		const loginGeo = new TextGeometry(loginText, this.textSettings);
@@ -605,12 +597,12 @@ export default class BasicGameV2 extends AbstractComponent {
 
 	refreshScores(data) {
 		if (!data || !data.playersArray || !this.textSettings || !this.textSettings.font)
-			return console.log("Data or font not found");
+			return // console.log("Data or font not found");
 
 		data.playersArray.forEach((player, index) => {
 
 			if (this.prevScores[index] != player.score) {
-				// console.log("Refreshing score: " + player.score + " for player " + index);
+				// // console.log("Refreshing score: " + player.score + " for player " + index);
 				if (this.scores[index])
 					this.scene.remove(this.scores[index]);
 				this.createScore(data, player, index);
@@ -641,7 +633,6 @@ export default class BasicGameV2 extends AbstractComponent {
 	async loadBallModel(data) {
 		// Load the model
 		this.loadModel(`public/assets/3D_Models/${data.ball.model}/scene.gltf`).then((model) => {
-			console.log("MODEL LOADED", model);
 
 			// Assign the loaded model to this.ballModel
 			this.ballModel = model;
@@ -666,11 +657,11 @@ export default class BasicGameV2 extends AbstractComponent {
 		let ballMaterial;
 
 		// if (data.ball.model) {
-		// 	console.log("LOAD STUFF");
+		// 	// console.log("LOAD STUFF");
 		// 	this.loadBallModel(data);
 		// 	return ;
 		// }
-		// console.log("DIDNT LOADGE");
+		// // console.log("DIDNT LOADGE");
 		// if (data.ball.texture != "") {
 		// 	ballTexture = new THREE.TextureLoader().load(`public/assets/images/${data.ball.texture}`);
 		// 	ballMaterial = new THREE.MeshPhongMaterial({ map: ballTexture, transparent: false, opacity: 0.7 });
@@ -702,7 +693,7 @@ export default class BasicGameV2 extends AbstractComponent {
 		}
 		const wallGeometry = new THREE.BoxGeometry(data.field.wallsSize, 1, 2);
 		const wallMaterial = new THREE.MeshBasicMaterial({ color: data.ball.col, transparent: true, opacity: 1, reflectivity: 0.5 });
-		// console.log("number of players : ", data.gamemode.nbrOfPlayers);
+		// // console.log("number of players : ", data.gamemode.nbrOfPlayers);
 		for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
 			this.walls[i] = new THREE.Mesh(wallGeometry, wallMaterial); // create Material
 			this.scene.add(this.walls[i]); // add mesh to the scene
@@ -712,7 +703,7 @@ export default class BasicGameV2 extends AbstractComponent {
 	}
 
 	generateGoals(data) {
-		// console.log("number of players : ", data.gamemode.nbrOfPlayers);
+		// // console.log("number of players : ", data.gamemode.nbrOfPlayers);
 		for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
 			const top = data.field.walls[i].top;
 			const bottom = data.field.walls[(i + 1) % data.gamemode.nbrOfPlayers].bottom;
@@ -849,15 +840,12 @@ export default class BasicGameV2 extends AbstractComponent {
 
     handleConnectionV2() {
 
-        console.log("\nCLIENT CONNECTED\n");
+        // console.log("\nCLIENT CONNECTED\n");
     
-        // console.log('---DATA---\n', this.match.gameState, '\n---END---\n');
         this.localgenerate(this.match.gameState);
-        console.log("handleconnection",this.match);
         
         this.match.gameInterval = setInterval(this.waitingRoom.bind(this), 20);
 
-        console.log(`Player connected with ID: `);
     
         // client.emit('generate', data);
         // debugDisp.displayData(this.match.gameState);
@@ -865,28 +853,25 @@ export default class BasicGameV2 extends AbstractComponent {
     
     // Set up Socket.IO event handlers
     localconnection = () => {
-        // console.log("Socket connected");
         this.initMatch();
-        // console.log("localconnection",this.match);
         //handle client connection and match init + players status
-        // console.log("\nclient:\n", client.decoded);
         this.data = this.match.gameState;
         this.handleConnectionV2();
     }
     
     // player controls
     localmoveUp = (playerindex) => {
-        // console.log(`client moving up`);
+        // // console.log(`client moving up`);
         let player = this.data.playersArray[playerindex];
-        // console.log("player: ", player);
-        // console.log("data: ", this.data);
+        // // console.log("player: ", player);
+        // // console.log("data: ", this.data);
         if (player && player.paddle && !player.paddle.dashSp) {
             player.paddle.currSp = player.paddle.sp;
         }
     }
     
     localmoveDown = (playerindex) => {
-        // console.log(`client moving down`);
+        // // console.log(`client moving down`);
         let player = this.data.playersArray[playerindex];
         if (player && player.paddle && !player.paddle.dashSp) {
             player.paddle.currSp = -player.paddle.sp;
@@ -894,7 +879,7 @@ export default class BasicGameV2 extends AbstractComponent {
     }
     
     localdash = (playerindex) => {
-        // console.log(`client dashing`);
+        // // console.log(`client dashing`);
         let player = this.data.playersArray[playerindex];
         if (player && player.paddle && !player.paddle.dashSp) {
             if (player.paddle.currSp == 0) {
@@ -907,7 +892,7 @@ export default class BasicGameV2 extends AbstractComponent {
     }
     
     localstop = (playerindex) => {
-        // console.log(`client stopping`);
+        // // console.log(`client stopping`);
         let player = this.data.playersArray[playerindex];
         if (player && player.paddle && !player.paddle.dashing) {
             player.paddle.currSp = 0;
@@ -922,13 +907,12 @@ export default class BasicGameV2 extends AbstractComponent {
         if (player)
             player.connected = false;
         if (this.data.connectedPlayers < 1) {
-            console.log("CLEARING INTERVAL");
             clearInterval(this.match.gameInterval);
             this.cleanAll();
             // matches.delete(client.matchID);
             // delete data;
         }
-        console.log(`Client disconnected with ID: ${client.id})`);
+        // console.log(`Client disconnected with ID: ${client.id})`);
     }
     
     // generateMatchID = (gameSettings) => {
@@ -943,7 +927,7 @@ export default class BasicGameV2 extends AbstractComponent {
         // Convert game settings to game state
         const gameState = initLobby(gameSettings);
         gameState.imminent = true;
-        console.log("\nMATCH CREATED\n");
+        // console.log("\nMATCH CREATED\n");
         this.match = { gameState: gameState, gameInterval: 0 };
     }
 
@@ -953,7 +937,7 @@ export default class BasicGameV2 extends AbstractComponent {
 		this.launchEndGameAnimation(data.winner);
 
         // this.scene.clear();
-        console.log("END OF GAME");
+        // console.log("END OF GAME");
     }
 
     gameLoop() {
@@ -975,7 +959,7 @@ export default class BasicGameV2 extends AbstractComponent {
     countDown(match, mins, secs) {
         if (!match.gameState.timeLimit) {
             match.gameState.timeLimit = Date.now() + ((mins * 60) + secs) * 1000;
-            console.log(`TIMER ENDS IN ${mins}:${secs}`);
+            // console.log(`TIMER ENDS IN ${mins}:${secs}`);
         }
     
         // calculate the remaining time
@@ -983,12 +967,12 @@ export default class BasicGameV2 extends AbstractComponent {
         let minutes = Math.floor(match.gameState.waitingRemainingTime / 60000);
         let seconds = Math.floor((match.gameState.waitingRemainingTime % 60000) / 1000);
         match.gameState.countDownDisplay = `${minutes < 10 ? "0" + minutes : minutes}:${seconds < 10 ? "0" + seconds : seconds}`;
-        // console.log(match.gameState.waitingRemainingTime);
-        // console.log(`MATCH ${matchID} STARTS IN ${minutes}:${seconds}`);
+        // // console.log(match.gameState.waitingRemainingTime);
+        // // console.log(`MATCH ${matchID} STARTS IN ${minutes}:${seconds}`);
     
         // if the countdown has finished, reset
         if (match.gameState.waitingRemainingTime <= 0) {
-            // console.log("Countdown finished");
+            // // console.log("Countdown finished");
             match.gameState.timeLimit = null;
             match.gameState.waitingRemainingTime = null;
             return 1;
@@ -997,7 +981,7 @@ export default class BasicGameV2 extends AbstractComponent {
     }
     
     waitingRoom() {
-        // console.log("waitingroom",this.match);
+        // // console.log("waitingroom",this.match);
 
         if (!this.match.gameState.imminent && !this.match.gameState.ongoing) {
             // this is called during the waiting of other players

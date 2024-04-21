@@ -114,7 +114,7 @@ export default class LoginPage extends AbstractComponent {
 	}
 	
 	buttonOnClick = (e, arg) => {
-		console.log(arg);
+		// console.log(arg);
 	}
 	
 	// Implement other methods or properties as needed
@@ -125,7 +125,7 @@ export default class LoginPage extends AbstractComponent {
 		}
 		if (e)
 			e.preventDefault();
-		console.log('values:', formData);
+		// console.log('values:', formData);
 		easyFetch('/api/user_management/auth/login', {
 			method: 'POST',
 			credentials: 'same-origin',

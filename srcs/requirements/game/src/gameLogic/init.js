@@ -1,5 +1,4 @@
 const objectsClasses = require('./gameObjectsClasses');
-const debugDisp = require('./debugDisplay');
 const { Vector } = require('./vectors');
 
 function initLoop(data, wallDist, goalDist, angle) {

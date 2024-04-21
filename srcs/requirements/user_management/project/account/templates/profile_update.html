@@ -79,7 +79,7 @@
         if (value.startsWith('33')) {
             value = value.slice(2);
         }
-        // console.log("[1]value: ", value, "formattedValue: ", formattedValue, "value.length: ", value.length )
+        // // console.log("[1]value: ", value, "formattedValue: ", formattedValue, "value.length: ", value.length )
 
         formattedValue += value.substr(0, value.length);
         if (value.length > 2) {
@@ -93,7 +93,7 @@
             formattedValue = '(+33)' + formattedValue;
         }
         $("#gatherPhoneNum input[name='phoneNum']").val(formattedValue);// Set the formatted value back to the input field
-        // console.log("[5]value: ", value, "formattedValue: ", formattedValue, "value.length: ", value.length )
+        // // console.log("[5]value: ", value, "formattedValue: ", formattedValue, "value.length: ", value.length )
 
     }
 
@@ -122,7 +122,7 @@
             data: {'phone_number': phoneNumber},
             headers: { "X-CSRFToken": getCookie('csrftoken') },
             success: function(data) {
-                console.log('number added to sandBox destination successfully:', data);
+                // console.log('number added to sandBox destination successfully:', data);
                 if (data.verified) {
                   updatePhoneData();
                   displayMessage("Your Phone data updated. Don't forget to press 'Update Profile' button!!")
@@ -138,20 +138,20 @@
         var oneTimeCode = $('input[name="one_time_code"]').val();
         var phoneNumber = $("#gatherPhoneNum input[name='phoneNum']").val().replace(/[-()]/g, '');
         phoneNumber = phoneNumber.slice(0, 3) + phoneNumber.slice(4);
-        console.log('verifySandBox submit');
+        // console.log('verifySandBox submit');
         $.ajax({
             url: '{% url "account:verifySandBox" %}',
             type: 'POST',
             data: { 'otp': oneTimeCode, 'phone_number': phoneNumber},
             headers: { "X-CSRFToken": getCookie('csrftoken') },
             success: function (data) {
-                console.log('One-time code verification successful:', data);
+                // console.log('One-time code verification successful:', data);
                 updatePhoneData();
                 displayMessage("Your Phone data updated. Don't forget to press 'Update Profile' button!!")
                 // window.location.href = '';
             },
             error: function (xhr, textStatus, errorThrown) {
-                console.log('One-time code verification failed.');
+                // console.log('One-time code verification failed.');
                 var response;
                 try {
                   response = JSON.parse(xhr.responseText);
@@ -161,7 +161,7 @@
                 displayErrorMessage(response.error);
             },
             complete: function (xhr, textStatus) {
-                console.log('Request complete. Status:', textStatus);
+                // console.log('Request complete. Status:', textStatus);
             }
         });
     }
@@ -175,7 +175,7 @@
             data: {'phone_number': phoneNumber},
             headers: { "X-CSRFToken": getCookie('csrftoken') },
             success: function(data) {
-                console.log('Updated user Phone data successfully:', data);
+                // console.log('Updated user Phone data successfully:', data);
             },
             error: function(xhr, textStatus, errorThrown) {
                 console.error('Fail to update Phone data', errorThrown);
@@ -227,15 +227,15 @@
       // If 2FA is enabled, include the selected method in the form data
       if (enable2faOnCheckbox.checked) {
         var selectedMethod = document.getElementById("two-factor-method").value;
-        console.log("selected 2fa: ", selectedMethod);
+        // console.log("selected 2fa: ", selectedMethod);
         formData.append('two_factor_method', selectedMethod);
       } else if (enable2faOffCheckbox.checked) {
         formData.append('two_factor_method', ''); // None
-        console.log("2fa == None");
+        // console.log("2fa == None");
       } else {
         formData.delete('two_factor_method');
       }
-      console.log("formData: ", formData);
+      // console.log("formData: ", formData);
       fetch("{% url 'account:profile_update' %}", {
         method: "POST",
         body: formData,

@@ -50,19 +50,19 @@
         event.stopPropagation()
         signupClicked = true;
 
-        console.log('close login popup');
+        // console.log('close login popup');
         $("#darkLayer").fadeIn();
-        console.log('opacity applied');
+        // console.log('opacity applied');
         $("#signupPopup").fadeIn();
-        console.log('fade in signup popup\n\n');
+        // console.log('fade in signup popup\n\n');
     });
     $("#loginLink").click(function () {
-    console.log('log in link clicked');
+    // console.log('log in link clicked');
     if (!signupClicked) {
       $("#darkLayer").fadeIn();
-      console.log('opacity applied');
+      // console.log('opacity applied');
       $("#loginPopup").fadeIn();
-      console.log('fade in login popup\n\n');
+      // console.log('fade in login popup\n\n');
     }
     signupClicked = false; // Reset the flag after handling the click
   });
@@ -76,13 +76,13 @@
   function closeLoginPopup() {
       $("#darkLayer").fadeOut();
       $("#loginPopup").fadeOut();
-      console.log('closeLoginPopup() called\n\n');
+      // console.log('closeLoginPopup() called\n\n');
     }
 
     function closeSignupPopup() {
     // $("#darkLayer").fadeOut();
     $("#signupPopup").fadeOut();
-    console.log('closeSignupPopup() called\n\n');
+    // console.log('closeSignupPopup() called\n\n');
   }
   function submitLoginForm() {
     $.ajax({
@@ -91,14 +91,14 @@
       data: $('#loginForm').serialize(),
       headers: { "X-CSRFToken": getCookie('csrftoken') },
       success: function (data, textStatus, xhr) {
-        console.log('Login successful:', data);
+        // console.log('Login successful:', data);
         // Extract access token from Authorization header
         var accessToken = data.access_token;
         // var accessToken = xhr.getResponseHeader('Authorization');
         if (accessToken) {
           // Store the access token in memory
           sessionStorage.setItem('accessToken', accessToken);
-          console.log('Access token stored:', accessToken);
+          // console.log('Access token stored:', accessToken);
         }
         if (data.requires_2fa) {
         // closeLoginPopup();
@@ -108,12 +108,12 @@
           $('#signupLink').hide();
           $('#oneTimeCodeSection').show();
         } else {
-          console.log('2FA not required');
+          // console.log('2FA not required');
           window.location.href = '';
         }
       },
       error: function (xhr, textStatus, errorThrown) {
-        console.log('An error occurred while processing your request.');
+        // console.log('An error occurred while processing your request.');
         var response = JSON.parse(xhr.responseText);
         if (response && response.error) {
             displayErrorMessage(response.error);
@@ -139,19 +139,19 @@
   }
   function submitOneTimeCode(context) {
     var oneTimeCode = $('input[name="one_time_code"]').val();
-    console.log('submitOneTimeCode submit');
+    // console.log('submitOneTimeCode submit');
     $.ajax({
       url: '{% url "account:verify_one_time_code" %}',
       type: 'POST',
       data: { 'one_time_code': oneTimeCode, 'context': context },
       headers: { "X-CSRFToken": getCookie('csrftoken') },
       success: function (data) {
-        console.log('One-time code verification successful:', data);
+        // console.log('One-time code verification successful:', data);
         closeLoginPopup();
         window.location.href = '';
       },
       error: function (xhr, textStatus, errorThrown) {
-        console.log('One-time code verification failed.');
+        // console.log('One-time code verification failed.');
         var response;
         try {
           response = JSON.parse(xhr.responseText);
@@ -161,7 +161,7 @@
         displayErrorMessage(response.error);
       },
       complete: function (xhr, textStatus) {
-        console.log('Request complete. Status:', textStatus);
+        // console.log('Request complete. Status:', textStatus);
       }
     });
   }
