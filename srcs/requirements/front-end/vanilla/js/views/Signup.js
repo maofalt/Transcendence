@@ -115,6 +115,16 @@ export default class Signup extends AbstractComponent {
 			}
 		}
 
+		let privacyPolicyBlock = this.createPrivacyBlock({
+			title: "Privacy Policy",
+			content: "Privacy Policy",
+			indicators: {
+				emptyIndicator: ["Please agree to the Privacy Policy", () => privacyPolicyBlock.input.getValue() != ""],
+			},
+			type: "checkbox"
+		});
+		formContainer.appendChild(privacyPolicyBlock);
+
 		/* Verify Code */
 		let verifyCodeBlock = new InputAugmented({
 			title: "Verify Code",
@@ -182,12 +192,15 @@ export default class Signup extends AbstractComponent {
 					async () => await this.verifySignupInput('validate_password', { password: passwordBlock.input.getValue() })
 				],
 			}, 
+			{
+				blocks: [privacyPolicyBlock],
+				actions: []
+			},
 			{ 
 				blocks: [verifyCodeBlock], 
 				actions: [] 
 			}
 		];
-
 		// hide all the steps apart from the first one
 		flow.forEach((step, index) => {
 			step.blocks.forEach((inputBlock) => {
@@ -261,6 +274,7 @@ export default class Signup extends AbstractComponent {
 		
 		console.log("after");
 		this.flowIndex++;
+
 		// if (this.flowIndex > 0)
 		// 	document.getElementById("backButton").style.display = "block";
 		this.updateFormView(flow, this.flowIndex);
@@ -457,40 +471,27 @@ export default class Signup extends AbstractComponent {
 		return valid;
 	}
 
-
-	/* UTIL PAGE CREATION FUNCTIONS */
-	createBlock(blockName) {
-		let block = document.createElement('div');
-		block.id = blockName + "-block";
-		block.style.setProperty("flex", "1");
-		block.style.setProperty("margin", "0px 15px");
-		// block.style.setProperty("padding", "0px");
-		// block.style.setProperty("border", "1px red solid");
-		return block;
-	}
-
-	createPrivacyBlock() {
+	createPrivacyBlock(options) {
 		const privacyBlock = document.createElement("div");
 		privacyBlock.style.setProperty("width", "100%");
 		privacyBlock.style.setProperty("height", "200px");
-		// privacyBlock.style.setProperty("border", "1px yellow solid");
 
 		const privacyTitle = document.createElement("p");
 		privacyTitle.id = "privacy-title";
-		privacyTitle.textContent = "Privacy Policy";
+		privacyTitle.textContent = options.title || "Privacy Policy";
 		privacyTitle.style.setProperty("font-size", "32px");
-		// privacyTitle.style.setProperty("font-family", "tk-421, Anta, sans-serif");
 		privacyTitle.style.setProperty("margin", "15px 0px 10px 0px");
 		
 		const checkBox = document.createElement("input");
-		checkBox.type = "checkbox";
+		checkBox.type = options.type || "checkbox";
+		checkBox.id = "privacy-checkbox";
 		checkBox.style.setProperty("width", "24px");
 		checkBox.style.setProperty("height", "24px");
 		checkBox.style.setProperty("margin-right", "15px");
 
 		const privacyDesc = document.createElement("p");
 		privacyDesc.id = "privacy-desc";
-		privacyDesc.textContent = "I agree to the terms and conditions.";
+		privacyDesc.textContent = options.content || "I agree to the terms and conditions.";
 		privacyDesc.style.setProperty("width", "100%");
 		privacyDesc.style.setProperty("font-size", "14px");
 
@@ -502,10 +503,9 @@ export default class Signup extends AbstractComponent {
 		acceptPrivacyBlock.style.setProperty("flex-direction", "row");
 		acceptPrivacyBlock.style.setProperty("justify-content", "center");
 		acceptPrivacyBlock.style.setProperty("align-items", "center");
-		// acceptPrivacyBlock.style.setProperty("border", "1px green solid");
 		
-		const privacyPolicy = new CustomButton({content: "Privacy Policy", action: false});
-		
+		const privacyPolicy = new CustomButton({ content: options.content || "Privacy Policy", action: false });
+
 		acceptPrivacyBlock.appendChild(checkBox);
 		acceptPrivacyBlock.appendChild(privacyDesc);
 		privacyBlock.appendChild(privacyTitle);
@@ -513,6 +513,17 @@ export default class Signup extends AbstractComponent {
 		privacyBlock.appendChild(acceptPrivacyBlock);
 
 		return privacyBlock;
+	}
+
+	/* UTIL PAGE CREATION FUNCTIONS */
+	createBlock(blockName) {
+		let block = document.createElement('div');
+		block.id = blockName + "-block";
+		block.style.setProperty("flex", "1");
+		block.style.setProperty("margin", "0px 15px");
+		// block.style.setProperty("padding", "0px");
+		// block.style.setProperty("border", "1px red solid");
+		return block;
 	}
 
 	createBottomButtons() {
