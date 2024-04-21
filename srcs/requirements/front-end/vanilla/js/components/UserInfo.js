@@ -80,7 +80,7 @@ export default class UserInfo extends AbstractComponent {
 		// if details has been passed in options, use it. Otherwise, fetch current user details
 		if (!details) {
 			details = JSON.parse(sessionStorage.getItem("userDetails"));
-			// console.log("DETAILS:", details);
+			// // console.log("DETAILS:", details);
 			if (!details) {
 				details = await fetchUserDetails();
 			}

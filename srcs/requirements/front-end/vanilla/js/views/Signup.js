@@ -249,7 +249,7 @@ export default class Signup extends AbstractComponent {
 		e.preventDefault();
 		if (this.flowIndex >= flow.length - 1)
 			return ;
-		console.log("before");
+		// console.log("before");
 
 		// validate input blocks (show warnings and dont advance if invalid)
 		for (const block of flow[this.flowIndex].blocks) {
@@ -262,15 +262,15 @@ export default class Signup extends AbstractComponent {
 		// call functions that are defined for this step
 		for (const action of flow[this.flowIndex].actions) {
 			let res = await action();
-			console.log("actionresulty: ", res);
+			// console.log("actionresulty: ", res);
 			if (res == false) {
-				console.log("oh no");
+				// console.log("oh no");
 				return ;
 			}
-			console.log("actionresult: ", res);
+			// console.log("actionresult: ", res);
 		}
 		
-		console.log("after");
+		// console.log("after");
 		this.flowIndex++;
 
 		// if (this.flowIndex > 0)
@@ -389,8 +389,8 @@ export default class Signup extends AbstractComponent {
 		
 		let valid = false;
 
-		console.log('submitSignup');
-		console.log('values:', formData);
+		// console.log('submitSignup');
+		// console.log('values:', formData);
 
 		await easyFetch('/api/user_management/auth/signup', {
 			method: 'POST',
@@ -465,7 +465,7 @@ export default class Signup extends AbstractComponent {
 			displayPopup(`Request Failed: ${error}`, 'error');
 			valid = false;
 		});
-		console.log("valid2: ", valid);
+		// console.log("valid2: ", valid);
 		return valid;
 	}
 
@@ -554,7 +554,7 @@ export default class Signup extends AbstractComponent {
 	}
 
 	buttonOnClick = (e, arg) => {
-		console.log(arg);
+		// console.log(arg);
 		return true;
 	}
 

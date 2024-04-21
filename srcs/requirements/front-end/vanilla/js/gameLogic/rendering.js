@@ -21,7 +21,7 @@ import { initLobby, initFieldShape } from "./init";
 //             hitScaler = segmentsIntersect(potentialHitPoint, futureHitPos, wall.top, wall.bottom);
 //             if (hitScaler > 0) {
 //                 let ballPath = futureHitPos.sub(potentialHitPoint);
-//                 console.log(`mag : ${ballPath.mag}`);
+//                 // console.log(`mag : ${ballPath.mag}`);
 //                 ball.pos = ball.pos.add(ballPath.scale(hitScaler));
 
 //                 let dot = ball.dir.dotProduct(wall.dirToTop);
@@ -222,10 +222,10 @@ function updateBall(data) {
     let paddleHit = ballHitsPaddle(data);
     let wallHit = ((data.field.wallsSize || data.gamemode.nbrOfPlayers == 2) ? ballHitsWallV2(data) : 0);
     // if (paddleHit) {
-    //     console.log("paddle hit");
+    //     // console.log("paddle hit");
     // }
     // if (wallHit) {
-    //     console.log("wall hit");
+    //     // console.log("wall hit");
     // }
     if (!paddleHit && !wallHit) {
         data.ball.pos = data.ball.pos.add(data.ball.dir.scale(data.ball.sp));
@@ -241,8 +241,8 @@ function updateBall(data) {
 
 // function endGame(data) {
 //     // display scores + display winner's name
-//     console.log("!!!!!!!!!!!!!!!!!!!!!! GAME OVER !!!!!!!!!!!!!!!!!!!");
-//     console.log(`${data.winner.accountID} WON !`);
+//     // console.log("!!!!!!!!!!!!!!!!!!!!!! GAME OVER !!!!!!!!!!!!!!!!!!!");
+//     // console.log(`${data.winner.accountID} WON !`);
 //     // send result of the game back to tournament or some place else;
 //     // stop the interval
 
@@ -254,8 +254,8 @@ function eliminatePlayer(data, player) {
     // it should be the only required additional exchange since the client
     // receives everything else it needs to display properly the game in each
     // "render" socket emission
-    console.log("!!!!!!!!!!!!!!!!!!!!!! ELIMINATED !!!!!!!!!!!!!!!!!!!");
-    console.log(`${data.gamemode.nbrOfPlayers}`);
+    // console.log("!!!!!!!!!!!!!!!!!!!!!! ELIMINATED !!!!!!!!!!!!!!!!!!!");
+    // console.log(`${data.gamemode.nbrOfPlayers}`);
     // get rid of this player in the map of players;
     delete data.players[player.accountID];
     data.field.walls.pop();
@@ -340,9 +340,9 @@ function updateData(data) {
     // when data.ongoing is true it will trigger the checking of scoring;
     // when game ends => put the ongoing status of the game back to false;
     let result = checkForScoring(data);
-    // console.log(`score update\n`);
+    // // console.log(`score update\n`);
     // for (let player of Object.values(data.players)) {
-    //     console.log(`${player.accountID} [${player.score}]\n`);
+    //     // console.log(`${player.accountID} [${player.score}]\n`);
     // }
     return result;
 }

@@ -42,7 +42,7 @@ export default class WarnIndicator extends AbstractComponent {
 		}
 		if (name === 'valid') {
 			if (newValue === "false") {
-				// console.log('newValue', newValue);
+				// // console.log('newValue', newValue);
 				this.div.innerHTML = alertTriangle;
 				this.div.style.setProperty("color", "red");
 				this.div.append(this.options.content);

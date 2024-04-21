@@ -54,7 +54,7 @@ export default async function fetchUserDetails() {
 		}).catch(error => {
 			console.error('Error retrieving user details:', error);
 		});
-		// console.log("details:", details);
+		// // console.log("details:", details);
 	} catch (error) {
 		console.error('Error fetching user details:', error);
 	}

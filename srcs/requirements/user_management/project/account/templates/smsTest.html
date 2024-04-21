@@ -30,7 +30,7 @@
         if (value.startsWith('33')) {
             value = value.slice(2);
         }
-        console.log("[1]value: ", value, "formattedValue: ", formattedValue, "value.length: ", value.length )
+        // console.log("[1]value: ", value, "formattedValue: ", formattedValue, "value.length: ", value.length )
 
         formattedValue += value.substr(0, value.length);
         if (value.length > 2) {
@@ -44,7 +44,7 @@
             formattedValue = '(+33)' + formattedValue;
         }
         $("#gatherPhoneNum input[name='phoneNum']").val(formattedValue);// Set the formatted value back to the input field
-        console.log("[5]value: ", value, "formattedValue: ", formattedValue, "value.length: ", value.length )
+        // console.log("[5]value: ", value, "formattedValue: ", formattedValue, "value.length: ", value.length )
 
     }
 
@@ -73,7 +73,7 @@
             data: {phone_number: phoneNumber},
             headers: { "X-CSRFToken": getCookie('csrftoken') },
             success: function(data) {
-                console.log('SMS code sent successfully:', data);
+                // console.log('SMS code sent successfully:', data);
             },
             error: function(xhr, textStatus, errorThrown) {
                 console.error('Error sending SMS code:', errorThrown);
@@ -83,18 +83,18 @@
     
     function submitOneTimeCode(context) {
         var oneTimeCode = $('input[name="one_time_code"]').val();
-        console.log('submitOneTimeCode submit');
+        // console.log('submitOneTimeCode submit');
         $.ajax({
             url: '{% url "account:verifySandBox" %}',
             type: 'POST',
             data: {phone_number: phoneNumber, otp: oneTimeCod },
             headers: { "X-CSRFToken": getCookie('csrftoken') },
             success: function (data) {
-                console.log('One-time code verification successful:', data);
+                // console.log('One-time code verification successful:', data);
                 window.location.href = '';
             },
             error: function (xhr, textStatus, errorThrown) {
-                console.log('One-time code verification failed.');
+                // console.log('One-time code verification failed.');
                 var response;
                 try {
                 response = JSON.parse(xhr.responseText);
@@ -104,7 +104,7 @@
                 displayErrorMessage(response.error);
             },
             complete: function (xhr, textStatus) {
-                console.log('Request complete. Status:', textStatus);
+                // console.log('Request complete. Status:', textStatus);
             }
         });
     }

@@ -82,8 +82,8 @@ export async function makeApiRequest(url, method = 'GET', body = null, headers =
 
 try {
 	const response = await makeApiRequest('https://api.example.com/data', 'POST', { key: 'value' });
-	console.log('Status Code:', response.status);
-	console.log('Response Body:', response.body);
+	// console.log('Status Code:', response.status);
+	// console.log('Response Body:', response.body);
 } catch (error) {
 	console.error('Request Failed:', error);
 }
@@ -92,8 +92,8 @@ or:
 
 makeApiRequest('https://api.example.com/data', 'POST', { key: 'value' })
 	.then(response => {
-		console.log('Status Code:', response.status);
-		console.log('Response Body:', response.body);
+		// console.log('Status Code:', response.status);
+		// console.log('Response Body:', response.body);
 	})
 	.catch(error => {
 		console.error('Request Failed:', error);

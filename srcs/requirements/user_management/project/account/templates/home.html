@@ -81,7 +81,7 @@
         type: 'GET',
         url: '{% url "account:smsTest" %}',
         success: function(data) {
-          console.log('2FA-SMS request successful:', data);
+          // console.log('2FA-SMS request successful:', data);
           window.location.href = '{% url "account:smsTest" %}';
         },
         error: function(xhr, textStatus, errorThrown) {
@@ -99,11 +99,11 @@
           'Authorization': 'Bearer ' + accessToken
         },
         success: function(data, textStatus, xhr) {
-          console.log('Check refresh successful:', data);
+          // console.log('Check refresh successful:', data);
           var new_accessToken = xhr.getResponseHeader('Authorization');
           if (new_accessToken) {
             sessionStorage.setItem('accessToken', new_accessToken);
-            console.log('Update accessToken on Storage');
+            // console.log('Update accessToken on Storage');
           }
         },
         error: function(xhr, textStatus, errorThrown) {
@@ -119,7 +119,7 @@
             type: 'GET',
             url: '{% url "account:print_db" %}',
             success: function (data) {
-                console.log('Print all user data successful:', data);
+                // console.log('Print all user data successful:', data);
                 window.location.href = '{% url "account:print_db" %}';
             },
             error: function (error) {
@@ -149,7 +149,7 @@
             url: '{% url "account:logout" %}',
             headers: { "X-CSRFToken": getCookie('csrftoken') },
             success: function (data) {
-                console.log('Logout successful:', data);
+                // console.log('Logout successful:', data);
                 // Handle the logout response
                 if (data.redirect_url) {
                   window.location.href = data.redirect_url;

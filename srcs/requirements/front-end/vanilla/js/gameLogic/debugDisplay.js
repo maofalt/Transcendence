@@ -1,5 +1,5 @@
 function displayPlayer(playerData) {
-    console.log(`
+    // console.log(`
 	--------------------------------------------------------------------
 	- unique account ID :...................................[ ${playerData.accountID} ]
 	- socket ID :...........................................[ ${playerData.socketID} ]
@@ -18,7 +18,7 @@ function displayPlayer(playerData) {
 }
 
 function displayWall(wallData, i) {
-    console.log(`
+    // console.log(`
 	------- n◦${i} ---------------------------------------------------------
 	- position :....................................[ ${wallData.pos.x}, ${wallData.pos.y}, ${wallData.pos.z} ]
 		- dir to center :...............................[ ${wallData.dirToCenter.x}, ${wallData.dirToCenter.y}, ${wallData.dirToCenter.z} ]
@@ -30,7 +30,7 @@ function displayWall(wallData, i) {
 }
 
 function displayData(data) {
-    console.log(`
+    // console.log(`
 Data :
 ======== game mode data : ==================================================
 	- nbr of players :......................................[ ${data.gamemode.nbrOfPlayers} ]
@@ -58,13 +58,13 @@ Data :
 		displayPlayer(player);
 	});
 
-	console.log("======== walls : ==========================================================");
+	// console.log("======== walls : ==========================================================");
 
     for (let i=0; i<data.gamemode.nbrOfPlayers; i++) {
         displayWall(data.field.walls[i], i);
     }
 
-	console.log(`============================================================================
+	// console.log(`============================================================================
 `);
 }
 

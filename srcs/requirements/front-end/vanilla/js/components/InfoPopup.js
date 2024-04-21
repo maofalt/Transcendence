@@ -86,7 +86,7 @@ export default class InfoPopup extends AbstractComponent {
 		}
 		if (name === 'type') {
 			if (newValue === "error") {``
-				// console.log('newValue', newValue);
+				// // console.log('newValue', newValue);
 				let icon = this.div.querySelector('svg');
 				this.div.replaceChild(this.icons.alertTriangle, icon);
 				this.div.style.setProperty("color", "red");
@@ -108,8 +108,8 @@ export default class InfoPopup extends AbstractComponent {
 			this.options.content = newValue;
 			let message = this.div.querySelector('p');
 			message.textContent = newValue;
-			// console.log('message', message);
-			// console.log("newValue", newValue);
+			// // console.log('message', message);
+			// // console.log("newValue", newValue);
 		}
 	}
 }

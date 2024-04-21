@@ -45,7 +45,7 @@ app.use((req, res, next) => {
 
 // Start the server
 server.listen(expressPort, () => {
-    console.log(`APP Express server running on port ${expressPort}`);
+    // console.log(`APP Express server running on port ${expressPort}`);
 });
 
 //====================================== SOCKET IO ======================================//
@@ -71,7 +71,7 @@ function setPlayersStatus(client) {
 
 function handleConnection(client) {
 
-    console.log("CLIENT CONNECTED");
+    // console.log("CLIENT CONNECTED");
     numClients = io.engine.clientsCount;
     client.join("gameRoom");
 
@@ -81,25 +81,25 @@ function handleConnection(client) {
     client.emit("render", data);
     client.emit('clientId', client.id, numClients);
     // client.emit('pong');
-    console.log(`Client connected with ID: ${client.id}`);
-    console.log(`Number of connected clients: ${numClients}`);
+    // console.log(`Client connected with ID: ${client.id}`);
+    // console.log(`Number of connected clients: ${numClients}`);
 }
 
 function calculateFrame() {
-    // console.log(`player 1 game state : ${player1.gameState}`);
+    // // console.log(`player 1 game state : ${player1.gameState}`);
     if (data.player1.score == 10 || data.player2.score == 10)
-        return (console.log('GAME OVER'), clearInterval(gameInterval));
+        return (// console.log('GAME OVER'), clearInterval(gameInterval));
     if (game.updateData()) {
         // data.player1.gameState = false;
         // data.player2.gameState = false;
         // game.initData();
     }
-    // console.log("calculating frame...");
+    // // console.log("calculating frame...");
     io.to("gameRoom").emit('render', data);
 }
 
 function startRound() {
-    console.log("startRound");
+    // console.log("startRound");
     game.initData();
     game.getRandomDir();
 }
@@ -175,21 +175,21 @@ io.on('connection', (client) => {
     handleConnection(client);
     // Handle other events or messages from the client
     client.on('ping', () => {
-        console.log("ping received ! emitting pong...");
+        // console.log("ping received ! emitting pong...");
         client.emit('pong');
     });
 
     // player controls
     client.on('moveUp', () => {
         if (client.id == data.player1.clientId) {
-            // console.log(`player 1 moving up !`);
+            // // console.log(`player 1 moving up !`);
             if (data.player1.gameState == false && data.player2.gameState)
                 return (data.player1.gameState = true, startRound());
             data.player1.gameState = true;
             data.paddle1.vY = data.paddle1.sp;
         }
         else if (client.id == data.player2.clientId) {
-            // console.log(`player 2 moving up !`);
+            // // console.log(`player 2 moving up !`);
             if (data.player2.gameState == false && data.player1.gameState)
                 return (data.player2.gameState = true, startRound());
             data.player2.gameState = true;
@@ -199,14 +199,14 @@ io.on('connection', (client) => {
 
     client.on('moveDown', () => {
         if (client.id == data.player1.clientId) {
-            // console.log(`player 1 moving down !`);
+            // // console.log(`player 1 moving down !`);
             if (data.player1.gameState == false && data.player2.gameState)
                 return (data.player1.gameState = true, startRound());
             data.player1.gameState = true;
             data.paddle1.vY = -data.paddle1.sp;
         }
         else if (client.id == data.player2.clientId) {
-            // console.log(`player 2 moving down !`);
+            // // console.log(`player 2 moving down !`);
             if (data.player2.gameState == false && data.player1.gameState)
                 return (data.player2.gameState = true, startRound());
             data.player2.gameState = true;
@@ -216,11 +216,11 @@ io.on('connection', (client) => {
 
     client.on('stop', () => {
         if (client.id == data.player1.clientId) {
-            // console.log(`player 1 stopping !`);
+            // // console.log(`player 1 stopping !`);
             data.paddle1.vY = 0;
         }
         else if (client.id == data.player2.clientId) {
-            // console.log(`player 2 stopping !`);
+            // // console.log(`player 2 stopping !`);
             data.paddle2.vY = 0;
         }
     });
@@ -232,7 +232,7 @@ io.on('connection', (client) => {
         game.initData();
         if (gameInterval)
             clearInterval(gameInterval);
-        console.log(`Client disconnected with ID: ${client.id} (num clients: ${numClients})`);
+        // console.log(`Client disconnected with ID: ${client.id} (num clients: ${numClients})`);
     });
 });
 

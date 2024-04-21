@@ -171,7 +171,7 @@ export default class EditProfile extends AbstractComponent {
 		avatarBlock.input.input.onchange = (e) => {
 			if (e.target.files.length > 0) {
 				avatarFile = e.target.files[0];
-				// console.log(avatarFile);
+				// // console.log(avatarFile);
 			}
 		}
 

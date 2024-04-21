@@ -136,7 +136,7 @@ export const redirectTo = (url) => {
 
 export const navigateTo = (url) => {
 	history.pushState(null, null, url);
-	console.log('url: ', url);
+	// console.log('url: ', url);
 	router();
 };
 

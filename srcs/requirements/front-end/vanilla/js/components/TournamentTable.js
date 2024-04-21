@@ -470,7 +470,7 @@ class TournamentTable extends BaseTable {
 				let tournamentNameElement = this.createStyledHTMLObject('div', newName, this.columnStyles.tournamentName);
 				tournamentNameElement.header = 'Tournament Name';
                 const newCellData = [tournamentNameElement];
-				// console.log('i=[', identifier, '] newName=[', newName, ']');
+				// // console.log('i=[', identifier, '] newName=[', newName, ']');
 				this.updateRowByIdentifier(identifier, newCellData);
 	
 				index = (index + 1) % tournamentIdentifiers.length;

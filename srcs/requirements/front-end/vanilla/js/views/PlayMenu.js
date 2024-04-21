@@ -84,14 +84,14 @@ export default class PlayMenu extends AbstractComponent {
 	}
 
 	pannelHover = (e, pannel, arg) => {
-		console.log(arg);
+		// console.log(arg);
 		pannel.style.setProperty("background", "rgba(0, 0, 0, 0.5)");
 		pannel.style.setProperty("backdrop-filter", "blur(6px)");
 		// pannel.shadowRoot.querySelector("img").style.setProperty("width", "200px");
 	}
 
 	pannelLeave = (e, pannel, arg) => {
-		console.log(arg);
+		// console.log(arg);
 		pannel.style.setProperty("background", "rgba(255, 255, 255, 0.1)");
 		pannel.style.setProperty("backdrop-filter", "blur(16px)");
 	}
