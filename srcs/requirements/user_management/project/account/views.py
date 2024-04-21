@@ -188,18 +188,14 @@ def privacy_policy_view(request):
 @authentication_classes([])
 @permission_classes([AllowAny])
 def api_login_view(request):
-    print("\n\n       URL:", request.build_absolute_uri())
-
     if request.method == "POST": 
         username = request.POST["username"]
         password = request.POST["password"]
         user = authenticate(username=username, password=password)
         if user is not None:
             request.session['pending_username'] = user.username
-            print("User Information:")
+            print("Logged in User:")
             print(f"Username: {user.username}")
-            print(f"email: {user.email}")
-            print(f"Playername: {user.playername}")
             print(f"Is Online: {user.is_online}")
             print(f"Date Joined: {user.date_joined}")
             serializer = UserSerializer(user)
@@ -209,7 +205,7 @@ def api_login_view(request):
                 if (user.two_factor_method == 'email'):
                     original_email = jwt.decode(user.email, settings.SECRET_KEY, algorithms=['HS256'])['email']
                     response = send_one_time_code(request, original_email)
-                    print("RESPONSE: ", response)
+                    # print("RESPONSE: ", response)
                     if response.status_code == 200:
                         return JsonResponse({'success': True, 'requires_2fa': True})
                 elif(user.two_factor_method == 'sms'):
@@ -233,7 +229,6 @@ def generate_tokens_and_response(request, user):
     accessToken = AccessToken.for_user(user)
     accessToken['username'] = user.username
     accessToken['exp'] = int(access_token_lifetime.replace(tzinfo=pytz.UTC).timestamp())
-    print("---> ACCESS TOKEN: ", str(accessToken))
     if user.two_factor_method == 'off':
         twoFA = False
         login(request, user)
@@ -252,7 +247,7 @@ def generate_tokens_and_response(request, user):
         local_tz = pytz.timezone('Europe/Paris')
         exp_timestamp_accessToken = decodedToken['exp']
         exp_accessToken = datetime.datetime.fromtimestamp(exp_timestamp_accessToken, tz=pytz.utc).astimezone(local_tz).strftime('%Y-%m-%d %H:%M:%S')
-        print("Expiration time of ACCESS token:", exp_accessToken)
+        print("ACCESS TOKEN GENERATED\nExpiration time:", exp_accessToken)
         # user.last_valid_time = timezone.now().replace(microsecond=0)
         user.last_valid_time = timezone.now()
         last_valid_time = user.last_valid_time.timestamp()
@@ -292,14 +287,13 @@ def generate_one_time_code():
 @authentication_classes([])
 @permission_classes([AllowAny])
 def send_one_time_code(request, email=None):
-    print("\n\nEMAIL SENDING")
     if email is None and request.method == 'POST':
         email = request.POST.get('email', None)
     
     one_time_code = generate_one_time_code()
     request.session['one_time_code'] = one_time_code
 
-    print("\n\nCHECK CODE ON SESSION: ", request.session.get('one_time_code'))
+    # print("\n\nCHECK CODE ON SESSION: ", request.session.get('one_time_code'))
     subject = 'Your Access Code for PONG'
     message = f'Pong! Your one-time code is: {escape(one_time_code)}'
     from_email = 'no-reply@student.42.fr' 
@@ -318,8 +312,8 @@ def verify_one_time_code(request):
         submitted_code = request.POST.get('one_time_code')
         stored_code = request.session.get('one_time_code')
         context = request.POST.get('context')
-        print("\n\ncode from Session : ", stored_code)
-        print("code from User : ", submitted_code, '\n\n')
+        # print("\n\ncode from Session : ", stored_code)
+        # print("code from User : ", submitted_code, '\n\n')
         pending_username = request.session.get('pending_username')
         if pending_username or True :
             if submitted_code == stored_code:
@@ -328,7 +322,7 @@ def verify_one_time_code(request):
                     user = User.objects.get(username=pending_username)
                     login(request, user)
                     user.is_online = True
-                    print(f"Is Online: {user.is_online}")
+                    print(f"{user.username} is online now {user.is_online}")
                     user.save()
                     return generate_tokens_and_response(request, user)
                 if context == 'update' or context == 'signup':
@@ -361,7 +355,7 @@ def api_logout_view(request):
     if request.method == 'POST':
         request.user.is_online = False
         request.user.save()
-        print(request.user.username, ": is_online status", request.user.is_online)
+        print(f"{user.username} is online now {user.is_online}")
         logout(request)
         serializer = get_serializer(request.user)
         redirect_url = "/"
@@ -501,7 +495,7 @@ def api_signup_view(request):
             return JsonResponse({'success': False, 'error': escape('All fields are required')}, status=400)
 
         verified_email = request.session.get('verified_email')
-        print("verified_email: ", verified_email)
+        # print("verified_email: ", verified_email)
         if verified_email:
             if verified_email != email:
                 # del request.session['verified_email']
@@ -528,7 +522,7 @@ def api_signup_view(request):
             return JsonResponse({'success': False, 'error': escape('User creation failed.')}, status=400)
 
         print(" >>  User created successfully.")
-        print("User: ", user)
+        # print("User: ", user)
 
         login(request, user)
         user.is_online = True
@@ -581,7 +575,7 @@ def friends_view(request):
         last_valid_time = friend.last_valid_time.timestamp()
         local_tz = pytz.timezone('Europe/Paris')
         print_time = datetime.datetime.fromtimestamp(last_valid_time, tz=pytz.utc).astimezone(local_tz).strftime('%Y-%m-%d %H:%M:%S')
-        print("Freinds : last_valid_time: ", print_time)
+        print(f"Freinds {frined.username} last_valid_time: ", print_time)
         print("difference: ", (current_time - last_valid_time))
         if friend.is_online == True and (current_time - last_valid_time) > 185:
             friend_info['is_online'] = False
@@ -593,13 +587,11 @@ def friends_view(request):
 
     search_query = request.GET.get('search')
     search_results = []
-    print("search_query: ", search_query, "user.username: ", user.username)
     if search_query is not None and search_query != user.username:
         if search_query:
             print(search_query)
             # search_results = User.objects.filter(username__icontains=search_query)
             search_results = list(User.objects.filter(username__icontains=search_query).values())
-            print("search_resuls : ", search_results)
         search_results_serialized = FriendUserSerializer(search_results, many=True).data
         return JsonResponse({'friends': friend_data, 'search_query': escape(search_query), 'search_results': search_results_serialized})
     return JsonResponse({'friends': friend_data})
