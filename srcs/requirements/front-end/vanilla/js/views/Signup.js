@@ -8,6 +8,7 @@ import easyFetch from "@utils/easyFetch";
 import InputAugmented from "@components/InputAugmented";
 import displayPopup from "@utils/displayPopup";
 import setupLogin from "@utils/setupLogin";
+import privacyPolicyHtml from "@html/privacyPolicy.html?raw";
 
 export default class Signup extends AbstractComponent {
 	constructor(options = {}) {
@@ -116,14 +117,13 @@ export default class Signup extends AbstractComponent {
 		}
 
 		let privacyPolicyBlock = this.createPrivacyBlock({
-			title: "Privacy Policy",
-			content: "Privacy Policy",
-			indicators: {
-				emptyIndicator: ["Please agree to the Privacy Policy", () => privacyPolicyBlock.input.getValue() != ""],
-			},
+			title: "Terms and Conditions",
+			content: privacyPolicyHtml,
+			// indicators: {
+			//   emptyIndicator: ["Please agree to the Privacy Policy", () => privacyPolicyBlock.input.getValue() != ""],
+			// },
 			type: "checkbox"
-		});
-		formContainer.appendChild(privacyPolicyBlock);
+		  });
 
 		/* Verify Code */
 		let verifyCodeBlock = new InputAugmented({
@@ -143,8 +143,6 @@ export default class Signup extends AbstractComponent {
 			}
 		}
 
-		/* Privacy Policy */
-			// put privacy policy block here
 
 		let nextButton = new CustomButton({content: "Next", action: true});
 		nextButton.id = "nextButton";
@@ -478,7 +476,7 @@ export default class Signup extends AbstractComponent {
 
 		const privacyTitle = document.createElement("p");
 		privacyTitle.id = "privacy-title";
-		privacyTitle.textContent = options.title || "Privacy Policy";
+		privacyTitle.textContent = options.title || "Terms and Conditions";
 		privacyTitle.style.setProperty("font-size", "32px");
 		privacyTitle.style.setProperty("margin", "15px 0px 10px 0px");
 		
@@ -491,7 +489,7 @@ export default class Signup extends AbstractComponent {
 
 		const privacyDesc = document.createElement("p");
 		privacyDesc.id = "privacy-desc";
-		privacyDesc.textContent = options.content || "I agree to the terms and conditions.";
+		privacyDesc.textContent = options.content;
 		privacyDesc.style.setProperty("width", "100%");
 		privacyDesc.style.setProperty("font-size", "14px");
 
