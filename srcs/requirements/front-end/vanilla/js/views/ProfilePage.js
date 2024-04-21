@@ -240,7 +240,7 @@ export default class ProfilePage extends AbstractComponent {
 
 			if (!response || !body) {
 				throw new Error("Response is null");
-			} else if (response.status === 200) {
+			} else if (response.ok) {
 				gameStats = body;
 			} else {
 				throw new Error(body.error || JSON.stringify(body));

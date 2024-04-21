@@ -130,7 +130,6 @@ function waitingRoom(matchID) {
 		// client.disconnect();
 		return ;
 	}
-	match.gameState.imminent = matchID < 0;
 
 	if (!match.gameState.imminent && !match.gameState.ongoing) {
 		// this is called during the waiting of other players
@@ -605,6 +604,7 @@ function setupMatch(settings, res) {
 	// Convert game settings to game state
 	const gameState = init.initLobby(gameSettings);
 	gameState.matchID = matchID;
+	gameState.imminent = matchID < 0;
 
 	matches.set(matchID, { gameState: gameState, gameInterval: 0 });
 

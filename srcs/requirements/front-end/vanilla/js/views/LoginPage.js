@@ -128,6 +128,7 @@ export default class LoginPage extends AbstractComponent {
 		// console.log('values:', formData);
 		easyFetch('/api/user_management/auth/login', {
 			method: 'POST',
+			credentials: 'same-origin',
 			headers: {
 				'Content-Type': 'application/x-www-form-urlencoded',
 				'X-CSRFToken': getCookie('csrftoken')
