@@ -83,6 +83,9 @@ User = get_user_model()
 def home(request):
     return render(request, 'home.html')
 
+def init_view(request):
+    return JsonResponse({'message': 'This is a trustable website.'}, status=200)
+
 @ensure_csrf_cookie
 @csrf_protect
 @authentication_classes([CustomJWTAuthentication])
