@@ -1,11 +1,9 @@
 // const objectsClasses = require('./gameObjectsClasses');
-// const debugDisp = require('./debugDisplay');
 // const { Vector } = require('./vectors');
 
 import { Vector } from './vectors.js';
 // let Vector = vecs.Vector;
 import Data from './gameObjectsClasses';
-import debugDisp from './debugDisplay';
 
 function initLoop(data, wallDist, goalDist, angle) {
     let startingAngle = -Math.PI/2; // the angle of the first player, each other player will be based on this, with the angle var as a step

@@ -104,7 +104,7 @@ class BaseTable extends HTMLElement {
 
     sortColumn(header) {
         // Toggle sort direction
-        //console.log("Sorting by:", header);
+        //// console.log("Sorting by:", header);
         if (this.ascending[header] === undefined)
             this.ascending[header] = true;
         else {
@@ -128,7 +128,6 @@ class BaseTable extends HTMLElement {
                 key = row.cells.get(header)?.domElement.querySelector('host-avatar').getAttribute('name') || "";
             } else if (header === "Players Per Match") {
                 key = row.cells.get(header)?.domElement.querySelector('number-of-players').getAttribute('nbrOfPlayers') || "";
-                console.log("Players per match:", key);
             } else {
                 key = row.cells.get(header)?.domElement.textContent || "";
             }
@@ -140,7 +139,7 @@ class BaseTable extends HTMLElement {
     
         // Apply natural sort algorithm
         rowData.sort((a, b) => this.naturalSort(a.key, b.key));
-        //console.log("sorted", rowData);
+        //// console.log("sorted", rowData);
         rowContent.sort((a,b) => this.naturalSort(a,b));
         // If descending sort, reverse the array
         if (!this.ascending[header]) rowData.reverse();
@@ -234,7 +233,7 @@ class BaseTable extends HTMLElement {
             // We need to make sure we're dealing with DOM elements, not Row objects
             rowsToShow = this.filteredRows.map(row => row.domElement).slice(startIndex, endIndex);
         } else {
-            //console.log("total rows");
+            //// console.log("total rows");
             rowsToShow = this.totalRows.slice(startIndex, endIndex);
         }
         // Check if the row is defined before trying to change its display property
@@ -277,7 +276,7 @@ class BaseTable extends HTMLElement {
     
     
     updateRowByIdentifier(identifier, newCells) {
-        //console.log('Updating row with identifier:', identifier);
+        //// console.log('Updating row with identifier:', identifier);
         const rowIndex = this.rowIndexByIdentifier[identifier];
         if (rowIndex !== undefined && this.dataRows[rowIndex]) {
             const row = this.dataRows[rowIndex];
@@ -290,7 +289,7 @@ class BaseTable extends HTMLElement {
             });
             this.renderCurrentPage();
         } else {
-           // console.log(`Row with identifier ${identifier} not found.`);
+           // // console.log(`Row with identifier ${identifier} not found.`);
             console.error(`Row with identifier ${identifier} not found.`);
         }
     }

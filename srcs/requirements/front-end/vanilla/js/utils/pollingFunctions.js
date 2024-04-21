@@ -16,7 +16,7 @@ export async function renewToken() {
 	}).then(async res => {
 		let response = res.response;
 		let body = res.body;
-		// console.log("body", body);
+		// // console.log("body", body);
 		if (response === null) {
 			throw new Error("Response is null");
 		}
@@ -36,12 +36,12 @@ export async function renewToken() {
 			throw new Error("Token type is null");
 		}
 
-		console.log('Check refresh successful:', response);
+		// console.log('Check refresh successful:', response);
 		
 		// get user details for the profile page and start the socket connection
 		await setupLogin(body);
 
-		console.log('Updated accessToken on Storage');
+		// console.log('Updated accessToken on Storage');
 	}).catch(error => {
 		console.error('Error checking refresh:', error);
 		sessionStorage.clear();
@@ -57,10 +57,10 @@ export function refreshTokenLoop() {
 		const accessToken = sessionStorage.getItem("accessToken");
 		const tokenType = sessionStorage.getItem("tokenType");
 
-		console.log('expiryTimestamp:', expiryTimestamp);
-		console.log('expiryTime:', expiryTime);
-		console.log('accessToken:', accessToken);
-		console.log('tokenType:', tokenType);
+		// console.log('expiryTimestamp:', expiryTimestamp);
+		// console.log('expiryTime:', expiryTime);
+		// console.log('accessToken:', accessToken);
+		// console.log('tokenType:', tokenType);
 
 		if (now >= expiryTime - 60000) {
 			renewToken();
@@ -69,8 +69,8 @@ export function refreshTokenLoop() {
 		// calculate remaining time until the token needs refreshing
 		let delayUntilRefresh = expiryTime - now - 30000;
 
-		console.log("delay", delayUntilRefresh);
-		console.log('Token will be refreshed in:', delayUntilRefresh);
+		// console.log("delay", delayUntilRefresh);
+		// console.log('Token will be refreshed in:', delayUntilRefresh);
 
 		if (delayUntilRefresh < 0) {
 			delayUntilRefresh = 30000;
@@ -83,10 +83,26 @@ export function refreshTokenLoop() {
 	}
 }
 
+function getCSRFToken() {
+	fetch('/api/user_management/auth/init')
+	.then(response => {
+		if (!response.ok) {
+			throw new Error('Failed to initialize csrf token.');
+		}
+		const csrfToken = response.headers.get('X-CSRFToken');
+		console.log('CSRF Token:', csrfToken);
+	})
+	.catch(error => {
+		console.error('Error initializing user authentication:', error.message);
+	});
+}
+
 export function pollingFunctions() {
 	
 	refreshTokenLoop();
 
 	initSocketConnection();
+
+	getCSRFToken();
 
 }

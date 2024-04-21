@@ -8,6 +8,7 @@ import easyFetch from "@utils/easyFetch";
 import InputAugmented from "@components/InputAugmented";
 import displayPopup from "@utils/displayPopup";
 import setupLogin from "@utils/setupLogin";
+import privacyPolicyHtml from "@html/privacyPolicy.html?raw";
 
 export default class Signup extends AbstractComponent {
 	constructor(options = {}) {
@@ -115,6 +116,16 @@ export default class Signup extends AbstractComponent {
 			}
 		}
 
+		let privacyPolicyBlock = this.createPrivacyBlock({
+			title: "Terms and Conditions",
+			content: privacyPolicyHtml,
+			// content: "hello",
+			indicators: {
+				acceptIndicator: ["Please agree to the Privacy Policy", () => privacyPolicyBlock.input.getValue() != ""],
+			},
+			type: "checkbox"
+		});
+
 		/* Verify Code */
 		let verifyCodeBlock = new InputAugmented({
 			title: "Verify Code",
@@ -133,8 +144,6 @@ export default class Signup extends AbstractComponent {
 			}
 		}
 
-		/* Privacy Policy */
-			// put privacy policy block here
 
 		let nextButton = new CustomButton({content: "Next", action: true});
 		nextButton.id = "nextButton";
@@ -182,12 +191,15 @@ export default class Signup extends AbstractComponent {
 					async () => await this.verifySignupInput('validate_password', { password: passwordBlock.input.getValue() })
 				],
 			}, 
+			{
+				blocks: [privacyPolicyBlock],
+				actions: []
+			},
 			{ 
 				blocks: [verifyCodeBlock], 
 				actions: [] 
 			}
 		];
-
 		// hide all the steps apart from the first one
 		flow.forEach((step, index) => {
 			step.blocks.forEach((inputBlock) => {
@@ -238,7 +250,7 @@ export default class Signup extends AbstractComponent {
 		e.preventDefault();
 		if (this.flowIndex >= flow.length - 1)
 			return ;
-		console.log("before");
+		// console.log("before");
 
 		// validate input blocks (show warnings and dont advance if invalid)
 		for (const block of flow[this.flowIndex].blocks) {
@@ -251,16 +263,17 @@ export default class Signup extends AbstractComponent {
 		// call functions that are defined for this step
 		for (const action of flow[this.flowIndex].actions) {
 			let res = await action();
-			console.log("actionresulty: ", res);
+			// console.log("actionresulty: ", res);
 			if (res == false) {
-				console.log("oh no");
+				// console.log("oh no");
 				return ;
 			}
-			console.log("actionresult: ", res);
+			// console.log("actionresult: ", res);
 		}
 		
-		console.log("after");
+		// console.log("after");
 		this.flowIndex++;
+
 		// if (this.flowIndex > 0)
 		// 	document.getElementById("backButton").style.display = "block";
 		this.updateFormView(flow, this.flowIndex);
@@ -377,8 +390,8 @@ export default class Signup extends AbstractComponent {
 		
 		let valid = false;
 
-		console.log('submitSignup');
-		console.log('values:', formData);
+		// console.log('submitSignup');
+		// console.log('values:', formData);
 
 		await easyFetch('/api/user_management/auth/signup', {
 			method: 'POST',
@@ -453,10 +466,72 @@ export default class Signup extends AbstractComponent {
 			displayPopup(`Request Failed: ${error}`, 'error');
 			valid = false;
 		});
-		console.log("valid2: ", valid);
+		// console.log("valid2: ", valid);
 		return valid;
 	}
 
+	createPrivacyBlock(options) {
+		const privacyBlock = document.createElement("div");
+		privacyBlock.style.setProperty("width", "100%");
+		privacyBlock.style.setProperty("display", "flex");
+		privacyBlock.style.setProperty("margin-bottom", "20px");
+		privacyBlock.style.setProperty("margin-top", "0px");
+		privacyBlock.style.setProperty("flex-direction", "column");
+		privacyBlock.style.setProperty("align-items", "center");
+		privacyBlock.style.setProperty("justify-content", "space-between");
+
+		const privacyTitle = document.createElement("p");
+		privacyTitle.id = "privacy-title";
+		privacyTitle.textContent = options.title || "Terms and Conditions";
+		privacyTitle.style.setProperty("font-size", "32px");
+		privacyTitle.style.setProperty("margin", "15px 0px 10px 0px");
+		
+		const privacyDesc = document.createElement("p");
+		privacyDesc.id = "privacy-desc";
+		privacyDesc.innerHTML = options.content;
+		privacyDesc.style.setProperty("width", "100%");
+		privacyDesc.style.setProperty("font-size", "14px");
+		privacyDesc.style.setProperty("overflow-y", "auto");
+		privacyDesc.style.setProperty("height", "200px");
+
+		const checkBox = document.createElement("input");
+		checkBox.type = options.type || "checkbox";
+		checkBox.id = "privacy-checkbox";
+		checkBox.style.setProperty("width", "24px");
+		checkBox.style.setProperty("height", "24px");
+		checkBox.style.setProperty("margin-right", "15px");
+
+		const checkLable = document.createElement("label");
+		checkLable.textContent = "I agree to the Terms and Conditions";
+		checkLable.for = "privacy-checkbox";
+
+		const acceptPrivacyBlock = document.createElement("div");
+		acceptPrivacyBlock.style.setProperty("width", "100%");
+		acceptPrivacyBlock.style.setProperty("display", "flex");
+		acceptPrivacyBlock.style.setProperty("flex-direction", "row");
+		acceptPrivacyBlock.style.setProperty("justify-content", "center");
+		acceptPrivacyBlock.style.setProperty("align-items", "center");
+		acceptPrivacyBlock.style.setProperty("margin", "10px 0px");
+		
+		// const privacyPolicy = new CustomButton({ content: "Privacy Policy", action: false });
+
+		privacyBlock.appendChild(privacyTitle);
+		privacyBlock.appendChild(privacyDesc);
+		acceptPrivacyBlock.appendChild(checkBox);
+		acceptPrivacyBlock.appendChild(checkLable);
+
+		privacyBlock.appendChild(acceptPrivacyBlock);
+
+		privacyBlock.validate = async () => {
+			if (!checkBox.checked) {
+				displayPopup("Please agree to the Privacy Policy", "error");
+				return false;
+			}
+			return true;
+		}
+
+		return privacyBlock;
+	}
 
 	/* UTIL PAGE CREATION FUNCTIONS */
 	createBlock(blockName) {
@@ -467,52 +542,6 @@ export default class Signup extends AbstractComponent {
 		// block.style.setProperty("padding", "0px");
 		// block.style.setProperty("border", "1px red solid");
 		return block;
-	}
-
-	createPrivacyBlock() {
-		const privacyBlock = document.createElement("div");
-		privacyBlock.style.setProperty("width", "100%");
-		privacyBlock.style.setProperty("height", "200px");
-		// privacyBlock.style.setProperty("border", "1px yellow solid");
-
-		const privacyTitle = document.createElement("p");
-		privacyTitle.id = "privacy-title";
-		privacyTitle.textContent = "Privacy Policy";
-		privacyTitle.style.setProperty("font-size", "32px");
-		// privacyTitle.style.setProperty("font-family", "tk-421, Anta, sans-serif");
-		privacyTitle.style.setProperty("margin", "15px 0px 10px 0px");
-		
-		const checkBox = document.createElement("input");
-		checkBox.type = "checkbox";
-		checkBox.style.setProperty("width", "24px");
-		checkBox.style.setProperty("height", "24px");
-		checkBox.style.setProperty("margin-right", "15px");
-
-		const privacyDesc = document.createElement("p");
-		privacyDesc.id = "privacy-desc";
-		privacyDesc.textContent = "I agree to the terms and conditions.";
-		privacyDesc.style.setProperty("width", "100%");
-		privacyDesc.style.setProperty("font-size", "14px");
-
-		const acceptPrivacyBlock = document.createElement("div");
-		acceptPrivacyBlock.style.setProperty("width", "100%");
-		acceptPrivacyBlock.style.setProperty("height", "50px");
-		acceptPrivacyBlock.style.setProperty("margin", "10px 0px 10px 0px");
-		acceptPrivacyBlock.style.setProperty("display", "flex");
-		acceptPrivacyBlock.style.setProperty("flex-direction", "row");
-		acceptPrivacyBlock.style.setProperty("justify-content", "center");
-		acceptPrivacyBlock.style.setProperty("align-items", "center");
-		// acceptPrivacyBlock.style.setProperty("border", "1px green solid");
-		
-		const privacyPolicy = new CustomButton({content: "Privacy Policy", action: false});
-		
-		acceptPrivacyBlock.appendChild(checkBox);
-		acceptPrivacyBlock.appendChild(privacyDesc);
-		privacyBlock.appendChild(privacyTitle);
-		privacyBlock.appendChild(privacyPolicy);
-		privacyBlock.appendChild(acceptPrivacyBlock);
-
-		return privacyBlock;
 	}
 
 	createBottomButtons() {
@@ -545,7 +574,7 @@ export default class Signup extends AbstractComponent {
 	}
 
 	buttonOnClick = (e, arg) => {
-		console.log(arg);
+		// console.log(arg);
 		return true;
 	}
 

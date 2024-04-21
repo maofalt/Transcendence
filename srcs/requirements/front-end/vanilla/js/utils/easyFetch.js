@@ -45,10 +45,12 @@ export default async function easyFetch(url, options = { method: 'GET', body: nu
 			window.location.href = '/login';
 		}
 
-		if (response.headers.get("content-length") === "0") {
+		if (response.status === 204 || response.headers.get("content-length") === "0") {
 			return {
 				response,
-				body: null
+				body: {
+					message: "success",
+				}
 			};
 		}
 
@@ -86,8 +88,8 @@ try {
 			},
 			body: new URLSearchParams(formData)
 	});
-	console.log('Status Code:', response.status);
-	console.log('Response Body:', response.body);
+	// console.log('Status Code:', response.status);
+	// console.log('Response Body:', response.body);
 } catch (error) {
 	console.error('Request Failed:', error);
 }
@@ -103,8 +105,8 @@ makeApiRequest('/api/user_management/auth/login', {
 			body: new URLSearchParams(formData)
 })
 	.then({ response, body } => {
-		console.log('Status Code:', response.status);
-		console.log('Response Body:', response.body);
+		// console.log('Status Code:', response.status);
+		// console.log('Response Body:', response.body);
 	})
 	.catch(error => {
 		console.error('Request Failed:', error);

@@ -171,7 +171,7 @@ export default class EditProfile extends AbstractComponent {
 		avatarBlock.input.input.onchange = (e) => {
 			if (e.target.files.length > 0) {
 				avatarFile = e.target.files[0];
-				// console.log(avatarFile);
+				// // console.log(avatarFile);
 			}
 		}
 
@@ -184,7 +184,6 @@ export default class EditProfile extends AbstractComponent {
 				return ;
 			}
 			let checked = twoFactorBlock.querySelector(".toggle-input").checked;
-			console.log("checked: ", checked);
 			updateUser({
 				playername: playernameBlock.input.getValue() || "",
 				avatar: avatarFile || "",
@@ -280,7 +279,6 @@ export default class EditProfile extends AbstractComponent {
 			displayPopup(`Request Failed: ${error}`, 'error');
 			valid = false;
 		});
-		console.log("valid2: ", valid);
 		return valid;
 	}
 

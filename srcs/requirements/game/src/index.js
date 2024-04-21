@@ -7,7 +7,7 @@ const { Pool } = require('pg');
 const app = express();
 const server = https.createServer(app);
 const io = socketIo(server);
-// console.log("server io: ", io);
+// // console.log("server io: ", io);
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL
@@ -81,7 +81,7 @@ const data = {
 }
 
 io.on('connection', (client) => {
-    console.log('A client is connected');
+    // console.log('A client is connected');
     numClients = io.engine.clientsCount;
     if (numClients < 2)
         player1.clientId = client.id;
@@ -89,17 +89,17 @@ io.on('connection', (client) => {
         player2.clientId = client.id;
 
     client.emit('clientId', client.id, numClients);
-    console.log(`Client connected with ID: ${client.id}`);
-    console.log(`Number of connected clients: ${numClients}`);
+    // console.log(`Client connected with ID: ${client.id}`);
+    // console.log(`Number of connected clients: ${numClients}`);
     
     // Handle other events or messages from the client
     client.on('ping', () => {
-        console.log("ping received ! emitting pong...");
+        // console.log("ping received ! emitting pong...");
         client.emit('pong');
     });
 
     client.on('clickedStart', () => {
-        console.log(`clicked start ! (from client ${client.id})`);
+        // console.log(`clicked start ! (from client ${client.id})`);
     });
 
 
@@ -112,7 +112,7 @@ io.on('connection', (client) => {
 
     // Gérer la déconnexion
     socket.on('disconnect', () => {
-        console.log('Client disconnected');
+        // console.log('Client disconnected');
     });
 });
 
@@ -214,4 +214,4 @@ io.on('connection', (client) => {
 // The server can listen the choosed port
 const PORT = 3001;
 app.listen(PORT, () => { 
-    console.log('Server listening on port 3001') });
+    // console.log('Server listening on port 3001') });

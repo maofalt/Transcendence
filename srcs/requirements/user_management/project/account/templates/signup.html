@@ -82,7 +82,7 @@
     function closeSignupPopup() {
     //   $("#darkLayer").fadeOut();
       $("#signupPopup").fadeOut();
-      console.log('closeSignupPopup() called\n\n');
+      // console.log('closeSignupPopup() called\n\n');
     }
     function checkPasswordMatch() {
         var password = $("#signupForm input[name='password']").val();
@@ -95,7 +95,7 @@
         }
     }
     function updateSignupButtonStatus() {
-        console.log('updateSignupButtonStatus() called\n\n');
+        // console.log('updateSignupButtonStatus() called\n\n');
 
         var form = $("#signupForm")[0];
         var allFieldsFilled = Array.from(form.elements).every(function(element) {
@@ -110,7 +110,7 @@
 
         if (allFieldsFilled && isPasswordMatch && isCodeVerified) {
             $("#signupButton").prop("disabled", false);
-            console.log('BUTTON: need to be enable\n\n');
+            // console.log('BUTTON: need to be enable\n\n');
 
         } else {
             $("#signupButton").prop("disabled", true);
@@ -142,13 +142,13 @@
             headers: { "X-CSRFToken": getCookie('csrftoken') },
             success: function (data) {
                 if (data.success) {
-                    console.log('Code sent successfully');
+                    // console.log('Code sent successfully');
                 } else {
-                    console.log('Failed to send code:', data.error);
+                    // console.log('Failed to send code:', data.error);
                 }
             },
             error: function () {
-                console.log('An error occurred while processing your request.');
+                // console.log('An error occurred while processing your request.');
             }
         });
     }
@@ -177,16 +177,16 @@
             headers: { "X-CSRFToken": getCookie('csrftoken') },
             success: function (data) {
                 if (data.success) {
-                    console.log('Code verified successfully');
+                    // console.log('Code verified successfully');
                     $("#successMessage").text("Verified successfully");
                     updateSignupButtonStatus();
                     // submitSignupForm();
                 } else {
-                    console.log('Failed to verify code:', data.error);
+                    // console.log('Failed to verify code:', data.error);
                 }
             },
             error: function () {
-                console.log('An error occurred while processing your request.');
+                // console.log('An error occurred while processing your request.');
             }
         });
     }
@@ -198,14 +198,14 @@
             headers: { "X-CSRFToken": getCookie('csrftoken') },
             success: function (data, textStatus, xhr) {
                 if (data.success) {
-                    console.log('signed up success\n\n');
+                    // console.log('signed up success\n\n');
                     closeSignupPopup();
                     closeLoginPopup();
                     var accessToken = xhr.getResponseHeader('Authorization');
                     if (accessToken) {
                         // Store the access token in memory
                         sessionStorage.setItem('accessToken', accessToken);
-                        console.log('Access token stored:', accessToken);
+                        // console.log('Access token stored:', accessToken);
                     }
                     window.location.href = '';
                 } else {
@@ -214,7 +214,7 @@
             },
             error: function () {
                 // Handle error
-                console.log('An error occurred while processing your request.');
+                // console.log('An error occurred while processing your request.');
             }
         });
     }

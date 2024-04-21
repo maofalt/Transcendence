@@ -7,7 +7,7 @@ const hostname = window.location.hostname;
 const protocol = 'wss';
 const io_url = hostname.includes("github.dev") ? `${protocol}://${hostname}` : `${protocol}://${hostname}:9443`;
 
-console.log(`Connecting to ${io_url}`);
+// console.log(`Connecting to ${io_url}`);
 
 let socket = null;
 

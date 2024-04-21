@@ -60,18 +60,18 @@ export default class CreateTournament extends AbstractView {
 
 			// Initialize the game with basic settings
 			let basicGameSettings = await this.getBasicGameSettings();
-			console.log('Initializing game with basic settings:', basicGameSettings);
+			// console.log('Initializing game with basic settings:', basicGameSettings);
 			await this.initializeGame(basicGameSettings);
 
 			let gameSettingsForm = document.getElementById('game-settings-form');
 			gameSettingsForm.querySelectorAll('.input-tag').forEach(input => {
 				input.addEventListener('change', async (event) => {
 				event.preventDefault();
-				console.log('Responding to form changes');
+				// console.log('Responding to form changes');
 
 				// Get the game settings from the form
 				let gameSettings = await this.getGameSettingsFromForm();
-				console.log('Updating game with new settings:', gameSettings);
+				// console.log('Updating game with new settings:', gameSettings);
 				// Re-initialize the game with new settings
 				await this.initializeGame(gameSettings);
 				});
@@ -86,12 +86,12 @@ export default class CreateTournament extends AbstractView {
 
 		let matchID = await this.createGame(gameSettings);
 		let gamePreviewPanel = document.getElementById('game-preview');
-		// console.log('GAME PREVIEW PANEL', gamePreviewPanel);
+		// // console.log('GAME PREVIEW PANEL', gamePreviewPanel);
 		let width = gamePreviewPanel.offsetWidth;
 		let height = gamePreviewPanel.offsetHeight - 100;
 
-		console.log('Match ID:', matchID);
-		// console.log("GAME CONTAINER SIZE",width, height);
+		// console.log('Match ID:', matchID);
+		// // console.log("GAME CONTAINER SIZE",width, height);
 		// Assuming the Game constructor or an update method can handle new settings
 		// if (!this.game) {
 		//   this.game = new Game(matchID, width, height);
@@ -104,12 +104,12 @@ export default class CreateTournament extends AbstractView {
 		// this.game = new GameView(matchID, width, height);
 		// this.game.id = 'game-view';
 		let previewContainer = document.getElementById('preview-container')
-		// console.log(previewContainer);
+		// // console.log(previewContainer);
 		if (previewContainer) {
-			console.log("GAME CONTAINER", previewContainer);
+			// console.log("GAME CONTAINER", previewContainer);
 			previewContainer.replaceChildren(this.game);
 		} else {
-			console.log("GAME CONTAINER NOT FOUND", previewContainer);
+			// console.log("GAME CONTAINER NOT FOUND", previewContainer);
 		}
 
 		// hiding some elements in the game view
@@ -119,19 +119,19 @@ export default class CreateTournament extends AbstractView {
 		// let gameContainer = this.game.getElementById("gameContainer");
 		gameContainer.querySelector("#count-down").style.display = "none"; // not displaying the count down
 		gameContainer.querySelector("#leave-button").style.display = "none"; // not displaying the leave button
-		console.log('Game initialized');
+		// console.log('Game initialized');
 	}
 
 
 	async createGame(gameSettings) {
-		console.log('Create Game');
+		// console.log('Create Game');
 		try {
 			const response = await makeApiRequest('/game-logic/createMatch','POST',gameSettings);
-			console.log('Match created:', response.body);
+			// console.log('Match created:', response.body);
 				return response.body.matchID;
 		} catch (error) {
 			console.error('Failed to create match:', error);
-		console.log("THIS IS THE ERROR ::::::::::",error);
+		// console.log("THIS IS THE ERROR ::::::::::",error);
 				return error;
 		}
 	}
@@ -187,10 +187,10 @@ export default class CreateTournament extends AbstractView {
 			//change color from #ffffff to 0xffffff
 			gameSettings.ballData.color = '0x' + gameSettings.ballData.color.slice(1);
 			await this.addPlayerDataToGameSettings(gameSettings, [], gameSettings.gamemodeData.nbrOfPlayers);
-			console.log('Game settings from form:', gameSettings);
+			// console.log('Game settings from form:', gameSettings);
 			return gameSettings;
 		} catch (error) {
-			console.log('ball color from form:', document.getElementById('ball_color').value);
+			// console.log('ball color from form:', document.getElementById('ball_color').value);
 			console.error('Failed to join tournament:', error);
 		}
 		
@@ -218,7 +218,7 @@ export default class CreateTournament extends AbstractView {
 				};
 				gameSettings.playersData.push(dummyPlayer);
 			});
-			console.log('Game settings with sci-fi character names:', gameSettings);
+			// console.log('Game settings with sci-fi character names:', gameSettings);
 		} catch (error) {
 			console.error('Failed to add player data to game settings:', error);
 		}
@@ -283,7 +283,7 @@ export default class CreateTournament extends AbstractView {
 		setting:{  ...gameSettings }
 		};
 
-		console.log('Submitting tournament:', tournamentAndGameSettings);
+		// console.log('Submitting tournament:', tournamentAndGameSettings);
 		easyFetch('/api/tournament/create-and-list/', {
 			method: 'POST',
 			headers: {
@@ -315,8 +315,8 @@ export default class CreateTournament extends AbstractView {
 
 	highlightInvalidFields = (error) => {
 		const errorKeys = Object.keys(error);
-		console.log(errorKeys[0]);
-		console.log("highlighting invalid fields")
+		// console.log(errorKeys[0]);
+		// console.log("highlighting invalid fields")
 		const inputs = document.querySelectorAll('input');
 		inputs.forEach(input => {
 			if (errorKeys.includes(input.name))

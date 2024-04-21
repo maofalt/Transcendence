@@ -48,7 +48,7 @@ export default class ProfilePage extends AbstractComponent {
 		this.friendElemsToBeFilled = {};
 
 		// this.user = JSON.parse(sessionStorage.getItem("userDetails"));
-		// // console.log("USER:", this.user);
+		// // // console.log("USER:", this.user);
 		// if (!this.user)
 		// 	this.user = fetchUserDetails();
 
@@ -190,7 +190,7 @@ export default class ProfilePage extends AbstractComponent {
 		elemsToBeFilled.userPlayername.textContent = user.playername || "N/A";
 		elemsToBeFilled.userEmail.textContent = user.email || "N/A";
 		// elemsToBeFilled.userPhone.textContent = user.phone || "N/A";
-		console.log("user", user);
+		// console.log("user", user);
 		elemsToBeFilled.pannelTitle.textContent = `Friends List  ( ${user.friends_count} )`;
 		this.fillGameStats(this.userElemsToBeFilled, user.username, gameStats);
 	}
@@ -203,10 +203,10 @@ export default class ProfilePage extends AbstractComponent {
 		elemsToBeFilled.matchLosses.textContent = gameStats.nbr_of_lost_matches;
 		elemsToBeFilled.matchWinrate.textContent = !gameStats.total_played ? "N/A" : (gameStats.nbr_of_won_matches / gameStats.total_played * 100).toFixed(1).toString() + "%";
 		let matchHistory = gameStats.played_tournaments;
-		console.log("Match History:", matchHistory);
+		// console.log("Match History:", matchHistory);
 		elemsToBeFilled.matchRows.innerHTML = "";
 		matchHistory.forEach(match => {
-			// console.log("Match:", match);
+			// // console.log("Match:", match);
 			let matchRow = document.createElement("div");
 			matchRow.classList.add("match-row");
 			matchRow.innerHTML = `
@@ -240,7 +240,7 @@ export default class ProfilePage extends AbstractComponent {
 
 			if (!response || !body) {
 				throw new Error("Response is null");
-			} else if (response.status === 200) {
+			} else if (response.ok) {
 				gameStats = body;
 			} else {
 				throw new Error(body.error || JSON.stringify(body));
@@ -268,7 +268,7 @@ export default class ProfilePage extends AbstractComponent {
 		.then(async res => {
 			let response = res.response;
 			let body = res.body;
-			console.log("Response:", response);
+			// console.log("Response:", response);
 			if (!response) {
 				throw new Error("Response is null");
 			} else if (response.status === 404) {

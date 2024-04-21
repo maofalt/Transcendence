@@ -13,8 +13,6 @@ export default class TwoFactorAuth extends AbstractComponent {
 	constructor(options = {}) {
 		super();
 
-		console.log('TwoFactorAuth');
-
 		const styleEl = document.createElement('style');
 		styleEl.textContent = styles;
 		this.shadowRoot.appendChild(styleEl);
@@ -49,7 +47,6 @@ export default class TwoFactorAuth extends AbstractComponent {
 	submitTwoFactorAuth = (e, formData) => {
 		if (e)
 			e.preventDefault();
-		console.log('values:', formData);
 		easyFetch('/api/user_management/auth/verify_code', {
 			method: 'POST',
 			headers: {
@@ -92,7 +89,6 @@ export default class TwoFactorAuth extends AbstractComponent {
 
 	cancelTwoFactorAuth = (e) => {
 		e.preventDefault();
-		console.log('cancelTwoFactorAuth');
 	}
 }
 

@@ -127,7 +127,7 @@ Array of size 2 with `[timestamp, latency]` is sent. `timestamp` should be sent 
 // Socket.io example:
 this.socket.on('ping', ([timestamp, latency]) => {
     this.socket.emit('pong', timestamp);
-    console.log(latency + 'ms');
+    // console.log(latency + 'ms');
 });
 ```
 
