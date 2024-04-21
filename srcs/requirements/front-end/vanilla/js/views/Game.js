@@ -263,7 +263,7 @@ export default class Game extends AbstractComponent {
 			// let parsedData = JSON.parse(data);
 			data.playersArray = Object.values(data.players);
 			// // console.log("data : ", data);
-			this.fetchStartingData(data.playersArray).then(() => {
+			this.fetchStartingData(data.playersArray).then(async () => {
 				this.generateScene(data, this.socket);
 				this.updateScene(data, this.socket);
 				this.renderer.render(this.scene, this.camera);
@@ -283,7 +283,8 @@ export default class Game extends AbstractComponent {
 			// }
 			// // console.log("FPS: " + 1000 / callTracker() + "fps");
 			// fps = 1000 / callTracker();
-			this.renderer.render(this.scene, this.camera);
+			if (this.renderer)
+				this.renderer.render(this.scene, this.camera);
 		});
 
 		this.socket.on('destroy', data => {
@@ -519,12 +520,16 @@ export default class Game extends AbstractComponent {
 				this.ball.mesh.rotateY(Math.PI / 42 * data.ball.sp);
 				this.ball.mesh.rotateZ(Math.PI / 36 * data.ball.sp);
 			}
-			this.ball.mesh.position.set(data.ball.pos.x, data.ball.pos.y, 0);
+			if (this.ball && this.ball.mesh) {
+				this.ball.mesh.position.set(data.ball.pos.x, data.ball.pos.y, 0);
+			}
 		}
 
 		for (let i=0; i<data.playersArray.length; i++) {
-			this.paddles[i].mesh.position.set(data.playersArray[i].paddle.pos.x, data.playersArray[i].paddle.pos.y, data.playersArray[i].paddle.pos.z);
-			this.paddles[i].mesh.material.opacity = data.playersArray[i].connected ? 1.0 : 0.3;
+			if (this.paddles[i] && this.paddles[i].mesh) {
+				this.paddles[i].mesh.position.set(data.playersArray[i].paddle.pos.x, data.playersArray[i].paddle.pos.y, data.playersArray[i].paddle.pos.z);
+				this.paddles[i].mesh.material.opacity = data.playersArray[i].connected ? 1.0 : 0.3;
+			}
 		}
 				
 		// update scores
