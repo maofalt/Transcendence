@@ -184,6 +184,8 @@ export default class CreateTournament extends AbstractView {
 				},
 				"playersData": []
 			}
+			//change color from #ffffff to 0xffffff
+			gameSettings.ballData.color = '0x' + gameSettings.ballData.color.slice(1);
 			await this.addPlayerDataToGameSettings(gameSettings, [], gameSettings.gamemodeData.nbrOfPlayers);
 			console.log('Game settings from form:', gameSettings);
 			return gameSettings;
@@ -271,6 +273,8 @@ export default class CreateTournament extends AbstractView {
 		// Extract nbr_of_player_match from gameSettings
 		const nbr_of_player_match = gameSettings['nbr_of_players_per_match'];
 
+		//change n tournament data color  ball color from #ffffff to 0xffffff
+		gameSettings.ball_color = '0x' + gameSettings.ball_color.slice(1);
 		// Combine data from both forms
 		const tournamentAndGameSettings = {
 		...tournamentSettings,

@@ -13,7 +13,7 @@ import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import CustomButton from '@components/CustomButton';
 import { navigateTo } from "@utils/Router";
 import purpleSpaceImg from '@images/purpleSpace.jpg';
-
+import displayPopup from '@utils/displayPopup';
 import gameSettings from '@gameLogic/gameSettings.json';
 
 // importing game logic code :
@@ -213,12 +213,12 @@ export default class BasicGameV2 extends AbstractComponent {
 
     localerror = (error) => {
 		console.error("Socket error: ", error);
-		alert("Socket error: " + error);
+		displayPopup("Socket error: " + error, "error");
 	}
 
 	localconnect_error = (error) => {
-		console.error("Socket connection error we are here: ", error);
-		alert("Socket connection error: " + error);
+		console.error("Socket connection error: ", error);
+		displayPopup("Socket connection error: " + error, "error");
 	}
 
 	localwhoareyou = () => {
