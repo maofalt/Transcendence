@@ -19,7 +19,6 @@ import gameSettings from '@gameLogic/gameSettings.json';
 // importing game logic code :
 import lobbySettings from '@gameLogic/lobbySettings.js';
 import { initLobby, initFieldShape } from '@gameLogic/init.js';
-import debugDisp from '@gameLogic/debugDisplay.js';
 import render from '@gameLogic/rendering.js';
 // import { initFieldShape } from "../gameLogic/init";
 
