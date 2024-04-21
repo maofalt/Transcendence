@@ -97,7 +97,7 @@ class TournamentTable extends BaseTable {
     }
 
     //Method to create a style HTMl object (e.g. a button)
-    createStyledHTMLObject = (tagName, content, style,) => {
+    createStyledHTMLObject = (tagName, content, style) => {
         const element = document.createElement(tagName);
         if (typeof content === 'string') {
             element.textContent = content;
