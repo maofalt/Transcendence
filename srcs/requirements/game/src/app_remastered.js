@@ -496,12 +496,9 @@ function verifyMatchSettings(settings) {
         return "Player names should not be empty";
     }
 
-	if(settings.paddlesData.height + settings.ballData.radius * 2 >= settings.sizeOfGoals) {
-		return "Scoring is impossible. Reduce paddles height or ball radius."
-	}
-
-    // check that the current user is actually part of those users :
-    // this part will be handled by the user management API
+	// if(settings.paddlesData.height + settings.ballData.radius * 2 >= settings.sizeOfGoals) {
+	// 	return "Scoring is impossible. Reduce paddles height or ball radius."
+	// }
 
 	return null;
 }
@@ -587,8 +584,8 @@ function setupMatch(settings, res) {
 
 	let error = verifyMatchSettings(gameSettings);
 	if (error) {
-		// // console.log(error);
-		res.status(400).json({ error });
+		// console.log(error);
+		res.json({ error });
 		return null;
 	}
 
