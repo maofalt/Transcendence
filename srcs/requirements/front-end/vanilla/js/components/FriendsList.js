@@ -52,7 +52,6 @@ export default class FriendsList extends AbstractComponent {
 		}).catch(error => {
 			console.error('Error retrieving user details:', error);
 		});
-		console.log("friends:", friends);
 
 		for (const friend of friends) {
 			friend.avatar = '/api/user_management' + friend.avatar;

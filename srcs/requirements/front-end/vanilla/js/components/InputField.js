@@ -19,15 +19,13 @@ export default class InputField extends AbstractComponent {
 
 		if (options.style) {
 			for (const [key, value] of Object.entries(options.style)) {
-				console.log(key);
-				console.log(value);
 				this.shadowRoot.querySelector('input').style.setProperty(key, value);
 			}
 		}
 	}
 
 	getValue = () => {
-		// console.log('getValue', this.input.value);
+		// // console.log('getValue', this.input.value);
 		return this.input.value;
 	}
 }

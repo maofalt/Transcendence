@@ -14,7 +14,6 @@ const util = require('util');
 // importing personal code :
 const lobbySettings = require('./gameLogic/lobbySettings');
 const init = require('./gameLogic/init');
-const debugDisp = require('./gameLogic/debugDisplay');
 const render = require('./gameLogic/rendering');
 const axios = require('axios');
 const { match } = require('assert');
@@ -73,7 +72,7 @@ app.use((req, res, next) => {
 
 // Start the server
 server.listen(expressPort, () => {
-    console.log(`APP Express server running on port ${expressPort}`);
+    // console.log(`APP Express server running on port ${expressPort}`);
 });
 
 //======================================== LOBBY LOOPS ========================================//
@@ -102,7 +101,7 @@ function gameLoop(matchID) {
 function countDown(match, mins, secs) {
 	if (!match.gameState.timeLimit) {
 		match.gameState.timeLimit = Date.now() + ((mins * 60) + secs) * 1000;
-		// console.log(`TIMER ENDS IN ${mins}:${secs}`);
+		// // console.log(`TIMER ENDS IN ${mins}:${secs}`);
 	}
 
 	// calculate the remaining time
@@ -110,12 +109,12 @@ function countDown(match, mins, secs) {
 	let minutes = Math.floor(match.gameState.waitingRemainingTime / 60000);
 	let seconds = Math.floor((match.gameState.waitingRemainingTime % 60000) / 1000);
 	match.gameState.countDownDisplay = `${minutes < 10 ? "0" + minutes : minutes}:${seconds < 10 ? "0" + seconds : seconds}`;
-	// // console.log(match.gameState.waitingRemainingTime);
-	// // console.log(`MATCH ${matchID} STARTS IN ${minutes}:${seconds}`);
+	// // // console.log(match.gameState.waitingRemainingTime);
+	// // // console.log(`MATCH ${matchID} STARTS IN ${minutes}:${seconds}`);
 
 	// if the countdown has finished, reset
 	if (match.gameState.waitingRemainingTime <= 0) {
-		// // console.log("Countdown finished");
+		// // // console.log("Countdown finished");
 		match.gameState.timeLimit = null;
 		match.gameState.waitingRemainingTime = null;
 		return 1;
@@ -126,7 +125,7 @@ function countDown(match, mins, secs) {
 function waitingRoom(matchID) {
 	let match = matches.get(matchID);
 	if (!match) {
-		// console.log("Match not found");
+		// // console.log("Match not found");
 		// client.emit('error', 'Match not found'); 
 		// client.disconnect();
 		return ;
@@ -170,17 +169,17 @@ function waitingRoom(matchID) {
 
 function handleConnectionV2(client) {
 
-	// console.log("\nCLIENT CONNECTED\n");
+	// // console.log("\nCLIENT CONNECTED\n");
 
 	let match = client.match;
 
 	// - check if player is part of this match;
-	// console.log("client.playerID: ", client.playerID);
+	// // console.log("client.playerID: ", client.playerID);
 	let playerFound = false;
 	Object.values(match.gameState.players).forEach(player => {
-		// console.log("player.accountID: ", player.accountID);
+		// // console.log("player.accountID: ", player.accountID);
 		if (player.accountID == client.playerID) {
-			// console.log("player.accountID validated: ", player.accountID);
+			// // console.log("player.accountID validated: ", player.accountID);
 			player.connected = true;
 			player.socketID = client.id;
 			match.gameState.connectedPlayers++;
@@ -190,25 +189,25 @@ function handleConnectionV2(client) {
 
 	if (!playerFound) {
         // Player not part of the match, send error message to client
-		// console.log(match.gameState.players);
+		// // console.log(match.gameState.players);
 		throw new Error(`Player ${client.playerID} not part of the match`);
     }
 
     client.join(client.matchID);
-    // // console.log('match: ', util.inspect(match, {depth: null}));
+    // // // console.log('match: ', util.inspect(match, {depth: null}));
     // client.emit('generate', JSON.stringify(match));
-	// console.log('---DATA---\n', match.gameState, '\n---END---\n');
-	// console.log("before disaster");
+	// // console.log('---DATA---\n', match.gameState, '\n---END---\n');
+	// // console.log("before disaster");
     client.emit('generate', match.gameState);
-    // console.log("after disaster");
+    // // console.log("after disaster");
 
     // if (match.gameState.connectedPlayers == 1 && match.gameState.ongoing == false) {
-	// 	// console.log("SETTING INTERVAL");
+	// 	// // console.log("SETTING INTERVAL");
     //     match.gameInterval = setInterval(waitingRoom, 20, client.matchID);
     //     render.getBallDir(match.gameState);
     // }
 
-    // console.log(`Player connected with ID: ${client.playerID}`);
+    // // console.log(`Player connected with ID: ${client.playerID}`);
 
     // client.emit('generate', data);
     // debugDisp.displayData(match.gameState);
@@ -223,8 +222,8 @@ function getMatch(client) {
 	}
 	client.match = matches.get(client.matchID);
 	if (!client.match) {
-		// console.log("matchid: ", client.matchID);
-		// console.log("ALL MATCHES:\n", matches);
+		// // console.log("matchid: ", client.matchID);
+		// // console.log("ALL MATCHES:\n", matches);
 		throw new Error('Match not found');
 	}
 }
@@ -290,14 +289,14 @@ game.use((client, next) => {
 game.on('connection', (client) => {
 	try {
 		//handle client connection and match init + players status
-		// console.log("\nclient:\n", client.decoded);
+		// // console.log("\nclient:\n", client.decoded);
 
 		let match = handleConnectionV2(client);
 		let data = match.gameState;
 		
 		// player controls
 		client.on('moveUp', () => {
-			// console.log(`client ${client.id} moving up`);
+			// // console.log(`client ${client.id} moving up`);
 			let player = data.players[client.playerID];
 			if (player && player.paddle && !player.paddle.dashSp) {
 				player.paddle.currSp = player.paddle.sp;
@@ -305,7 +304,7 @@ game.on('connection', (client) => {
 		});
 		
 		client.on('moveDown', () => {
-			// console.log(`client ${client.id} moving down`);
+			// // console.log(`client ${client.id} moving down`);
 			let player = data.players[client.playerID];
 			if (player && player.paddle && !player.paddle.dashSp) {
 				player.paddle.currSp = -player.paddle.sp;
@@ -313,7 +312,7 @@ game.on('connection', (client) => {
 		});
 		
 		client.on('dash', () => {
-			// console.log(`client ${client.id} dashing`);
+			// // console.log(`client ${client.id} dashing`);
 			let player = data.players[client.playerID];
 			if (player && player.paddle && !player.paddle.dashSp) {
 				if (player.paddle.currSp == 0) {
@@ -326,7 +325,7 @@ game.on('connection', (client) => {
 		});
 		
 		client.on('stop', () => {
-			// console.log(`client ${client.id} stopping`);
+			// // console.log(`client ${client.id} stopping`);
 			let player = data.players[client.playerID];
 			if (player && player.paddle && !player.paddle.dashing) {
 				player.paddle.currSp = 0;
@@ -334,30 +333,30 @@ game.on('connection', (client) => {
 		});
 
 		client.on('delete-match', (matchID) => {
-			// // console.log("FROM BACKEND : DELETE MATCH",client.matchID);
+			// // // console.log("FROM BACKEND : DELETE MATCH",client.matchID);
 			// // Print the keys in the matches map
-			// // console.log("Keys in matches map:", Array.from(matches.keys()))
+			// // // console.log("Keys in matches map:", Array.from(matches.keys()))
 			// if (matches.has(client.matchID)) {
-			// 	// console.log("INSIDE MATCH HAS MATCHID");
+			// 	// // console.log("INSIDE MATCH HAS MATCHID");
 			// 	if (matches.get(client.matchID).gameState.gameInterval)
 			// 		clearInterval(this.matches.get(client.matchID).gameState.gameInterval);
-			// 	// console.log("DELETING MATCH");
+			// 	// // console.log("DELETING MATCH");
 			// 	matches.delete(client.matchID);
 			// } else if (matches.has(matchID)) {
-			// 	// console.log("INSIDE MATCH HAS MATCHID");
+			// 	// // console.log("INSIDE MATCH HAS MATCHID");
 			// 	if (matches.get(matchID).gameState.gameInterval)
 			// 		clearInterval(this.matches.get(matchID).gameState.gameInterval);
-			// 	// console.log("DELETING MATCH");
+			// 	// // console.log("DELETING MATCH");
 			// 	matches.delete(matchID);
 			// }
 		});
 
 		client.on("connection_error", (err) => {
-			// console.log("CONNECTION ERROR LOG :")
-			// console.log(err.req);      // the request object
-			// console.log(err.code);     // the error code, for example 1
-			// console.log(err.message);  // the error message, for example "Session ID unknown"
-			// console.log(err.context);  // some additional error context
+			// // console.log("CONNECTION ERROR LOG :")
+			// // console.log(err.req);      // the request object
+			// // console.log(err.code);     // the error code, for example 1
+			// // console.log(err.message);  // the error message, for example "Session ID unknown"
+			// // console.log(err.context);  // some additional error context
 		});
 		
 		// disconnect event
@@ -368,7 +367,7 @@ game.on('connection', (client) => {
 			if (player)
 				player.connected = false;
 			if (data.connectedPlayers < 1 && client.matchID < 0) {
-				// console.log("CLEARING INTERVAL");
+				// // console.log("CLEARING INTERVAL");
 				// clearInterval(match.gameInterval);
 				let match = matches.get(client.matchID);
 				// if (data.ongoing) {
@@ -383,10 +382,10 @@ game.on('connection', (client) => {
 					clearInterval(match.gameInterval);
 					matches.delete(client.matchID);
 				}
-				// console.log("SENDING CLEAN MSG");
+				// // console.log("SENDING CLEAN MSG");
 				// client.emit("clean-all");
 			}
-			// // console.log(`Client disconnected with ID: ${client.id} (num clients: ${game.engine.clientsCount})`);
+			// // // console.log(`Client disconnected with ID: ${client.id} (num clients: ${game.engine.clientsCount})`);
 		});
 
 		// setInterval(() => {
@@ -400,7 +399,7 @@ game.on('connection', (client) => {
 		// 	// process.stdout.clearLine(0);  // Clear current text
 		// 	// process.stdout.cursorTo(0);   // Move cursor to beginning of line
 		// 	// process.stdout.write(`${client.id} latency: ${latency}ms`); // Write new text
-		// 	// // console.log(`${client.id} latency: ${latency}ms`);
+		// 	// // // console.log(`${client.id} latency: ${latency}ms`);
 		// });
 
 	} catch (error) {
@@ -431,8 +430,8 @@ function generateMatchID() {
 // return crypto.createHash('sha256').update(string).digest('hex');
 
 function verifyMatchSettings(settings) {
-	// console.log("MATCH SETTINGS VERIFICATION :");
-	// console.log(settings);
+	// // console.log("MATCH SETTINGS VERIFICATION :");
+	// // console.log(settings);
 
 	const expectedCategories = ['gamemodeData', 'fieldData', 'paddlesData', 'ballData'];
 	for (const category of expectedCategories) {
@@ -488,7 +487,7 @@ function verifyMatchSettings(settings) {
 	// check if all players have different names, that they dont have an empty name
     let playerNames = settings.playersData.map(player => player.accountID);
     let uniquePlayerNames = [...new Set(playerNames)];
-	// console.log("playerNames: ", playerNames, "uniquePlayerNames: ", uniquePlayerNames)
+	// // console.log("playerNames: ", playerNames, "uniquePlayerNames: ", uniquePlayerNames)
     if (playerNames.length !== uniquePlayerNames.length) {
         return "Multiple identical player IDs";
     }
@@ -527,7 +526,7 @@ function postMatchResult(matchId, winnerId) {
 
 	axios.post(url, payload)
 		.then(response => {
-			// console.log('Match result posted successfully');
+			// // console.log('Match result posted successfully');
 		})
 		.catch(error => {
 			console.error('Error posting match result:', error);
@@ -554,8 +553,8 @@ app.post('/createMultipleMatches', (req, res) => {
         return res.status(403).json({ error: 'Unauthorized' });
     }
 
-	// console.log("\nCREATE MULTIPLE MATCHES\n");
-	// console.log(allGameSettings);
+	// // console.log("\nCREATE MULTIPLE MATCHES\n");
+	// // console.log(allGameSettings);
 
 	for (settings of allGameSettings.matches) {
 
@@ -574,21 +573,21 @@ function setupMatch(settings, res) {
 
 	let { tournament_id, matchID, ...gameSettings } = settings;
 
-	// console.log("CREATING MATCH : ", gameSettings);
+	// // console.log("CREATING MATCH : ", gameSettings);
 
 	if (!matchID) {
 		matchID = generateMatchID();
 	}
 
 	if (matches.has(matchID)) {
-		// console.log("Match already exists");
+		// // console.log("Match already exists");
 		res.json({ matchID });
 		return null;
 	}
 
 	let error = verifyMatchSettings(gameSettings);
 	if (error) {
-		// console.log(error);
+		// // console.log(error);
 		res.status(400).json({ error });
 		return null;
 	}
@@ -611,11 +610,11 @@ function setupMatch(settings, res) {
 
 	// Emit the new match notification to all players (if it isn't a preview match; < 0)
 	if (matchID >= 0) {
-		// console.log("\n\nPLAYERS :\n\n", players);
+		// // console.log("\n\nPLAYERS :\n\n", players);
 		players.forEach(player => {
 			let client = clients.get(player);
 			if (client) {
-				// console.log("EMITTING TO: ", player);
+				// // console.log("EMITTING TO: ", player);
 				client.emit('new-match', matchID);
 			}
 		});
@@ -623,10 +622,10 @@ function setupMatch(settings, res) {
 
 	matches.get(matchID).gameInterval = setInterval(waitingRoom, 20, matchID);
 	render.getBallDir(gameState);
-	// // console.log("All matches:");
+	// // // console.log("All matches:");
 	// for (const [matchID, match] of matches) {
-	// 	// console.log("Match ID:", matchID);
-	// 	// console.log("Match Data:", match);
+	// 	// // console.log("Match ID:", matchID);
+	// 	// // console.log("Match Data:", match);
 	// }
 	return matchID;
 }

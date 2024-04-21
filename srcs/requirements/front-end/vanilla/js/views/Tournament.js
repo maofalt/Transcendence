@@ -79,7 +79,7 @@ export default class Tournament extends AbstractView {
 		try {
 			const response = await makeApiRequest('/api/tournament/create-and-list/','GET');
 			tournaments = response.body;
-			console.log(tournaments);
+			// console.log(tournaments);
 			if (!tournaments) 
 			{	
 				displayPopup('Action failed:', 'Failed to get tournament list');

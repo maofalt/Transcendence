@@ -136,7 +136,7 @@ export const redirectTo = (url) => {
 
 export const navigateTo = (url) => {
 	history.pushState(null, null, url);
-	console.log('url: ', url);
+	// console.log('url: ', url);
 	router();
 };
 
@@ -161,7 +161,6 @@ export const router = async () => {
 		previousView = viewContainer.querySelector(View.component);
 		// fadeIn(viewContainer.querySelector(View.component));
 	} else {
-		console.log('path: ', path);
 
 		if (currentView && currentView.destroy && currentView !== View) {
 			currentView.destroy();

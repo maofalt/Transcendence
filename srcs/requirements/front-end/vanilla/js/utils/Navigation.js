@@ -22,7 +22,6 @@ export const setupNavigation = () => {
             link.classList.add('nav-link');
             link.addEventListener('click', (event) => {
                 event.preventDefault(); // Prevent the default link behavior
-				console.log('nav element clicked: ', event.target);
                 navigateTo(path); // Use the navigateTo function from Router.js
             });
             navContainer.appendChild(link); // Append the link to the navigation container

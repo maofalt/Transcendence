@@ -88,8 +88,8 @@ try {
 			},
 			body: new URLSearchParams(formData)
 	});
-	console.log('Status Code:', response.status);
-	console.log('Response Body:', response.body);
+	// console.log('Status Code:', response.status);
+	// console.log('Response Body:', response.body);
 } catch (error) {
 	console.error('Request Failed:', error);
 }
@@ -105,8 +105,8 @@ makeApiRequest('/api/user_management/auth/login', {
 			body: new URLSearchParams(formData)
 })
 	.then({ response, body } => {
-		console.log('Status Code:', response.status);
-		console.log('Response Body:', response.body);
+		// console.log('Status Code:', response.status);
+		// console.log('Response Body:', response.body);
 	})
 	.catch(error => {
 		console.error('Request Failed:', error);

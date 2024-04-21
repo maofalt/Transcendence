@@ -67,8 +67,6 @@ export default class UserInfo extends AbstractComponent {
 
 		if (options.style) {
 			for (const [key, value] of Object.entries(options.style)) {
-				console.log(key);
-				console.log(value);
 				this.shadowRoot.host.style.setProperty(key, value);
 			}
 		}
@@ -82,7 +80,7 @@ export default class UserInfo extends AbstractComponent {
 		// if details has been passed in options, use it. Otherwise, fetch current user details
 		if (!details) {
 			details = JSON.parse(sessionStorage.getItem("userDetails"));
-			// console.log("DETAILS:", details);
+			// // console.log("DETAILS:", details);
 			if (!details) {
 				details = await fetchUserDetails();
 			}
@@ -216,14 +214,12 @@ export default class UserInfo extends AbstractComponent {
 	}
 
 	pannelHover = (e, pannel, arg) => {
-		console.log(arg);
 		pannel.style.setProperty("background", "rgba(0, 0, 0, 0.5)");
 		pannel.style.setProperty("backdrop-filter", "blur(6px)");
 		// pannel.style.setProperty("color", "rgba(0, 217, 255, 1)");
 	}
 	
 	pannelLeave = (e, pannel, arg) => {
-		console.log(arg);
 		pannel.style.setProperty("background", "rgba(255, 255, 255, 0.1)");
 		pannel.style.setProperty("backdrop-filter", "blur(16px)");
 		// pannel.style.setProperty("color", "white");

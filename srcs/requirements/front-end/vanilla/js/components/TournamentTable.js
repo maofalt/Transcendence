@@ -194,9 +194,7 @@ class TournamentTable extends BaseTable {
 			console.error('Error joining tournament:', error);
 			displayPopup(error.message, 'error');
 		}
-        console.log('joinTournament before');
         await this.handleUpdateRow({ detail: { tournamentId: tournamentID } });
-        console.log('joinTournament done');
 	}
 	
 
@@ -205,7 +203,6 @@ class TournamentTable extends BaseTable {
 		let matches = null;
 		try {
 			const res = await easyFetch(`/api/tournament/${tournamentID}/matches/`);
-            console.log("Playtournament: " + res);
 			if (res.response.ok) {
 				matches = res.body.matches
 			} else {
@@ -343,7 +340,6 @@ class TournamentTable extends BaseTable {
         // Remove existing listener if it exists
         const existingHandler = actionButton.onclick;
         if (existingHandler) {
-            console.log('Removing existing handler');
             actionButton.removeEventListener('click', existingHandler);
         }
 
@@ -437,7 +433,6 @@ class TournamentTable extends BaseTable {
     }
 
     async handleUpdateRow(event) {
-        console.log('handleUpdateRow');
         const { tournamentId } = event.detail;
         const tournament = await this.fetchTournamentData(tournamentId);
         if (tournament) {
@@ -475,7 +470,7 @@ class TournamentTable extends BaseTable {
 				let tournamentNameElement = this.createStyledHTMLObject('div', newName, this.columnStyles.tournamentName);
 				tournamentNameElement.header = 'Tournament Name';
                 const newCellData = [tournamentNameElement];
-				console.log('i=[', identifier, '] newName=[', newName, ']');
+				// // console.log('i=[', identifier, '] newName=[', newName, ']');
 				this.updateRowByIdentifier(identifier, newCellData);
 	
 				index = (index + 1) % tournamentIdentifiers.length;
@@ -503,14 +498,12 @@ class TournamentTable extends BaseTable {
 	}
 
 	disconnectedCallback() {
-        console.log('TournamentTable disconnected');
        // super.disconnectedCallback();
 		this.cleanupEventListeners();
 	}
 
     filterByHost() {
         const userName = this.userName;
-        console.log('filterByHost', userName);
         this.filterRows(userName, "Host", true);
     }
 }

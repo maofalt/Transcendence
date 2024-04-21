@@ -27,13 +27,11 @@ class Overlay extends HTMLElement {
     }
 
     show() {
-        console.log('showing overlay');
         this.overlay.style.visibility = 'visible';
         this.overlay.style.height = '100%';
     }
 
     hide() {
-        console.log('hiding overlay');
         this.overlay.style.height = '0%';
         setTimeout(() => {
             this.overlay.style.visibility = 'hidden';

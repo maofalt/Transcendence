@@ -82,8 +82,6 @@ export default class InputAugmented extends AbstractComponent {
 
 		if (options.style) {
 			for (const [key, value] of Object.entries(options.style)) {
-				console.log(key);
-				console.log(value);
 				this.shadowRoot.host.style.setProperty(key, value);
 			}
 		}
@@ -99,7 +97,6 @@ export default class InputAugmented extends AbstractComponent {
 	}
 
 	validate = async () => {
-		console.log("validated");
 		let valid = true;
 	
 		const indicatorKeys = Object.keys(this.indicators);
@@ -118,7 +115,6 @@ export default class InputAugmented extends AbstractComponent {
 				this.input.input.style.outline = "";
 			}
 		}
-		console.log("valid::", valid);
 		return valid;
 	}
 }

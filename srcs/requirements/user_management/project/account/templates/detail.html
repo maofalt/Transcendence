@@ -85,7 +85,7 @@
                 headers: { "X-CSRFToken": getCookie('csrftoken') },
                 success: function (data) {
                     if (data.success) {
-                        console.log('Print all user data successful:', data);
+                        // console.log('Print all user data successful:', data);
                         document.getElementById('deleteConfirmationModal').style.display = 'block';
                     } else {
                         console.error('Error deleting account:', data.error);
