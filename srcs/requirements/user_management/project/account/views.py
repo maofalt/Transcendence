@@ -80,11 +80,13 @@ custom_jwt_auth = CustomJWTAuthentication()
 logger = logging.getLogger(__name__)
 User = get_user_model()
 
+
 def home(request):
     return render(request, 'home.html')
 
 def init_view(request):
-    return JsonResponse({'message': 'This is a trustable website.'}, status=200)
+    print("===Now serveer has running with CSRF protection===")
+    return JsonResponse({'csrfToken': get_token(request)}, status=200)
 
 @ensure_csrf_cookie
 @csrf_protect
