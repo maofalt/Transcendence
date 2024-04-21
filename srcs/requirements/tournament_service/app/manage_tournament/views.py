@@ -77,20 +77,20 @@ class TournamentListCreate(generics.ListCreateAPIView):
             error_message = f"Missing field '{missing_field}' in the request data"
             return Response({'error': error_message}, status=status.HTTP_400_BAD_REQUEST)
         except ValidationError as e:
-            print("Error: ", e.detail)
+            # print("Error: ", e.detail)
             return Response({'error': str(e.detail)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            print(f">>Error: {e}")
+            # print(f">>Error: {e}")
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-        print("input_data: \n", input_data)
+        # print("input_data: \n", input_data)
         try:
             serializer = TournamentSerializer(data=input_data)
             serializer.is_valid(raise_exception=True)
         except ValidationError as e:
             error_message = str(e.detail.get('non_field_errors', ['Unknown error'])[0])
             print("Error: ", e.detail)
-            print("Error message: ", error_message)
+            # print("Error message: ", error_message)
             if error_message == 'Unknown error':
                 error_messages = []
                 for field, errors in e.detail.items():
@@ -104,7 +104,7 @@ class TournamentListCreate(generics.ListCreateAPIView):
                     error_message = "\n".join(error_messages)
             return Response({'error': error_message}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            print(f"Error: {e}")
+            # print(f"Error: {e}")
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         user_info = request.user
@@ -154,7 +154,7 @@ class JoinTournament(generics.ListCreateAPIView):
     serializer_class = TournamentPlayerSerializer
 
     def get(self, request, *args, **kwargs):
-        print("request.user: ", request.user)
+        # print("request.user: ", request.user)
         return self.list(request, *args, **kwargs)
 
     def post(self, request, tournament_id, player_id):
@@ -165,10 +165,9 @@ class JoinTournament(generics.ListCreateAPIView):
         uid, username = user_info
         if player_id != uid:
             return JsonResponse({'message': "You are not authorized to join the Tournament"}, status=status.HTTP_403_FORBIDDEN)
-        print("All Tournaments:")
         for tournament in Tournament.objects.all():
             print(tournament.id)
-        print("tournament_id: ", tournament_id)
+        print("JOINING in tournament_id ", tournament_id)
         try:
             tournament = get_object_or_404(Tournament, id=tournament_id)
         except Http404:
@@ -186,7 +185,7 @@ class JoinTournament(generics.ListCreateAPIView):
         if created:
             print("New Player joined\n")
         
-        print("Players in the tournament:")
+        print("List of Players in the tournament:")
         for player in tournament.players.all():
             print(player.username)
 
@@ -261,7 +260,6 @@ class MatchResult(APIView):
     @staticmethod
     def round_state(request, id, cur_round):
         with transaction.atomic(): 
-            print("__________________________________________\n")
             try:
                 tournament = Tournament.objects.select_for_update().get(id=id)
                 # tournament = get_object_or_404(Tournament, id=id)
@@ -298,7 +296,8 @@ class MatchResult(APIView):
         winners = [match.winner for match in finished_matches if match.winner is not None]
         sorted_winners = sorted(winners, key=lambda user: user.id)
         # print("sorted_winners: ", sorted_winners)
-        print("MATCH_UPDATE >>> round: ", round)
+
+        print(f">>>>>>>>>>>>>>> MATCH_UPDATE >>>>>>>>>>>>> round ( {round} )")
         next_matches = tournament.matches.filter(round_number=round).order_by('id')
         if not next_matches.exists():
             if len(sorted_winners) == 1:
@@ -312,7 +311,7 @@ class MatchResult(APIView):
                 
                 tournament.state = "ended"
                 tournament.winner = sorted_winners[0].username
-                print("tournament.tournament_result: ", tournament.winner)
+                print("Final Winner : ", tournament.winner)
                 tournament.save()
                 serializer = TournamentMatchSerializer(finished_matches, many=True)
                 return JsonResponse(serializer.data, status=status.HTTP_200_OK, safe=False)
@@ -326,7 +325,7 @@ class MatchResult(APIView):
                 tournament.save()
             tournament.state = "ended"
             tournament.winner = sorted_winners[0].username
-            print("tournament.tournament_result: ", tournament.winner)
+            print("Final Winner : ", tournament.winner)
             tournament.save()
             serializer = TournamentMatchSerializer(finished_matches, many=True)
             return JsonResponse(serializer.data, status=status.HTTP_200_OK, safe=False)
@@ -334,7 +333,7 @@ class MatchResult(APIView):
         for winner in winners:
             print("winner: ", winner.username)
             if winner.username == 'Unknown':
-                print("Skipped assigning unknown player to the match")
+                print("Skipped assigning Unknown player to the match")
                 continue
             match = tournament.assign_player_to_match(winner, round)
             if match:
@@ -394,7 +393,6 @@ class MatchResult(APIView):
                     match.save()
                     tournament.save()
                 else:
-                    print("non winner----")
                     if player.username.endswith('*'):
                         print('player: ', player.username)
                         player.username = 'Unknown'
@@ -410,7 +408,6 @@ class MatchResult(APIView):
                 # return JsonResponse({'message': "Winner found and updated successfully", })
 
             update = MatchResult.match_update(request, match.tournament_id, cur_round + 1)
-            print('update: ', update)
             if update.status_code == 200:
                 data = json.loads(update.content.decode('utf-8'))
                 return JsonResponse(data, status=update.status_code, safe=False)   # tournament finished
@@ -450,8 +447,6 @@ class MatchUpdate(APIView):
         if not next_matches.exists():
             if len(winner_player_ids) == 1:
                 winner = Player.objects.get(id=winner_player_ids[0])
-                print("winner_player_ids[0]: ", winner_player_ids[0])
-                print("winner: ", winner)
                 winner.won_tournament.add(tournament)
                 winner.save()
                 serializer = TournamentMatchSerializer(finished_matches, many=True)
@@ -605,7 +600,7 @@ class TournamentStart(APIView):
                 if game_response.status_code != 200:
                     return game_response  
             else:
-                return JsonResponse({'error': 'Tournament already started'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
+                return JsonResponse({'error': 'Tournament already started'}, status=status.HTTP_400_BAD_REQUEST) 
 
         tournament_matches = TournamentMatch.objects.filter(tournament_id=tournament.id).order_by('id')
         serializer = TournamentMatchSerializer(tournament_matches, many=True)     
@@ -692,7 +687,7 @@ def auto_win_for_single_player(request, tournament_id, round_number):
             if match.players.count() == 0:
                 print("Match without player")
                 matches_to_delete.append(match)
-                print("Match save to be deleted: ")
+                print("Match saved to be deleted: ")
             if match.players.count() == 1:
                 player = match.players.first()
                 player.won_match.add(match)
@@ -861,12 +856,6 @@ class PlayerStatsView(APIView):
     authentication_classes = [CustomJWTAuthentication]
 
     def get(self, request, username):  
-        # user_info = request.user
-        # if not isinstance(user_info, tuple) or len(user_info) != 2:
-        #     raise exceptions.AuthenticationFailed('User information is not in the expected format')
-        # uid, username = user_info
-        # if (username != username):
-        #     return JsonResponse({'message': 'You are not authorized to view the stats of another player'}, status=403)
         try:
             player = get_object_or_404(Player, username=username)
         except Http404:
@@ -966,16 +955,13 @@ class DeletePlayer(APIView):
             raise exceptions.AuthenticationFailed('User information is not in the expected format')
 
         uid, playername = user_info
-        print("username: ", username, "playername: ", playername)
         if playername != username:
             return JsonResponse({'message': "You are not authorized to delete the Player"}, status=status.HTTP_403_FORBIDDEN)
         try:
             player = get_object_or_404(Player, username=username)
         except Http404:
             return JsonResponse({'message': f'User {username} hasn\'t started any tournamet. Nothing to clear from Tournament Database'}, status=204)
-        # player.username = 'Unknown'
-        # player.save()
-    
+
         tournaments = Tournament.objects.filter(players=player)
         for tournament in tournaments:
             print("tournament: ", tournament.tournament_name)
@@ -1025,7 +1011,6 @@ class UnjoinTournament(APIView):
             raise exceptions.AuthenticationFailed('User information is not in the expected format')
 
         uid, playername = user_info
-        print("username: ", username, "playername: ", playername)
         if playername != username:
             return JsonResponse({'message': "You are not authorized to unjoin the Tournament"}, status=status.HTTP_403_FORBIDDEN)
         try:
@@ -1038,7 +1023,7 @@ class UnjoinTournament(APIView):
             return JsonResponse({'message': f'Tournament not found.'}, status=status.HTTP_404_NOT_FOUND)
 
         if tournament.state != 'waiting':
-            return JsonResponse({'message': 'Cannot unjoin this Tournament. The Tournament has been started or finished'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return JsonResponse({'message': 'Cannot unjoin this Tournament. The Tournament has been started or finished'}, status=status.HTTP_400_BAD_REQUEST)
         
         if not tournament.players.filter(username=username).exists():
             return JsonResponse({'message': f'Player {username} is not a participant of <{tournament.tournament_name}> Tournament'}, status=status.HTTP_404_NOT_FOUND)
