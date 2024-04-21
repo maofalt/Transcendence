@@ -115,7 +115,6 @@ export default class BasicGameV2 extends AbstractComponent {
 
 		this.screenWidth = screenWidth || window.innerWidth;
 		this.screenHeight = screenHeight || window.innerHeight;
-		console.log("Screen size: ", this.screenWidth, this.screenHeight);
 	};
 
 	disconnectedCallback() {
@@ -124,7 +123,6 @@ export default class BasicGameV2 extends AbstractComponent {
 	}
 
 	connectedCallback() {
-		console.log("init Game View...");
 		// Set up the game container
 		this.container = document.createElement('div');
         this.container.id = 'game-container';
@@ -180,9 +178,7 @@ export default class BasicGameV2 extends AbstractComponent {
 		window.addEventListener('resize', this.onWindowResize.bind(this), false);
 		window.addEventListener("keydown", this.handleKeyPress.bind(this));
 		window.addEventListener("keyup", this.handleKeyRelease.bind(this));
-        console.log("Game View initialized");
 
-        console.log(this.match);
         this.localconnection();
 	};
 
@@ -398,7 +394,6 @@ export default class BasicGameV2 extends AbstractComponent {
 	}
 
 	generateScene(data, socket) {
-		console.log("Generating Scene...");
 
 		this.renderer = new THREE.WebGLRenderer({ alpha: true, antialias: false });
 
@@ -508,7 +503,6 @@ export default class BasicGameV2 extends AbstractComponent {
 
 			this.refreshScores(data);
 
-			console.log("Normal Font loaded");
 
 		} );
 
@@ -538,7 +532,6 @@ export default class BasicGameV2 extends AbstractComponent {
 		const scoreText = player.score.toString();
 		const ppRadius = 2;
 
-		console.log("Creating score: " + scoreText + " for player " + i + " with dir: " + this.dir);
 		// this.textSettings.font = this.textSettings.fontNormal;
 		const profilePicGeo = new THREE.SphereGeometry(ppRadius, 12, 24);
 		const loginGeo = new TextGeometry(loginText, this.textSettings);
@@ -641,7 +634,6 @@ export default class BasicGameV2 extends AbstractComponent {
 	async loadBallModel(data) {
 		// Load the model
 		this.loadModel(`public/assets/3D_Models/${data.ball.model}/scene.gltf`).then((model) => {
-			console.log("MODEL LOADED", model);
 
 			// Assign the loaded model to this.ballModel
 			this.ballModel = model;
@@ -851,13 +843,10 @@ export default class BasicGameV2 extends AbstractComponent {
 
         console.log("\nCLIENT CONNECTED\n");
     
-        // console.log('---DATA---\n', this.match.gameState, '\n---END---\n');
         this.localgenerate(this.match.gameState);
-        console.log("handleconnection",this.match);
         
         this.match.gameInterval = setInterval(this.waitingRoom.bind(this), 20);
 
-        console.log(`Player connected with ID: `);
     
         // client.emit('generate', data);
         // debugDisp.displayData(this.match.gameState);
@@ -865,11 +854,8 @@ export default class BasicGameV2 extends AbstractComponent {
     
     // Set up Socket.IO event handlers
     localconnection = () => {
-        // console.log("Socket connected");
         this.initMatch();
-        // console.log("localconnection",this.match);
         //handle client connection and match init + players status
-        // console.log("\nclient:\n", client.decoded);
         this.data = this.match.gameState;
         this.handleConnectionV2();
     }
@@ -922,7 +908,6 @@ export default class BasicGameV2 extends AbstractComponent {
         if (player)
             player.connected = false;
         if (this.data.connectedPlayers < 1) {
-            console.log("CLEARING INTERVAL");
             clearInterval(this.match.gameInterval);
             this.cleanAll();
             // matches.delete(client.matchID);

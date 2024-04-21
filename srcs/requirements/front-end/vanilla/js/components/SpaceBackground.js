@@ -131,8 +131,6 @@ export default class SpaceBackground extends AbstractComponent {
 
 		if (options.style) {
 			for (const [key, value] of Object.entries(options.style)) {
-				console.log(key);
-				console.log(value);
 				this.style.setProperty(key, value);
 			}
 		}

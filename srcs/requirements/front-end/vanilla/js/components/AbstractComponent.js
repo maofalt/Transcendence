@@ -56,8 +56,6 @@ export default class AbstractComponent extends HTMLElement {
 	onEvent = (funct, type) => {
 		// event.preventDefault();
 		// event.stopPropagation();
-		console.log('funct: ', funct);
-		console.log('type: ', type);
 		// console.trace();
 		this.addTrackedListener(this, type, funct);
 	}

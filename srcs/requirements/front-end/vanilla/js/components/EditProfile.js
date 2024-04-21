@@ -184,7 +184,6 @@ export default class EditProfile extends AbstractComponent {
 				return ;
 			}
 			let checked = twoFactorBlock.querySelector(".toggle-input").checked;
-			console.log("checked: ", checked);
 			updateUser({
 				playername: playernameBlock.input.getValue() || "",
 				avatar: avatarFile || "",
@@ -280,7 +279,6 @@ export default class EditProfile extends AbstractComponent {
 			displayPopup(`Request Failed: ${error}`, 'error');
 			valid = false;
 		});
-		console.log("valid2: ", valid);
 		return valid;
 	}
 

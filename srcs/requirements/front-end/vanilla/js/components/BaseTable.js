@@ -128,7 +128,6 @@ class BaseTable extends HTMLElement {
                 key = row.cells.get(header)?.domElement.querySelector('host-avatar').getAttribute('name') || "";
             } else if (header === "Players Per Match") {
                 key = row.cells.get(header)?.domElement.querySelector('number-of-players').getAttribute('nbrOfPlayers') || "";
-                console.log("Players per match:", key);
             } else {
                 key = row.cells.get(header)?.domElement.textContent || "";
             }

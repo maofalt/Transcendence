@@ -54,8 +54,6 @@ export default class InfoPopup extends AbstractComponent {
 		
 		if (options.style) {
 			for (const [key, value] of Object.entries(options.style)) {
-				console.log(key);
-				console.log(value);
 				this.div.style.setProperty(key, value);
 			}
 		}
@@ -101,7 +99,6 @@ export default class InfoPopup extends AbstractComponent {
 				this.div.replaceChild(this.icons.googleAlert, icon);
 				this.div.style.setProperty("color", "orange");
 			} else {
-				console.log("Unknown type: ", newValue);
 				let icon = this.div.querySelector('svg');
 				this.div.replaceChild(this.icons.googleAlert, icon);
 				this.div.style.setProperty("color", "blue");

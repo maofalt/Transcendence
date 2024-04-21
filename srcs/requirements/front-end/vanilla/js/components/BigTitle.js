@@ -22,8 +22,6 @@ export default class BigTitle extends AbstractComponent {
 		
 		if (options.style) {
 			for (const [key, value] of Object.entries(options.style)) {
-				console.log(key);
-				console.log(value);
 				this.shadowRoot.host.style.setProperty(key, value);
 			}
 		}

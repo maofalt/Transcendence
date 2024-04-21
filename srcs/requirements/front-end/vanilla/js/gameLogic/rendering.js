@@ -221,12 +221,12 @@ function updatePaddles(data) {
 function updateBall(data) {
     let paddleHit = ballHitsPaddle(data);
     let wallHit = ((data.field.wallsSize || data.gamemode.nbrOfPlayers == 2) ? ballHitsWallV2(data) : 0);
-    if (paddleHit) {
-        console.log("paddle hit");
-    }
-    if (wallHit) {
-        console.log("wall hit");
-    }
+    // if (paddleHit) {
+    //     console.log("paddle hit");
+    // }
+    // if (wallHit) {
+    //     console.log("wall hit");
+    // }
     if (!paddleHit && !wallHit) {
         data.ball.pos = data.ball.pos.add(data.ball.dir.scale(data.ball.sp));
     } else if (paddleHit) {
