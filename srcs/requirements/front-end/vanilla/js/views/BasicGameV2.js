@@ -374,7 +374,7 @@ export default class BasicGameV2 extends AbstractComponent {
 
 	refreshScene(data) {
 		this.scene = new THREE.Scene();
-		const back = new THREE.TextureLoader().load('public/assets/3D_Models/deepspace.jpg');
+		const back = new THREE.TextureLoader().load('public/assets/images/deepspace.jpg');
 		back.colorSpace = THREE.SRGBColorSpace;
 		this.scene.background = back;
 		
