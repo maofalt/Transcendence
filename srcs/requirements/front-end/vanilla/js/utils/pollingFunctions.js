@@ -83,10 +83,26 @@ export function refreshTokenLoop() {
 	}
 }
 
+function getCSRFToken() {
+	fetch('/api/user_management/auth/init')
+	.then(response => {
+		if (!response.ok) {
+			throw new Error('Failed to initialize csrf token.');
+		}
+		const csrfToken = response.headers.get('X-CSRFToken');
+		console.log('CSRF Token:', csrfToken);
+	})
+	.catch(error => {
+		console.error('Error initializing user authentication:', error.message);
+	});
+}
+
 export function pollingFunctions() {
 	
 	refreshTokenLoop();
 
 	initSocketConnection();
+
+	getCSRFToken();
 
 }
